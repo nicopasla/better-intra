@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         42 Intra Logtime
 // @namespace    https://github.com/nicopasla/42-userscripts
-// @version      0.1.0
+// @version      0.1.1
 // @updateURL	   https://raw.githubusercontent.com/nicopasla/42-userscripts/main/logtime.user.js
 // @license      MIT
 // @author       nicopasla
@@ -18,6 +18,7 @@
     MAX_INTENSITY_SECS: 3600 * 12,
     SHOW_AVERAGE: true,
     SHOW_GOAL: true,
+    SHOW_TACOS: false,
     CALENDAR_COLOR: "#00BCBA",
     LABELS_COLOR: "#26a641",
     BG_CARD: "#ffffff",
@@ -44,6 +45,7 @@
     "LABELS_COLOR",
     "SHOW_AVERAGE",
     "SHOW_GOAL",
+    "SHOW_TACOS",
   ];
   const CONFIG = { ...DEFAULT_CONFIG };
 
@@ -201,8 +203,8 @@
 
 			<div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; color:${CONFIG.LABELS_COLOR}; margin-bottom:10px;">
 				<div class="day-cell" style="background:transparent; width:auto; height:auto; padding:0; cursor:help;">
-					<b>${Math.round((total / (CONFIG.GOAL_HOURS * 3600)) * 100)}%</b>
-					<div class="day-tooltip">Remaining: ${fmtHours(Math.max(0, CONFIG.GOAL_HOURS * 3600 - total))}</div>
+					${CONFIG.SHOW_GOAL ? `<b>${Math.round((total / (CONFIG.GOAL_HOURS * 3600)) * 100)}% </b>` : ""}${CONFIG.SHOW_TACOS ? ` ${Math.round(((total / 3600) * 2) / 8)} 🌮` : ""}
+					${CONFIG.SHOW_GOAL ? `<div class="day-tooltip">Remaining: ${fmtHours(Math.max(0, CONFIG.GOAL_HOURS * 3600 - total))}</div>` : ""}  
 				</div>
 				
 				${CONFIG.SHOW_AVERAGE ? `<span>Avg: <b>${fmtHours(avg)}</b></span>` : "<span></span>"}
@@ -390,7 +392,8 @@
         <div style="padding: 15px; border-bottom: 1px solid #e2e8f0; font-weight: 700; color: #1e293b; display: flex; justify-content: space-between; align-items: center;">
           Settings
           <button id="reset-log-cfg" style="background: transparent; border: 1px solid #cbd5e1; color: #64748b; font-size: 10px; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-weight: 600;">RESTORE DEFAULTS</button>
-        </div>
+          <button id="close-modal" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
+          </div>
         
         <div style="padding: 15px; display: flex; flex-direction: column; gap: 12px;">
           <label style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase;">Goal (Hours)</label>
@@ -408,6 +411,9 @@
             </label>
             <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #1e293b; cursor: pointer; font-weight: 500;">
               <input type="checkbox" id="set-show-goal" ${CONFIG.SHOW_GOAL ? "checked" : ""}> Show Goal
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #1e293b; cursor: pointer; font-weight: 500;">
+              <input type="checkbox" id="set-show-tacos" ${CONFIG.SHOW_TACOS ? "checked" : ""}> Show Tacos
             </label>
           </div>
         </div>
@@ -427,6 +433,7 @@
     CONFIG.LABELS_COLOR = document.getElementById("set-color-labels").value;
     CONFIG.SHOW_AVERAGE = document.getElementById("set-avg").checked;
     CONFIG.SHOW_GOAL = document.getElementById("set-show-goal").checked;
+    CONFIG.SHOW_TACOS = document.getElementById("set-show-tacos").checked;
     saveConfig();
     location.reload();
   };
@@ -437,8 +444,11 @@
       location.reload();
     }
   };
+  const closeModal = () => (modal.style.display = "none");
+
+  document.getElementById("close-modal").onclick = closeModal;
   modal.onclick = (e) => {
-    if (e.target === modal) modal.style.display = "none";
+    if (e.target === modal) closeModal();
   };
 
   const _f = window.fetch;

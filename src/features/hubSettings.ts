@@ -1,4 +1,4 @@
-import { gmGetValue, gmSetValue } from "../lib/gm.ts";
+import { gmDeleteValue, gmGetValue, gmSetValue } from "../lib/gm.ts";
 import "../assets/style.css";
 import {
   FEATURE_DEFS,
@@ -8,6 +8,8 @@ import {
   FEATURE_IDS,
   FEATURE_PAGE_GUARDS,
   FEATURE_PAGE_URLS,
+  HUB_SETTING_DEFS,
+  type HubSettingDef,
 } from "./hubSettings.data.ts";
 import GEAR_SVG from "../assets/settings_gear.svg?raw";
 
@@ -161,65 +163,314 @@ function findLegacyNavList(): HTMLDivElement | null {
   return null;
 }
 
+function getSettingDefaultValue(def: HubSettingDef): unknown {
+  const anyDef = def as HubSettingDef & {
+    default?: unknown;
+    defaultValue?: unknown;
+  };
+
+  if (anyDef.defaultValue !== undefined) return anyDef.defaultValue;
+  if (anyDef.default !== undefined) return anyDef.default;
+
+  if (def.kind === "toggle") return false;
+  if (def.kind === "number") return def.min ?? 0;
+  if (def.kind === "select") return def.options?.[0]?.value ?? "";
+  return "";
+}
+
+function applyDefaultSettingValue(
+  control: HTMLInputElement | HTMLSelectElement,
+  def: HubSettingDef,
+): void {
+  const value = getSettingDefaultValue(def);
+
+  if (control instanceof HTMLInputElement) {
+    if (control.type === "checkbox") {
+      control.checked = Boolean(value);
+      return;
+    }
+
+    if (control.type === "number") {
+      control.value =
+        value === null || value === undefined ? "" : String(value);
+      return;
+    }
+
+    control.value = value === null || value === undefined ? "" : String(value);
+    return;
+  }
+
+  if (control instanceof HTMLSelectElement) {
+    const next = value === null || value === undefined ? "" : String(value);
+    const hasOption = Array.from(control.options).some(
+      (opt) => opt.value === next,
+    );
+    control.value = hasOption ? next : (control.options[0]?.value ?? "");
+  }
+}
+
+function resetFeatureSettings(
+  overlay: HTMLElement,
+  featureId: FeatureId,
+): void {
+  for (const def of HUB_SETTING_DEFS[featureId] ?? []) {
+    gmDeleteValue(def.key);
+
+    const control = overlay.querySelector<HTMLInputElement | HTMLSelectElement>(
+      `[data-setting-key="${def.key}"]`,
+    );
+    if (!control) continue;
+
+    applyDefaultSettingValue(control, def);
+  }
+}
+
+function renderSetting(def: HubSettingDef, enabled: boolean): string {
+  const storedValue = gmGetValue<unknown>(def.key, null);
+
+  // 2. Priorité : Valeur stockée > Valeur par défaut > Chaîne vide
+  const value = storedValue !== null ? storedValue : (def.defaultValue ?? "");
+  const disabled = enabled ? "" : "disabled";
+  let control = "";
+  if (def.kind === "toggle") {
+    control = `
+      <label class="hub-setting-toggle-small">
+        <input type="checkbox" data-setting-key="${def.key}" ${value ? "checked" : ""} ${disabled} />
+        <span class="hub-check"></span>
+      </label>
+    `;
+  } else if (def.kind === "number") {
+    control = `
+      <input
+        class="hub-setting-input"
+        type="number"
+        data-setting-key="${def.key}"
+        min="${def.min ?? ""}"
+        max="${def.max ?? ""}"
+        step="${def.step ?? 1}"
+        value="${typeof value === "number" ? value : ""}"
+        ${disabled}
+      />
+    `;
+  } else if (def.kind === "select") {
+    control = `
+      <select class="hub-setting-input" data-setting-key="${def.key}" ${disabled}>
+        ${(def.options ?? [])
+          .map(
+            (opt) =>
+              `<option value="${opt.value}" ${value === opt.value ? "selected" : ""}>${opt.label}</option>`,
+          )
+          .join("")}
+      </select>
+    `;
+  } else {
+    const isColor = def.placeholder?.startsWith("#");
+    const inputType = isColor ? "color" : "text";
+    control = `
+      <input
+        class="hub-setting-input"
+        type="${inputType}"
+        data-setting-key="${def.key}"
+        ${!isColor ? `placeholder="${def.placeholder ?? ""}"` : ""}
+        value="${typeof value === "string" ? value : (def.placeholder ?? "")}"
+        ${disabled}
+      />
+    `;
+  }
+
+  return `
+    <div class="hub-setting">
+      <div class="hub-setting-copy">
+        <div class="hub-setting-label">${def.label}</div>
+        <div class="hub-setting-desc">${def.desc}</div>
+      </div>
+      <div class="hub-setting-control">${control}</div>
+    </div>
+  `;
+}
+
 function createModal(active: FeatureId[]): void {
   if (document.getElementById("hub-overlay")) return;
 
   const overlay = document.createElement("div");
   overlay.id = "hub-overlay";
 
-  const rows = FEATURE_DEFS.map((f) => {
-    const checked = active.includes(f.id) ? "checked" : "";
+  const featureCards = FEATURE_DEFS.map((f, index) => {
+    const enabled = active.includes(f.id);
     const runsHere = isFeatureAllowedOnPage(f.id);
+
     return `
-      <label class="hub-row">
-        <div>
-          <div class="hub-name">${f.name}</div>
-          <div class="hub-desc">${f.desc}</div>
+      <button
+        type="button"
+        class="hub-feature-card ${index === 0 ? "is-active" : ""} ${enabled ? "" : "hub-is-disabled"}"
+        data-feature-card="${f.id}"
+        aria-pressed="${index === 0 ? "true" : "false"}"
+      >
+        <div class="hub-feature-card__title">${f.name}</div>
+        <div class="hub-feature-card__desc">${f.desc}</div>
+        <div class="hub-feature-card__meta">
           <span class="hub-run-pill ${runsHere ? "is-on" : "is-off"}">
-            ${FEATURE_PAGE_URLS[f.id]}
+            ${runsHere ? "Available here" : "Different page"}
           </span>
         </div>
-        <div class="hub-toggle-switch">
-          <input type="checkbox" class="hub-toggle" data-id="${f.id}" ${checked}>
-          <div class="hub-toggle-bg"></div>
-          <div class="hub-toggle-handle"></div>
+      </button>
+    `;
+  }).join("");
+
+  const panels = FEATURE_DEFS.map((f, index) => {
+    const enabled = active.includes(f.id);
+
+    const settingsDefs = HUB_SETTING_DEFS[f.id] || [];
+
+    const settings = settingsDefs
+      .map((def) => renderSetting(def, enabled))
+      .join("");
+
+    return `
+      <section
+        class="hub-panel ${index === 0 ? "is-active" : ""} ${enabled ? "" : "hub-is-disabled"}"
+        data-feature-panel="${f.id}"
+      >
+        <div class="hub-panel-head">
+          <div>
+            <div class="hub-desc">${f.desc}</div>
+          </div>
+          <div class="hub-panel-head-right">
+            <button
+              type="button"
+              class="hub-reset-cfg"
+              data-reset-feature="${f.id}"
+            >Reset</button>
+            <label class="hub-toggle-switch">
+              <input type="checkbox" class="hub-feature-toggle" data-id="${f.id}" ${enabled ? "checked" : ""} />
+              <div class="hub-toggle-bg"></div>
+              <div class="hub-toggle-handle"></div>
+            </label>
+          </div>
         </div>
-      </label>
+
+        <div class="hub-feature-settings">
+          ${settings}
+        </div>
+      </section>
     `;
   }).join("");
 
   const about = `
-    <div class="hub-about">
-      <div class="hub-about-title">About this extension</div>
-      <div class="hub-about-meta">
-        <div class="k">Name</div><div class="v">${HUB_INFO.name}</div>
-        <div class="k">Version</div><div class="v">${HUB_INFO.version}</div>
-        <div class="k">Author</div><div class="v">${HUB_INFO.author}</div>
-        <div class="k">License</div><div class="v">${HUB_INFO.license}</div>
-      </div>
-      <div class="hub-about-links">
-        <a href="${HUB_INFO.github}" target="_blank" rel="noopener noreferrer">GitHub</a>
-        <a href="${HUB_INFO.issues}" target="_blank" rel="noopener noreferrer">Report issue</a>
-        <button id="hub-copy-debug" type="button">Copy debug info</button>
-      </div>
+  <div class="hub-about">
+    <div class="hub-about-chips">
+      <span class="hub-about-chip">${HUB_INFO.name}</span>
+      <span class="hub-about-chip">${HUB_INFO.version}</span>
+      <span class="hub-about-chip">MIT</span>
     </div>
-  `;
+    <div class="hub-about-links">
+      <a href="${HUB_INFO.github}" target="_blank" rel="noopener">GitHub</a>
+      <a href="${HUB_INFO.issues}" target="_blank" rel="noopener">Report issue</a>
+      <button id="hub-copy-debug" type="button">Copy debug</button>
+    </div>
+  </div>
+`;
 
   overlay.innerHTML = `
     <div id="hub-modal">
       <div class="hub-head">
-        <span class="hub-title">Settings</span>
+        <span class="hub-title">42+</span>
         <button id="close-settings-modal" type="button" aria-label="Close"></button>
       </div>
-      <div class="hub-body">${rows}</div>
-      ${about}
-      <div class="hub-foot">
-        <button class="hub-save" id="hub-save" type="button">Save & Reload</button>
+
+      <div class="hub-body">
+        <div class="hub-feature-picker">${featureCards}</div>
+        <div class="hub-panels">${panels}</div>
       </div>
+
+      <div class="hub-footer">
+        ${about} <button class="hub-save" id="hub-save" type="button">Save & Reload</button> </div>
+      
+      <div class="hub-resize-handle" aria-hidden="true"></div>
     </div>
   `;
 
   document.body.appendChild(overlay);
+
+  const setActiveFeature = (id: FeatureId) => {
+    overlay
+      .querySelectorAll<HTMLElement>("[data-feature-card]")
+      .forEach((el) => {
+        const isActive = el.dataset.featureCard === id;
+        el.classList.toggle("is-active", isActive);
+        el.setAttribute("aria-pressed", isActive ? "true" : "false");
+      });
+
+    overlay
+      .querySelectorAll<HTMLElement>("[data-feature-panel]")
+      .forEach((el) => {
+        el.classList.toggle("is-active", el.dataset.featurePanel === id);
+      });
+  };
+
+  overlay
+    .querySelector(".hub-feature-picker")
+    ?.addEventListener("click", (e) => {
+      const target = (e.target as HTMLElement).closest<HTMLElement>(
+        "[data-feature-card]",
+      );
+      const id = target?.dataset.featureCard as FeatureId | undefined;
+      if (id && FEATURE_IDS.has(id)) setActiveFeature(id);
+    });
+
+  overlay
+    .querySelectorAll<HTMLInputElement>(".hub-feature-toggle")
+    .forEach((toggle) => {
+      const id = toggle.dataset.id as FeatureId | undefined;
+      if (!id || !FEATURE_IDS.has(id)) return;
+
+      const syncState = () => {
+        const enabled = toggle.checked;
+        const panel = overlay.querySelector<HTMLElement>(
+          `[data-feature-panel="${id}"]`,
+        );
+        const card = overlay.querySelector<HTMLElement>(
+          `[data-feature-card="${id}"]`,
+        );
+        panel?.classList.toggle("hub-is-disabled", !enabled);
+        card?.classList.toggle("hub-is-disabled", !enabled);
+
+        panel
+          ?.querySelectorAll<
+            HTMLInputElement | HTMLSelectElement
+          >("[data-setting-key]")
+          .forEach((control) => {
+            control.disabled = !enabled;
+          });
+
+        panel
+          ?.querySelector(".hub-state-pill")
+          ?.replaceChildren(
+            document.createTextNode(enabled ? "Enabled" : "Disabled"),
+          );
+        card
+          ?.querySelector(".hub-state-pill")
+          ?.replaceChildren(
+            document.createTextNode(enabled ? "Enabled" : "Disabled"),
+          );
+      };
+
+      syncState();
+      toggle.addEventListener("change", syncState);
+    });
+
+  overlay
+    .querySelectorAll<HTMLButtonElement>("[data-reset-feature]")
+    .forEach((btn) => {
+      const id = btn.dataset.resetFeature as FeatureId | undefined;
+      if (!id || !FEATURE_IDS.has(id)) return;
+
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        resetFeatureSettings(overlay, id);
+      });
+    });
 
   const close = () => (overlay.style.display = "none");
   overlay.addEventListener("click", (e) => {
@@ -231,13 +482,7 @@ function createModal(active: FeatureId[]): void {
     ?.addEventListener("click", close);
 
   document.getElementById("hub-save")?.addEventListener("click", () => {
-    const selected = Array.from(
-      overlay.querySelectorAll<HTMLInputElement>(".hub-toggle:checked"),
-    )
-      .map((el) => el.dataset.id)
-      .filter((id): id is FeatureId => FEATURE_IDS.has(id as FeatureId));
-
-    gmSetValue(STORAGE_KEY, JSON.stringify(selected));
+    saveHubState(overlay);
     location.reload();
   });
 
@@ -245,7 +490,9 @@ function createModal(active: FeatureId[]): void {
     .getElementById("hub-copy-debug")
     ?.addEventListener("click", async () => {
       const selected = Array.from(
-        overlay.querySelectorAll<HTMLInputElement>(".hub-toggle:checked"),
+        overlay.querySelectorAll<HTMLInputElement>(
+          ".hub-feature-toggle:checked",
+        ),
       )
         .map((el) => el.dataset.id)
         .filter((id): id is FeatureId => FEATURE_IDS.has(id as FeatureId));
@@ -261,6 +508,45 @@ function createModal(active: FeatureId[]): void {
         btn.textContent = prev ?? "Copy debug info";
       }, 1200);
     });
+}
+
+function readSettingValue(
+  control: HTMLInputElement | HTMLSelectElement,
+): unknown {
+  if (control instanceof HTMLInputElement) {
+    if (control.type === "checkbox") return control.checked;
+    if (control.type === "number")
+      return control.value === "" ? "" : Number(control.value);
+  }
+  return control.value;
+}
+
+function saveHubState(overlay: HTMLElement): FeatureId[] {
+  const selected = Array.from(
+    overlay.querySelectorAll<HTMLInputElement>(".hub-feature-toggle:checked"),
+  )
+    .map((el) => el.dataset.id)
+    .filter((id): id is FeatureId => FEATURE_IDS.has(id as FeatureId));
+
+  gmSetValue(STORAGE_KEY, JSON.stringify(selected));
+
+  overlay
+    .querySelectorAll<
+      HTMLInputElement | HTMLSelectElement
+    >("[data-setting-key]")
+    .forEach((control) => {
+      const key = control.dataset.settingKey;
+      if (!key) return;
+
+      const value = readSettingValue(control);
+      if (value === "") {
+        gmDeleteValue(key);
+      } else {
+        gmSetValue(key, value);
+      }
+    });
+
+  return selected;
 }
 
 function mountGearButton(): void {

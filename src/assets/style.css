@@ -1,30 +1,12 @@
-:root {
-  --card-radius: 16px;
-  --cell-radius: 6px;
-  --gap-between-cards: 16px;
-  --card-width: 280px;
-  --past-months-opacity: 0.8;
+/* ============================================================================
+   HUB SETTINGS MODAL - Comprehensive styling
+   ============================================================================ */
 
-  --bg-card: #ffffff;
-  --color-border: #e2e8f0;
-  --color-text-dark: #1e293b;
-  --color-text-light: #94a3b8;
-  --color-cell-empty: #f8fafc;
+/* ============================================================================
+   OVERLAY & MODAL CONTAINER
+   ============================================================================ */
 
-  --intra-font:
-    system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-
-.month-card {
-  border: 1px solid var(--border-color);
-  background: var(--bg-card);
-  border-radius: var(--card-radius);
-}
-
-.month-card.current-month {
-  border: 2px solid var(--logtime-color) !important;
-}
-
+/* Full-screen backdrop with semi-transparent dark overlay */
 #hub-overlay {
   position: fixed;
   inset: 0;
@@ -34,34 +16,54 @@
   justify-content: center;
   z-index: 10000;
 }
+
 #hub-modal {
-  background: #fff;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  /* Largeur */
+  min-width: 860px;
+  width: min(80vw, 980px);
+
+  /* Hauteur ajustée (Un peu plus grande que la précédente) */
+  min-height: 450px;           /* Minimum plus confortable */
+  height: min(70vh, 650px);    /* On passe de 580px à 650px */
+  max-height: 90vh;
+
+  resize: both;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
-  max-width: 640px;
-  width: 95%;
+  background: #fff;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  
+  /* Typo */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
+
+/* ============================================================================
+   MODAL HEADER
+   ============================================================================ */
+
+/* Header bar - contains title and close button */
 .hub-head {
+  flex: 0 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
   border-bottom: 1px solid #e2e8f0;
 }
+
+/* Title text in header */
 .hub-title {
   font-size: 18px;
   font-weight: 800;
   color: #0f172a;
 }
+
+/* Close button (X icon) - positioned right */
 #close-settings-modal {
   display: flex;
   position: relative;
@@ -75,10 +77,13 @@
   cursor: pointer;
   transition: all 0.2s ease;
 }
+
 #close-settings-modal:hover {
   background: #e2e8f0;
   color: #1e293b;
 }
+
+/* Create X icon using pseudo-elements */
 #close-settings-modal::before,
 #close-settings-modal::after {
   content: " ";
@@ -90,168 +95,523 @@
   background-color: currentColor;
   border-radius: 1px;
 }
+
 #close-settings-modal::before {
   transform: translate(-50%, -50%) rotate(45deg);
 }
+
 #close-settings-modal::after {
   transform: translate(-50%, -50%) rotate(-45deg);
 }
 
+/* ============================================================================
+   MODAL BODY - Main content area
+   ============================================================================ */
+
+/* Instruction text below header */
+.hub-note {
+  padding: 0 16px 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Two-column layout: feature picker (left) + panels (right) */
 .hub-body {
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.hub-row {
+  flex: 1 1 auto;
+  min-height: 0; /* required for inner scroll areas */
+  overflow: hidden;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 260px minmax(0, 1fr);
   gap: 12px;
-  align-items: center;
-  border: 1px solid #dbe4ee;
-  border-radius: 10px;
-  background: #f8fbff;
-  padding: 12px;
+  padding: 0 12px 12px;
 }
-.hub-name {
-  font-size: 16px;
-  font-weight: 900;
+
+/* Responsive: stack on small screens */
+@media (max-width: 900px) {
+  .hub-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================================
+   FEATURE PICKER (LEFT SIDE)
+   ============================================================================ */
+
+/* Left sidebar - scrollable list of feature cards */
+.hub-feature-picker {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+/* Individual feature card/button in picker */
+.hub-feature-card {
+  text-align: left;
+  border: 1px solid #dbe4ee;
+  border-radius: 12px;
+  background: #fff;
+  padding: 10px;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.hub-feature-card:hover {
+  border-color: #b9c9db;
+  background: #f8fbff;
+}
+
+/* Highlighted/active card - teal accent */
+.hub-feature-card.is-active {
+  border-color: #00bcba;
+  box-shadow: 0 0 0 3px rgba(0, 188, 186, 0.14);
+  background: #f0fdfa;
+}
+
+/* Disabled state - faded and desaturated */
+.hub-feature-card.hub-is-disabled {
+  opacity: 0.5;
+  filter: grayscale(0.25);
+}
+
+/* Feature card title */
+.hub-feature-card__title {
+  font-size: 14px;
+  font-weight: 800;
   color: #0f172a;
 }
-.hub-desc {
+
+/* Feature card description */
+.hub-feature-card__desc {
+  margin-top: 4px;
   font-size: 12px;
-  color: #475569;
-  margin-top: 2px;
+  line-height: 1.35;
+  color: #64748b;
 }
+
+/* Meta information (pills) below description */
+.hub-feature-card__meta {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================================
+   STATUS PILLS (Enable/Disable, Available/Different Page)
+   ============================================================================ */
+
+/* Base styling for all status pills */
+.hub-state-pill,
 .hub-run-pill {
   display: inline-flex;
   align-items: center;
-  margin-top: 8px;
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 800;
   border: 1px solid transparent;
 }
+
+/* Enabled/Available state - green */
+.hub-state-pill.is-on,
 .hub-run-pill.is-on {
   color: #065f46;
   background: #ecfdf5;
   border-color: #a7f3d0;
 }
+
+/* Disabled/Unavailable state - red */
+.hub-state-pill.is-off,
 .hub-run-pill.is-off {
   color: #991b1b;
   background: #fef2f2;
   border-color: #fecaca;
 }
 
+/* ============================================================================
+   FEATURE PANELS (RIGHT SIDE)
+   ============================================================================ */
+
+/* Container for scrollable panels */
+.hub-panels {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Individual feature settings panel */
+.hub-panel {
+  display: none;
+  border: 1px solid #dbe4ee;
+  border-radius: 12px;
+  background: #f8fbff;
+  padding: 12px;
+}
+
+/* Show active panel */
+.hub-panel.is-active {
+  display: block;
+}
+
+/* Disabled panel - faded out */
+.hub-panel.hub-is-disabled {
+  opacity: 0.5;
+  filter: grayscale(0.25);
+}
+
+/* Disable interactions in disabled panel */
+.hub-panel.hub-is-disabled .hub-feature-settings {
+  pointer-events: none;
+}
+
+/* Header of panel - contains title and toggle */
+.hub-panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+/* Right side of panel header - state pill and toggle */
+.hub-panel-head-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Container for all settings in panel */
+.hub-feature-settings {
+  display: grid;
+  gap: 8px;
+}
+
+/* ============================================================================
+   INDIVIDUAL SETTINGS
+   ============================================================================ */
+
+/* Single setting row - label + control */
+.hub-setting {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 42%);
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+/* Left side - label and description */
+.hub-setting-copy {
+  min-width: 0;
+}
+
+/* Setting label */
+.hub-setting-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+/* Setting description text */
+.hub-setting-desc {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+/* Right side - form control */
+.hub-setting-control {
+  display: flex;
+  justify-content: stretch;
+}
+
+/* For text-like settings, make the input area wider when space exists */
+.hub-setting:has(.hub-setting-input[type="text"]),
+.hub-setting:has(.hub-setting-input[type="number"]),
+.hub-setting:has(.hub-setting-input select),
+.hub-setting:has(.hub-setting-input) {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 50%);
+}
+
+.hub-setting:has(.hub-setting-input) .hub-setting-control {
+  width: 100%;
+}
+
+.hub-setting:has(.hub-setting-input) .hub-setting-input {
+  width: 100%;
+  max-width: none;
+}
+
+/* Keep toggle/check controls on the right */
+.hub-setting:has(.hub-setting-toggle),
+.hub-setting:has(.hub-setting-toggle-small) {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.hub-setting:has(.hub-setting-toggle) .hub-setting-control,
+.hub-setting:has(.hub-setting-toggle-small) .hub-setting-control {
+  width: auto;
+  justify-content: flex-end;
+}
+
+/* ============================================================================
+   FORM INPUTS (text, number, select)
+   ============================================================================ */
+
+/* Base styling for all input elements */
+.hub-setting-input {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+}
+
+/* ============================================================================
+   TOGGLE SWITCH (Custom checkbox)
+   ============================================================================ */
+
+/* 1. ON CACHE TOTALEMENT L'INPUT NATIF */
+.hub-toggle-switch input[type="checkbox"],
+.hub-setting-toggle-small input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  position: absolute !important;
+  opacity: 0 !important; /* Rend l'input invisible */
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  z-index: 10 !important;
+}
+
+/* 2. LE GROS SLIDER (Main Toggle) */
 .hub-toggle-switch {
   position: relative;
   display: inline-block;
-  width: 70px;
-  height: 36px;
-  cursor: pointer;
+  width: 56px;
+  height: 30px;
+  background: transparent;
 }
-.hub-toggle-switch input[type="checkbox"] {
-  display: none;
-}
+
 .hub-toggle-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
+  display: block;
   width: 100%;
   height: 100%;
-  background-color: #ddd;
-  border-radius: 18px;
-  box-shadow: inset 0 0 0 2px #ccc;
-  transition: background-color 0.3s ease-in-out;
+  background: #e2e8f0; /* Couleur OFF */
+  border-radius: 999px;
+  transition: background 0.2s ease;
 }
+
 .hub-toggle-handle {
   position: absolute;
   top: 4px;
   left: 4px;
-  width: 28px;
-  height: 28px;
-  background-color: #fff;
+  width: 22px;
+  height: 22px;
+  background: #ffffff !important;
   border-radius: 50%;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease-in-out;
-}
-.hub-toggle-switch input[type="checkbox"]:checked ~ .hub-toggle-bg {
-  background-color: #00bcba;
-  box-shadow: inset 0 0 0 2px #00a8a6;
-}
-.hub-toggle-switch input[type="checkbox"]:checked ~ .hub-toggle-handle {
-  transform: translateX(34px);
-  box-shadow:
-    0 2px 5px rgba(0, 0, 0, 0.2),
-    0 0 0 3px rgba(0, 188, 186, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+  pointer-events: none;
 }
 
+/* Animation Gros Slider */
+.hub-toggle-switch input:checked ~ .hub-toggle-bg {
+  background: #00bcba !important;
+}
+.hub-toggle-switch input:checked ~ .hub-toggle-handle {
+  transform: translateX(26px) !important;
+}
+
+/* 3. LE PETIT SLIDER (Settings) */
+.hub-setting-toggle-small {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 22px;
+}
+
+.hub-setting-toggle-small .hub-check {
+  display: block !important; /* Force l'affichage */
+  width: 100%;
+  height: 100%;
+  background: #e2e8f0;
+  border-radius: 999px;
+  transition: background 0.2s ease;
+  position: relative;
+}
+
+.hub-setting-toggle-small .hub-check::after {
+  content: "" !important;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: white !important;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+/* Animation Petit Slider */
+.hub-setting-toggle-small input:checked + .hub-check {
+  background: #00bcba !important;
+}
+.hub-setting-toggle-small input:checked + .hub-check::after {
+  transform: translateX(20px) !important;
+}
+
+/* ============================================================================
+   ABOUT SECTION
+   ============================================================================ */
+
+/* Container for about section */
 .hub-about {
-  margin: 0 16px 14px;
-  border: 1px solid #dbe4ee;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-  padding: 14px;
-  font-size: 13px;
-  color: #334155;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
+
+/* On ajuste le body pour qu'il occupe tout l'espace sauf le header et le about */
+.hub-body {
+  flex: 1;
+  overflow: hidden; /* Important pour garder le scroll interne */
+}
+
+/* "About this extension" title */
 .hub-about-title {
-  font-weight: 800;
-  font-size: 14px;
-  color: #0f172a;
-  margin-bottom: 8px;
-}
-.hub-about-meta {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  row-gap: 4px;
-  column-gap: 8px;
-}
-.hub-about-meta .k {
-  font-weight: 700;
-  color: #334155;
-}
-.hub-about-meta .v {
-  color: #0f172a;
-}
-.hub-about-links {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   margin-top: 10px;
 }
+
+/* Meta information row (name, version, author, license) */
+.hub-about-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Individual meta chip */
+.hub-about-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+}
+
+/* Links section (GitHub, Report issue, Copy debug) */
+.hub-about-links {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+/* Link and button styling */
 .hub-about-links a,
 .hub-about-links button {
-  text-decoration: none;
-  color: #0f766e;
-  border: 1px solid #99f6e4;
-  background: #ecfeff;
-  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
   padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f766e;
+  font-size: 11px;
   font-weight: 700;
-  font-size: 12px;
+  text-decoration: none;
   cursor: pointer;
-}
-.hub-about-links button {
   font-family: inherit;
+  transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
-.hub-foot {
-  padding: 14px 16px;
-  border-top: 1px solid #e2e8f0;
+.hub-about-links a:hover,
+.hub-about-links button:hover {
+  background: #f0fffb;
+  border-color: #00bcba;
+  color: #00a8a6;
 }
-.hub-save {
-  width: 100%;
+
+/* ============================================================================
+   FOOTER - Save button
+   ============================================================================ */
+
+/* "Save & Reload" button */
+#hub-save {
+  display: inline-block; /* Permet l'alignement flex-start */
+  margin: 0; /* On retire les marges auto */
+  width: auto;
+  min-width: 200px; /* Largeur minimale confortable */
+  max-width: 300px; /* Limite pour éviter qu'il soit trop long */
   height: 44px;
-  border: none;
-  border-radius: 9px;
+
   background: #00bcba;
   color: #fff;
-  font-weight: 800;
+  border: none;
+  border-radius: 8px;
+
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 188, 186, 0.15);
+  transition: all 0.2s ease;
 }
 
+#hub-save:hover {
+  background: #00a8a6;
+  box-shadow: 0 4px 8px rgba(0, 188, 186, 0.25);
+  transform: translateY(-1px);
+}
+
+#hub-save:active {
+  transform: translateY(0);
+  filter: brightness(0.9);
+}
+
+.hub-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+/* ============================================================================
+   GEAR BUTTON (Settings trigger)
+   ============================================================================ */
+
+/* Gear button in sidebar/header */
 button#hub-gear-btn {
   display: flex;
   align-items: center;
@@ -264,15 +624,26 @@ button#hub-gear-btn {
   cursor: pointer;
   color: #334155;
 }
+
 button#hub-gear-btn:hover {
   border-color: #00bcba;
 }
 
-/* 
-  CLUSTERS 
-*/
+/* Fallback floating position for gear button */
+#hub-gear-btn.hub-gear-floating {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #dbe4ee;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
 
-#cluster-li-container {
+* CLUSTERS */ #cluster-li-container {
   display: flex;
   align-items: center;
   padding: 0 10px;
@@ -574,4 +945,42 @@ p.text-sm:nth-child(2) {
     sans-serif;
 }
 
-/* LOGTIME*/
+/* Reset to default config button */
+.hub-reset-cfg {
+  background: #fff;
+  border: 1px solid #fee2e2;
+  color: #ef4444;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.hub-reset-cfg:hover {
+  background: #fef2f2;
+  border-color: #f87171;
+}
+
+/* Supprime la ligne entre le Header et le Body */
+.hub-head {
+  border-bottom: none !important;
+}
+
+/* Supprime la ligne au-dessus du Footer (qui contient le bouton et le about) */
+.hub-footer {
+  border-top: none !important;
+}
+
+/* Si tu as fusionné le About dans le Footer, assure-toi qu'il n'a pas de bordure propre */
+.hub-about {
+  border: none !important;
+  border-top: none !important;
+}
+
+/* Si tu veux aussi supprimer la ligne entre le picker à gauche et les panels à droite */
+.hub-body {
+  /* Si une bordure est définie ici */
+  border: none !important;
+}

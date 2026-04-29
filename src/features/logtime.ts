@@ -1,13 +1,12 @@
-import { gmGetValue, gmSetValue, gmDeleteValue } from "../lib/gm.ts";
+import { gmGetValue } from "../lib/gm.ts";
 import {
   DEFAULT_LOGTIME_CONFIG,
   LOGTIME_CONFIG_KEYS,
-  getLogtimeStorageKey,
   type LogtimeConfig,
   type ShowDaysMode,
-} from "./logtime.data.ts";
+  HUB_SETTING_DEFS,
+} from "./hubSettings.data.ts";
 import "../assets/style.css";
-
 
 export async function initLogtime() {
   const DEBUG = false;
@@ -17,9 +16,7 @@ export async function initLogtime() {
 
   dbg("init:start", { href: location.href, readyState: document.readyState });
 
-  const DEFAULT_CONFIG: LogtimeConfig = { ...DEFAULT_LOGTIME_CONFIG };
-  const STORABLE_KEYS = LOGTIME_CONFIG_KEYS;
-  const CONFIG: LogtimeConfig = { ...DEFAULT_CONFIG };
+  const CONFIG: LogtimeConfig = { ...DEFAULT_LOGTIME_CONFIG };
 
   const MAX_INTENSITY_SECS = 3600 * 12;
   const BG_CARD = "#ffffff";
@@ -39,65 +36,25 @@ export async function initLogtime() {
     'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
   const rgbaCache = new Map<string, string>();
 
-  function setConfigValue<K extends keyof LogtimeConfig>(
-    key: K,
-    value: LogtimeConfig[K],
-  ): void {
-    CONFIG[key] = value;
-  }
-
   async function loadConfig(): Promise<void> {
-    for (const key of STORABLE_KEYS) {
-      const stored = await gmGetValue<string | number | boolean | null>(
-        getLogtimeStorageKey(key),
-        null,
-      );
-      if (stored === null) continue;
+    for (const key of LOGTIME_CONFIG_KEYS) {
+      const def = HUB_SETTING_DEFS.logtime.find((s) => s.key === key);
+      if (!def) continue;
 
-      switch (key) {
-        case "LOGTIME_GOAL_HOURS": {
-          const n =
-            typeof stored === "number"
-              ? stored
-              : Number.parseFloat(String(stored));
-          if (Number.isFinite(n)) setConfigValue(key, n);
-          break;
-        }
-        case "LOGTIME_SHOW_AVERAGE":
-        case "LOGTIME_SHOW_GOAL":
-        case "LOGTIME_SHOW_TACOS":
-          setConfigValue(
-            key,
-            stored === true || String(stored).toLowerCase() === "true",
-          );
-          break;
+      const stored = await gmGetValue(key, DEFAULT_LOGTIME_CONFIG[key]);
 
-        case "LOGTIME_SHOW_DAYS_MODE": {
-          const mode = String(stored);
-          setConfigValue(
-            key,
-            mode === "date" || mode === "both" || mode === "days"
-              ? mode
-              : "date",
-          );
-          break;
-        }
+      const configTarget = CONFIG as any;
 
-        case "LOGTIME_CALENDAR_COLOR":
-        case "LOGTIME_LABELS_COLOR":
-          setConfigValue(key, String(stored));
-          break;
+      if (def.kind === "number") {
+        const n = Number(stored);
+        if (!isNaN(n)) configTarget[key] = n;
+      } else if (def.kind === "toggle") {
+        configTarget[key] = stored === true || String(stored) === "true";
+      } else {
+        configTarget[key] = stored;
       }
     }
-    dbg("loadConfig:done", { CONFIG: { ...CONFIG } });
-  }
-
-  async function saveConfig(): Promise<void> {
-    dbg("saveConfig:start", { CONFIG: { ...CONFIG } });
-    for (const key of STORABLE_KEYS) {
-      await gmSetValue(getLogtimeStorageKey(key), String(CONFIG[key]));
-    }
-    dbg("saveConfig:done");
+    dbg("loadConfig:done", { CONFIG });
   }
 
   const fmtHours = (secs: number): string => {
@@ -153,7 +110,7 @@ export async function initLogtime() {
   function setupStyles() {
     dbg("setupStyles");
     const style = document.createElement("style");
-    style.textContent = `.lt-box-container{font-family:${INTRA_FONT};margin-bottom:1rem;}
+    style.textContent = `.lt-box-container{font-family:${INTRA_FONT};margin-bottom:0!important;}
     [class*="logtime"],.card,.card-body,.row,.col-md-12{overflow:visible!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;}
     .log-slider-fixed{overflow-x:auto!important;overflow-y:hidden!important;max-height:fit-content!important;align-items:flex-start!important;width:100%;margin-top:-10px!important;font-family:${INTRA_FONT};display:flex!important;scroll-behavior:smooth;cursor:grab;user-select:none;-ms-overflow-style:none;scrollbar-width:none;}
     .log-slider-fixed::-webkit-scrollbar{display:none!important;}
@@ -165,32 +122,7 @@ export async function initLogtime() {
     .today-highlight{box-shadow:0 0 0 2px rgba(239,68,68,.65),0 0 12px rgba(239,68,68,.45);border:none!important;z-index:10;}
     .day-tooltip{display:none;position:absolute;bottom:130%;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;font-size:11px;padding:4px 8px;border-radius:4px;z-index:100;white-space:nowrap;pointer-events:none;}
     .day-cell:hover .day-tooltip{display:block;}
-    .modal-content{background:#fff;border-radius:12px;max-width:420px;width:94%;overflow:visible;box-shadow:0 20px 25px -5px rgba(0,0,0,.1);font-family:${INTRA_FONT};position:relative;}
-    .modal-header{padding:12px 14px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#1e293b;display:flex;align-items:center;}
-    .modal-title{flex-grow:1;text-align:center;font-size:15px;letter-spacing:-.01em;}
-    #reset-log-cfg{background:#fff;border:1px solid #fee2e2;color:#ef4444;font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:700;transition:all .2s ease;}
-    #reset-log-cfg:hover{background:#fef2f2;border-color:#f87171;}
-    #close-modal{display:flex;position:relative;width:28px;height:28px;padding:0;border:none;border-radius:50%;background:#f1f5f9;color:#64748b;cursor:pointer;transition:all .3s ease;}
-    #close-modal:hover{background:#e2e8f0;color:#1e293b;}
-    #close-modal::before,#close-modal::after{content:" ";position:absolute;top:50%;left:50%;width:2px;height:14px;background-color:currentColor;border-radius:1px;}
-    #close-modal::before{transform:translate(-50%,-50%) rotate(45deg);}
-    #close-modal::after{transform:translate(-50%,-50%) rotate(-45deg);}
-    .modal-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px;font-family:${INTRA_FONT};}
-    .field-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;border:1px solid #e2e8f0;border-radius:8px;padding:6px 8px;background:#fafcff;}
-    .field-row label{font-size:13px;font-weight:600;color:#1e293b;}
-    .field-control{font-size:13px;font-family:${INTRA_FONT};padding:5px 8px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;}
-    .color-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-    .color-item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;border:1px solid #e2e8f0;border-radius:8px;padding:6px 8px;background:#fafcff;}
-    .color-item label{font-size:12px;font-weight:600;color:#1e293b;}
-    .color-item input[type="color"]{width:44px;height:30px;padding:0;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer;}
-    .toggle-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;border:1px solid #e2e8f0;border-radius:8px;padding:6px 8px;background:#fafcff;}
-    .toggle-row span{font-size:13px;font-weight:600;color:#1e293b;}
-    .toggle-row input[type="checkbox"]{width:16px;height:16px;margin:0;}
-    .modal-footer{padding:12px 14px;border-top:1px solid #e2e8f0;}
-    #save-log-cfg{width:100%;padding:9px;background:#00BCBA;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .2s;font-family:${INTRA_FONT};}
-    #save-log-cfg:hover{opacity:.9;}
-    #lt-settings-trigger{font-size:12px;color:#000;background:#f8fafc;border:1px solid #e2e8f0;padding:4px 12px;border-radius:8px;cursor:pointer;transition:all .2s;}
-    #lt-settings-trigger:hover{border-color:${CONFIG.LOGTIME_LABELS_COLOR};background:#fff;}`;
+    `;
     document.head.appendChild(style);
   }
 
@@ -311,172 +243,6 @@ export async function initLogtime() {
     return grid;
   }
 
-  function setupModal(): void {
-    dbg("setupModal");
-    const modal = document.createElement("div");
-    modal.id = "logtime-settings-modal";
-    modal.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: none; align-items: center; justify-content: center; z-index: 10000; font-family: ${INTRA_FONT};`;
-    modal.innerHTML = `
-    <div class="modal-content">
-      <div class="modal-header">
-        <button id="reset-log-cfg">Reset</button>
-        <span class="modal-title">Settings</span>
-        <button id="close-modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="field-row">
-          <label for="set-goal-val">Goal (hours)</label>
-          <input class="field-control" type="number" id="set-goal-val" value="${CONFIG.LOGTIME_GOAL_HOURS}" style="width: 110px;">
-        </div>
-        <div class="color-grid">
-          <div class="color-item">
-            <label for="set-color">Highlight</label>
-            <input type="color" id="set-color" value="${CONFIG.LOGTIME_CALENDAR_COLOR}">
-          </div>
-          <div class="color-item">
-            <label for="set-color-labels">Labels</label>
-            <input type="color" id="set-color-labels" value="${CONFIG.LOGTIME_LABELS_COLOR}">
-          </div>
-        </div>
-        <label class="toggle-row">
-          <span>Show average</span>
-          <input type="checkbox" id="set-avg" ${CONFIG.LOGTIME_SHOW_AVERAGE ? "checked" : ""}>
-        </label>
-        <label class="toggle-row">
-          <span>Show goal</span>
-          <input type="checkbox" id="set-show-goal" ${CONFIG.LOGTIME_SHOW_GOAL ? "checked" : ""}>
-        </label>
-        <label class="toggle-row">
-          <span>Show tacos</span>
-          <input type="checkbox" id="set-show-tacos" ${CONFIG.LOGTIME_SHOW_TACOS ? "checked" : ""}>
-        </label>
-        <div class="field-row">
-          <label for="set-show-days-mode">Last active format</label>
-          <select id="set-show-days-mode" class="field-control" style="width: 200px;">
-            <option value="date" ${CONFIG.LOGTIME_SHOW_DAYS_MODE === "date" ? "selected" : ""}>Date only (17/04)</option>
-            <option value="both" ${CONFIG.LOGTIME_SHOW_DAYS_MODE === "both" ? "selected" : ""}>Both (17/04 - 2 days ago)</option>
-            <option value="days" ${CONFIG.LOGTIME_SHOW_DAYS_MODE === "days" ? "selected" : ""}>Days ago only (2 days ago)</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer"><button id="save-log-cfg">Save & Reload</button></div>
-    </div>`;
-
-    document.body.appendChild(modal);
-
-    const saveBtn = document.getElementById(
-      "save-log-cfg",
-    ) as HTMLButtonElement | null;
-    const resetBtn = document.getElementById(
-      "reset-log-cfg",
-    ) as HTMLButtonElement | null;
-    const goalInput = document.getElementById(
-      "set-goal-val",
-    ) as HTMLInputElement | null;
-    const colorInput = document.getElementById(
-      "set-color",
-    ) as HTMLInputElement | null;
-    const labelsInput = document.getElementById(
-      "set-color-labels",
-    ) as HTMLInputElement | null;
-    const avgInput = document.getElementById(
-      "set-avg",
-    ) as HTMLInputElement | null;
-    const goalToggle = document.getElementById(
-      "set-show-goal",
-    ) as HTMLInputElement | null;
-    const tacosToggle = document.getElementById(
-      "set-show-tacos",
-    ) as HTMLInputElement | null;
-    const modeSelect = document.getElementById(
-      "set-show-days-mode",
-    ) as HTMLSelectElement | null;
-
-    if (
-      saveBtn &&
-      goalInput &&
-      colorInput &&
-      labelsInput &&
-      avgInput &&
-      goalToggle &&
-      tacosToggle &&
-      modeSelect
-    ) {
-      saveBtn.onclick = async () => {
-        dbg("settings:save:click", {
-          goal: goalInput.value,
-          calendar: colorInput.value,
-          labels: labelsInput.value,
-          avg: avgInput.checked,
-          goalEnabled: goalToggle.checked,
-          tacos: tacosToggle.checked,
-          mode: modeSelect.value,
-        });
-
-        CONFIG.LOGTIME_GOAL_HOURS = Number.parseFloat(goalInput.value);
-        CONFIG.LOGTIME_CALENDAR_COLOR = colorInput.value;
-        CONFIG.LOGTIME_LABELS_COLOR = labelsInput.value;
-        CONFIG.LOGTIME_SHOW_AVERAGE = avgInput.checked;
-        CONFIG.LOGTIME_SHOW_GOAL = goalToggle.checked;
-        CONFIG.LOGTIME_SHOW_TACOS = tacosToggle.checked;
-        CONFIG.LOGTIME_SHOW_DAYS_MODE = modeSelect.value as ShowDaysMode;
-
-        await saveConfig();
-        dbg("settings:save:reload");
-        location.reload();
-      };
-    } else {
-      dbg("settings:missing-elements", {
-        saveBtn: !!saveBtn,
-        goalInput: !!goalInput,
-        colorInput: !!colorInput,
-        labelsInput: !!labelsInput,
-        avgInput: !!avgInput,
-        goalToggle: !!goalToggle,
-        tacosToggle: !!tacosToggle,
-        modeSelect: !!modeSelect,
-      });
-    }
-
-    if (resetBtn) {
-      resetBtn.onclick = async () => {
-        if (confirm("Reset all settings to default?")) {
-          for (const key of STORABLE_KEYS) {
-            await gmDeleteValue(getLogtimeStorageKey(key));
-          }
-          location.reload();
-        }
-      };
-    }
-
-    const closeModal = () => (modal.style.display = "none");
-    const closeBtn = document.getElementById(
-      "close-modal",
-    ) as HTMLButtonElement | null;
-    if (closeBtn) {
-      closeBtn.type = "button";
-      closeBtn.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        closeModal();
-      });
-      closeBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        closeModal();
-      });
-    }
-
-    const modalContent = modal.querySelector(".modal-content");
-    if (modalContent) {
-      modalContent.addEventListener("click", (e) => e.stopPropagation());
-    }
-
-    modal.onclick = (e) => {
-      if (e.target === modal) closeModal();
-    };
-  }
-
   function findLogtimeMount(): HTMLElement | null {
     dbg("findMount:start");
 
@@ -561,7 +327,7 @@ export async function initLogtime() {
     label.className =
       "font-bold text-black dark:text-white uppercase text-sm tracking-tight";
     label.style.cssText =
-      "display: inline-flex; align-items: center; width: 100%; gap: 8px;";
+      "display: inline-flex; align-items: center; width: 100%;";
     label.innerHTML = `<div class="w-1.5 h-4 bg-legacy-main rounded-full"></div>Logtime`;
 
     const lastSeenValue = getLastSeenFormatted(
@@ -574,25 +340,6 @@ export async function initLogtime() {
       lastSeenSpan.textContent = `Active ${lastSeenValue}`;
       label.appendChild(lastSeenSpan);
     }
-
-    const btn = document.createElement("button");
-    btn.id = "logtime-settings-trigger";
-    btn.style.cssText = `font-family: ${INTRA_FONT}; font-size: 12px; color: black; background: #f8fafc; border: 2px solid #e2e8f0; padding: 2px 12px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px; letter-spacing: 0.02em; line-height: 1; margin-left: auto; height: 30px; cursor: pointer; transition: all 0.2s ease;`;
-    btn.innerHTML = "Settings";
-    btn.onmouseover = () => {
-      btn.style.borderColor = CONFIG.LOGTIME_LABELS_COLOR;
-      btn.style.background = "#fff";
-    };
-    btn.onmouseout = () => {
-      btn.style.borderColor = "#e2e8f0";
-      btn.style.background = "#f8fafc";
-    };
-    btn.onclick = (e) => {
-      e.preventDefault();
-      const modal = document.getElementById("logtime-settings-modal");
-      if (modal) modal.style.display = "flex";
-    };
-    label.appendChild(btn);
 
     header.appendChild(label);
     containerBox.appendChild(header);
@@ -693,7 +440,6 @@ export async function initLogtime() {
   dbg("after:loadConfig", { CONFIG: { ...CONFIG } });
 
   setupStyles();
-  setupModal();
 
   function getFetchUrl(input: RequestInfo | URL): string {
     if (typeof input === "string") return input;

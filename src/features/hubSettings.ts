@@ -1,28 +1,49 @@
 import { gmDeleteValue, gmGetValue, gmSetValue } from "../lib/gm.ts";
-import "../assets/style.css";
 import {
   FEATURE_DEFS,
   HUB_INFO,
   FeatureId,
   STORAGE_KEY,
   FEATURE_IDS,
-  FEATURE_PAGE_GUARDS,
-  FEATURE_PAGE_URLS,
   HUB_SETTING_DEFS,
   type HubSettingDef,
 } from "./hubSettings.data.ts";
 import GEAR_SVG from "../assets/settings_gear.svg?raw";
 
-function isFeatureAllowedOnPage(
-  id: FeatureId,
-  loc: Location = location,
-): boolean {
-  return FEATURE_PAGE_GUARDS[id](loc);
+async function ensureStyles() {
+  if (document.getElementById("wa-styles-bundle")) return;
+
+  const link = document.createElement("link");
+  link.id = "wa-styles-bundle";
+  link.rel = "stylesheet";
+  link.href =
+    "https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@latest/dist/styles/themes/default.css";
+
+  document.head.appendChild(link);
+}
+
+async function loadComponents() {
+  await Promise.all([
+    import("@awesome.me/webawesome/dist/components/dialog/dialog.js"),
+    import("@awesome.me/webawesome/dist/components/switch/switch.js"),
+    import("@awesome.me/webawesome/dist/components/color-picker/color-picker.js"),
+    import("@awesome.me/webawesome/dist/components/number-input/number-input.js"),
+    import("@awesome.me/webawesome/dist/components/tab-group/tab-group.js"),
+    import("@awesome.me/webawesome/dist/components/tab/tab.js"),
+    import("@awesome.me/webawesome/dist/components/tab-panel/tab-panel.js"),
+    import("@awesome.me/webawesome/dist/components/button/button.js"),
+    import("@awesome.me/webawesome/dist/components/card/card.js"),
+    import("@awesome.me/webawesome/dist/components/badge/badge.js"),
+    import("@awesome.me/webawesome/dist/components/select/select.js"),
+    import("@awesome.me/webawesome/dist/components/option/option.js"),
+    import("@awesome.me/webawesome/dist/components/radio-group/radio-group.js"),
+    import("@awesome.me/webawesome/dist/components/radio/radio.js"),
+    import("@awesome.me/webawesome/dist/components/divider/divider.js"),
+  ]);
 }
 
 function normalizeActive(raw: unknown): FeatureId[] {
   let parsed: unknown = raw;
-
   if (typeof raw === "string") {
     try {
       parsed = JSON.parse(raw);
@@ -30,11 +51,9 @@ function normalizeActive(raw: unknown): FeatureId[] {
       parsed = [];
     }
   }
-
   if (!Array.isArray(parsed)) {
     return FEATURE_DEFS.map((f) => f.id);
   }
-
   const ids = parsed.filter((v): v is FeatureId =>
     FEATURE_IDS.has(v as FeatureId),
   );
@@ -44,107 +63,19 @@ function normalizeActive(raw: unknown): FeatureId[] {
 export function getActiveFeatures(): FeatureId[] {
   const raw = gmGetValue<unknown>(STORAGE_KEY, null);
   const active = normalizeActive(raw);
-
   gmSetValue(STORAGE_KEY, JSON.stringify(active));
   return active;
-}
-
-function safeStringify(value: unknown): string {
-  try {
-    if (typeof value === "string") return value;
-    return JSON.stringify(value);
-  } catch {
-    return String(value);
-  }
-}
-
-function buildDebugInfo(activeSelected?: FeatureId[]): string {
-  const rawStored = gmGetValue<unknown>(STORAGE_KEY, null);
-  const stored = normalizeActive(rawStored);
-  const selected = activeSelected ?? stored;
-  const allowedHere = selected.filter((id) => isFeatureAllowedOnPage(id));
-
-  const hasV3Sidebar = !!findSidebarMainGroup();
-  const hasLegacyNav = !!findLegacyNavList();
-  const hasHeaderTarget = !!document.querySelector(
-    ".flex.flex-row.grow.h-16.gap-3",
-  );
-  const gear = document.getElementById("hub-gear-btn");
-
-  const featureMatrix = FEATURE_DEFS.map((f) => {
-    const enabled = selected.includes(f.id);
-    const allowed = isFeatureAllowedOnPage(f.id);
-    return `${f.id}=enabled:${enabled},allowed_here:${allowed}`;
-  }).join(" | ");
-
-  return [
-    `name=${HUB_INFO.name}`,
-    `version=${HUB_INFO.version}`,
-    `author=${HUB_INFO.author}`,
-    `license=${HUB_INFO.license}`,
-    `url=${location.href}`,
-    `origin=${location.origin}`,
-    `hostname=${location.hostname}`,
-    `pathname=${location.pathname}`,
-    `search=${location.search || "(empty)"}`,
-    `hash=${location.hash || "(empty)"}`,
-    `referrer=${document.referrer || "(none)"}`,
-    `readyState=${document.readyState}`,
-    `raw_active_storage=${safeStringify(rawStored)}`,
-    `stored_active=${stored.join(",") || "none"}`,
-    `selected_active=${selected.join(",") || "none"}`,
-    `active_on_this_page=${allowedHere.join(",") || "none"}`,
-    `features=${featureMatrix}`,
-    `layout_v3_sidebar=${hasV3Sidebar}`,
-    `layout_legacy_nav=${hasLegacyNav}`,
-    `layout_header_target=${hasHeaderTarget}`,
-    `gear_present=${!!gear}`,
-    `gear_tag=${gear?.tagName ?? "(none)"}`,
-    `gear_parent_class=${gear?.parentElement?.className ?? "(none)"}`,
-    `overlay_present=${!!document.getElementById("hub-overlay")}`,
-    `modal_present=${!!document.getElementById("hub-modal")}`,
-    `lang=${navigator.language}`,
-    `platform=${navigator.platform}`,
-    `ua=${navigator.userAgent}`,
-    `time_iso=${new Date().toISOString()}`,
-    `time_local=${new Date().toString()}`,
-  ].join("\n");
-}
-
-async function copyDebugInfo(activeSelected?: FeatureId[]): Promise<boolean> {
-  const text = buildDebugInfo(activeSelected);
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    try {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      const ok = document.execCommand("copy");
-      ta.remove();
-      return ok;
-    } catch {
-      return false;
-    }
-  }
 }
 
 function findSidebarMainGroup(): HTMLDivElement | null {
   const profileLink = document.querySelector<HTMLAnchorElement>(
     'a[href="https://profile-v3.intra.42.fr"]',
   );
-  const fromProfile = profileLink?.closest<HTMLDivElement>(
-    "div.flex.flex-col.w-full",
-  );
-  if (fromProfile) return fromProfile;
-
-  return document.querySelector<HTMLDivElement>(
-    "div.flex.flex-col.w-full:not(.pb-16)",
+  return (
+    profileLink?.closest<HTMLDivElement>("div.flex.flex-col.w-full") ||
+    document.querySelector<HTMLDivElement>(
+      "div.flex.flex-col.w-full:not(.pb-16)",
+    )
   );
 }
 
@@ -152,490 +83,317 @@ function findLegacyNavList(): HTMLDivElement | null {
   const candidates = Array.from(
     document.querySelectorAll<HTMLDivElement>("div._"),
   );
-  for (const root of candidates) {
-    const hasKnownLinks =
-      !!root.querySelector('a[href="https://profile.intra.42.fr"]') ||
-      !!root.querySelector('a[href="https://projects.intra.42.fr"]') ||
-      !!root.querySelector('a[href="https://meta.intra.42.fr"]');
-    const hasLi = root.querySelectorAll(":scope > li").length > 0;
-    if (hasKnownLinks && hasLi) return root;
-  }
-  return null;
-}
-
-function getSettingDefaultValue(def: HubSettingDef): unknown {
-  const anyDef = def as HubSettingDef & {
-    default?: unknown;
-    defaultValue?: unknown;
-  };
-
-  if (anyDef.defaultValue !== undefined) return anyDef.defaultValue;
-  if (anyDef.default !== undefined) return anyDef.default;
-
-  if (def.kind === "toggle") return false;
-  if (def.kind === "number") return def.min ?? 0;
-  if (def.kind === "select") return def.options?.[0]?.value ?? "";
-  return "";
+  return (
+    candidates.find(
+      (root) =>
+        (!!root.querySelector('a[href="https://profile.intra.42.fr"]') ||
+          !!root.querySelector('a[href="https://projects.intra.42.fr"]')) &&
+        root.querySelectorAll(":scope > li").length > 0,
+    ) || null
+  );
 }
 
 function applyDefaultSettingValue(
-  control: HTMLInputElement | HTMLSelectElement,
+  control: HTMLElement,
   def: HubSettingDef,
 ): void {
-  const value = getSettingDefaultValue(def);
-
-  if (control instanceof HTMLInputElement) {
-    if (control.type === "checkbox") {
-      control.checked = Boolean(value);
-      return;
-    }
-
-    if (control.type === "number") {
-      control.value =
-        value === null || value === undefined ? "" : String(value);
-      return;
-    }
-
-    control.value = value === null || value === undefined ? "" : String(value);
-    return;
-  }
-
-  if (control instanceof HTMLSelectElement) {
-    const next = value === null || value === undefined ? "" : String(value);
-    const hasOption = Array.from(control.options).some(
-      (opt) => opt.value === next,
-    );
-    control.value = hasOption ? next : (control.options[0]?.value ?? "");
-  }
+  const anyDef = def as any;
+  const value =
+    anyDef.defaultValue ??
+    anyDef.default ??
+    (def.kind === "toggle" ? false : "");
+  if ("checked" in control && def.kind === "toggle")
+    (control as any).checked = Boolean(value);
+  else if ("value" in control) (control as any).value = String(value);
 }
 
-function resetFeatureSettings(
-  overlay: HTMLElement,
-  featureId: FeatureId,
-): void {
+function resetFeatureSettings(dialog: HTMLElement, featureId: FeatureId): void {
   for (const def of HUB_SETTING_DEFS[featureId] ?? []) {
     gmDeleteValue(def.key);
-
-    const control = overlay.querySelector<HTMLInputElement | HTMLSelectElement>(
+    const control = dialog.querySelector<any>(
       `[data-setting-key="${def.key}"]`,
     );
-    if (!control) continue;
-
-    applyDefaultSettingValue(control, def);
+    if (control) applyDefaultSettingValue(control, def);
   }
 }
 
 function renderSetting(def: HubSettingDef, enabled: boolean): string {
   const storedValue = gmGetValue<unknown>(def.key, null);
-
-  // 2. Priorité : Valeur stockée > Valeur par défaut > Chaîne vide
   const value = storedValue !== null ? storedValue : (def.defaultValue ?? "");
-  const disabled = enabled ? "" : "disabled";
+  const disabledAttr = enabled ? "" : "disabled";
   let control = "";
-  if (def.kind === "toggle") {
-    control = `
-      <label class="hub-setting-toggle-small">
-        <input type="checkbox" data-setting-key="${def.key}" ${value ? "checked" : ""} ${disabled} />
-        <span class="hub-check"></span>
-      </label>
-    `;
-  } else if (def.kind === "number") {
-    control = `
-      <input
-        class="hub-setting-input"
-        type="number"
-        data-setting-key="${def.key}"
-        min="${def.min ?? ""}"
-        max="${def.max ?? ""}"
-        step="${def.step ?? 1}"
-        value="${typeof value === "number" ? value : ""}"
-        ${disabled}
-      />
-    `;
-  } else if (def.kind === "select") {
-    control = `
-      <select class="hub-setting-input" data-setting-key="${def.key}" ${disabled}>
-        ${(def.options ?? [])
-          .map(
-            (opt) =>
-              `<option value="${opt.value}" ${value === opt.value ? "selected" : ""}>${opt.label}</option>`,
-          )
-          .join("")}
-      </select>
-    `;
-  } else {
-    const isColor = def.placeholder?.startsWith("#");
-    const inputType = isColor ? "color" : "text";
-    control = `
-      <input
-        class="hub-setting-input"
-        type="${inputType}"
-        data-setting-key="${def.key}"
-        ${!isColor ? `placeholder="${def.placeholder ?? ""}"` : ""}
-        value="${typeof value === "string" ? value : (def.placeholder ?? "")}"
-        ${disabled}
-      />
-    `;
-  }
 
-  return `
-    <div class="hub-setting">
-      <div class="hub-setting-copy">
-        <div class="hub-setting-label">${def.label}</div>
-        <div class="hub-setting-desc">${def.desc}</div>
+  if (def.kind === "toggle") {
+    control = `<wa-switch data-setting-key="${def.key}" ${value ? "checked" : ""} ${disabledAttr}></wa-switch>`;
+  } else if (def.kind === "number") {
+    control = `<wa-number-input
+                value="${value}"
+                ${disabledAttr}
+                without-steppers 
+                data-setting-key="${def.key}" 
+                style="width: 100px;">
+              </wa-number-input>`;
+  } else if (def.kind === "select") {
+    control = `<wa-select 
+                data-setting-key="${def.key}" 
+                value="${value}" 
+                ${disabledAttr} 
+                style="width: 160px;"
+                hoist>
+                ${(def.options ?? [])
+                  .map(
+                    (o) =>
+                      `<wa-option 
+                    value="${o.value}">${o.label}
+                  </wa-option>
+                `,
+                  )
+                  .join("")}
+              </wa-select>`;
+  } else if (def.kind === "radio-group") {
+    control = `<wa-radio-group
+                data-setting-key="${def.key}"
+                name="${def.key}" 
+                value="${value}"
+                orientation="horizontal"
+                ${disabledAttr}
+              >
+                ${(def.options ?? [])
+                  .map(
+                    (o) => `
+                  <wa-radio 
+                    appearance="button"
+                    value="${o.value}"
+                  >
+                    ${o.label}
+                  </wa-radio>
+                `,
+                  )
+                  .join("")}
+              </wa-radio-group>`;
+  } else if (def.kind === "color") {
+    control = `<wa-color-picker
+                data-setting-key="${def.key}"
+                value="${value}"
+                ${disabledAttr}
+                opacity>
+              </wa-color-picker>`;
+  } else if (def.kind === "text") {
+    control = `<wa-input
+                data-setting-key="${def.key}"
+                value="${value}"
+                style="width: 400px;"
+                ${disabledAttr}>
+              </wa-input>`;
+  } else if (def.kind === "divider") {
+   return `
+    <div class="hub-divider-container" style="margin: 28px 0 12px 0; width: 100%;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="
+          font-size: 11px; 
+          font-weight: 800; 
+          color: #94a3b8; 
+          text-transform: uppercase; 
+          letter-spacing: 0.05em;
+          white-space: nowrap;
+        ">
+          ${def.label}
+        </span>
+        <div style="flex: 1; height: 1px; background-color: #e2e8f0;"></div>
       </div>
-      <div class="hub-setting-control">${control}</div>
-    </div>
-  `;
+    </div>`;
+  } else {
+    control = `<wa-input
+                data-setting-key="${def.key}"
+                value="${value}"
+                ${disabledAttr}>
+              </wa-input>`;
+  }
+  const gridClass = def.grid === true ? "" : "hub-setting-span-full";
+  return `
+    <wa-card class="card-basic ${gridClass}">
+      <div class="hub-setting-card">
+        <div class="hub-setting-info" style="display: flex; flex-direction: column; flex: 1;">
+          <span style="font-weight: 600;">${def.label}</span>
+          <small style="opacity: 0.7;">${def.desc}</small>
+        </div>
+        <div class="hub-setting-control">
+          ${control}
+        </div>
+      </div>
+    </wa-card>`;
 }
 
 function createModal(active: FeatureId[]): void {
-  if (document.getElementById("hub-overlay")) return;
+  let dialog = document.getElementById("hub-dialog") as any;
+  if (!dialog) {
+    dialog = document.createElement("wa-dialog");
+    dialog.id = "hub-dialog";
+    dialog.style.setProperty("--width", "850px");
+    document.body.appendChild(dialog);
+  }
 
-  const overlay = document.createElement("div");
-  overlay.id = "hub-overlay";
+  const tabsHtml = FEATURE_DEFS.map(
+    (f) => `
+  <wa-tab slot="nav" panel="${f.id}" class="hub-header-tab" style="height: auto;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <wa-icon name="${f.icon}" style="font-size: 1.2rem;"></wa-icon>
+      <span style="font-weight: 500;">${f.name}</span>
+    </div>
+  </wa-tab>
+`,
+  ).join("");
 
-  const featureCards = FEATURE_DEFS.map((f, index) => {
+  const panels = FEATURE_DEFS.map((f) => {
     const enabled = active.includes(f.id);
-    const runsHere = isFeatureAllowedOnPage(f.id);
-
-    return `
-      <button
-        type="button"
-        class="hub-feature-card ${index === 0 ? "is-active" : ""} ${enabled ? "" : "hub-is-disabled"}"
-        data-feature-card="${f.id}"
-        aria-pressed="${index === 0 ? "true" : "false"}"
-      >
-        <div class="hub-feature-card__title">${f.name}</div>
-        <div class="hub-feature-card__desc">${f.desc}</div>
-        <div class="hub-feature-card__meta">
-          <span class="hub-run-pill ${runsHere ? "is-on" : "is-off"}">
-            ${runsHere ? "Available here" : "Different page"}
-          </span>
-        </div>
-      </button>
-    `;
-  }).join("");
-
-  const panels = FEATURE_DEFS.map((f, index) => {
-    const enabled = active.includes(f.id);
-
-    const settingsDefs = HUB_SETTING_DEFS[f.id] || [];
-
-    const settings = settingsDefs
+    const settings = (HUB_SETTING_DEFS[f.id] || [])
       .map((def) => renderSetting(def, enabled))
       .join("");
 
     return `
-      <section
-        class="hub-panel ${index === 0 ? "is-active" : ""} ${enabled ? "" : "hub-is-disabled"}"
-        data-feature-panel="${f.id}"
-      >
-        <div class="hub-panel-head">
-          <div>
-            <div class="hub-desc">${f.desc}</div>
+  <wa-tab-panel name="${f.id}">
+    <div class="hub-panel ${enabled ? "" : "hub-is-disabled"}" data-feature-panel="${f.id}">
+      
+      <wa-card class="hub-feature-main-card">
+        <div class="hub-panel-info">
+          <div class="hub-panel-text-content">
+            <div class="hub-feature-title-large" style="font-size: 1.2rem; font-weight: bold;">${f.name}</div>
+            <div class="hub-desc" style="font-size: 0.9rem; opacity: 0.8;">${f.desc}</div>
           </div>
-          <div class="hub-panel-head-right">
-            <button
-              type="button"
-              class="hub-reset-cfg"
-              data-reset-feature="${f.id}"
-            >Reset</button>
-            <label class="hub-toggle-switch">
-              <input type="checkbox" class="hub-feature-toggle" data-id="${f.id}" ${enabled ? "checked" : ""} />
-              <div class="hub-toggle-bg"></div>
-              <div class="hub-toggle-handle"></div>
-            </label>
+          <div class="hub-panel-actions" style="display: flex; align-items: center; gap: 10px;">
+            <wa-button variant="danger" appearance="outlined" size="small" data-reset-feature="${f.id}">Reset</wa-button>
+            <wa-switch style="--width: 60px; --height: 32px; --thumb-size: 28px;" class="hub-feature-toggle" data-id="${f.id}" ${enabled ? "checked" : ""}></wa-switch>
           </div>
         </div>
-
-        <div class="hub-feature-settings">
-          ${settings}
-        </div>
-      </section>
-    `;
+      </wa-card>
+      <div class="hub-feature-settings">
+        ${settings}
+      </div>
+      
+    </div>
+  </wa-tab-panel>`;
   }).join("");
 
-  const about = `
-  <div class="hub-about">
-    <div class="hub-about-chips">
-      <span class="hub-about-chip">${HUB_INFO.name}</span>
-      <span class="hub-about-chip">${HUB_INFO.version}</span>
-      <span class="hub-about-chip">MIT</span>
+  dialog.innerHTML = `
+  <div slot="label" class="hub-title">42+ Hub</div>
+
+  <div class="hub-body">
+    <wa-tab-group placement="top" class="hub-main-tabs">
+      ${tabsHtml}
+      ${panels}
+    </wa-tab-group>
+  </div>
+
+  <div slot="footer" class="hub-footer-content">
+    <div class="hub-footer-info-group">
+      <wa-badge variant="neutral" pill size="small">${HUB_INFO.name}</wa-badge>
+      <wa-badge variant="neutral" pill size="small">${HUB_INFO.version}</wa-badge>
+      <wa-badge variant="success" pill size="small">MIT</wa-badge>
+      
+      <span class="hub-separator"></span>
+
+      <wa-badge href="${HUB_INFO.github}" target="_blank" class="hub-footer-link">GitHub</wa-badge>
+      <wa-badge href="${HUB_INFO.issues}" target="_blank" class="hub-footer-link">Report issue</wa-badge>
     </div>
-    <div class="hub-about-links">
-      <a href="${HUB_INFO.github}" target="_blank" rel="noopener">GitHub</a>
-      <a href="${HUB_INFO.issues}" target="_blank" rel="noopener">Report issue</a>
-      <button id="hub-copy-debug" type="button">Copy debug</button>
-    </div>
+
+    <wa-button variant="success" id="hub-save" size="medium">Save & Reload</wa-button>
   </div>
 `;
 
-  overlay.innerHTML = `
-    <div id="hub-modal">
-      <div class="hub-head">
-        <span class="hub-title">42+</span>
-        <button id="close-settings-modal" type="button" aria-label="Close"></button>
-      </div>
+  dialog
+    .querySelectorAll("wa-switch.hub-feature-toggle")
+    .forEach((toggle: any) => {
+      toggle.addEventListener("wa-change", (e: any) => {
+        const id = e.target.dataset.id;
+        const isEnabled = e.target.checked;
+        const panel = dialog.querySelector(`[data-feature-panel="${id}"]`);
+        const tab = dialog.querySelector(`wa-tab[panel="${id}"]`);
 
-      <div class="hub-body">
-        <div class="hub-feature-picker">${featureCards}</div>
-        <div class="hub-panels">${panels}</div>
-      </div>
-
-      <div class="hub-footer">
-        ${about} <button class="hub-save" id="hub-save" type="button">Save & Reload</button> </div>
-      
-      <div class="hub-resize-handle" aria-hidden="true"></div>
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-
-  const setActiveFeature = (id: FeatureId) => {
-    overlay
-      .querySelectorAll<HTMLElement>("[data-feature-card]")
-      .forEach((el) => {
-        const isActive = el.dataset.featureCard === id;
-        el.classList.toggle("is-active", isActive);
-        el.setAttribute("aria-pressed", isActive ? "true" : "false");
-      });
-
-    overlay
-      .querySelectorAll<HTMLElement>("[data-feature-panel]")
-      .forEach((el) => {
-        el.classList.toggle("is-active", el.dataset.featurePanel === id);
-      });
-  };
-
-  overlay
-    .querySelector(".hub-feature-picker")
-    ?.addEventListener("click", (e) => {
-      const target = (e.target as HTMLElement).closest<HTMLElement>(
-        "[data-feature-card]",
-      );
-      const id = target?.dataset.featureCard as FeatureId | undefined;
-      if (id && FEATURE_IDS.has(id)) setActiveFeature(id);
-    });
-
-  overlay
-    .querySelectorAll<HTMLInputElement>(".hub-feature-toggle")
-    .forEach((toggle) => {
-      const id = toggle.dataset.id as FeatureId | undefined;
-      if (!id || !FEATURE_IDS.has(id)) return;
-
-      const syncState = () => {
-        const enabled = toggle.checked;
-        const panel = overlay.querySelector<HTMLElement>(
-          `[data-feature-panel="${id}"]`,
-        );
-        const card = overlay.querySelector<HTMLElement>(
-          `[data-feature-card="${id}"]`,
-        );
-        panel?.classList.toggle("hub-is-disabled", !enabled);
-        card?.classList.toggle("hub-is-disabled", !enabled);
-
+        panel?.classList.toggle("hub-is-disabled", !isEnabled);
+        tab?.classList.toggle("hub-is-disabled", !isEnabled);
         panel
-          ?.querySelectorAll<
-            HTMLInputElement | HTMLSelectElement
-          >("[data-setting-key]")
-          .forEach((control) => {
-            control.disabled = !enabled;
-          });
-
-        panel
-          ?.querySelector(".hub-state-pill")
-          ?.replaceChildren(
-            document.createTextNode(enabled ? "Enabled" : "Disabled"),
-          );
-        card
-          ?.querySelector(".hub-state-pill")
-          ?.replaceChildren(
-            document.createTextNode(enabled ? "Enabled" : "Disabled"),
-          );
-      };
-
-      syncState();
-      toggle.addEventListener("change", syncState);
-    });
-
-  overlay
-    .querySelectorAll<HTMLButtonElement>("[data-reset-feature]")
-    .forEach((btn) => {
-      const id = btn.dataset.resetFeature as FeatureId | undefined;
-      if (!id || !FEATURE_IDS.has(id)) return;
-
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        resetFeatureSettings(overlay, id);
+          ?.querySelectorAll("[data-setting-key]")
+          .forEach((c: any) => (c.disabled = !isEnabled));
       });
     });
 
-  const close = () => (overlay.style.display = "none");
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) close();
+  dialog.querySelectorAll("[data-reset-feature]").forEach((btn: any) => {
+    btn.addEventListener("click", () =>
+      resetFeatureSettings(dialog, btn.dataset.resetFeature),
+    );
   });
 
-  document
-    .getElementById("close-settings-modal")
-    ?.addEventListener("click", close);
-
-  document.getElementById("hub-save")?.addEventListener("click", () => {
-    saveHubState(overlay);
+  dialog.querySelector("#hub-save")?.addEventListener("click", () => {
+    saveHubState(dialog);
     location.reload();
   });
-
-  document
-    .getElementById("hub-copy-debug")
-    ?.addEventListener("click", async () => {
-      const selected = Array.from(
-        overlay.querySelectorAll<HTMLInputElement>(
-          ".hub-feature-toggle:checked",
-        ),
-      )
-        .map((el) => el.dataset.id)
-        .filter((id): id is FeatureId => FEATURE_IDS.has(id as FeatureId));
-
-      const ok = await copyDebugInfo(selected);
-      const btn = document.getElementById(
-        "hub-copy-debug",
-      ) as HTMLButtonElement | null;
-      if (!btn) return;
-      const prev = btn.textContent;
-      btn.textContent = ok ? "Copied" : "Copy failed";
-      window.setTimeout(() => {
-        btn.textContent = prev ?? "Copy debug info";
-      }, 1200);
-    });
 }
 
-function readSettingValue(
-  control: HTMLInputElement | HTMLSelectElement,
-): unknown {
-  if (control instanceof HTMLInputElement) {
-    if (control.type === "checkbox") return control.checked;
-    if (control.type === "number")
-      return control.value === "" ? "" : Number(control.value);
-  }
-  return control.value;
-}
-
-function saveHubState(overlay: HTMLElement): FeatureId[] {
+function saveHubState(dialog: HTMLElement): FeatureId[] {
   const selected = Array.from(
-    overlay.querySelectorAll<HTMLInputElement>(".hub-feature-toggle:checked"),
+    dialog.querySelectorAll<any>("wa-switch.hub-feature-toggle"),
   )
-    .map((el) => el.dataset.id)
-    .filter((id): id is FeatureId => FEATURE_IDS.has(id as FeatureId));
+    .filter((sw) => sw.checked)
+    .map((sw) => sw.dataset.id as FeatureId);
 
   gmSetValue(STORAGE_KEY, JSON.stringify(selected));
-
-  overlay
-    .querySelectorAll<
-      HTMLInputElement | HTMLSelectElement
-    >("[data-setting-key]")
-    .forEach((control) => {
-      const key = control.dataset.settingKey;
-      if (!key) return;
-
-      const value = readSettingValue(control);
-      if (value === "") {
-        gmDeleteValue(key);
-      } else {
-        gmSetValue(key, value);
-      }
-    });
-
+  dialog.querySelectorAll<any>("[data-setting-key]").forEach((control) => {
+    const key = control.dataset.settingKey;
+    const val = control.tagName.includes("SWITCH")
+      ? control.checked
+      : control.value;
+    if (val === "" || val === null) gmDeleteValue(key);
+    else gmSetValue(key, val);
+  });
   return selected;
 }
 
-function mountGearButton(): void {
-  const openModal = () => {
-    const overlay = document.getElementById("hub-overlay");
-    if (overlay) overlay.style.display = "flex";
+export function mountGearButton(): void {
+  const open = async () => {
+    let dialog = document.getElementById("hub-dialog") as any;
+    if (!dialog) {
+      await ensureStyles();
+      await loadComponents();
+      createModal(getActiveFeatures());
+      dialog = document.getElementById("hub-dialog");
+    }
+    await customElements.whenDefined("wa-dialog");
+    dialog?.show();
   };
+  const sidebar = findSidebarMainGroup();
+  const legacy = findLegacyNavList();
 
-  const sidebarMainGroup = findSidebarMainGroup();
-  const legacyNavList = findLegacyNavList();
-  const oldTarget = document.querySelector(".flex.flex-row.grow.h-16.gap-3");
+  if (document.getElementById("hub-gear-btn")) return;
 
-  document.getElementById("hub-gear-item")?.remove();
-  const existing = document.getElementById("hub-gear-btn");
-  existing?.remove();
-
-  if (sidebarMainGroup) {
+  if (sidebar) {
     const a = document.createElement("a");
     a.id = "hub-gear-btn";
-    a.href = "#";
-    a.title = "Extension settings";
-    a.setAttribute("aria-label", "Extension settings");
     a.className =
       "py-5 w-full flex justify-center hover:opacity-100 opacity-40";
     a.innerHTML = GEAR_SVG;
     a.onclick = (e) => {
       e.preventDefault();
-      openModal();
+      open();
     };
-    sidebarMainGroup.appendChild(a);
-    return;
-  }
-
-  if (legacyNavList) {
+    sidebar.appendChild(a);
+  } else if (legacy) {
     const li = document.createElement("li");
-    li.id = "hub-gear-item";
-
     const a = document.createElement("a");
     a.id = "hub-gear-btn";
-    a.href = "#";
-    a.className = "inactive";
-    a.title = "Extension settings";
-    a.setAttribute("aria-label", "Extension settings");
     a.innerHTML = GEAR_SVG;
     a.onclick = (e) => {
       e.preventDefault();
-      openModal();
+      open();
     };
-
     li.appendChild(a);
-    legacyNavList.appendChild(li);
-    return;
+    legacy.appendChild(li);
   }
-
-  if (oldTarget) {
-    const b = document.createElement("button");
-    b.id = "hub-gear-btn";
-    b.type = "button";
-    b.title = "Extension settings";
-    b.setAttribute("aria-label", "Extension settings");
-    b.innerHTML = GEAR_SVG;
-    b.onclick = openModal;
-    oldTarget.appendChild(b);
-    return;
-  }
-
-  const b = document.createElement("button");
-  b.id = "hub-gear-btn";
-  b.type = "button";
-  b.title = "Extension settings";
-  b.setAttribute("aria-label", "Extension settings");
-  b.innerHTML = "⚙️";
-  b.onclick = openModal;
-  b.style.position = "fixed";
-  b.style.right = "14px";
-  b.style.bottom = "14px";
-  b.style.zIndex = "9999";
-  document.body.appendChild(b);
 }
 
 export function initHubSettings(): FeatureId[] {
   const active = getActiveFeatures();
-  createModal(active);
-
   mountGearButton();
-  const iv = window.setInterval(() => {
-    mountGearButton();
-  }, 300);
-  window.setTimeout(() => window.clearInterval(iv), 8000);
-
-  return active.filter((id) => isFeatureAllowedOnPage(id));
+  const hubInterval = setInterval(mountGearButton, 500);
+  setTimeout(() => clearInterval(hubInterval), 10000);
+  return active;
 }

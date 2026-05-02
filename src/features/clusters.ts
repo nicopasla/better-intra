@@ -1,15 +1,19 @@
-import { gmGetValue, gmSetValue, gmDeleteValue } from "../lib/gm.ts";
+import { gmGetValue, gmSetValue } from "../lib/gm.ts";
 import { SCREENS, CLUSTERS, CLUSTER_CONFIG } from "./clusters.data.ts";
-import "../assets/style.css";
+
+import "@awesome.me/webawesome/dist/components/dropdown/dropdown.js";
+import "@awesome.me/webawesome/dist/components/button/button.js";
+import "@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js";
+import "@awesome.me/webawesome/dist/components/card/card.js";
 
 export async function initClusters() {
   (function () {
     "use strict";
 
-    const savedId = gmGetValue("CLUSTERS_DEFAULT_ID", null);
     const MARKERS_VISIBLE_KEY = "CLUSTERS_SHOW_MARKERS";
+    const DEFAULT_ID_KEY = "CLUSTERS_DEFAULT_ID";
 
-    const getBoolValue = (key, fallback) => {
+    const getBoolValue = (key: string, fallback: boolean) => {
       const raw = gmGetValue(key, fallback);
       if (typeof raw === "boolean") return raw;
       if (raw === null || raw === undefined) return fallback;
@@ -17,10 +21,10 @@ export async function initClusters() {
     };
 
     let markersVisible = getBoolValue(MARKERS_VISIBLE_KEY, true);
+    const savedId = gmGetValue(DEFAULT_ID_KEY, null);
 
     function applyMarkersVisibility() {
       const hidden = !markersVisible;
-
       document.documentElement.classList.toggle("markers-hidden", hidden);
       document.body?.classList.toggle("markers-hidden", hidden);
 
@@ -33,33 +37,26 @@ export async function initClusters() {
       });
     }
 
-    function updateMarkerToggleButton(btn) {
+    function updateMarkerToggleButton(btn: any) {
       if (!btn) return;
-      btn.textContent = "";
-      btn.setAttribute(
-        "title",
-        markersVisible ? "Hide markers" : "Show markers",
-      );
-      btn.setAttribute(
-        "aria-label",
-        markersVisible ? "Hide markers" : "Show markers",
-      );
+
+      if (markersVisible) {
+        btn.variant = "success";
+      } else {
+        btn.variant = "danger";
+      }
+
       btn.setAttribute("aria-pressed", String(markersVisible));
-      btn.classList.toggle("is-off", !markersVisible);
     }
 
     function hookClusterTabClicks() {
       const links = document.querySelectorAll<HTMLAnchorElement>(
         'a[href^="#cluster-"]',
       );
-
       links.forEach((link) => {
         if (link.dataset.markersHooked === "1") return;
         link.dataset.markersHooked = "1";
-
-        link.addEventListener("click", () => {
-          refreshMarkersSoon();
-        });
+        link.addEventListener("click", () => refreshMarkersSoon());
       });
     }
 
@@ -71,62 +68,78 @@ export async function initClusters() {
 
       const li = document.createElement("li");
       li.id = "cluster-li-container";
+      li.style.float = "left";
+      li.style.marginLeft = "10px";
+      li.style.marginBottom = "-1px";
+      li.style.border = "1px solid transparent";
+      li.style.borderBottom = "1px solid transparent";
+      li.style.position = "relative";
+      li.style.top = "-1px";
 
-      const options = CLUSTERS.map(
-        (c) =>
-          `<option value="${c.id}" ${savedId === c.id ? "selected" : ""}>${c.name}</option>`,
-      ).join("");
+      const currentId = gmGetValue(DEFAULT_ID_KEY, null);
+      const currentCluster = CLUSTERS.find((c) => c.id === currentId);
 
       li.innerHTML = `
-      <div class="cluster-picker">
-        <span class="cluster-picker__label">Default</span>
-        <select id="cluster-dropdown" aria-label="Default cluster">
-          <option value="">None</option>
-          ${options}
-        </select>
-        <span class="marker-toggle-desc">Markers</span>
-        <button id="marker-toggle" type="button" aria-label="Toggle markers"></button>
-      </div>
-    `;
+        <a style="
+          display: block;
+          padding: 10px 15px;
+          line-height: 1.42857143;
+        ">
+          <div class="cluster-picker" style="display: flex; align-items: center; gap: 10px;">
+            <span>Default</span>
+
+            <wa-dropdown hoist id="cluster-dropdown">
+              <wa-button slot="trigger" appearance="filled" size="m" with-caret>
+                ${currentCluster ? currentCluster.name.toUpperCase() : "Cluster"}
+              </wa-button>
+
+              ${CLUSTERS.map(
+                (c) => `
+                <wa-dropdown-item
+                  value="${c.id}"
+                  ${currentId === c.id ? "checked" : ""}
+                >
+                  ${c.name.toUpperCase()}
+                </wa-dropdown-item>
+              `,
+              ).join("")}
+
+            </wa-dropdown>
+
+            <div style="width: 1px; height: 18px; background: #ddd;"></div>
+
+            <wa-button id="marker-toggle" size="m">
+              Markers
+            </wa-button>
+          </div>
+        </a>
+      `;
 
       list.appendChild(li);
 
-      const dropdown = li.querySelector<HTMLSelectElement>("#cluster-dropdown");
-      dropdown?.addEventListener("change", () => {
-        const val = dropdown.value;
+      const dropdown = li.querySelector("#cluster-dropdown");
+      dropdown?.addEventListener("wa-select", (e: any) => {
+        const item = e.detail.item;
+        const val = item.value;
+        if (!val) return;
 
-        if (!val) {
-          gmDeleteValue("CLUSTERS_DEFAULT_ID");
-          if (window.location.hash) {
-            history.replaceState(
-              null,
-              "",
-              window.location.pathname + window.location.search,
-            );
-          }
-          return;
-        }
-
-        gmSetValue("CLUSTERS_DEFAULT_ID", val);
+        gmSetValue(DEFAULT_ID_KEY, val);
         window.location.hash = `#cluster-${val}`;
+
+        const btn = li.querySelector("wa-button[slot='trigger']");
+        if (btn) btn.textContent = item.textContent;
+
         forceTab(val);
       });
 
-      const markerToggle = li.querySelector("#marker-toggle");
+      const markerToggle = li.querySelector<HTMLElement>("#marker-toggle");
       updateMarkerToggleButton(markerToggle);
-
-      markerToggle?.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
 
       markerToggle?.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-
         markersVisible = !markersVisible;
         gmSetValue(MARKERS_VISIBLE_KEY, markersVisible);
-
         refreshMarkersSoon();
         updateMarkerToggleButton(markerToggle);
       });
@@ -135,15 +148,12 @@ export async function initClusters() {
     function initClusterFixer() {
       const checkInterval = setInterval(() => {
         injectClusterPicker();
-
         const hashMatch = window.location.hash.match(/cluster-(\d+)/);
         const targetId = hashMatch ? hashMatch[1] : savedId;
-
         if (targetId && forceTab(targetId)) {
           clearInterval(checkInterval);
         }
       }, 100);
-
       setTimeout(() => clearInterval(checkInterval), 5000);
     }
 
@@ -169,18 +179,15 @@ export async function initClusters() {
     function refreshMarkersSoon() {
       if (refreshQueued) return;
       refreshQueued = true;
-
       setTimeout(() => {
         refreshMarkersNow();
-
         requestAnimationFrame(() => {
           refreshMarkersNow();
+          setTimeout(() => {
+            refreshMarkersNow();
+            refreshQueued = false;
+          }, 160);
         });
-
-        setTimeout(() => {
-          refreshMarkersNow();
-          refreshQueued = false;
-        }, 160);
       }, 0);
     }
 
@@ -235,33 +242,26 @@ export async function initClusters() {
       direction: string,
     ) {
       const ox = (width - CLUSTER_CONFIG.BAR_SIZE) / 2;
-      const oy = (height - CLUSTER_CONFIG.BAR_SIZE) / 2;
       const midX = x + width / 2;
       const midY = y + height / 2;
 
       if (direction === "UP") {
-        const yPos = y + 1,
-          sx = x + ox,
-          ex = x + ox + CLUSTER_CONFIG.BAR_SIZE;
-        return `M ${sx} ${yPos} Q ${midX} ${yPos - CLUSTER_CONFIG.CURVE_DEPTH} ${ex} ${yPos}`;
+        const yPos = y + 1;
+        return `M ${x + ox} ${yPos} Q ${midX} ${yPos - CLUSTER_CONFIG.CURVE_DEPTH} ${x + ox + CLUSTER_CONFIG.BAR_SIZE} ${yPos}`;
       }
       if (direction === "DOWN") {
-        const yPos = y + height - 1,
-          sx = x + ox,
-          ex = x + ox + CLUSTER_CONFIG.BAR_SIZE;
-        return `M ${sx} ${yPos} Q ${midX} ${yPos + CLUSTER_CONFIG.CURVE_DEPTH} ${ex} ${yPos}`;
+        const yPos = y + height - 1;
+        return `M ${x + ox} ${yPos} Q ${midX} ${yPos + CLUSTER_CONFIG.CURVE_DEPTH} ${x + ox + CLUSTER_CONFIG.BAR_SIZE} ${yPos}`;
       }
       if (direction === "LEFT") {
-        const xPos = x + 1,
-          sy = y + oy,
-          ey = y + oy + CLUSTER_CONFIG.BAR_SIZE;
-        return `M ${xPos} ${sy} Q ${xPos - CLUSTER_CONFIG.CURVE_DEPTH} ${midY} ${xPos} ${ey}`;
+        const xPos = x + 1;
+        const oy = (height - CLUSTER_CONFIG.BAR_SIZE) / 2;
+        return `M ${xPos} ${y + oy} Q ${xPos - CLUSTER_CONFIG.CURVE_DEPTH} ${midY} ${xPos} ${y + oy + CLUSTER_CONFIG.BAR_SIZE}`;
       }
       if (direction === "RIGHT") {
-        const xPos = x + width - 1,
-          sy = y + oy,
-          ey = y + oy + CLUSTER_CONFIG.BAR_SIZE;
-        return `M ${xPos} ${sy} Q ${xPos + CLUSTER_CONFIG.CURVE_DEPTH} ${midY} ${xPos} ${ey}`;
+        const xPos = x + width - 1;
+        const oy = (height - CLUSTER_CONFIG.BAR_SIZE) / 2;
+        return `M ${xPos} ${y + oy} Q ${xPos + CLUSTER_CONFIG.CURVE_DEPTH} ${midY} ${xPos} ${y + oy + CLUSTER_CONFIG.BAR_SIZE}`;
       }
       return "";
     }
@@ -271,9 +271,7 @@ export async function initClusters() {
         const svgRoot = document.querySelector<SVGSVGElement>("svg");
         if (svgRoot) attachSvgObserver(svgRoot);
       };
-
       findAndAttach();
-
       if (!bodyObserver) {
         bodyObserver = new MutationObserver(() => {
           findAndAttach();
@@ -283,13 +281,6 @@ export async function initClusters() {
         });
         bodyObserver.observe(document.body, { childList: true, subtree: true });
       }
-
-      [50, 150, 400, 900, 1500].forEach((ms) => {
-        setTimeout(() => {
-          findAndAttach();
-          refreshMarkersSoon();
-        }, ms);
-      });
     }
 
     function getClusterTabsList() {
@@ -303,14 +294,12 @@ export async function initClusters() {
       return null;
     }
 
-    function forceTab(id) {
+    function forceTab(id: string) {
       const el = document.querySelector<HTMLAnchorElement>(
         `a[href="#cluster-${id}"]`,
       );
       if (!el) return false;
-
       el.click();
-
       const parent = el.parentElement;
       const list = parent?.parentElement;
       if (parent && list) {
@@ -325,13 +314,11 @@ export async function initClusters() {
     function attachSvgObserver(svgRoot: SVGSVGElement) {
       if (!svgRoot || svgRoot === observedSvgRoot) return;
       if (svgObserver) svgObserver.disconnect();
-
       observedSvgRoot = svgRoot;
       svgObserver = new MutationObserver(() => {
         scheduleApplyManualScreens();
         refreshMarkersSoon();
       });
-
       svgObserver.observe(svgRoot, {
         childList: true,
         subtree: true,
@@ -346,17 +333,11 @@ export async function initClusters() {
           "transform",
         ],
       });
-
       refreshMarkersSoon();
     }
 
     initObserver();
     initClusterFixer();
-    refreshMarkersSoon();
-    setTimeout(refreshMarkersSoon, 120);
-    setTimeout(refreshMarkersSoon, 400);
-    setTimeout(refreshMarkersSoon, 1000);
   })();
-
   console.log("Clusters loaded!");
 }

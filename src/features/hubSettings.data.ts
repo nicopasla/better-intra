@@ -2,16 +2,19 @@ export const FEATURE_DEFS = [
   {
     id: "logtime",
     name: "Logtime",
-    desc: "Redesign the logtime to show weekly and total hours on 42 Intra v3.",
+    icon: "clock",
+    desc: "Redesign the logtime to show weekly and total hours.",
   },
   {
     id: "clusters",
     name: "Clusters",
+    icon: "grip-vertical",
     desc: "Adds iMac direction markers and a default cluster picker with saved preference.",
   },
   {
     id: "profile",
     name: "Profile",
+    icon: "user",
     desc: "Improves readability and allows local profile/background image customization.",
   },
 ] as const;
@@ -21,7 +24,10 @@ export const FEATURE_IDS = new Set<FeatureId>(FEATURE_DEFS.map((f) => f.id));
 
 export const STORAGE_KEY = "ACTIVE_SCRIPTS";
 
-export const FEATURE_PAGE_GUARDS: Record<FeatureId, (loc: Location) => boolean> = {
+export const FEATURE_PAGE_GUARDS: Record<
+  FeatureId,
+  (loc: Location) => boolean
+> = {
   logtime: (loc) => loc.hostname === "profile-v3.intra.42.fr",
   profile: (loc) => loc.hostname === "profile-v3.intra.42.fr",
   clusters: (loc) =>
@@ -43,17 +49,25 @@ export const HUB_INFO = {
   license: "MIT",
 } as const;
 
-export type SettingKind = "toggle" | "number" | "text" | "select";
+export type SettingKind =
+  | "toggle"
+  | "number"
+  | "text"
+  | "select"
+  | "color"
+  | "radio-group"
+  | "divider";
 
 export type HubSettingDef = {
   feature: FeatureId;
-  key: string;
   label: string;
-  desc: string;
+  key?: string;
+  desc?: string;
   kind: SettingKind;
   nullable?: boolean;
   defaultValue?: unknown;
   options?: readonly { label: string; value: string }[];
+  grid?: boolean;
   min?: number;
   max?: number;
   step?: number;
@@ -71,6 +85,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       min: 0,
       step: 1,
       defaultValue: 140,
+      grid: true,
     },
     {
       feature: "logtime",
@@ -79,6 +94,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       desc: "Displays your average hours per day.",
       kind: "toggle",
       defaultValue: true,
+      grid: true,
     },
     {
       feature: "logtime",
@@ -87,6 +103,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       desc: "Shows the goal indicator in the logtime view.",
       kind: "toggle",
       defaultValue: true,
+      grid: true,
     },
     {
       feature: "logtime",
@@ -95,37 +112,41 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       desc: "Enables the taco visual markers in the calendar.",
       kind: "toggle",
       defaultValue: false,
+      grid: true,
     },
     {
       feature: "logtime",
       key: "LOGTIME_SHOW_DAYS_MODE",
       label: "Day labels mode",
       desc: "Chooses how the day labels are displayed.",
-      kind: "select",
+      kind: "radio-group",
       defaultValue: "date",
       options: [
-        { label: "Date only", value: "date" },
-        { label: "Date + day names", value: "both" },
-        { label: "Day names only", value: "days" },
+        { label: "17/04", value: "date" },
+        { label: "17/04 (2 days ago)", value: "both" },
+        { label: "2 days ago", value: "days" },
       ],
+      grid: false,
     },
     {
       feature: "logtime",
       key: "LOGTIME_CALENDAR_COLOR",
       label: "Calendar color",
       desc: "Accent color used for the calendar.",
-      kind: "text",
+      kind: "color",
       placeholder: "#00BCBA",
       defaultValue: "#00BCBA",
+      grid: true,
     },
     {
       feature: "logtime",
       key: "LOGTIME_LABELS_COLOR",
       label: "Labels color",
       desc: "Accent color used for labels and totals.",
-      kind: "text",
+      kind: "color",
       placeholder: "#26a641",
       defaultValue: "#26a641",
+      grid: true,
     },
   ],
   clusters: [
@@ -151,9 +172,71 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
   profile: [
     {
       feature: "profile",
+      label: "General",
+      kind: "divider",
+    },
+    {
+      feature: "profile",
+      key: "PROFILE_SLOTS_REDIRECTION",
+      label: "Slots button redirection",
+      desc: "Redirects the 'Manage slots' button to the Slots webpage.",
+      kind: "toggle",
+      defaultValue: true,
+    },
+
+    {
+      feature: "profile",
+      label: "Events",
+      kind: "divider",
+    },
+    {
+      feature: "profile",
+      key: "PROFILE_CAMPUS_FILTER",
+      label: "Campus Display Mode",
+      desc: "Choose which campus events to display on your profile.",
+      kind: "radio-group",
+      defaultValue: "all",
+      options: [
+        { label: "Show All", value: "all" },
+        { label: "Brussels", value: "brussels" },
+        { label: "Antwerp", value: "antwerp" },
+      ],
+    },
+    {
+      feature: "profile",
+      key: "PROFILE_EVENT_TYPE_FILTER",
+      label: "Event visibility",
+      desc: "Choose which types of events you want to see.",
+      kind: "radio-group",
+      defaultValue: "all",
+      options: [
+        { label: "Show All", value: "all" },
+        { label: "Exams", value: "exam" },
+        { label: "Pedagogy", value: "pedago" },
+        { label: "Social", value: "social" },
+      ],
+    },
+
+    {
+      feature: "profile",
+      label: "Visual",
+      kind: "divider",
+    },
+    {
+      feature: "profile",
       key: "PROFILE_IMAGE_URL",
       label: "Profile image URL",
       desc: "Overrides the profile avatar with a custom image URL.",
+      kind: "text",
+      nullable: true,
+      placeholder: "URL",
+      defaultValue: "",
+    },
+    {
+      feature: "profile",
+      key: "PROFILE_BANNER_URL",
+      label: "Banner image URL",
+      desc: "Overrides the profile banner image.",
       kind: "text",
       nullable: true,
       placeholder: "",
@@ -174,7 +257,6 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
 
 export type ShowDaysMode = "date" | "both" | "days";
 
-// 1. Définir le type d'abord
 export type LogtimeConfig = {
   LOGTIME_GOAL_HOURS: number;
   LOGTIME_SHOW_AVERAGE: boolean;
@@ -185,14 +267,14 @@ export type LogtimeConfig = {
   LOGTIME_LABELS_COLOR: string;
 };
 
-export const DEFAULT_LOGTIME_CONFIG: LogtimeConfig = HUB_SETTING_DEFS.logtime.reduce(
-  (acc, setting) => {
-    (acc as any)[setting.key] = setting.defaultValue;
+export const DEFAULT_LOGTIME_CONFIG: LogtimeConfig =
+  HUB_SETTING_DEFS.logtime.reduce((acc, setting) => {
+    if (setting.key) {
+      (acc as any)[setting.key] = setting.defaultValue;
+    }
     return acc;
-  },
-  {} as LogtimeConfig
-);
+  }, {} as LogtimeConfig);
 
 export const LOGTIME_CONFIG_KEYS = Object.keys(
-  DEFAULT_LOGTIME_CONFIG
+  DEFAULT_LOGTIME_CONFIG,
 ) as (keyof LogtimeConfig)[];

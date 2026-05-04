@@ -1,3 +1,12 @@
+export const HUB_INFO = {
+  name: "Better Intra",
+  version: "0.0.1",
+  author: "https://github.com/nicopasla",
+  github: "https://github.com/nicopasla/42-userscripts",
+  issues: "https://github.com/nicopasla/42-userscripts/issues",
+  license: "MIT",
+} as const;
+
 export const FEATURE_DEFS = [
   {
     id: "logtime",
@@ -9,7 +18,7 @@ export const FEATURE_DEFS = [
     id: "clusters",
     name: "Clusters",
     icon: "grip-vertical",
-    desc: "Adds iMac direction markers and a default cluster picker with saved preference.",
+    desc: "Adds 'chair' direction markers and a default cluster picker with saved preference.",
   },
   {
     id: "profile",
@@ -24,35 +33,11 @@ export const FEATURE_IDS = new Set<FeatureId>(FEATURE_DEFS.map((f) => f.id));
 
 export const STORAGE_KEY = "ACTIVE_SCRIPTS";
 
-export const FEATURE_PAGE_GUARDS: Record<
-  FeatureId,
-  (loc: Location) => boolean
-> = {
-  logtime: (loc) => loc.hostname === "profile-v3.intra.42.fr",
-  profile: (loc) => loc.hostname === "profile-v3.intra.42.fr",
-  clusters: (loc) =>
-    loc.hostname === "meta.intra.42.fr" && loc.pathname.startsWith("/clusters"),
-};
-
-export const FEATURE_PAGE_URLS: Record<FeatureId, string> = {
-  logtime: "https://profile-v3.intra.42.fr",
-  profile: "https://profile-v3.intra.42.fr",
-  clusters: "https://meta.intra.42.fr/clusters",
-};
-
-export const HUB_INFO = {
-  name: "42 Intra Hub",
-  version: "v1.0.0",
-  author: "https://github.com/nicopasla",
-  github: "https://github.com/nicopasla/42-userscripts",
-  issues: "https://github.com/nicopasla/42-userscripts/issues",
-  license: "MIT",
-} as const;
-
 export type SettingKind =
   | "toggle"
   | "number"
   | "text"
+  | "url"
   | "select"
   | "color"
   | "radio-group"
@@ -79,8 +64,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     {
       feature: "logtime",
       key: "LOGTIME_GOAL_HOURS",
-      label: "Weekly goal",
-      desc: "Sets the target number of hours used by the progress display.",
+      label: "Monthly goal",
+      desc: "Sets the target number of hour.",
       kind: "number",
       min: 0,
       step: 1,
@@ -100,7 +85,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       feature: "logtime",
       key: "LOGTIME_SHOW_GOAL",
       label: "Show goal",
-      desc: "Shows the goal indicator in the logtime view.",
+      desc: "Shows the goal indicator.",
       kind: "toggle",
       defaultValue: true,
       grid: true,
@@ -109,7 +94,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       feature: "logtime",
       key: "LOGTIME_SHOW_TACOS",
       label: "Show tacos",
-      desc: "Enables the taco visual markers in the calendar.",
+      desc: "Enables the taco visual markers.",
       kind: "toggle",
       defaultValue: false,
       grid: true,
@@ -157,16 +142,17 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       desc: "Shows the direction markers on the cluster screen.",
       kind: "toggle",
       defaultValue: true,
+      grid: true,
     },
     {
       feature: "clusters",
       key: "CLUSTERS_DEFAULT_ID",
       label: "Default cluster",
       desc: "Prefills a cluster ID when the page opens.",
-      kind: "text",
-      nullable: true,
+      kind: "number",
       placeholder: "",
       defaultValue: "",
+      grid: true,
     },
   ],
   profile: [
@@ -179,7 +165,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       feature: "profile",
       key: "PROFILE_SLOTS_REDIRECTION",
       label: "Slots button redirection",
-      desc: "Redirects the 'Manage slots' button to the Slots webpage.",
+      desc: "Redirects the 'Manage slots' button to the proper Slots webpage.",
       kind: "toggle",
       defaultValue: true,
     },
@@ -226,8 +212,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       feature: "profile",
       key: "PROFILE_IMAGE_URL",
       label: "Profile image URL",
-      desc: "Overrides the profile avatar with a custom image URL.",
-      kind: "text",
+      desc: "Overrides the profile avatar image.",
+      kind: "url",
       nullable: true,
       placeholder: "URL",
       defaultValue: "",
@@ -237,7 +223,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       key: "PROFILE_BANNER_URL",
       label: "Banner image URL",
       desc: "Overrides the profile banner image.",
-      kind: "text",
+      kind: "url",
       nullable: true,
       placeholder: "",
       defaultValue: "",
@@ -247,7 +233,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       key: "PROFILE_BACKGROUND_URL",
       label: "Background image URL",
       desc: "Overrides the profile background image.",
-      kind: "text",
+      kind: "url",
       nullable: true,
       placeholder: "",
       defaultValue: "",

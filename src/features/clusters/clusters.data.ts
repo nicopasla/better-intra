@@ -1,9 +1,6 @@
 export const CLUSTER_CONFIG = {
   COLOR: "#00babc",
-  THICKNESS: 3,
-  OPACITY: "0.4",
-  BAR_SIZE: 16,
-  CURVE_DEPTH: 1,
+  OPACITY: "0.9",
 } as const;
 
 function rowScreens(row, positions, dir) {

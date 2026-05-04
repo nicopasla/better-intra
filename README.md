@@ -1,71 +1,44 @@
 # 42 Userscripts
 
-Collection of Userscripts to improve UI and UX of the 42 Intra v3.
+Collection of features inside a single Userscript that improve UI and UX of the 42 Intra v3.
 
-At some point all of these Userscripts will be added to a single Firefox
-extension, for now it's easier to maintain small Userscripts to fix specific bugs
+## Quick Install
 
-## Userscripts
+Install [Violentmonkey](https://violentmonkey.github.io/) and [install](https://github.com/nicopasla/42-userscripts/releases/latest/download/better-intra.user.js) the script from the releases pages.
 
-### [logtime.user.js](https://raw.githubusercontent.com/nicopasla/42-userscripts/main/logtime.user.js)
+## Features
+
+### Logtime
 
 Replaces the default logtime calendar with a more practical and accessible view using the same data.
 
 <img alt="Logtime screenshot" src="images/logtime.png"/>
+<img alt="Logtime settings" src="images/logtime-settings.png"/>
 
-- Shows weekly and total hours
-- Average is calculated on active days
-- Data comes from `locations_stats` loaded with the profile
-- Last connection status is derived from `locations_stats`
-- Settings are stored in local storage
+### Clusters
 
-### [clusters.user.js](https://raw.githubusercontent.com/nicopasla/42-userscripts/main/clusters.user.js)
+Adds a rectangle to mimic a chair for the direction of the person and a default cluster picker with saved preference.
 
-Adds iMac direction markers and a default cluster picker with saved preference.
+<img alt="Clusters settings" src="images/clusters-settings.png"/>
 
-- Select a default cluster to auto-open on the clusters page
-- Toggle iMac direction markers on/off
+### Profile
 
-### [profile.user.js](https://raw.githubusercontent.com/nicopasla/42-userscripts/main/profile.user.js)
-
-Improves readability and allows local profile/background image customization.
+Improves readability, allows local profile/background image customization, add a new button to sort events.
 
 <img alt="Profile screenshot" src="images/profile.png"/>
+<img alt="Profile settings" src="images/profile-settings.png"/>
+<img alt="Events screenshot" src="images/profile-events.png"/>
 
-- Bigger and more readable text
-- Change profile/background images by clicking your profile picture (local only)
-- Image settings are stored in local storage
-
-### [shortcuts.user.js](https://raw.githubusercontent.com/nicopasla/42-userscripts/main/shortcuts.user.js)
-
-Add up to 8 shortcuts next to the announcements
-
-<img alt="Profile screenshot" src="images/shortcuts.png"/>
-
-- Add up to 8 shortcuts to your Intra
-
-### [youtube.user.js](https://raw.githubusercontent.com/nicopasla/42-userscripts/main/youtube.user.js)
-
-Totally useless Youtube player inside Intra v3
-
-<img alt="Youtube screenshot" src="images/youtube.png"/>
-
-- Last played video is saved
-- Could be reused later for notes/stats/widgets
-
-## Quick Install
-
-Click any script link in the [Userscripts](#userscripts) section, then confirm install in Tampermonkey/Violentmonkey.
 
 ## Installation
 
-1. Install [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/) for your browser.
+1. Install [Violentmonkey](https://violentmonkey.github.io/) or [Tampermonkey](https://www.tampermonkey.net/) for your browser.
 2. Open any userscript in the [Userscripts](#userscripts) section by clicking the file name.
 3. Your userscript manager will prompt you to install it.
 
 ## Uninstall
 
-Disable or remove scripts from your userscript manager.
+Disable or remove the script from your userscript manager.
 
 ## Disclaimer
 
@@ -78,13 +51,15 @@ Always use at your own risk!
 Tested only on Firefox (Old and new)
 
 | Browser | Tampermonkey | Violentmonkey |
-| ------- | ------------ | ------------- |
-| Firefox | ✅           | ✅            |
+| :-----: | :----------: | :-----------: |
+| Firefox |      ✅      |      ✅       |
+| Chrome  |      ❓      |      ❓       |
+|  Brave  |      ❓      |      ❓       |
 
 ## Privacy
 
-- These scripts are only working on local.
-- Settings are stored locally (local storage / userscript storage).
+- This script is only working on local.
+- Settings are stored locally (userscript storage).
 
 ## Changelog
 
@@ -159,6 +134,10 @@ Tested only on Firefox (Old and new)
 #### [0.0.1] - 2026-04-17
 
 - Initial version with 8 shortcuts to customize
+
+## TODO
+
+- At some point it should be converted into a single Firefox extension, for now it's easier to maintain a single Userscript to fix specific bugs
 
 ## License
 

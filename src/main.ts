@@ -1,13 +1,13 @@
-import { initLogtime } from "./features/logtime.ts";
-import { initClusters } from "./features/clusters.ts";
-import { initProfile } from "./features/profile.ts";
-import { initHubSettings } from "./features/hubSettings.ts";
+import { initLogtime } from "./features/logtime/logtime.ts";
+import { initClusters } from "./features/clusters/clusters.ts";
+import { initProfile } from "./features/profile/profile.ts";
+import { initHubSettings } from "./features/hub/hubSettings.ts";
 import { gm } from "./lib/gm.ts";
 
-console.log(gm.get("42 Hub ready...", false));
+console.log(gm.get("Better Intra ready...", false));
 
 const bootstrap = async () => {
-  console.log("42 Hub started...");
+  console.log("Better Intra started...");
 
   const active = initHubSettings();
   const enabled = (id: "logtime" | "clusters" | "profile") =>

@@ -1,4 +1,4 @@
-import { gmGetValue } from "../lib/gm.ts";
+import { gmGetValue } from "../../lib/gm.ts";
 
 export async function updateEventFilters() {
   const settings = {

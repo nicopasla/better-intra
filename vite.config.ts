@@ -10,6 +10,7 @@ export default defineConfig({
       userscript: {
         name: "Better Intra",
         namespace: "better-intra/nicopasla",
+        description:"Collection of features inside a single Userscript that improve UI and UX of the 42 Intra v3.",
         match: ["https://profile-v3.intra.42.fr/*", "https://*.intra.42.fr/*"],
         grant: ["GM_getValue", "GM_setValue", "GM_deleteValue"],
         updateURL:

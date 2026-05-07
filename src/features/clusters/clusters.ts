@@ -110,15 +110,15 @@ export async function initClusters() {
     hookClusterTabClicks();
     const li = document.createElement("li");
     li.id = "cluster-li-container";
-    Object.assign(li.style, { float: "left", marginLeft: "-14px", display: "inline-flex", alignItems: "center", height: "100%" });
+    Object.assign(li.style, { float: "left", marginLeft: "-16px", display: "inline-flex", alignItems: "center", height: "100%" });
 
     const currentId = gmGetValue(DEFAULT_ID_KEY, null);
     const currentCluster = CLUSTERS.find((c) => String(c.id) === String(currentId)) || CLUSTERS[0];
 
     li.innerHTML = `
       <div style="display: flex; align-items: center; padding: 10px 15px; line-height: 1.42857143; font-family: inherit;">
-        <div style="width: 1px; height: 16px; background: #ddd; margin-right: 15px;"></div>
-        <div style="position: relative; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+        <div style="width: 1px; height: 16px; background: #ddd; margin-right: 16px;"></div>
+        <div style="position: relative; display: flex; align-items: center; margin-right: 14px; gap: 6px; cursor: pointer;">
           <span style="color: #888; font-size: 13px; text-transform: lowercase; pointer-events: none;">default:</span>
           <span id="current-cluster-display" style="color: #00a8a8; font-size: 14px; text-transform: lowercase; pointer-events: none;">
             ${currentCluster.name.toLowerCase()}
@@ -127,7 +127,8 @@ export async function initClusters() {
             ${CLUSTERS.map((c, i) => `<option value="${c.id}" ${currentId === c.id || (!currentId && i === 0) ? "selected" : ""}>${c.name.toLowerCase()}</option>`).join("")}
           </select>
         </div>
-        <span id="marker-toggle" style="margin-left: 15px; font-size: 13px; cursor: pointer; text-transform: lowercase; user-select: none; transition: all 0.2s; padding: 2px 6px; border-radius: 3px;">markers</span>
+        <div style="width: 1px; height: 16px; background: #ddd; margin-right: 15px;"></div>
+        <span id="marker-toggle" style="margin-left: -16px; font-size: 13px; cursor: pointer; text-transform: lowercase; user-select: none; transition: all 0.2s; padding: 2px 6px; border-radius: 3px;">markers</span>
       </div>`;
 
     list.appendChild(li);

@@ -2,8 +2,8 @@ export const HUB_INFO = {
   name: "Better Intra",
   version: "0.0.1",
   author: "https://github.com/nicopasla",
-  github: "https://github.com/nicopasla/42-userscripts",
-  issues: "https://github.com/nicopasla/42-userscripts/issues",
+  github: "https://github.com/nicopasla/better-intra",
+  issues: "https://github.com/nicopasla/better-intra/issues",
   license: "MIT",
 } as const;
 
@@ -43,6 +43,9 @@ export type SettingKind =
   | "radio-group"
   | "divider";
 
+export const INTRA_FONT =
+  'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
 export type HubSettingDef = {
   feature: FeatureId;
   label: string;
@@ -53,6 +56,7 @@ export type HubSettingDef = {
   defaultValue?: unknown;
   options?: readonly { label: string; value: string }[];
   grid?: boolean;
+  fullWidth?: boolean;
   min?: number;
   max?: number;
   step?: number;
@@ -99,6 +103,17 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       defaultValue: false,
       grid: true,
     },
+
+    {
+      feature: "logtime",
+      key: "DISABLE_ANIMATIONS",
+      label: "Disable Animations",
+      desc: "Reduces motion and removes transition effects.",
+      kind: "toggle",
+      defaultValue: false,
+      grid: true,
+    },
+
     {
       feature: "logtime",
       key: "LOGTIME_SHOW_DAYS_MODE",
@@ -214,6 +229,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Profile image URL",
       desc: "Overrides the profile avatar image.",
       kind: "url",
+      fullWidth: true,
       nullable: true,
       placeholder: "URL",
       defaultValue: "",
@@ -224,6 +240,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Banner image URL",
       desc: "Overrides the profile banner image.",
       kind: "url",
+      fullWidth: true,
       nullable: true,
       placeholder: "",
       defaultValue: "",
@@ -234,33 +251,10 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Background image URL",
       desc: "Overrides the profile background image.",
       kind: "url",
+      fullWidth: true,
       nullable: true,
       placeholder: "",
       defaultValue: "",
     },
   ],
 };
-
-export type ShowDaysMode = "date" | "both" | "days";
-
-export type LogtimeConfig = {
-  LOGTIME_GOAL_HOURS: number;
-  LOGTIME_SHOW_AVERAGE: boolean;
-  LOGTIME_SHOW_GOAL: boolean;
-  LOGTIME_SHOW_TACOS: boolean;
-  LOGTIME_SHOW_DAYS_MODE: ShowDaysMode;
-  LOGTIME_CALENDAR_COLOR: string;
-  LOGTIME_LABELS_COLOR: string;
-};
-
-export const DEFAULT_LOGTIME_CONFIG: LogtimeConfig =
-  HUB_SETTING_DEFS.logtime.reduce((acc, setting) => {
-    if (setting.key) {
-      (acc as any)[setting.key] = setting.defaultValue;
-    }
-    return acc;
-  }, {} as LogtimeConfig);
-
-export const LOGTIME_CONFIG_KEYS = Object.keys(
-  DEFAULT_LOGTIME_CONFIG,
-) as (keyof LogtimeConfig)[];

@@ -2,9 +2,7 @@ import { initLogtime } from "./features/logtime/logtime.ts";
 import { initClusters } from "./features/clusters/clusters.ts";
 import { initProfile } from "./features/profile/profile.ts";
 import { initHubSettings } from "./features/hub/hubSettings.ts";
-import { gm } from "./lib/gm.ts";
 
-console.log(gm.get("Better Intra ready...", false));
 
 const bootstrap = async () => {
   console.log("Better Intra started...");

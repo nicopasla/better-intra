@@ -1,14 +1,6 @@
 import { gmGetValue } from "../../lib/gm.ts";
-import {
-  DEFAULT_LOGTIME_CONFIG,
-  LOGTIME_CONFIG_KEYS,
-  type LogtimeConfig,
-  type ShowDaysMode,
-  HUB_SETTING_DEFS,
-} from "../hub/hubSettings.data.ts";
 import LOGTIME_CSS from "./logtime.css?inline";
 
-const DEBUG = false;
 const MAX_INTENSITY_SECS = 3600 * 12;
 const CELL_RADIUS = "6px";
 const PAST_MONTHS_OPACITY = 0.8;
@@ -22,12 +14,22 @@ const COLORS = {
 const INTRA_FONT =
   'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
-const CONFIG: LogtimeConfig = { ...DEFAULT_LOGTIME_CONFIG };
-const rgbaCache = new Map<string, string>();
+const getSettings = async () => ({
+  goal_hours: await gmGetValue<number>("LOGTIME_GOAL_HOURS", 140),
+  show_average: await gmGetValue<boolean>("LOGTIME_SHOW_AVERAGE", true),
+  show_goal: await gmGetValue<boolean>("LOGTIME_SHOW_GOAL", true),
+  show_tacos: await gmGetValue<boolean>("LOGTIME_SHOW_TACOS", false),
+  show_days_mode: await gmGetValue<"date" | "both" | "days">(
+    "LOGTIME_SHOW_DAYS_MODE",
+    "date",
+  ),
+  calendar_color: await gmGetValue<string>("LOGTIME_CALENDAR_COLOR", "#00BCBA"),
+  labels_color: await gmGetValue<string>("LOGTIME_LABELS_COLOR", "#26a641"),
+  disable_animations: await gmGetValue<boolean>("DISABLE_ANIMATIONS", false),
+});
+let CONFIG: Awaited<ReturnType<typeof getSettings>>;
 
-const dbg = (...args: unknown[]) => {
-  if (DEBUG) console.debug("[logtime]", ...args);
-};
+const rgbaCache = new Map<string, string>();
 
 const fmtHours = (secs: number): string => {
   const h = Math.floor(secs / 3600);
@@ -46,84 +48,45 @@ function hexToRgba(hex: string, opacity: number): string {
   return val;
 }
 
-async function ensureWA() {
-  if (!document.getElementById("wa-styles-bundle")) {
-    const link = document.createElement("link");
-    link.id = "wa-styles-bundle";
-    link.rel = "stylesheet";
-    link.href =
-      "https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@latest/dist/styles/themes/default.css";
-    document.head.appendChild(link);
-  }
-  await import("@awesome.me/webawesome/dist/components/badge/badge.js");
-}
-
-async function loadConfig(): Promise<void> {
-  for (const key of LOGTIME_CONFIG_KEYS) {
-    const def = HUB_SETTING_DEFS.logtime.find((s) => s.key === key);
-    if (!def) continue;
-    const stored = await gmGetValue(key, DEFAULT_LOGTIME_CONFIG[key]);
-    const configTarget = CONFIG as any;
-
-    if (def.kind === "number") {
-      const n = Number(stored);
-      if (!isNaN(n)) configTarget[key] = n;
-    } else if (def.kind === "toggle") {
-      configTarget[key] = stored === true || String(stored) === "true";
-    } else {
-      configTarget[key] = stored;
-    }
-  }
-}
-
 function getFetchUrl(input: RequestInfo | URL): string {
-    if (typeof input === "string") return input;
-    if (input instanceof URL) return input.toString();
-    if (typeof Request !== "undefined" && input instanceof Request)
-      return input.url;
-    return String(input ?? "");
-  }
-  
- function isStringMap(v: unknown): v is Record<string, string> {
-    if (!v || typeof v !== "object") return false;
-    return Object.values(v as Record<string, unknown>).every(
-      (x) => typeof x === "string",
-    );
-  }
+  if (typeof input === "string") return input;
+  if (input instanceof URL) return input.toString();
+  if (typeof Request !== "undefined" && input instanceof Request)
+    return input.url;
+  return String(input ?? "");
+}
+
+function isStringMap(v: unknown): v is Record<string, string> {
+  if (!v || typeof v !== "object") return false;
+  return Object.values(v as Record<string, unknown>).every(
+    (x) => typeof x === "string",
+  );
+}
 
 function extractStats(payload: unknown): Record<string, string> | null {
-    dbg("extractStats:start", {
-      type: typeof payload,
-      isObject: !!payload && typeof payload === "object",
-    });
+  if (!payload || typeof payload !== "object") return null;
 
-    if (!payload || typeof payload !== "object") return null;
+  const p = payload as {
+    locations_stats?: unknown;
+    data?: { locations_stats?: unknown };
+  };
 
-    const p = payload as {
-      locations_stats?: unknown;
-      data?: { locations_stats?: unknown };
-    };
-
-    if (isStringMap(p.locations_stats)) {
-      dbg("extractStats:from", "locations_stats");
-      return p.locations_stats;
-    }
-    if (isStringMap(p.data?.locations_stats)) {
-      dbg("extractStats:from", "data.locations_stats");
-      return p.data.locations_stats;
-    }
-    if (isStringMap(payload)) {
-      dbg("extractStats:from", "direct");
-      return payload;
-    }
-
-    dbg("extractStats:none");
-    return null;
+  if (isStringMap(p.locations_stats)) {
+    return p.locations_stats;
   }
+  if (isStringMap(p.data?.locations_stats)) {
+    return p.data.locations_stats;
+  }
+  if (isStringMap(payload)) {
+    return payload;
+  }
+
+  return null;
+}
 
 const getLastSeenFormatted = (
   stats: Record<string, string>,
-  mode: ShowDaysMode = "date",
+  mode: "date" | "both" | "days" = "date",
 ): string => {
   const activeDays = Object.entries(stats)
     .filter(([, time]) => time !== "00:00:00")
@@ -154,18 +117,27 @@ const getLastSeenFormatted = (
 };
 
 function setupStyles() {
-  if (!document.head || document.getElementById("logtime-custom-styles")) return;
+  if (!document.head || document.getElementById("logtime-custom-styles"))
+    return;
 
   const styleEl = document.createElement("style");
   styleEl.id = "logtime-custom-styles";
 
+  const disableAnimCss = CONFIG.disable_animations
+    ? `.lt-box-container *, .lt-box-container *::before, .lt-box-container *::after { 
+        animation: none !important; 
+        transition: none !important; 
+      }`
+    : "";
+
   styleEl.textContent = `
     :root {
       --intra-font: ${INTRA_FONT};
-      --border-color: ${CONFIG?.LOGTIME_LABELS_COLOR};
-      --calendar-color: ${CONFIG?.LOGTIME_CALENDAR_COLOR};
+      --border-color: ${CONFIG?.labels_color};
+      --calendar-color: ${CONFIG?.calendar_color};
     }
     ${LOGTIME_CSS}
+    ${disableAnimCss}
   `;
 
   document.head.appendChild(styleEl);
@@ -187,7 +159,7 @@ function createCalendarGrid(
   ["M", "T", "W", "T", "F", "S", "S", "Total"].forEach((d, idx) => {
     const el = document.createElement("div");
     el.textContent = d;
-    el.style.cssText = `font-size:11px; font-weight:800; text-align:center; color:${COLORS.TEXT_LIGHT}; ${idx === 7 ? "border-left:1px solid #f1f5f9; color:" + CONFIG.LOGTIME_LABELS_COLOR : ""}`;
+    el.style.cssText = `font-size:11px; font-weight:800; text-align:center; color:${COLORS.TEXT_LIGHT}; ${idx === 7 ? "border-left:1px solid #f1f5f9; color:" + CONFIG.labels_color : ""}`;
     grid.appendChild(el);
   });
 
@@ -209,7 +181,7 @@ function createCalendarGrid(
     cell.textContent =
       data.hasOwnProperty(dKey) || cellDate >= today ? String(day) : "";
     const alpha = Math.min(s / MAX_INTENSITY_SECS, 1);
-    cell.style.cssText = `aspect-ratio: 1/1; border-radius: ${CELL_RADIUS}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: ${s > 0 ? hexToRgba(CONFIG.LOGTIME_CALENDAR_COLOR, alpha) : COLORS.CELL_EMPTY};color: ${s > MAX_INTENSITY_SECS / 2 ? "#fff" : COLORS.TEXT_DARK};`;
+    cell.style.cssText = `aspect-ratio: 1/1; border-radius: ${CELL_RADIUS}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: ${s > 0 ? hexToRgba(CONFIG.calendar_color, alpha) : COLORS.CELL_EMPTY};color: ${s > MAX_INTENSITY_SECS / 2 ? "#fff" : COLORS.TEXT_DARK};`;
 
     const tt = document.createElement("div");
     tt.className = "day-tooltip";
@@ -224,7 +196,7 @@ function createCalendarGrid(
       }
       const w = document.createElement("div");
       w.textContent = weekSecs > 0 ? fmtHours(weekSecs) : "";
-      w.style.cssText = `font-size:14px; font-weight:700; text-align:right; color:${CONFIG.LOGTIME_LABELS_COLOR}; padding-right:4px; display:flex; align-items:center; justify-content:flex-end;`;
+      w.style.cssText = `font-size:14px; font-weight:700; text-align:right; color:${CONFIG.labels_color}; padding-right:4px; display:flex; align-items:center; justify-content:flex-end;`;
       grid.appendChild(w);
       weekSecs = 0;
     }
@@ -254,49 +226,54 @@ function createMonthCard(
   const monthName = new Intl.DateTimeFormat("en-US", { month: "long" }).format(
     new Date(year, mon - 1),
   );
-  const goalSecs = CONFIG.LOGTIME_GOAL_HOURS * 3600;
+  const goalSecs = CONFIG.goal_hours * 3600;
   const goalPercent = Math.round((total / goalSecs) * 100);
   const isGoalMet = goalPercent >= 100;
   const badgeClass = isGoalMet ? "badge-rainbow" : "";
   const fillClass = isGoalMet ? "liquid-fill-full" : "liquid-fill";
-  const softGreenBg = `rgba(39, 174, 96, 0.1)`;
 
   card.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
       <span style="font-size: 22px; font-weight: 700; color: ${COLORS.TEXT_DARK};">${monthName}</span>
-      <wa-badge
-        class="${badgeClass}"
-        appearance="neutral" 
-        pill
-        style="
-        font-size: 14px; 
-        font-weight: 800; 
-        background: ${isGoalMet ? "" : softGreenBg}; 
-        color: ${isGoalMet ? "white" : CONFIG.LOGTIME_LABELS_COLOR};
-        border: 1px solid ${isGoalMet ? "transparent" : "rgba(39, 174, 96, 0.2)"};
-        padding: 8px 8px;
-      "
-      >
-        ${fmtHours(total)}${CONFIG.LOGTIME_SHOW_GOAL ? ` / ${CONFIG.LOGTIME_GOAL_HOURS}h` : ""}
-      </wa-badge>
-      </span>
+      <span class="inline-flex items-center justify-center rounded-full transition-all ${badgeClass}" 
+            style="
+              height: 30px; 
+              padding: 0 10px; 
+              font-size: 16px; 
+              font-weight: 800; 
+              white-space: nowrap;
+              /* Only apply these if it's NOT a rainbow badge */
+              ${
+                !badgeClass.includes("badge-rainbow")
+                  ? `
+                background: ${isGoalMet ? "#27ae60" : "rgba(39, 174, 96, 0.1)"}; 
+                color: ${isGoalMet ? "white" : "#27ae60"};
+                border: 1px solid ${isGoalMet ? "transparent" : "rgba(39, 174, 96, 0.2)"};
+              `
+                  : ""
+              }
+            ">
+  ${fmtHours(total)}${CONFIG.show_goal ? ` / ${CONFIG.goal_hours}h` : ""}
+</span>
     </div>
-    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: ${CONFIG.LOGTIME_LABELS_COLOR}; margin-bottom: 10px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: ${CONFIG.labels_color}; margin-bottom: 10px;">
       <div class="day-cell" style="background:transparent; width:auto; height:auto; padding:0; cursor:help;">
-        ${CONFIG.LOGTIME_SHOW_GOAL ? `<b>${goalPercent}% </b>` : ""}
-        ${CONFIG.LOGTIME_SHOW_TACOS ? ` ${Math.round(((total / 3600) * 2) / 8)} 🌮` : ""}
-        ${CONFIG.LOGTIME_SHOW_GOAL ? `<div class="day-tooltip">Remaining: ${fmtHours(Math.max(0, goalSecs - total))}</div>` : ""}
+        ${CONFIG.show_goal ? `<b>${goalPercent}% </b>` : ""}
+        ${CONFIG.show_tacos ? ` ${Math.round(((total / 3600) * 2) / 8)} 🌮` : ""}
+        ${CONFIG.show_goal ? `<div class="day-tooltip">Remaining: ${fmtHours(Math.max(0, goalSecs - total))}</div>` : ""}
       </div>
-      ${CONFIG.LOGTIME_SHOW_AVERAGE ? `<span>Avg: <b>${fmtHours(avg)}</b></span>` : "<span></span>"}
+      ${CONFIG.show_average ? `<span>Avg: <b>${fmtHours(avg)}</b></span>` : "<span></span>"}
     </div>
-      ${
-        CONFIG.LOGTIME_SHOW_GOAL
-          ? `
-  <div class="liquid-container">
-    <div class="${fillClass}" style="width: ${Math.min(goalPercent, 100)}%;"></div>
-  </div>`
-          : ""
-      }
+    ${
+      CONFIG.show_goal
+        ? `
+      <div class="w-full bg-zinc-200 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
+        <div class="h-full transition-all duration-500 ${fillClass}" 
+             style="width: ${Math.min(goalPercent, 100)}%;">
+        </div>
+      </div>`
+        : ""
+    }
   `;
   card.appendChild(createCalendarGrid(year, mon, data, lastDayDate));
   return card;
@@ -340,63 +317,45 @@ function render(stats: Record<string, string>): void {
       byMonth[ym][d] = h * 3600 + m * 60 + s;
     });
 
-  const containerBox = document.createElement("div");
-  containerBox.className =
-    "bg-white dark:bg-zinc-900 overflow-hidden md:drop-shadow-md md:rounded-lg p-0 mb-4 transition-all lt-box-container";
-
   const totalYearSecs = Object.values(stats).reduce((acc, time) => {
     const [h, m, s] = time.split(":").map(Number);
     return acc + (h * 3600 + m * 60 + s);
   }, 0);
 
-  const header = document.createElement("div");
-  header.className = "flex items-center justify-between p-4";
-  const label = document.createElement("div");
-  label.className =
-    "font-bold text-black dark:text-white uppercase text-sm tracking-tight";
-  label.style.cssText =
-    "display: inline-flex; align-items: center; width: 100%;";
-  label.innerHTML = `<div class="w-1.5 h-4 bg-legacy-main rounded-full"></div>Logtime`;
+  const containerBox = document.createElement("div");
+  containerBox.className =
+    "bg-white dark:bg-zinc-900 overflow-hidden md:drop-shadow-md md:rounded-lg p-0 mb-4 transition-all lt-box-container";
 
-  if (CONFIG.LOGTIME_SHOW_TACOS) {
-    const totalTacos = Math.floor(((totalYearSecs / 3600) * 2) / 8);
-    const tacoBank = document.createElement("div");
-    tacoBank.className = "taco-bank";
-    tacoBank.innerHTML = `
-    
-      <span class="taco-icon">${totalTacos} 🌮</span>
-    `;
-    label.appendChild(tacoBank);
-  }
+  const lastSeenValue = getLastSeenFormatted(stats, CONFIG.show_days_mode);
+  const totalTacos = Math.floor(((totalYearSecs / 3600) * 2) / 8);
 
-  const lastSeenValue = getLastSeenFormatted(
-    stats,
-    CONFIG.LOGTIME_SHOW_DAYS_MODE,
-  );
+  containerBox.innerHTML = `
+    <div class="flex items-center justify-between p-4" style=" padding-bottom:20px">
+      <div class="font-bold text-black dark:text-white uppercase text-sm tracking-tight flex items-center w-full" style="display: inline-flex;">
+        <div class="w-1.5 h-4 bg-legacy-main rounded-full mr-2"></div>
+        Logtime
+        ${CONFIG.show_tacos ? `<div class="taco-bank ml-2"><span class="taco-icon">${totalTacos} 🌮</span></div>` : ""}
+        ${
+          lastSeenValue !== "N/A"
+            ? `
+          <span class="ml-auto bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full text-[10px] font-bold normal-case border border-green-500/30">
+            Active ${lastSeenValue}
+          </span>`
+            : ""
+        }
+      </div>
+    </div>
+    <div class="log-slider-fixed">
+      <div class="grid-centering-container"></div>
+    </div>
+  `;
 
-  if (lastSeenValue !== "N/A") {
-    const badge = document.createElement("wa-badge");
-    badge.setAttribute("variant", "success");
-    badge.setAttribute("pill", "");
-
-    badge.style.cssText = `
-      margin-left: auto; 
-      font-size: var(--wa-font-size-s);
-      font-weight: 700;
-      text-transform: none;
-    `;
-
-    badge.textContent = `Active ${lastSeenValue}`;
-    label.appendChild(badge);
-  }
-
-  header.appendChild(label);
-  containerBox.appendChild(header);
-
-  const scrollWrapper = document.createElement("div");
-  scrollWrapper.className = "log-slider-fixed";
-  const gridContainer = document.createElement("div");
-  gridContainer.className = "grid-centering-container";
+  const gridContainer = containerBox.querySelector(
+    ".grid-centering-container",
+  )!;
+  const scrollWrapper = containerBox.querySelector(
+    ".log-slider-fixed",
+  ) as HTMLElement;
 
   const monthKeys = Object.keys(byMonth).sort();
   monthKeys.forEach((ym, index) => {
@@ -404,9 +363,6 @@ function render(stats: Record<string, string>): void {
       createMonthCard(ym, byMonth[ym], index === monthKeys.length - 1),
     );
   });
-
-  scrollWrapper.appendChild(gridContainer);
-  containerBox.appendChild(scrollWrapper);
 
   let isDown = false,
     startX = 0,
@@ -487,16 +443,14 @@ function installFetchHook() {
           cachedStats = stats;
           render(stats);
         }
-      } catch (e) { dbg(e); }
+      } catch (e) {}
     }
     return response;
   };
 }
 
 export async function initLogtime() {
-  dbg("init:start");
-  await ensureWA();
-  await loadConfig();
+  CONFIG = await getSettings();
   setupStyles();
   installFetchHook();
 
@@ -517,9 +471,7 @@ export async function initLogtime() {
               break;
             }
           }
-        } catch (e) {
-          dbg(e);
-        }
+        } catch (e) {}
       }
     }, 1000);
   }

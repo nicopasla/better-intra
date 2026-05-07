@@ -4,62 +4,34 @@ import {
   HUB_INFO,
   FeatureId,
   STORAGE_KEY,
+  INTRA_FONT,
   HUB_SETTING_DEFS,
   type HubSettingDef,
 } from "./hubSettings.data.ts";
 import HUB_CSS from "../../assets/style.css?inline";
 
-export async function openHubModal(active: FeatureId[]) {
-  await ensureStyles();
-  await loadComponents();
 
-  let dialog = document.getElementById("hub-dialog") as any;
+
+export async function openHubModal(active: FeatureId[]) {
+  let dialog = document.getElementById("hub-dialog") as HTMLDialogElement;
   if (!dialog) {
     createModal(active);
-    dialog = document.getElementById("hub-dialog");
+    dialog = document.getElementById("hub-dialog") as HTMLDialogElement;
   }
 
-  await customElements.whenDefined("wa-dialog");
   document.documentElement.style.overflow = "hidden";
   document.body.style.overflow = "hidden";
-  dialog?.show();
-  dialog.addEventListener("wa-after-hide", () => {
-    document.documentElement.style.overflow = "";
-    document.body.style.overflow = "";
-  });
-}
 
-async function ensureStyles() {
-  if (document.getElementById("wa-styles-bundle")) return;
+  dialog.showModal();
 
-  const link = document.createElement("link");
-  link.id = "wa-styles-bundle";
-  link.rel = "stylesheet";
-  link.href =
-    "https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@latest/dist/styles/themes/default.css";
-
-  document.head.appendChild(link);
-}
-
-async function loadComponents() {
-  await Promise.all([
-    import("@awesome.me/webawesome/dist/components/dialog/dialog.js"),
-    import("@awesome.me/webawesome/dist/components/switch/switch.js"),
-    import("@awesome.me/webawesome/dist/components/color-picker/color-picker.js"),
-    import("@awesome.me/webawesome/dist/components/number-input/number-input.js"),
-    import("@awesome.me/webawesome/dist/components/tab-group/tab-group.js"),
-    import("@awesome.me/webawesome/dist/components/tab/tab.js"),
-    import("@awesome.me/webawesome/dist/components/tab-panel/tab-panel.js"),
-    import("@awesome.me/webawesome/dist/components/button/button.js"),
-    import("@awesome.me/webawesome/dist/components/card/card.js"),
-    import("@awesome.me/webawesome/dist/components/badge/badge.js"),
-    import("@awesome.me/webawesome/dist/components/select/select.js"),
-    import("@awesome.me/webawesome/dist/components/option/option.js"),
-    import("@awesome.me/webawesome/dist/components/radio-group/radio-group.js"),
-    import("@awesome.me/webawesome/dist/components/radio/radio.js"),
-    import("@awesome.me/webawesome/dist/components/divider/divider.js"),
-    import("@awesome.me/webawesome/dist/components/tooltip/tooltip.js"),
-  ]);
+  dialog.addEventListener(
+    "close",
+    () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    },
+    { once: true },
+  );
 }
 
 function renderSetting(def: HubSettingDef, enabled: boolean): string {
@@ -68,314 +40,281 @@ function renderSetting(def: HubSettingDef, enabled: boolean): string {
   const disabledAttr = enabled ? "" : "disabled";
   let control = "";
 
-  if (def.kind === "toggle") {
-    control = `<wa-switch
-                style="--width: 48px; --height: 24px; --thumb-size: 20px;"
-                data-setting-key="${def.key}" ${value ? "checked" : ""}
-                 ${disabledAttr}
-                 >
-                 </wa-switch>`;
-  } else if (def.kind === "number") {
-    control = `<wa-number-input
-                value="${value}"
-                ${disabledAttr}
-                without-steppers 
-                data-setting-key="${def.key}" 
-                style="width: 100px;">
-              </wa-number-input>`;
-  } else if (def.kind === "select") {
-    control = `<wa-select 
-                data-setting-key="${def.key}" 
-                value="${value}" 
-                ${disabledAttr} 
-                style="width: 160px;"
-                hoist>
-                ${(def.options ?? [])
-                  .map(
-                    (o) =>
-                      `<wa-option 
-                    value="${o.value}">${o.label}
-                  </wa-option>
-                `,
-                  )
-                  .join("")}
-              </wa-select>`;
-  } else if (def.kind === "radio-group") {
-    control = `<wa-radio-group
-                data-setting-key="${def.key}"
-                name="${def.key}" 
-                value="${value}"
-                orientation="horizontal"
-                ${disabledAttr}
-              >
-                ${(def.options ?? [])
-                  .map(
-                    (o) => `
-                  <wa-radio 
-                    appearance="button"
-                    value="${o.value}"
-                  >
-                    ${o.label}
-                  </wa-radio>
-                `,
-                  )
-                  .join("")}
-              </wa-radio-group>`;
-  } else if (def.kind === "color") {
-    control = `<wa-color-picker
-                data-setting-key="${def.key}"
-                value="${value}"
-                ${disabledAttr}
-                opacity>
-              </wa-color-picker>`;
-  } else if (def.kind === "text") {
-    control = `<wa-input
-                data-setting-key="${def.key}"
-                value="${value}"
-                with-clear
-                style="width: 400px;"
-                ${disabledAttr}>
-              </wa-input>`;
-  } else if (def.kind === "url") {
-    control = `<wa-input
-                data-setting-key="${def.key}"
-                value="${value}"
-                inputmode="url"
-                placeholder="PNG/GIF/JPEG URL"
-                type="url"
-                with-clear
-                style="width: 400px;"
-                ${disabledAttr}>
-              </wa-input>`;
-  } else if (def.kind === "divider") {
-    return `
-        <div style="display: flex; align-items: center; gap: 15px; width: 100%; justify-content: center;">
-            <wa-divider style="--width: 4px; flex: 1;"></wa-divider>
-            <span style="white-space: nowrap; font-weight: bold;">
-                ${def.label}
-            </span>
-            <wa-divider style="--width: 4px; flex: 1;"></wa-divider>
-        </div>
-        `;
-  } else {
-    control = `<wa-input
-                data-setting-key="${def.key}"
-                value="${value}"
-                ${disabledAttr}>
-              </wa-input>`;
+  switch (def.kind) {
+    case "toggle":
+      control = `<input type="checkbox" class="toggle toggle-accent" 
+                data-setting-key="${def.key}" ${value ? "checked" : ""} ${disabledAttr} />`;
+      break;
+
+    case "number":
+      control = `<input type="number" class="input input-accent w-24 input-sm" 
+                value="${value}" data-setting-key="${def.key}" ${disabledAttr} />`;
+      break;
+
+    case "select":
+      control = `
+      <select class="select select-accent select-sm" data-setting-key="${def.key}" ${disabledAttr}>
+        ${(def.options ?? []).map((o) => `<option value="${o.value}" ${o.value === value ? "selected" : ""}>${o.label}</option>`).join("")}
+      </select>`;
+      break;
+
+    case "color":
+      control = `<input type="color" class="input input-accent p-1 w-20 h-10" 
+                value="${value}" data-setting-key="${def.key}" ${disabledAttr} />`;
+      break;
+
+    case "radio-group":
+      control = `
+    <div class="flex flex-wrap gap-2 sm:gap-4">
+      ${(def.options ?? [])
+        .map(
+          (o) => `
+        <label class="label cursor-pointer gap-2 py-1">
+          <span class="label-text text-xs sm:text-sm">${o.label}</span>
+          <input type="radio" name="${def.key}" value="${o.value}" class="radio radio-accent radio-xs sm:radio-sm" 
+            ${o.value === value ? "checked" : ""} data-setting-key="${def.key}" ${disabledAttr} />
+        </label>
+      `,
+        )
+        .join("")}
+    </div>`;
+      break;
+
+    case "divider":
+      return `<div class="divider font-bold my-6 col-span-full opacity-70">${def.label}</div>`;
+
+    case "url":
+      control = `
+    <div class="w-full">
+      <label class="input input-accent validator flex items-center gap-2 w-full">
+        <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></g></svg>
+        <input
+          type="url"
+          required
+          placeholder="https://example.com"
+          value="${value}" 
+          data-setting-key="${def.key}" 
+          ${disabledAttr}
+          pattern="^(https?://)?.*" 
+          class="grow"
+        />
+      </label>
+    </div>`;
+      break;
+    case "text":
+    default:
+      control = `<input type="text" 
+                class="input input-bordered w-full input-sm" 
+                value="${value || ""}" data-setting-key="${def.key}" ${disabledAttr} />`;
+      break;
   }
-  const cardId = `hub-card-${def.key}`;
-  const triggerId = `trigger-${def.key}`;
-  const tooltip = def.desc
-    ? `
-    <wa-tooltip for="${triggerId}" placement="top" without-arrow show-delay="150">
-      ${def.desc}
-    </wa-tooltip>
-  `
-    : "";
-  const gridClass = def.grid === true ? "" : "hub-setting-span-full";
+  const isFullWidth = def.fullWidth ?? def.kind === "url";
+  const gridClass = def.grid === true ? "" : "col-span-full";
 
   return `
-  <wa-card id="${cardId}" class="card-basic ${gridClass}">
-    <div class="hub-setting-card">
-      <div class="hub-setting-info" style="display: flex; align-items: center; gap: 6px;">
-        <span class="setting-label-text">${def.label}</span>
-        <wa-badge id="${triggerId}" variant="brand" style="font-size: 8px; width: 14px; height: 14px; padding: 0; display: inline-flex; align-items: center; justify-content: center; min-height: 0; min-width: 0;" pill>i</wa-badge>
+    <div class="card bg-base-200 shadow-sm p-3 sm:p-4 ${gridClass}">
+      <div class="flex ${isFullWidth ? "flex-col" : "flex-col sm:flex-row sm:items-center"} justify-between gap-3 sm:gap-4">
+        <div class="flex flex-col">
+          <span class="text-sm">${def.label}</span>
+          ${def.desc ? `<span class="text-s opacity-50">${def.desc}</span>` : ""}
+        </div>
+        <div class="${isFullWidth ? "w-full" : "flex-none self-end sm:self-auto"}">
+          ${control}
+        </div>
       </div>
-      <div class="hub-setting-control">
-        ${control}
-      </div>
-    </div>
-  </wa-card>
-  ${tooltip}
-`;
+    </div>`;
 }
 
 function createModal(active: FeatureId[]): void {
-  let dialog = document.getElementById("hub-dialog") as any;
+  let dialog = document.getElementById("hub-dialog") as HTMLDialogElement;
   if (!dialog) {
-    dialog = document.createElement("wa-dialog");
+    dialog = document.createElement("dialog");
     dialog.id = "hub-dialog";
-    dialog.lightDismiss = true;
-    dialog.style.setProperty("--width", "900px");
+    dialog.className = "modal-box hub-modal-box p-0 overflow-hidden bg-base-100 rounded-3xl shadow-2xl border-none outline-none";
     dialog.innerHTML = `
-        <div slot="label" class="hub-dialog-header">
-          <div class="hub-header-left">
-            <span class="hub-title">${HUB_INFO.name}</span>
-            <wa-badge 
-              variant="neutral" 
-              appearance="outlined" 
-              pill 
-              size="small" 
-              class="hub-version-badge"
-            >
-              ${HUB_INFO.version}
-            </wa-badge>
-          </div>
-        </div>
+      <div
+        class="modal-box hub-modal-box p-0 overflow-hidden bg-base-100 rounded-3xl shadow-2xl flex flex-col relative"        style="
+          width:min(900px, calc(100dvw - 2rem));
+          height:min(600px, calc(100dvh - 2rem));
+          max-width:min(900px, calc(100dvw - 2rem));
+          max-height:min(600px, calc(100dvh - 2rem));
+        "
+      >
         <div id="hub-shadow-wrapper"></div>
+      </div>
     `;
     document.body.appendChild(dialog);
+    dialog.addEventListener("click", (e) => {
+      const dialogDimensions = dialog.getBoundingClientRect();
+      if (
+        e.clientX < dialogDimensions.left ||
+        e.clientX > dialogDimensions.right ||
+        e.clientY < dialogDimensions.top ||
+        e.clientY > dialogDimensions.bottom
+      ) {
+        dialog.close();
+      }
+    });
+
+    const box = dialog.querySelector(".hub-modal-box") as HTMLElement;
+    const applyDesktopLock = () => {
+      if (window.matchMedia("(min-width: 1024px)").matches) {
+        box.style.width = "900px";
+        box.style.height = "650px";
+        box.style.maxWidth = "900px";
+        box.style.maxHeight = "650px";
+      } else {
+        box.style.width = "min(900px, calc(100dvw - 2rem))";
+        box.style.height = "min(650px, calc(100dvh - 2rem))";
+        box.style.maxWidth = "min(900px, calc(100dvw - 2rem))";
+        box.style.maxHeight = "min(650px, calc(100dvh - 2rem))";
+      }
+    };
+
+    applyDesktopLock();
+    window.addEventListener("resize", applyDesktopLock);
+    dialog.addEventListener(
+      "close",
+      () => window.removeEventListener("resize", applyDesktopLock),
+      { once: true },
+    );
   }
-  const wrapper = dialog.querySelector("#hub-shadow-wrapper");
+
+  const wrapper = dialog.querySelector("#hub-shadow-wrapper")!;
   const shadow = wrapper.shadowRoot || wrapper.attachShadow({ mode: "open" });
 
-  const tabsHtml = FEATURE_DEFS.map(
-    (f) => `
-      <wa-tab slot="nav" panel="${f.id}" class="hub-header-tab" style="height: auto;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <wa-icon name="${f.icon}" style="font-size: 1.2rem;"></wa-icon>
-          <span style="font-weight: 500;">${f.name}</span>
-        </div>
-      </wa-tab>
-    `,
-  ).join("");
-
-  const panels = FEATURE_DEFS.map((f) => {
+  const tabsContent = FEATURE_DEFS.map((f, idx) => {
     const enabled = active.includes(f.id);
     const settings = (HUB_SETTING_DEFS[f.id] || [])
       .map((def) => renderSetting(def, enabled))
       .join("");
 
     return `
-  <wa-tab-panel name="${f.id}">
-    <div class="hub-panel ${enabled ? "" : "hub-is-disabled"}" data-feature-panel="${f.id}">
-      
-      <wa-card class="hub-feature-main-card">
-        <div class="hub-panel-info">
-          <div class="hub-panel-text-content">
-            <div class="hub-feature-title-large">${f.name}</div>
-            <div class="hub-desc">${f.desc}</div>
+      <input type="radio" name="hub_tabs" role="tab" class="tab whitespace-nowrap!" aria-label="${f.name}" ${idx === 0 ? "checked" : ""} />
+      <div role="tabpanel" class="tab-content bg-base-100 border-base-300 p-0 overflow-y-auto">
+        <div class="flex flex-col ${enabled ? "" : "opacity-40 grayscale"}" data-feature-panel="${f.id}">
+          
+          <div class="sticky top-0 z-20 flex items-center justify-between bg-base-200 px-6 py-4 border-b border-base-300 shadow-sm">
+            <div class="flex flex-col">
+              <h2 class="text-lg font-bold leading-tight">${f.name}</h2>
+              <p class="text-s opacity-70">${f.desc}</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button class="btn btn-sm btn-outline btn-error" data-reset-feature="${f.id}">Reset</button>
+              <input type="checkbox" class="toggle toggle-xl toggle-primary hub-feature-toggle" data-id="${f.id}" ${enabled ? "checked" : ""} />
+            </div>
           </div>
-          <div class="hub-panel-actions">
-            <wa-button variant="danger" appearance="outlined" size="small" data-reset-feature="${f.id}">Reset</wa-button>
-            <wa-switch style="--width: 60px; --height: 32px; --thumb-size: 28px;" class="hub-feature-toggle" data-id="${f.id}" ${enabled ? "checked" : ""}></wa-switch>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
+            ${settings}
           </div>
         </div>
-      </wa-card>
-      <div class="hub-feature-settings">
-        ${settings}
       </div>
-    </div>
-  </wa-tab-panel>`;
+    `;
   }).join("");
 
-  const metaSection = `
-    <wa-divider slot="nav" style="margin: 16px 16px ; --width: 3px;"></wa-divider>  
-      <a slot="nav" href="${HUB_INFO.github}" target="_blank" class="hub-sidebar-link">
-        <wa-icon name="github" family="brands"></wa-icon>
-        <span>GitHub</span>
-      </a>
-    `;
-
   shadow.innerHTML = `
-<style>${HUB_CSS}</style>
-<div id="hub-sidebar-layout">
-  <div id="hub-sidebar-left">
-    <wa-tab-group placement="start" class="hub-main-tabs">
-      ${tabsHtml}
-      ${metaSection}
-      ${panels}
-    </wa-tab-group>
-    <div id="hub-sidebar-footer">
-      <wa-button id="hub-save" variant="success" size="medium" pill>
-        <wa-icon name="floppy-disk"></wa-icon>
-        Save
-      </wa-button>
-    </div>
-  </div>
-</div>
-`;
-
-  const floatingFooter = shadow.querySelector("#hub-floating-footer");
-  const saveBtn = shadow.querySelector("#hub-save");
-
-  const triggerSave = () => {
-    if (floatingFooter?.classList.contains("hub-footer-hidden")) {
-      floatingFooter.classList.replace(
-        "hub-footer-hidden",
-        "hub-footer-visible",
-      );
+    <style>
+      :host { display: block; height: 100%; width: 100%; }
+      font-family: ${INTRA_FONT};
+      input, button, select, textarea, .tab, h2, h3 {
+      font-family: ${INTRA_FONT} !important;
     }
-  };
+      ${HUB_CSS}
+      .tab-content { height: 100%; overflow-y: auto; }
+    </style>
+    <div class="flex flex-col h-full text-base-content bg-base-100" data-theme="dark">
+      <div class="flex-none flex items-center justify-between px-6 py-4 border-b border-base-200 bg-base-100 z-10">
+        <div>
+          <h3 class="font-bold text-xl tracking-tight">${HUB_INFO.name} </h3>
+          <p class="text-[10px] uppercase opacity-40 font-bold tracking-widest">${HUB_INFO.version}</p>
+        </div>
+        <button class="btn btn-sm btn-circle btn-ghost" onclick="this.getRootNode().host.closest('dialog').close()">✕</button>
+      </div>
 
+      <div role="tablist" class="tabs tabs-lifted flex-1 overflow-hidden">
+        ${tabsContent}
+      </div>
+
+    <div class="flex-none p-4 border-t border-base-200 bg-base-200/50 flex justify-between items-center">
+      <a href="${HUB_INFO.github}" target="_blank" class="btn btn-ghost btn-sm opacity-50 hover:opacity-100 transition-opacity flex items-center gap-2 px-3">
+        <img 
+          src="https://cdn.simpleicons.org/github/white" 
+          alt="GitHub" 
+          class="w-4 h-4" 
+        />
+        <span class="text-xs font-bold">GitHub</span>
+      </a>
+      <button id="hub-save" class="btn btn-primary px-8 font-bold">Save & Reload</button>
+    </div>
+  `;
+
+  const saveBtn = shadow.querySelector("#hub-save");
   saveBtn?.addEventListener("click", () => {
     saveHubState(shadow);
     location.reload();
   });
 
-  shadow.addEventListener("wa-change", triggerSave);
-  shadow.addEventListener("input", (e: any) => {
-    if (e.target.dataset.settingKey) triggerSave();
-  });
-
-  shadow
-    .querySelectorAll("wa-switch.hub-feature-toggle")
-    .forEach((toggle: any) => {
-      toggle.addEventListener("click", (e: any) => {
-        console.log("Toggle activé via click");
-
-        const id = toggle.dataset.id;
-        const isEnabled = toggle.checked;
-
-        const panel = shadow.querySelector(`[data-feature-panel="${id}"]`);
-        const tab = shadow.querySelector(`wa-tab[panel="${id}"]`);
-
-        panel?.classList.toggle("hub-is-disabled", !isEnabled);
-        tab?.classList.toggle("hub-is-disabled", !isEnabled);
-
-        panel
-          ?.querySelectorAll("[data-setting-key]")
-          .forEach((c: any) => (c.disabled = !isEnabled));
-
-        triggerSave();
-      });
+  shadow.querySelectorAll("input.hub-feature-toggle").forEach((toggle: any) => {
+    toggle.addEventListener("change", () => {
+      const id = toggle.dataset.id;
+      const isEnabled = toggle.checked;
+      const panel = shadow.querySelector(`[data-feature-panel="${id}"]`);
+      panel?.classList.toggle("opacity-40", !isEnabled);
+      panel?.classList.toggle("grayscale", !isEnabled);
+      panel
+        ?.querySelectorAll("[data-setting-key]")
+        .forEach((c: any) => (c.disabled = !isEnabled));
     });
+  });
 
   shadow.querySelectorAll("[data-reset-feature]").forEach((btn: any) => {
-    btn.addEventListener("click", () => {
-      resetFeatureSettings(shadow as any, btn.dataset.resetFeature);
-      triggerSave();
-    });
-  });
-
-  shadow.querySelector("#hub-save")?.addEventListener("click", () => {
-    saveHubState(shadow);
-    location.reload();
+    btn.addEventListener("click", () =>
+      resetFeatureSettings(shadow, btn.dataset.resetFeature),
+    );
   });
 }
 
 function saveHubState(root: ShadowRoot | HTMLElement): FeatureId[] {
   const selected = Array.from(
-    root.querySelectorAll<any>("wa-switch.hub-feature-toggle"),
+    root.querySelectorAll<HTMLInputElement>("input.hub-feature-toggle"),
   )
     .filter((sw) => sw.checked)
     .map((sw) => sw.dataset.id as FeatureId);
 
   gmSetValue(STORAGE_KEY, JSON.stringify(selected));
-  root.querySelectorAll<any>("[data-setting-key]").forEach((control) => {
-    const key = control.dataset.settingKey;
-    const val = control.tagName.includes("SWITCH")
-      ? control.checked
-      : control.value;
-    if (val === "" || val === null) gmDeleteValue(key);
-    else gmSetValue(key, val);
-  });
-  return selected;
-}
 
-function applyDefaultSettingValue(
-  control: HTMLElement,
-  def: HubSettingDef,
-): void {
-  const anyDef = def as any;
-  const value =
-    anyDef.defaultValue ??
-    anyDef.default ??
-    (def.kind === "toggle" ? false : "");
-  if ("checked" in control && def.kind === "toggle")
-    (control as any).checked = Boolean(value);
-  else if ("value" in control) (control as any).value = String(value);
+  const keys = new Set<string>();
+  root.querySelectorAll("[data-setting-key]").forEach((el) => {
+    keys.add((el as HTMLElement).dataset.settingKey!);
+  });
+
+  keys.forEach((key) => {
+    const controls = root.querySelectorAll(`[data-setting-key="${key}"]`);
+    if (controls.length === 0) return;
+
+    const first = controls[0] as HTMLInputElement;
+    let val: any;
+
+    if (first.type === "radio") {
+      const checkedRadio = Array.from(controls).find(
+        (r) => (r as HTMLInputElement).checked,
+      ) as HTMLInputElement;
+      val = checkedRadio ? checkedRadio.value : null;
+    } else if (first.type === "checkbox") {
+      val = first.checked;
+    } else {
+      val = first.value;
+    }
+
+    if (val === "" || val === null || val === undefined) {
+      gmDeleteValue(key);
+    } else {
+      gmSetValue(key, val);
+    }
+  });
+
+  return selected;
 }
 
 function resetFeatureSettings(
@@ -384,7 +323,19 @@ function resetFeatureSettings(
 ): void {
   for (const def of HUB_SETTING_DEFS[featureId] ?? []) {
     gmDeleteValue(def.key);
-    const control = root.querySelector<any>(`[data-setting-key="${def.key}"]`);
-    if (control) applyDefaultSettingValue(control, def);
+    const controls = root.querySelectorAll<HTMLInputElement>(
+      `[data-setting-key="${def.key}"]`,
+    );
+    const val = def.defaultValue ?? (def.kind === "toggle" ? false : "");
+
+    controls.forEach((control) => {
+      if (control.type === "radio") {
+        control.checked = control.value === String(val);
+      } else if (control.type === "checkbox") {
+        control.checked = Boolean(val);
+      } else {
+        control.value = String(val);
+      }
+    });
   }
 }

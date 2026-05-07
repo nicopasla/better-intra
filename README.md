@@ -32,7 +32,7 @@ Collection of features inside a single Userscript that improve UI and UX of the 
 * Redirection of the "Manage slots" button to the correct webpage.
 * Improved readability using a clean system-font stack.
 
-### Settings
+### ⚙️ Settings
 <img alt="Settings" src="images/settings.gif"/>
 
 ## Screenshots

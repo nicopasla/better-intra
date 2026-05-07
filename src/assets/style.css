@@ -1,0 +1,62 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  root: "#hub-shadow-wrapper";
+  include: [
+    'button', 'toggle', 'input', 'select', 'radio', 'label',
+    'card', 'tabs', 'modal', 'divider'
+  ]
+}
+
+#hub-shadow-wrapper {
+  width: 900px;
+  height: 600px;
+  display: flex;
+  overflow: hidden;
+}
+
+.sidebar-tabs {
+  width: 200px;
+  border-right: 1px solid oklch(var(--b3));
+  background-color: oklch(var(--b2) / 0.3);
+}
+
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.tab-content {
+  padding: 0 !important;
+  scrollbar-gutter: stable; 
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(8px);
+  background-color: oklch(var(--b2) / 0.8); 
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  padding-bottom: 3rem !important;
+}
+
+#hub-dialog::backdrop {
+  cursor: pointer;
+}
+
+.hub-modal-box {
+  cursor: default;
+}

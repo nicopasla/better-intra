@@ -14,7 +14,9 @@ export async function initProfile() {
         font-size: 1.2rem !important;
         font-weight: bold !important;
         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      } 
+      }
+      p.text-sm:nth-child(2) {
+        font-size: 1.5rem !important;
       
       #profile-modal-overlay { 
         position: fixed; top: 0; left: 0; width: 100%; height: 100%; 

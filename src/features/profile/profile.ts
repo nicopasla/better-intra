@@ -16,7 +16,7 @@ export async function initProfile() {
         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       }
       p.text-sm:nth-child(2) {
-        font-size: 1.5rem !important;
+        font-size: 1.3rem !important;
       
       #profile-modal-overlay { 
         position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -51,20 +51,52 @@ export async function initProfile() {
 
   injectCustomStyles();
 
-  if (location.origin !== "https://profile-v3.intra.42.fr" || location.pathname !== "/") return;
+  if (
+    location.origin !== "https://profile-v3.intra.42.fr" ||
+    location.pathname !== "/"
+  )
+    return;
 
-  const findAvatar = () => document.querySelector('div.rounded-full[style*="background-image"]') as HTMLElement | null;
-  const findBanner = () => document.querySelector("div.border-neutral-600.bg-ft-gray\\/50") as HTMLElement | null;
-  const findBackground = () => document.querySelector(".w-full.xl\\:h-72.bg-center.bg-cover.bg-ft-black") as HTMLElement | null;
+  const findAvatar = () =>
+    document.querySelector(
+      'div.rounded-full[style*="background-image"]',
+    ) as HTMLElement | null;
+  const findBanner = () =>
+    document.querySelector(
+      "div.border-neutral-600.bg-ft-gray\\/50",
+    ) as HTMLElement | null;
+  const findBackground = () =>
+    document.querySelector(
+      ".w-full.xl\\:h-72.bg-center.bg-cover.bg-ft-black",
+    ) as HTMLElement | null;
 
-  const applyImgs = (urls: { avatar?: string, banner?: string, background?: string }) => {
+  const applyImgs = (urls: {
+    avatar?: string;
+    banner?: string;
+    background?: string;
+  }) => {
     const avatar = findAvatar();
     const banner = findBanner();
     const background = findBackground();
 
-    if (avatar && urls.avatar) avatar.style.setProperty("background-image", `url("${urls.avatar}")`, "important");
-    if (banner && urls.banner) banner.style.setProperty("background-image", `url("${urls.banner}")`, "important");
-    if (background) background.style.setProperty("background-image", `url("${urls.background}")`, "important");
+    if (avatar && urls.avatar)
+      avatar.style.setProperty(
+        "background-image",
+        `url("${urls.avatar}")`,
+        "important",
+      );
+    if (banner && urls.banner)
+      banner.style.setProperty(
+        "background-image",
+        `url("${urls.banner}")`,
+        "important",
+      );
+    if (background)
+      background.style.setProperty(
+        "background-image",
+        `url("${urls.background}")`,
+        "important",
+      );
   };
 
   const updateUI = async () => {
@@ -81,9 +113,8 @@ export async function initProfile() {
     applyImgs({
       avatar: await gmGetValue("PROFILE_IMAGE_URL", ""),
       banner: await gmGetValue("PROFILE_BANNER_URL", ""),
-      background: await gmGetValue("PROFILE_BACKGROUND_URL", "")
+      background: await gmGetValue("PROFILE_BACKGROUND_URL", ""),
     });
-
     await injectEventsSelect();
     await updateEventFilters();
   };
@@ -126,16 +157,30 @@ export async function initProfile() {
 
     overlay.querySelector("#btn-preview")?.addEventListener("click", () => {
       applyImgs({
-        avatar: (document.getElementById("in-avatar") as HTMLInputElement).value,
-        banner: (document.getElementById("in-banner") as HTMLInputElement).value,
-        background: (document.getElementById("in-bg") as HTMLInputElement).value
+        avatar: (document.getElementById("in-avatar") as HTMLInputElement)
+          .value,
+        banner: (document.getElementById("in-banner") as HTMLInputElement)
+          .value,
+        background: (document.getElementById("in-bg") as HTMLInputElement)
+          .value,
       });
     });
 
     overlay.querySelector("#btn-save")?.addEventListener("click", async () => {
-      await gmSetValue("PROFILE_IMAGE_URL", (document.getElementById("in-avatar") as HTMLInputElement).value.trim());
-      await gmSetValue("PROFILE_BANNER_URL", (document.getElementById("in-banner") as HTMLInputElement).value.trim());
-      await gmSetValue("PROFILE_BACKGROUND_URL", (document.getElementById("in-background") as HTMLInputElement).value.trim());
+      await gmSetValue(
+        "PROFILE_IMAGE_URL",
+        (document.getElementById("in-avatar") as HTMLInputElement).value.trim(),
+      );
+      await gmSetValue(
+        "PROFILE_BANNER_URL",
+        (document.getElementById("in-banner") as HTMLInputElement).value.trim(),
+      );
+      await gmSetValue(
+        "PROFILE_BACKGROUND_URL",
+        (
+          document.getElementById("in-background") as HTMLInputElement
+        ).value.trim(),
+      );
       location.reload();
     });
 
@@ -153,7 +198,9 @@ export async function initProfile() {
     });
   };
 
-  const observer = new MutationObserver(() => requestAnimationFrame(() => updateUI()));
+  const observer = new MutationObserver(() =>
+    requestAnimationFrame(() => updateUI()),
+  );
   observer.observe(document.body, { childList: true, subtree: true });
   updateUI();
   console.log("Profile loaded!");

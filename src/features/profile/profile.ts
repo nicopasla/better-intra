@@ -57,14 +57,14 @@ export async function initProfile() {
   const findBanner = () => document.querySelector("div.border-neutral-600.bg-ft-gray\\/50") as HTMLElement | null;
   const findBackground = () => document.querySelector(".w-full.xl\\:h-72.bg-center.bg-cover.bg-ft-black") as HTMLElement | null;
 
-  const applyImgs = (urls: { avatar?: string, banner?: string, bg?: string }) => {
+  const applyImgs = (urls: { avatar?: string, banner?: string, background?: string }) => {
     const avatar = findAvatar();
     const banner = findBanner();
-    const bg = findBackground();
+    const background = findBackground();
 
     if (avatar && urls.avatar) avatar.style.setProperty("background-image", `url("${urls.avatar}")`, "important");
     if (banner && urls.banner) banner.style.setProperty("background-image", `url("${urls.banner}")`, "important");
-    if (bg && urls.bg) bg.style.setProperty("background-image", `url("${urls.bg}")`, "important");
+    if (background) background.style.setProperty("background-image", `url("${urls.background}")`, "important");
   };
 
   const updateUI = async () => {
@@ -81,7 +81,7 @@ export async function initProfile() {
     applyImgs({
       avatar: await gmGetValue("PROFILE_IMAGE_URL", ""),
       banner: await gmGetValue("PROFILE_BANNER_URL", ""),
-      bg: await gmGetValue("PROFILE_BACKGROUND_URL", "")
+      background: await gmGetValue("PROFILE_BACKGROUND_URL", "")
     });
 
     await injectEventsSelect();
@@ -94,7 +94,7 @@ export async function initProfile() {
     const saved = {
       avatar: await gmGetValue("PROFILE_IMAGE_URL", ""),
       banner: await gmGetValue("PROFILE_BANNER_URL", ""),
-      bg: await gmGetValue("PROFILE_BACKGROUND_URL", "")
+      background: await gmGetValue("PROFILE_BACKGROUND_URL", "")
     };
 
     const overlay = document.createElement("div");
@@ -111,7 +111,7 @@ export async function initProfile() {
         </div>
         <div class="profile-field-group">
           <label>Background URL</label>
-          <input type="text" id="in-bg" class="ft-input" value="${saved.bg}">
+          <input type="text" id="in-background" class="ft-input" value="${saved.background}">
         </div>
         <div class="profile-ft-modal-footer">
           <div class="profile-footer-main-btns">
@@ -128,14 +128,14 @@ export async function initProfile() {
       applyImgs({
         avatar: (document.getElementById("in-avatar") as HTMLInputElement).value,
         banner: (document.getElementById("in-banner") as HTMLInputElement).value,
-        bg: (document.getElementById("in-bg") as HTMLInputElement).value
+        background: (document.getElementById("in-bg") as HTMLInputElement).value
       });
     });
 
     overlay.querySelector("#btn-save")?.addEventListener("click", async () => {
       await gmSetValue("PROFILE_IMAGE_URL", (document.getElementById("in-avatar") as HTMLInputElement).value.trim());
       await gmSetValue("PROFILE_BANNER_URL", (document.getElementById("in-banner") as HTMLInputElement).value.trim());
-      await gmSetValue("PROFILE_BACKGROUND_URL", (document.getElementById("in-bg") as HTMLInputElement).value.trim());
+      await gmSetValue("PROFILE_BACKGROUND_URL", (document.getElementById("in-background") as HTMLInputElement).value.trim());
       location.reload();
     });
 

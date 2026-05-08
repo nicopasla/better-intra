@@ -1,5 +1,6 @@
 import { gmGetValue, gmSetValue, gmDeleteValue } from "../../lib/gm.ts";
 import { updateEventFilters, injectEventsSelect } from "./events.ts";
+import { findSlotsButton } from "./shortcuts.ts";
 
 export async function initProfile() {
   "use strict";
@@ -115,6 +116,7 @@ export async function initProfile() {
       banner: await gmGetValue("PROFILE_BANNER_URL", ""),
       background: await gmGetValue("PROFILE_BACKGROUND_URL", ""),
     });
+    await findSlotsButton();
     await injectEventsSelect();
     await updateEventFilters();
   };

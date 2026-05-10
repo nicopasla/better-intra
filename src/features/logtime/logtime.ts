@@ -27,6 +27,7 @@ const getSettings = async () => ({
   labels_color: await gmGetValue<string>("LOGTIME_LABELS_COLOR", "#26a641"),
   disable_animations: await gmGetValue<boolean>("DISABLE_ANIMATIONS", false),
 });
+let isLoaded = false;
 let CONFIG: Awaited<ReturnType<typeof getSettings>>;
 
 const rgbaCache = new Map<string, string>();
@@ -450,30 +451,30 @@ function installFetchHook() {
 }
 
 export async function initLogtime() {
+  if (isLoaded) return;
+
   CONFIG = await getSettings();
   setupStyles();
-  installFetchHook();
-
   if (isProfileV3TargetPage()) {
-    setTimeout(async () => {
-      const urls = performance
-        .getEntriesByType("resource")
-        .map((r) => r.name)
-        .filter((name) => name.includes("/locations_stats"));
+    const existingResource = performance
+      .getEntriesByType("resource")
+      .find((r) => r.name.includes("/locations_stats"));
 
-      for (const url of urls) {
-        try {
-          const res = await fetch(url, { credentials: "include" });
-          if (res.ok) {
-            const stats = extractStats(await res.json());
-            if (stats) {
-              render(stats);
-              break;
-            }
-          }
-        } catch (e) {}
-      }
-    }, 1000);
+    if (existingResource) {
+      try {
+        const res = await fetch(existingResource.name, {
+          credentials: "include",
+        });
+        const stats = extractStats(await res.json());
+        if (stats) {
+          isLoaded = true;
+          render(stats);
+          return;
+        }
+      } catch (e) {}
+    }
+
+    installFetchHook();
+    console.log("Logtime loaded!");
   }
-  console.log("Logtime loaded!");
 }

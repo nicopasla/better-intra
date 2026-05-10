@@ -1,5 +1,5 @@
 import { FeatureId } from "./hubSettings.data.ts";
-import GEAR_SVG from "../../assets/settings_gear.svg?raw";
+import GEAR_SVG from "../../assets/svg/settings_gear.svg?raw";
 
 import { getActiveFeatures } from "./hubSettings.storage.ts";
 

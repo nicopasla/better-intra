@@ -1,9 +1,10 @@
 @import "tailwindcss";
 @plugin "daisyui" {
   root: "#hub-shadow-wrapper";
+  themes: "light", "dark";
   include: [
     'button', 'toggle', 'input', 'select', 'radio', 'label',
-    'card', 'tabs', 'modal', 'divider'
+    'card', 'tabs', 'modal', 'divider', 'swap'
   ]
 }
 
@@ -59,4 +60,26 @@
 
 .hub-modal-box {
   cursor: default;
+}
+
+.tab svg, 
+.tab svg path {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor !important;
+  stroke: none; 
+  transition: color 0.2s ease;
+}
+
+.tab:has(input:checked) {
+  color: var(--p) !important;
+}
+
+.tab:has(input:not(:checked)) {
+  opacity: 0.6;
+}
+
+[data-reset-feature]:hover svg {
+  transform: rotate(-45deg);
+  transition: transform 0.2s ease-in-out;
 }

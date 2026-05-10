@@ -1,3 +1,8 @@
+import CLOCK from "../../assets/svg/clock.svg?raw";
+import CLUSTERS from "../../assets/svg/grip-vertical.svg?raw";
+import USER from "../../assets/svg/user.svg?raw";
+
+
 export const HUB_INFO = {
   name: "Better Intra",
   version: "0.0.1",
@@ -11,19 +16,19 @@ export const FEATURE_DEFS = [
   {
     id: "logtime",
     name: "Logtime",
-    icon: "clock",
+    icon: CLOCK,
     desc: "Redesign the logtime to show weekly and total hours.",
   },
   {
     id: "clusters",
     name: "Clusters",
-    icon: "grip-vertical",
+    icon: CLUSTERS,
     desc: "Adds 'chair' direction markers and a default cluster picker with saved preference.",
   },
   {
     id: "profile",
     name: "Profile",
-    icon: "user",
+    icon: USER,
     desc: "Improves readability and allows local profile/background image customization.",
   },
 ] as const;

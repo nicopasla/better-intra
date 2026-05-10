@@ -10,8 +10,6 @@ import {
 } from "./hubSettings.data.ts";
 import HUB_CSS from "../../assets/style.css?inline";
 
-
-
 export async function openHubModal(active: FeatureId[]) {
   let dialog = document.getElementById("hub-dialog") as HTMLDialogElement;
   if (!dialog) {
@@ -130,7 +128,8 @@ function createModal(active: FeatureId[]): void {
   if (!dialog) {
     dialog = document.createElement("dialog");
     dialog.id = "hub-dialog";
-    dialog.className = "modal-box hub-modal-box p-0 overflow-hidden bg-base-100 rounded-3xl shadow-2xl border-none outline-none";
+    dialog.className =
+      "modal-box hub-modal-box p-0 overflow-hidden bg-base-100 rounded-3xl shadow-2xl border-none outline-none";
     dialog.innerHTML = `
       <div
         class="modal-box hub-modal-box p-0 overflow-hidden bg-base-100 rounded-3xl shadow-2xl flex flex-col relative"        style="
@@ -190,7 +189,12 @@ function createModal(active: FeatureId[]): void {
       .join("");
 
     return `
-      <input type="radio" name="hub_tabs" role="tab" class="tab whitespace-nowrap!" aria-label="${f.name}" ${idx === 0 ? "checked" : ""} />
+      <label class="tab flex items-center gap-2">
+        <input type="radio" name="hub_tabs" ${idx === 0 ? "checked" : ""} />
+        <span class="size-4 flex items-center justify-center">
+          ${f.icon} </span>
+        ${f.name}
+      </label>
       <div role="tabpanel" class="tab-content bg-base-100 border-base-300 p-0 overflow-y-auto">
         <div class="flex flex-col ${enabled ? "" : "opacity-40 grayscale"}" data-feature-panel="${f.id}">
           
@@ -200,7 +204,14 @@ function createModal(active: FeatureId[]): void {
               <p class="text-s opacity-70">${f.desc}</p>
             </div>
             <div class="flex items-center gap-3">
-              <button class="btn btn-sm btn-outline btn-error" data-reset-feature="${f.id}">Reset</button>
+              <button class="btn btn-sm btn-outline btn-error flex items-center gap-2" data-reset-feature="${f.id}">
+                <span class="size-3.5 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="currentColor">
+                    <path d="M320 128C263.2 128 212.1 152.7 176.9 192L224 192C241.7 192 256 206.3 256 224C256 241.7 241.7 256 224 256L96 256C78.3 256 64 241.7 64 224L64 96C64 78.3 78.3 64 96 64C113.7 64 128 78.3 128 96L128 150.7C174.9 97.6 243.5 64 320 64C461.4 64 576 178.6 576 320C576 461.4 461.4 576 320 576C233 576 156.1 532.6 109.9 466.3C99.8 451.8 103.3 431.9 117.8 421.7C132.3 411.5 152.2 415.1 162.4 429.6C197.2 479.4 254.8 511.9 320 511.9C426 511.9 512 425.9 512 319.9C512 213.9 426 128 320 128z"/>
+                  </svg>
+                </span>
+                Reset
+              </button>
               <input type="checkbox" class="toggle toggle-xl toggle-primary hub-feature-toggle" data-id="${f.id}" ${enabled ? "checked" : ""} />
             </div>
           </div>
@@ -213,6 +224,15 @@ function createModal(active: FeatureId[]): void {
     `;
   }).join("");
 
+  const getInitialTheme = () => {
+    const saved = gmGetValue<string>("BETTER_INTRA_THEME", "");
+    if (saved) return saved;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  };
+
+  const currentTheme = getInitialTheme();
   shadow.innerHTML = `
     <style>
       :host { display: block; height: 100%; width: 100%; }
@@ -223,7 +243,7 @@ function createModal(active: FeatureId[]): void {
       ${HUB_CSS}
       .tab-content { height: 100%; overflow-y: auto; }
     </style>
-    <div class="flex flex-col h-full text-base-content bg-base-100" data-theme="dark">
+    <div class="flex flex-col h-full text-base-content bg-base-100" data-theme="${currentTheme}">
       <div class="flex-none flex items-center justify-between px-6 py-4 border-b border-base-200 bg-base-100 z-10">
         <div>
           <h3 class="font-bold text-xl tracking-tight">${HUB_INFO.name} </h3>
@@ -232,22 +252,62 @@ function createModal(active: FeatureId[]): void {
         <button class="btn btn-sm btn-circle btn-ghost" onclick="this.getRootNode().host.closest('dialog').close()">✕</button>
       </div>
 
-      <div role="tablist" class="tabs tabs-lifted flex-1 overflow-hidden">
+      <div role="tablist" class="tabs tabs-border flex-1 overflow-hidden">
         ${tabsContent}
       </div>
 
     <div class="flex-none p-4 border-t border-base-200 bg-base-200/50 flex justify-between items-center">
-      <a href="${HUB_INFO.github}" target="_blank" class="btn btn-ghost btn-sm opacity-50 hover:opacity-100 transition-opacity flex items-center gap-2 px-3">
-        <img 
-          src="https://cdn.simpleicons.org/github/white" 
-          alt="GitHub" 
-          class="w-4 h-4" 
-        />
-        <span class="text-xs font-bold">GitHub</span>
-      </a>
-      <button id="hub-save" class="btn btn-primary px-8 font-bold">Save & Reload</button>
+      <div class="flex items-center gap-3">
+        <a href="${HUB_INFO.github}" target="_blank" class="btn btn-ghost btn-sm opacity-50 hover:opacity-100 transition-opacity flex items-center gap-2 px-3">
+          <img 
+            src="https://cdn.simpleicons.org/github/white" 
+            alt="GitHub" 
+            class="w-4 h-4" 
+            style="${currentTheme === "light" ? "filter: invert(1) brightness(0);" : ""}"
+          />
+          <span class="text-xs font-bold">GitHub</span>
+        </a>
+
+        <label class="swap swap-rotate btn btn-sm btn-circle btn-ghost">
+          <input type="checkbox" id="hub-theme-toggle" ${currentTheme === "dark" ? "checked" : ""} />
+          
+          <svg class="swap-on h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z" />
+          </svg>
+
+          <svg class="swap-off h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z" />
+          </svg>
+        </label>
+      </div>
+      <button id="hub-save" class="btn btn-primary px-8 font-bold flex items-center gap-2">
+        <span class="size-4 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="currentColor">
+            <path d="M160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 237.3C544 220.3 537.3 204 525.3 192L448 114.7C436 102.7 419.7 96 402.7 96L160 96zM192 192C192 174.3 206.3 160 224 160L384 160C401.7 160 416 174.3 416 192L416 256C416 273.7 401.7 288 384 288L224 288C206.3 288 192 273.7 192 256L192 192zM320 352C355.3 352 384 380.7 384 416C384 451.3 355.3 480 320 480C284.7 480 256 451.3 256 416C256 380.7 284.7 352 320 352z"/>
+          </svg>
+        </span>
+        Save & Reload
+      </button>
     </div>
   `;
+
+  const themeToggle = shadow.querySelector(
+    "#hub-theme-toggle",
+  ) as HTMLInputElement;
+  const hubContainer = shadow.querySelector("[data-theme]");
+  const ghIcon = shadow.querySelector('img[alt="GitHub"]') as HTMLElement;
+
+  themeToggle?.addEventListener("change", () => {
+    const newTheme = themeToggle.checked ? "dark" : "light";
+
+    hubContainer?.setAttribute("data-theme", newTheme);
+    gmSetValue("BETTER_INTRA_THEME", newTheme);
+
+    if (ghIcon) {
+      ghIcon.style.filter =
+        newTheme === "light" ? "invert(1) brightness(0)" : "none";
+    }
+  });
 
   const saveBtn = shadow.querySelector("#hub-save");
   saveBtn?.addEventListener("click", () => {

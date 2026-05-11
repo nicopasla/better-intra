@@ -245,9 +245,9 @@ function createModal(active: FeatureId[]): void {
     </style>
     <div class="flex flex-col h-full text-base-content bg-base-100" data-theme="${currentTheme}">
       <div class="flex-none flex items-center justify-between px-6 py-4 border-b border-base-200 bg-base-100 z-10">
-        <div>
-          <h3 class="font-bold text-xl tracking-tight">${HUB_INFO.name} </h3>
-          <p class="text-[10px] uppercase opacity-40 font-bold tracking-widest">${HUB_INFO.version}</p>
+        <div class="flex items-baseline gap-2">
+          <h3 class="font-bold text-xl tracking-tight">${HUB_INFO.name}</h3>
+          <p class="text-[14px] opacity-40 font-bold tracking-widest">v${HUB_INFO.version}</p>
         </div>
         <button class="btn btn-sm btn-circle btn-ghost" onclick="this.getRootNode().host.closest('dialog').close()">✕</button>
       </div>

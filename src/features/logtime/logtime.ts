@@ -430,8 +430,9 @@ function isProfileV3TargetPage() {
 let cachedStats = null;
 
 function installFetchHook() {
-  const originalFetch = window.fetch.bind(window);
-  window.fetch = async (...args) => {
+  const targetWindow = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+  const originalFetch = targetWindow.fetch.bind(targetWindow);
+  targetWindow.fetch = async (...args) => {
     const url = getFetchUrl(args[0]);
     const response = await originalFetch(...args);
 
@@ -452,9 +453,11 @@ function installFetchHook() {
 
 export async function initLogtime() {
   if (isLoaded) return;
+  installFetchHook();
 
   CONFIG = await getSettings();
   setupStyles();
+
   if (isProfileV3TargetPage()) {
     const existingResource = performance
       .getEntriesByType("resource")
@@ -471,10 +474,10 @@ export async function initLogtime() {
           render(stats);
           return;
         }
-      } catch (e) {}
+      } catch (e) {
+      }
     }
 
-    installFetchHook();
     console.log("Logtime loaded!");
   }
 }

@@ -2,10 +2,9 @@ import CLOCK from "../../assets/svg/clock.svg?raw";
 import CLUSTERS from "../../assets/svg/grip-vertical.svg?raw";
 import USER from "../../assets/svg/user.svg?raw";
 
-
 export const HUB_INFO = {
   name: "Better Intra",
-  version: "0.0.1",
+  version: "0.0.4",
   author: "https://github.com/nicopasla",
   github: "https://github.com/nicopasla/better-intra",
   issues: "https://github.com/nicopasla/better-intra/issues",

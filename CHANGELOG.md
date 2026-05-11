@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.0.4] - 2026-05-11
+
+### Bug fixes 🐛
+
+- fix(hub): improve modal header styling and version display ([cbb7171](https://github.com/nicopasla/better-intra/commit/cbb7171))
+- fix(logtime): enhance liquid-fill styles and manage past state animations ([63e1878](https://github.com/nicopasla/better-intra/commit/63e1878))
+
 ## [0.0.3] - 2026-05-11
 
 ### Bug fixes 🐛
@@ -30,7 +37,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v0.0.3...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v0.0.4...HEAD
+[0.0.4]: https://github.com/nicopasla/better-intra/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/nicopasla/better-intra/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/nicopasla/better-intra/compare/v0.0.1...v0.0.2
 

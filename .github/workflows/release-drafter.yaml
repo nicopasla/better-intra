@@ -1,0 +1,111 @@
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  update_release_draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Get Commits with Details
+        id: commits
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            COMMITS=$(git log --format="%s|%h" | head -50)
+          else
+            COMMITS=$(git log $PREV_TAG..HEAD --format="%s|%h")
+          fi
+          echo "commits<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Categorize Changes
+        id: categorize
+        run: |
+          BREAKING=""
+          FEATURES=""
+          BUGFIXES=""
+          CHORES=""
+          OTHER=""
+          
+          while IFS='|' read -r message hash; do
+            [ -z "$message" ] && continue
+            LINK="https://github.com/${{ github.repository }}/commit/$hash"
+            ENTRY="- $message ([$hash]($LINK))"
+            
+            if echo "$message" | grep -qi "breaking\|BREAKING CHANGE"; then
+              BREAKING+=$'\n'"$ENTRY"
+            elif echo "$message" | grep -qi "^feat(\|^feat:"; then
+              FEATURES+=$'\n'"$ENTRY"
+            elif echo "$message" | grep -qi "^fix(\|^fix:"; then
+              BUGFIXES+=$'\n'"$ENTRY"
+            elif echo "$message" | grep -qi "^chore(\|^chore:"; then
+              CHORES+=$'\n'"$ENTRY"
+            else
+              OTHER+=$'\n'"$ENTRY"
+            fi
+
+          done <<< "${{ steps.commits.outputs.commits }}"
+          
+          {
+            echo "changelog<<EOF"
+            echo "## What's Changed"
+            echo ""
+            [ -n "$BREAKING" ] && echo "### Breaking Changes 🛠" && echo -e "$BREAKING" && echo ""
+            [ -n "$FEATURES" ] && echo "### Features 🎉" && echo -e "$FEATURES" && echo ""
+            [ -n "$BUGFIXES" ] && echo "### Bug fixes 🐛" && echo -e "$BUGFIXES" && echo ""
+            [ -n "$CHORES" ] && echo "### Maintenance 🧹" && echo -e "$CHORES" && echo ""
+            [ -n "$OTHER" ] && echo "### Other Changes 🔄" && echo -e "$OTHER" && echo ""
+            
+            PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            if [ -n "$PREV_TAG" ]; then
+              echo "**Full Changelog:** https://github.com/${{ github.repository }}/compare/$PREV_TAG...HEAD"
+            fi
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Update Draft Release
+        uses: actions/github-script@v9
+        env:
+          CHANGELOG_DATA: ${{ steps.categorize.outputs.changelog }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const changelog = process.env.CHANGELOG_DATA;
+            const releases = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const draftRelease = releases.data.find(r => r.draft === true && r.name.includes('Draft Release'));
+
+            if (draftRelease) {
+              await github.rest.repos.updateRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: draftRelease.id,
+                body: changelog,
+              });
+            } else {
+              await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: 'v-draft',
+                name: '📋Draft Release',
+                body: changelog,
+                draft: true,
+              });
+            }

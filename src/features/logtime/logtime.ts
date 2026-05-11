@@ -128,6 +128,12 @@ function setupStyles() {
     ? `.lt-box-container *, .lt-box-container *::before, .lt-box-container *::after { 
         animation: none !important; 
         transition: none !important; 
+      }
+      .liquid-fill::after {
+        display: none !important;
+      }
+      .liquid-fill {
+        border-radius: 0 4px 4px 0; 
       }`
     : "";
 
@@ -231,6 +237,8 @@ function createMonthCard(
   const goalPercent = Math.round((total / goalSecs) * 100);
   const isGoalMet = goalPercent >= 100;
   const badgeClass = isGoalMet ? "badge-rainbow" : "";
+  const isPast = !isCurrent;
+  const animationClass = isPast ? "is-past" : "";
   const fillClass = isGoalMet ? "liquid-fill-full" : "liquid-fill";
 
   card.innerHTML = `
@@ -269,7 +277,7 @@ function createMonthCard(
       CONFIG.show_goal
         ? `
       <div class="w-full bg-zinc-200 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
-        <div class="h-full transition-all duration-500 ${fillClass}" 
+        <div class="h-full transition-all duration-500 ${fillClass} ${animationClass}" 
              style="width: ${Math.min(goalPercent, 100)}%;">
         </div>
       </div>`

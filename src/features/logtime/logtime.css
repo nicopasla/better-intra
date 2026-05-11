@@ -2,6 +2,7 @@
   font-family: var(--intra-font);
   margin-bottom: 0 !important;
 }
+
 [class*="logtime"],
 .card,
 .card-body,
@@ -13,6 +14,7 @@
   margin: 0 !important;
   padding: 0 !important;
 }
+
 .log-slider-fixed {
   overflow-x: auto !important;
   overflow-y: hidden !important;
@@ -26,9 +28,11 @@
   user-select: none;
   scrollbar-width: none;
 }
+
 .log-slider-fixed::-webkit-scrollbar {
   display: none !important;
 }
+
 .grid-centering-container {
   display: flex;
   gap: 16px;
@@ -36,6 +40,7 @@
   margin: 0 auto;
   min-width: min-content;
 }
+
 .month-card {
   transition: opacity 0.2s ease;
   border: 0.5px solid var(--border-color);
@@ -48,21 +53,25 @@
   display: flex;
   flex-direction: column;
 }
+
 .month-card.current-month {
   border: 3px solid var(--calendar-color) !important;
   box-shadow: 0 0 15px var(--calendar-color) 33 !important;
   opacity: 1 !important;
 }
+
 .day-cell {
   transition: transform 0.1s ease;
   cursor: pointer;
   position: relative;
 }
+
 .day-cell:hover {
   transform: scale(1.2);
   filter: brightness(0.9);
   z-index: 50 !important;
 }
+
 .today-highlight {
   box-shadow:
     0 0 0 2px rgba(239, 68, 68, 0.65),
@@ -70,6 +79,7 @@
   border: none !important;
   z-index: 10;
 }
+
 .day-tooltip {
   display: none;
   position: absolute;
@@ -85,46 +95,51 @@
   white-space: nowrap;
   pointer-events: none;
 }
+
 .day-cell:hover .day-tooltip {
   display: block;
 }
+
 @keyframes rainbow-shift {
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
 }
+
 .badge-rainbow {
-  background: linear-gradient(
-    270deg,
-    #ff0000,
-    #ff7f00,
-    #ffeb3b,
-    #4caf50,
-    #00bcd4,
-    #2196f3,
-    #3f51b5,
-    #9c27b0,
-    #e91e63,
-    #ff0000
-  );
+  background: linear-gradient(270deg,
+      #ff0000,
+      #ff7f00,
+      #ffeb3b,
+      #4caf50,
+      #00bcd4,
+      #2196f3,
+      #3f51b5,
+      #9c27b0,
+      #e91e63,
+      #ff0000);
   background-size: 400% 400% !important;
   animation: rainbow-shift 3s ease infinite !important;
   border: none !important;
   color: white !important;
   text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
 }
+
 @keyframes wave-move {
   0% {
-    transform: rotate(0deg);
+    transform: translate(-50%, -50%) rotate(0deg);
   }
+
   100% {
-    transform: rotate(360deg);
+    transform: translate(-50%, -50%) rotate(360deg);
   }
 }
 
@@ -144,19 +159,46 @@
   background: var(--calendar-color);
   transition: width 1s ease-in-out;
   position: relative;
+  min-width: 0px;
 }
 
 .liquid-fill::after {
   content: "";
   position: absolute;
-  top: -12px;
-  right: -20px;
+  top: 50%;
+  left: 100%;
   width: 40px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--calendar-color);
   border-radius: 38%;
   animation: wave-move 3s linear infinite;
   display: block;
+  transform-origin: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.liquid-fill[style*="width: 0%"]::after,
+.liquid-fill[style*="width:0%"]::after {
+  display: none;
+}
+
+.liquid-fill:not([style*="width: 0%"]):not([style*="width:0%"])::after {
+  opacity: 1;
+}
+
+.liquid-fill.is-past,
+.liquid-fill.is-past::after {
+  animation: none !important;
+}
+
+.liquid-fill.is-past::after {
+  display: none;
+}
+
+.liquid-fill.is-past::after {
+  animation-play-state: paused;
+  opacity: 0.5;
 }
 
 .liquid-fill-full {
@@ -166,11 +208,14 @@
   animation: rainbow-shift 3s ease infinite;
   width: 100%;
 }
+
 @keyframes taco-bounce {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-3px);
   }

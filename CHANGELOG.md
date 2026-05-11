@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-05-11
+
+### Bug fixes 🐛
+
+- fix(logtime): update fetch hook to support unsafeWindow and ensure proper initialization ([8e54b88](https://github.com/nicopasla/better-intra/commit/8e54b88))
+
 ## [0.0.2] - 2026-05-11
 
 ### Features 🎉
@@ -24,7 +30,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v0.0.2...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v0.0.3...HEAD
+[0.0.3]: https://github.com/nicopasla/better-intra/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/nicopasla/better-intra/compare/v0.0.1...v0.0.2
 
 

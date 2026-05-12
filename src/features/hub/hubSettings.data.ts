@@ -1,6 +1,7 @@
 import CLOCK from "../../assets/svg/clock.svg?raw";
 import CLUSTERS from "../../assets/svg/grip-vertical.svg?raw";
 import USER from "../../assets/svg/user.svg?raw";
+import SHORTCUT from "../../assets/svg/shortcut.svg?raw";
 
 export const HUB_INFO = {
   name: "Better Intra",
@@ -30,6 +31,12 @@ export const FEATURE_DEFS = [
     icon: USER,
     desc: "Improves readability and allows local profile/background image customization.",
   },
+  {
+    id: "shortcuts",
+    name: "Shortcuts",
+    icon: SHORTCUT,
+    desc: "Manage custom navigation links.",
+  },
 ] as const;
 
 export type FeatureId = (typeof FEATURE_DEFS)[number]["id"];
@@ -45,7 +52,8 @@ export type SettingKind =
   | "select"
   | "color"
   | "radio-group"
-  | "divider";
+  | "divider"
+  | "custom";
 
 export const INTRA_FONT =
   'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
@@ -261,4 +269,13 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       defaultValue: "",
     },
   ],
+  shortcuts: [
+      {
+        feature: "shortcuts",
+        key: "SHORTCUTS_LINKS",
+        label: "",
+        kind: "custom",
+        fullWidth: true,
+      },
+    ],
 };

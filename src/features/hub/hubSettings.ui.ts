@@ -10,6 +10,11 @@ import {
   HUB_SETTING_DEFS,
   type HubSettingDef,
 } from "./hubSettings.data.ts";
+import {
+  getStoredLinks,
+  extractLinksFromForm,
+  renderShortcutsSettings,
+} from "../shortcuts/shortcuts.ui.ts";
 import HUB_CSS from "../../assets/style.css?inline";
 
 export async function openHubModal(active: FeatureId[]) {
@@ -37,7 +42,41 @@ export async function openHubModal(active: FeatureId[]) {
 function renderSettingControl(def: HubSettingDef, enabled: boolean) {
   const storedValue = gmGetValue<unknown>(def.key, null);
   const value = storedValue !== null ? storedValue : (def.defaultValue ?? "");
-  const disabledAttr = enabled ? "" : "disabled";
+
+  if (def.kind === "custom" && def.key === "SHORTCUTS_LINKS") {
+    const container = document.createElement("div");
+    let links = getStoredLinks(gmGetValue);
+
+    const save = () => {
+      links = extractLinksFromForm(container);
+      gmSetValue("SHORTCUTS_LINKS", JSON.stringify(links));
+    };
+
+    const update = () => {
+      render(
+        renderShortcutsSettings(
+          links,
+          () => {
+            if (links.length < 8) {
+              links = [...links, { name: "", url: "", color: "#7dd3fc" }];
+              update();
+            }
+          },
+          (idx) => {
+            links = links.filter((_, i) => i !== idx);
+            gmSetValue("SHORTCUTS_LINKS", JSON.stringify(links));
+            update();
+          },
+          () => save(),
+          () => update(),
+        ),
+        container,
+      );
+    };
+
+    update();
+    return container;
+  }
 
   switch (def.kind) {
     case "toggle":
@@ -157,7 +196,8 @@ function renderSetting(def: HubSettingDef, enabled: boolean) {
     </div>`;
   }
 
-  const isFullWidth = def.fullWidth ?? def.kind === "url";
+  const isFullWidth =
+    def.fullWidth ?? (def.kind === "url" || def.kind === "custom");
   const gridClass = def.grid === true ? "" : "col-span-full";
 
   return html`<div class="card bg-base-200 shadow-sm p-3 sm:p-4 ${gridClass}">
@@ -525,6 +565,19 @@ function saveHubState(root: ShadowRoot | HTMLElement): FeatureId[] {
       gmSetValue(key, val);
     }
   });
+
+  const shortcutsPanel = root.querySelector(
+    '[data-shortcuts-panel="true"]',
+  ) as HTMLElement | null;
+  if (shortcutsPanel) {
+    const links = extractLinksFromForm(shortcutsPanel);
+
+    if (links.length > 0) {
+      gmSetValue("SHORTCUTS_LINKS", JSON.stringify(links));
+    } else {
+      gmDeleteValue("SHORTCUTS_LINKS");
+    }
+  }
 
   return selected;
 }

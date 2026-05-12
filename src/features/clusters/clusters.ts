@@ -1,3 +1,4 @@
+import { html, render } from "lit-html";
 import { gmGetValue, gmSetValue } from "../../lib/gm.ts";
 import { SCREENS, CLUSTERS, CLUSTER_CONFIG } from "./clusters.data.ts";
 
@@ -113,66 +114,141 @@ export async function initClusters() {
     return null;
   }
 
+  function renderClusterPicker(
+    currentId: string,
+    showMarkers: boolean,
+    onClusterChange: (value: string) => void,
+    onMarkerToggle: () => void,
+  ) {
+    const currentCluster =
+      CLUSTERS.find((c) => String(c.id) === String(currentId)) || CLUSTERS[0];
+
+    return html`<li
+      id="cluster-li-container"
+      style="
+        float: left;
+        margin-left: -16px;
+        display: inline-flex;
+        align-items: center;
+        height: 100%;
+      "
+    >
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          padding: 10px 15px;
+          line-height: 1.42857143;
+          font-family: inherit;
+        "
+      >
+        <div
+          style="
+            width: 1px;
+            height: 16px;
+            background: #ddd;
+            margin-right: 16px;
+          "
+        ></div>
+        <div
+          style="
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-right: 14px;
+            gap: 6px;
+            cursor: pointer;
+          "
+        >
+          <span style="color: #888; font-size: 13px;">default:</span>
+          <span
+            id="current-cluster-display"
+            style="color: #00a8a8; font-size: 14px;"
+          >
+            ${currentCluster.name.toLowerCase()}
+          </span>
+          <select
+            id="cluster-select"
+            @change="${(e: Event) =>
+              onClusterChange((e.target as HTMLSelectElement).value)}"
+            style="
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              opacity: 0;
+              cursor: pointer;
+            "
+          >
+            ${CLUSTERS.map(
+              (c) =>
+                html`<option value="${c.id}" ?selected="${currentId === c.id}">
+                  ${c.name.toLowerCase()}
+                </option>`,
+            )}
+          </select>
+        </div>
+        <div
+          style="
+            width: 1px;
+            height: 16px;
+            background: #ddd;
+            margin-right: 15px;
+          "
+        ></div>
+        <span
+          id="marker-toggle"
+          @click="${onMarkerToggle}"
+          style="
+            font-size: 13px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background-color: ${showMarkers ? "#d4edda" : "transparent"};
+            color: ${showMarkers ? "#155724" : "#ccc"};
+          "
+        >
+          markers
+        </span>
+      </div>
+    </li>`;
+  }
+
   function injectClusterPicker() {
     const list = getClusterTabsList();
     if (!list || list.querySelector("#cluster-li-container")) return;
 
-    const li = document.createElement("li");
-    li.id = "cluster-li-container";
-    Object.assign(li.style, {
-      float: "left",
-      marginLeft: "-16px",
-      display: "inline-flex",
-      alignItems: "center",
-      height: "100%",
-    });
+    const container = document.createElement("div");
 
-    const currentId = CONFIG.default_id;
-    const currentCluster =
-      CLUSTERS.find((c) => String(c.id) === String(currentId)) || CLUSTERS[0];
-
-    li.innerHTML = `
-      <div style="display: flex; align-items: center; padding: 10px 15px; line-height: 1.42857143; font-family: inherit;">
-        <div style="width: 1px; height: 16px; background: #ddd; margin-right: 16px;"></div>
-        <div style="position: relative; display: flex; align-items: center; margin-right: 14px; gap: 6px; cursor: pointer;">
-          <span style="color: #888; font-size: 13px;">default:</span>
-          <span id="current-cluster-display" style="color: #00a8a8; font-size: 14px;">${currentCluster.name.toLowerCase()}</span>
-          <select id="cluster-select" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
-            ${CLUSTERS.map((c) => `<option value="${c.id}" ${currentId === c.id ? "selected" : ""}>${c.name.toLowerCase()}</option>`).join("")}
-          </select>
-        </div>
-        <div style="width: 1px; height: 16px; background: #ddd; margin-right: 15px;"></div>
-        <span id="marker-toggle" style="font-size: 13px; cursor: pointer; padding: 2px 6px; border-radius: 3px;">markers</span>
-      </div>`;
-
-    list.appendChild(li);
-
-    const select = li.querySelector<HTMLSelectElement>("#cluster-select");
-    const markerToggle = li.querySelector<HTMLElement>("#marker-toggle");
-
-    select?.addEventListener("change", (e) => {
-      const val = (e.target as HTMLSelectElement).value;
-      gmSetValue("CLUSTERS_DEFAULT_ID", val);
-      CONFIG.default_id = val;
-      window.location.hash = `#cluster-${val}`;
+    const handleClusterChange = (value: string) => {
+      gmSetValue("CLUSTERS_DEFAULT_ID", value);
+      CONFIG.default_id = value;
+      window.location.hash = `#cluster-${value}`;
       location.reload();
-    });
-
-    const updateToggleUI = () => {
-      if (!markerToggle) return;
-      markerToggle.style.backgroundColor = CONFIG.show_markers
-        ? "#d4edda"
-        : "transparent";
-      markerToggle.style.color = CONFIG.show_markers ? "#155724" : "#ccc";
     };
 
-    updateToggleUI();
-    markerToggle?.addEventListener("click", () => {
+    const handleMarkerToggle = () => {
       CONFIG.show_markers = !CONFIG.show_markers;
       gmSetValue("CLUSTERS_SHOW_MARKERS", CONFIG.show_markers);
-      updateToggleUI();
+      reRenderMarkerToggle();
       refreshMarkersSoon();
-    });
+    };
+
+    const reRenderMarkerToggle = () => {
+      render(
+        renderClusterPicker(
+          CONFIG.default_id,
+          CONFIG.show_markers,
+          handleClusterChange,
+          handleMarkerToggle,
+        ),
+        container,
+      );
+    };
+
+    reRenderMarkerToggle();
+    list.appendChild(container.firstElementChild!);
   }
 
   async function start() {

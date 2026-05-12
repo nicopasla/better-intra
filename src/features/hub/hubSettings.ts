@@ -1,7 +1,8 @@
+import { html, render } from "lit-html";
 import { FeatureId } from "./hubSettings.data.ts";
 import GEAR_SVG from "../../assets/svg/settings_gear.svg?raw";
-
 import { getActiveFeatures } from "./hubSettings.storage.ts";
+import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 
 function findSidebarMainGroup(): HTMLDivElement | null {
   const profileLink = document.querySelector<HTMLAnchorElement>(
@@ -29,38 +30,58 @@ function findLegacyNavList(): HTMLDivElement | null {
   );
 }
 
+function renderGearButton(
+  onClick: (e: Event) => void,
+): ReturnType<typeof html> {
+  return html`<a
+    id="hub-gear-btn"
+    class="py-5 w-full flex justify-center hover:opacity-100 opacity-40"
+    href="#"
+    @click="${(e: Event) => {
+      e.preventDefault();
+      onClick(e);
+    }}"
+  >
+    ${unsafeHTML(GEAR_SVG)}
+  </a>`;
+}
+
+function renderLegacyGearButton(
+  onClick: (e: Event) => void,
+): ReturnType<typeof html> {
+  return html`<li>
+    <a
+      id="hub-gear-btn"
+      href="#"
+      @click="${(e: Event) => {
+        e.preventDefault();
+        onClick(e);
+      }}"
+    >
+      ${unsafeHTML(GEAR_SVG)}
+    </a>
+  </li>`;
+}
+
 export function mountGearButton(): void {
   const open = async () => {
     const { openHubModal } = await import("./hubSettings.ui.ts");
     await openHubModal(getActiveFeatures());
   };
+
   const sidebar = findSidebarMainGroup();
   const legacy = findLegacyNavList();
 
   if (document.getElementById("hub-gear-btn")) return;
 
   if (sidebar) {
-    const a = document.createElement("a");
-    a.id = "hub-gear-btn";
-    a.className =
-      "py-5 w-full flex justify-center hover:opacity-100 opacity-40";
-    a.innerHTML = GEAR_SVG;
-    a.onclick = (e) => {
-      e.preventDefault();
-      open();
-    };
-    sidebar.appendChild(a);
+    const container = document.createElement("div");
+    render(renderGearButton(open), container);
+    sidebar.appendChild(container.firstElementChild!);
   } else if (legacy) {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.id = "hub-gear-btn";
-    a.innerHTML = GEAR_SVG;
-    a.onclick = (e) => {
-      e.preventDefault();
-      open();
-    };
-    li.appendChild(a);
-    legacy.appendChild(li);
+    const container = document.createElement("div");
+    render(renderLegacyGearButton(open), container);
+    legacy.appendChild(container.firstElementChild!);
   }
 }
 

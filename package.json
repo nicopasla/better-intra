@@ -15,6 +15,7 @@
     "vite-plugin-monkey": "^7.1.9"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.2.4"
+    "@tailwindcss/vite": "^4.2.4",
+    "lit-html": "^3.3.2"
   }
 }

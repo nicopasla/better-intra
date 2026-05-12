@@ -1,3 +1,4 @@
+import { html, render } from "lit-html";
 import { gmGetValue, gmSetValue, gmDeleteValue } from "../../lib/gm.ts";
 
 export const injectCustomStyles = () => {
@@ -82,71 +83,90 @@ export const applyImgs = async (urls?: {
     );
 };
 
-export const createSettingsModal = async () => {
-  if (document.getElementById("profile-modal-overlay")) return;
-
-  const saved = {
-    avatar: await gmGetValue("PROFILE_IMAGE_URL", ""),
-    banner: await gmGetValue("PROFILE_BANNER_URL", ""),
-    background: await gmGetValue("PROFILE_BACKGROUND_URL", ""),
-  };
-
-  const overlay = document.createElement("div");
-  overlay.id = "profile-modal-overlay";
-  overlay.innerHTML = `
-      <div class="profile-ft-modal">
-        <div class="profile-field-group">
-          <label>Avatar URL</label>
-          <input type="text" id="in-avatar" class="ft-input" value="${saved.avatar}">
-        </div>
-        <div class="profile-field-group">
-          <label>Banner URL</label>
-          <input type="text" id="in-banner" class="ft-input" value="${saved.banner}">
-        </div>
-        <div class="profile-field-group">
-          <label>Background URL</label>
-          <input type="text" id="in-background" class="ft-input" value="${saved.background}">
-        </div>
-        <div class="profile-ft-modal-footer">
-          <div class="profile-footer-main-btns">
-            <button id="btn-preview" class="btn-ft btn-preview">Preview</button>
-            <button id="btn-save" class="btn-ft btn-save">Save</button>
-          </div>
-          <button id="btn-reset" class="btn-ft btn-reset">Restore defaults</button>
-        </div>
+function renderModalContent(saved: {
+  avatar: string;
+  banner: string;
+  background: string;
+}) {
+  return html`<div class="profile-ft-modal">
+    <div class="profile-field-group">
+      <label>Avatar URL</label>
+      <input
+        type="text"
+        id="in-avatar"
+        class="ft-input"
+        .value="${saved.avatar}"
+      />
+    </div>
+    <div class="profile-field-group">
+      <label>Banner URL</label>
+      <input
+        type="text"
+        id="in-banner"
+        class="ft-input"
+        .value="${saved.banner}"
+      />
+    </div>
+    <div class="profile-field-group">
+      <label>Background URL</label>
+      <input
+        type="text"
+        id="in-background"
+        class="ft-input"
+        .value="${saved.background}"
+      />
+    </div>
+    <div class="profile-ft-modal-footer">
+      <div class="profile-footer-main-btns">
+        <button id="btn-preview" class="btn-ft btn-preview">Preview</button>
+        <button id="btn-save" class="btn-ft btn-save">Save</button>
       </div>
-    `;
+      <button id="btn-reset" class="btn-ft btn-reset">Restore defaults</button>
+    </div>
+  </div>`;
+}
 
-  document.body.appendChild(overlay);
+function setupModalEventListeners(overlay: HTMLElement) {
+  const previewBtn = overlay.querySelector("#btn-preview");
+  const saveBtn = overlay.querySelector("#btn-save");
+  const resetBtn = overlay.querySelector("#btn-reset");
 
-  overlay.querySelector("#btn-preview")?.addEventListener("click", () => {
+  previewBtn?.addEventListener("click", () => {
+    const avatarInput = document.getElementById(
+      "in-avatar",
+    ) as HTMLInputElement;
+    const bannerInput = document.getElementById(
+      "in-banner",
+    ) as HTMLInputElement;
+    const backgroundInput = document.getElementById(
+      "in-background",
+    ) as HTMLInputElement;
+
     applyImgs({
-      avatar: (document.getElementById("in-avatar") as HTMLInputElement).value,
-      banner: (document.getElementById("in-banner") as HTMLInputElement).value,
-      background: (document.getElementById("in-background") as HTMLInputElement)
-        .value,
+      avatar: avatarInput.value,
+      banner: bannerInput.value,
+      background: backgroundInput.value,
     });
   });
 
-  overlay.querySelector("#btn-save")?.addEventListener("click", async () => {
-    await gmSetValue(
-      "PROFILE_IMAGE_URL",
-      (document.getElementById("in-avatar") as HTMLInputElement).value.trim(),
-    );
-    await gmSetValue(
-      "PROFILE_BANNER_URL",
-      (document.getElementById("in-banner") as HTMLInputElement).value.trim(),
-    );
-    await gmSetValue(
-      "PROFILE_BACKGROUND_URL",
-      (
-        document.getElementById("in-background") as HTMLInputElement
-      ).value.trim(),
-    );
+  saveBtn?.addEventListener("click", async () => {
+    const avatarInput = document.getElementById(
+      "in-avatar",
+    ) as HTMLInputElement;
+    const bannerInput = document.getElementById(
+      "in-banner",
+    ) as HTMLInputElement;
+    const backgroundInput = document.getElementById(
+      "in-background",
+    ) as HTMLInputElement;
+
+    await gmSetValue("PROFILE_IMAGE_URL", avatarInput.value.trim());
+    await gmSetValue("PROFILE_BANNER_URL", bannerInput.value.trim());
+    await gmSetValue("PROFILE_BACKGROUND_URL", backgroundInput.value.trim());
     location.reload();
   });
 
-  overlay.querySelector("#btn-reset")?.addEventListener("click", async () => {
+  resetBtn?.addEventListener("click", async () => {
     if (confirm("Reset visuals?")) {
       await gmDeleteValue("PROFILE_IMAGE_URL");
       await gmDeleteValue("PROFILE_BANNER_URL");
@@ -158,4 +178,23 @@ export const createSettingsModal = async () => {
   overlay.addEventListener("mousedown", (e) => {
     if (e.target === overlay) overlay.remove();
   });
+}
+
+export const createSettingsModal = async () => {
+  if (document.getElementById("profile-modal-overlay")) return;
+
+  const saved = {
+    avatar: await gmGetValue("PROFILE_IMAGE_URL", ""),
+    banner: await gmGetValue("PROFILE_BANNER_URL", ""),
+    background: await gmGetValue("PROFILE_BACKGROUND_URL", ""),
+  };
+
+  const overlay = document.createElement("div");
+  overlay.id = "profile-modal-overlay";
+
+  render(renderModalContent(saved), overlay);
+
+  document.body.appendChild(overlay);
+
+  setupModalEventListeners(overlay);
 };

@@ -424,19 +424,19 @@ function createModal(active: FeatureId[]): void {
       >
         <div class="flex items-baseline gap-2">
           <h3 class="font-bold text-xl tracking-tight">${HUB_INFO.name}</h3>
-          <p class="text-[14px] opacity-40 font-bold tracking-widest">
+          <p class="text-[14px] opacity-60 font-bold tracking-widest">
             v${HUB_INFO.version}
           </p>
         </div>
         <button
-          class="btn btn-sm btn-circle btn-ghost"
+          class="btn btn-circle btn-ghost"
           @click="${() => dialog.close()}"
         >
           ✕
         </button>
       </div>
 
-      <div role="tablist" class="tabs tabs-border flex-1 overflow-hidden">
+      <div role="tablist" class="tabs tabs-lg tabs-border flex-1 overflow-hidden">
         ${tabsContent}
       </div>
 
@@ -447,7 +447,7 @@ function createModal(active: FeatureId[]): void {
           <a
             href="${HUB_INFO.github}"
             target="_blank"
-            class="btn btn-ghost btn-sm opacity-50 hover:opacity-100 transition-opacity flex items-center gap-2 px-3"
+            class="btn btn-ghost flex items-center gap-2 px-3"
           >
             <img
               src="https://cdn.simpleicons.org/github/white"
@@ -460,7 +460,7 @@ function createModal(active: FeatureId[]): void {
             <span class="text-xs font-bold">GitHub</span>
           </a>
 
-          <label class="swap swap-rotate btn btn-sm btn-circle btn-ghost">
+          <label class="swap swap-rotate btn btn-circle btn-ghost">
             <input
               type="checkbox"
               id="hub-theme-toggle"
@@ -471,9 +471,9 @@ function createModal(active: FeatureId[]): void {
         </div>
         <button
           id="hub-save"
-          class="btn btn-primary px-8 font-bold flex items-center gap-2"
+          class="btn btn-success px-8 font-bold flex items-center gap-2"
         >
-          <span class="size-4 flex items-center justify-center">
+          <span class="size-5 flex items-center justify-center">
             ${saveIconSvg}
           </span>
           Save & Reload

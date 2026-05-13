@@ -20,6 +20,9 @@ const getSettings = async () => ({
   show_average: await gmGetValue<boolean>("LOGTIME_SHOW_AVERAGE", true),
   show_goal: await gmGetValue<boolean>("LOGTIME_SHOW_GOAL", true),
   show_tacos: await gmGetValue<boolean>("LOGTIME_SHOW_TACOS", false),
+  emoji: limit(await gmGetValue<string>("LOGTIME_EMOJI", "🌮")),
+  divisor: await gmGetValue<number>("LOGTIME_EMOJI_DIVISOR", 8.7),
+  rate: await gmGetValue<number>("LOGTIME_EMOJI_RATE", 2),
   show_days_mode: await gmGetValue<"date" | "both" | "days">(
     "LOGTIME_SHOW_DAYS_MODE",
     "date",
@@ -33,6 +36,11 @@ let isLoaded = false;
 let CONFIG: Awaited<ReturnType<typeof getSettings>>;
 
 const rgbaCache = new Map<string, string>();
+
+const limit = (s: string) =>
+  Array.from(s || "🌮")
+    .slice(0, 3)
+    .join("");
 
 const fmtHours = (secs: number): string => {
   const h = Math.floor(secs / 3600);
@@ -327,7 +335,8 @@ function renderMonthCard(
       >
         ${CONFIG.show_goal ? html`<b>${goalPercent}% </b>` : ""}
         ${CONFIG.show_tacos
-          ? html` ${Math.round(((total / 3600) * 2) / 8.7)} 🌮`
+          ? html` ${Math.round(((total / 3600) * CONFIG.rate) / CONFIG.divisor)}
+            ${CONFIG.emoji}`
           : ""}
         ${CONFIG.show_goal
           ? html`<div class="day-tooltip">
@@ -384,7 +393,9 @@ function renderHeaderContent(
   totalYearSecs: number,
 ): ReturnType<typeof html> {
   const lastSeenValue = getLastSeenFormatted(stats, CONFIG.show_days_mode);
-  const totalTacos = Math.floor(((totalYearSecs / 3600) * 2) / 8);
+  const totalTacos = Math.floor(
+    ((totalYearSecs / 3600) * CONFIG.rate) / CONFIG.divisor,
+  );
 
   return html`<div
     class="flex items-center justify-between p-4"
@@ -398,7 +409,7 @@ function renderHeaderContent(
       Logtime
       ${CONFIG.show_tacos
         ? html`<div class="taco-bank ml-2">
-            <span class="taco-icon">${totalTacos} 🌮</span>
+            <span class="taco-icon">${totalTacos} ${CONFIG.emoji}</span>
           </div>`
         : ""}
       ${lastSeenValue !== "N/A"

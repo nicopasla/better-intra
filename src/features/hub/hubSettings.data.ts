@@ -53,7 +53,8 @@ export type SettingKind =
   | "color"
   | "radio-group"
   | "divider"
-  | "custom";
+  | "shortcuts"
+  | "emoji";
 
 export const INTRA_FONT =
   'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
@@ -108,6 +109,15 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "logtime",
+      key: "DISABLE_ANIMATIONS",
+      label: "Disable Animations",
+      desc: "Removes transition effects.",
+      kind: "toggle",
+      defaultValue: false,
+      grid: true,
+    },
+    {
+      feature: "logtime",
       key: "LOGTIME_SHOW_TACOS",
       label: "Show tacos",
       desc: "Enables the taco visual markers.",
@@ -115,14 +125,32 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       defaultValue: false,
       grid: true,
     },
-
     {
       feature: "logtime",
-      key: "DISABLE_ANIMATIONS",
-      label: "Disable Animations",
-      desc: "Reduces motion and removes transition effects.",
-      kind: "toggle",
-      defaultValue: false,
+      key: "LOGTIME_EMOJI",
+      label: "Custom Emoji",
+      desc: "Replace 🌮 with your 3 favorites emojis.",
+      kind: "emoji",
+      placeholder: "🌮",
+      defaultValue: "🌮",
+      grid: true,
+    },
+    {
+      feature: "logtime",
+      key: "LOGTIME_EMOJI_DIVISOR",
+      label: "Emoji Value",
+      desc: "Value of the emoji.",
+      kind: "number",
+      defaultValue: 8.7,
+      grid: true,
+    },
+    {
+      feature: "logtime",
+      key: "LOGTIME_EMOJI_RATE",
+      label: "Hourly Earning",
+      desc: "How much you earn per hour.",
+      kind: "number",
+      defaultValue: 2,
       grid: true,
     },
 
@@ -183,20 +211,6 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
   ],
   profile: [
-    {
-      feature: "profile",
-      label: "General",
-      kind: "divider",
-    },
-    {
-      feature: "profile",
-      key: "PROFILE_SLOTS_REDIRECTION",
-      label: "Slots button redirection",
-      desc: "Redirects the 'Manage slots' button to the proper Slots webpage.",
-      kind: "toggle",
-      defaultValue: true,
-    },
-
     {
       feature: "profile",
       label: "Events",
@@ -268,14 +282,28 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       placeholder: "",
       defaultValue: "",
     },
+
+    {
+      feature: "profile",
+      label: "General",
+      kind: "divider",
+    },
+    {
+      feature: "profile",
+      key: "PROFILE_SLOTS_REDIRECTION",
+      label: "Slots button redirection",
+      desc: "Redirects the 'Manage slots' button to the proper Slots webpage.",
+      kind: "toggle",
+      defaultValue: true,
+    },
   ],
   shortcuts: [
-      {
-        feature: "shortcuts",
-        key: "SHORTCUTS_LINKS",
-        label: "",
-        kind: "custom",
-        fullWidth: true,
-      },
-    ],
+    {
+      feature: "shortcuts",
+      key: "SHORTCUTS_LINKS",
+      label: "",
+      kind: "shortcuts",
+      fullWidth: true,
+    },
+  ],
 };

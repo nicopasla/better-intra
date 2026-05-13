@@ -43,7 +43,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
   const storedValue = gmGetValue<unknown>(def.key, null);
   const value = storedValue !== null ? storedValue : (def.defaultValue ?? "");
 
-  if (def.kind === "custom" && def.key === "SHORTCUTS_LINKS") {
+  if (def.kind === "shortcuts" && def.key === "SHORTCUTS_LINKS") {
     const container = document.createElement("div");
     let links = getStoredLinks(gmGetValue);
 
@@ -82,7 +82,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
     case "toggle":
       return html`<input
         type="checkbox"
-        class="toggle toggle-accent"
+        class="toggle toggle-lg toggle-accent"
         data-setting-key="${def.key}"
         ?checked="${Boolean(value)}"
         ?disabled="${!enabled}"
@@ -91,7 +91,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
     case "number":
       return html`<input
         type="number"
-        class="input input-accent w-24 input-sm"
+        class="input input-accent w-24"
         .value="${String(value)}"
         data-setting-key="${def.key}"
         ?disabled="${!enabled}"
@@ -99,7 +99,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
 
     case "select":
       return html`<select
-        class="select select-accent select-sm"
+        class="select select-accent"
         data-setting-key="${def.key}"
         ?disabled="${!enabled}"
       >
@@ -167,7 +167,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
           <input
             type="url"
             required
-            placeholder="https://example.com"
+            placeholder="https://beemovie.com/beemovie.gif"
             .value="${String(value)}"
             data-setting-key="${def.key}"
             ?disabled="${!enabled}"
@@ -177,12 +177,21 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
         </label>
       </div>`;
 
-    case "text":
+    case "emoji":
     default:
       return html`<input
         type="text"
-        class="input input-bordered w-full input-sm"
+        class="input input-accent w-20"
+        placeholder="${def.placeholder || ""}"
+        maxlength="10"
         .value="${String(value || "")}"
+        @input="${(e: Event) => {
+          const input = e.target as HTMLInputElement;
+          const symbols = Array.from(input.value);
+          if (symbols.length > 3) {
+            input.value = symbols.slice(0, 3).join("");
+          }
+        }}"
         data-setting-key="${def.key}"
         ?disabled="${!enabled}"
       />`;
@@ -197,7 +206,7 @@ function renderSetting(def: HubSettingDef, enabled: boolean) {
   }
 
   const isFullWidth =
-    def.fullWidth ?? (def.kind === "url" || def.kind === "custom");
+    def.fullWidth ?? (def.kind === "url" || def.kind === "shortcuts");
   const gridClass = def.grid === true ? "" : "col-span-full";
 
   return html`<div class="card bg-base-200 shadow-sm p-3 sm:p-4 ${gridClass}">

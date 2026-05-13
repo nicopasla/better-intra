@@ -1,4 +1,5 @@
 import { html, render } from "lit-html";
+import GLOBE from "../../assets/svg/globe.svg";
 
 export const SHORTCUTS_FEATURE_ID = "shortcuts";
 
@@ -43,6 +44,15 @@ export const normalizeLink = (link: unknown): ShortcutLink => {
   };
 };
 
+export const getFaviconUrl = (url: string): string => {
+  try {
+    const parsed = new URL(url);
+    return `${parsed.origin}/favicon.ico`;
+  } catch {
+    return "";
+  }
+};
+
 export const getContrastColor = (hex: string): string => {
   const safeHex = sanitizeColor(hex);
   const r = parseInt(safeHex.slice(1, 3), 16);
@@ -65,6 +75,7 @@ export function renderShortcutRow(
         data-shortcuts-name
         .value="${link.name}"
         placeholder="Name"
+        maxlength="20"
       />
     </div>
     <div class="flex-2">
@@ -101,6 +112,7 @@ export function renderShortcutsSettings(
   onRefreshPreview: () => void,
 ): ReturnType<typeof html> {
   const maxLinks = 8;
+  const isFull = links.length >= maxLinks;
 
   return html`
     <div class="shortcuts-settings flex flex-col gap-4">
@@ -115,8 +127,11 @@ export function renderShortcutsSettings(
           type="button"
           class="btn btn-success flex-1"
           @click="${onAddRow}"
+          ?disabled="${isFull}"
         >
-          Add (${links.length}/${maxLinks})
+          ${isFull
+            ? "Limit Reached"
+            : html`Add Link (${links.length}/${maxLinks})`}
         </button>
 
         <button
@@ -229,11 +244,16 @@ export function renderShortcutsDisplay(
               class=" p-1 rounded-md group-hover:rotate-6 transition-transform"
             >
               <img
-                src="https://www.google.com/s2/favicons?domain=${new URL(
-                  link.url,
-                ).hostname}&sz=32"
+                src="${getFaviconUrl(link.url)}"
                 class="w-8 h-8 object-contain"
                 alt=""
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                @error="${(e: Event) => {
+                  const img = e.target as HTMLImageElement;
+                  img.onerror = null;
+                  img.src = GLOBE;
+                }}"
               />
             </div>
 

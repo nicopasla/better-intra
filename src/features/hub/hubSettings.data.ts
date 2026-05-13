@@ -5,7 +5,7 @@ import SHORTCUT from "../../assets/svg/shortcut.svg?raw";
 
 export const HUB_INFO = {
   name: "Better Intra",
-  version: "0.0.4",
+  version: "0.1.0",
   author: "https://github.com/nicopasla",
   github: "https://github.com/nicopasla/better-intra",
   issues: "https://github.com/nicopasla/better-intra/issues",
@@ -119,8 +119,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     {
       feature: "logtime",
       key: "LOGTIME_SHOW_TACOS",
-      label: "Show tacos",
-      desc: "Enables the taco visual markers.",
+      label: "Show emoji",
+      desc: "Enables the emoji visual markers.",
       kind: "toggle",
       defaultValue: false,
       grid: true,

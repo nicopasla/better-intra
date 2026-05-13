@@ -11,16 +11,30 @@ Collection of features inside a single Userscript that improve UI and UX of the 
 ## Features
 
 ### 📅 Logtime
+
+Redesigns logtime tracking to show weekly and total hours.
+
 * **Goal Tracking:** Set a target number of hours (default: 140) to track your progress.
 * **Daily Average:** Display your average hours per day.
 * **Last active label:** Date can be displayed as "17/04", "2 days ago", or both.
 * **Visual Control:** Fully customize calendar and label colors to match your taste.
+* **Emoji visualizer:** custom emoji, emoji value and hourly earning.
+
+---
 
 ### 🖥️ Clusters
+
+Improves cluster navigation and visual orientation.
+
 * **Directional Markers:** Adds "chair" icons to the cluster map to show seat orientation.
 * **Default Cluster:** Set a preferred Cluster ID to load your favorite cluster instantly.
 
+---
+
 ### 👤 Profile
+
+Enhances readability and adds local customization options.
+
 * **Locally change your:**
   * Avatar
   * Banner
@@ -32,6 +46,16 @@ Collection of features inside a single Userscript that improve UI and UX of the 
 * Redirection of the "Manage slots" button to the correct webpage.
 * Improved readability using a clean system-font stack.
 
+---
+
+### 🔗 Shortcuts
+
+Adds custom quick-access links on the profile page.
+
+* Up to 8 configurable shortcuts
+
+---
+
 ### ⚙️ Settings
 <img alt="Settings" src="images/settings.gif"/>
 
@@ -40,6 +64,7 @@ Collection of features inside a single Userscript that improve UI and UX of the 
 <img alt="Logtime screenshot" src="images/logtime.png"/>
 <img alt="Profile screenshot" src="images/profile.png"/>
 <img alt="Events screenshot" src="images/profile-events.png"/>
+<img alt="Events screenshot" src="images/shortcuts-settings.png"/>
 
 ## Uninstall
 
@@ -55,6 +80,7 @@ Always use at your own risk!
 
 * Typescript / JavaScript (Core Logic)
 * [DaisyUI](https://daisyui.com/) (Modal settings dialog, documentation)
+* GitHub Actions to create the changelog and the build when there a new release.
 * Gemini and Copilot Student (Documentation & Optimization)
 
 ## Compatibility
@@ -72,6 +98,31 @@ Tested only on Firefox (Old and new), only work on Intra v3
 - This script is only working on local.
 - Settings are stored locally (userscript storage).
 - The release is created using Github Actions from the source.
+
+## Development
+
+### Prerequisites
+
+- Node.js
+- npm
+
+### Setup
+
+```bash
+git clone https://github.com/nicopasla/better-intra.git
+cd better-intra
+npm install
+```
+* **Development build**
+```bash
+npm run dev
+```
+* **Production build**
+```bash
+npm run build
+npm run preview
+```
+The output better-intra.user.js file will be generated in the dist folder.
 
 ## TODO
 

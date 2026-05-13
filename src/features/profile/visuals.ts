@@ -54,7 +54,7 @@ export const applyImgs = async (urls?: {
   };
 
   const avatar = document.querySelector(
-    'div.rounded-full[style*="background-image"]',
+    'div.rounded-full.w-52.h-52[style*="background-image"]',
   ) as HTMLElement;
   const banner = document.querySelector(
     "div.border-neutral-600.bg-ft-gray\\/50",

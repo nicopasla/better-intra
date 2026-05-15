@@ -7,7 +7,7 @@ import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
 
 export const HUB_INFO = {
   name: "Better Intra",
-  version: "0.1.0",
+  version: "0.2.0",
   author: "https://github.com/nicopasla",
   github: "https://github.com/nicopasla/better-intra",
   issues: "https://github.com/nicopasla/better-intra/issues",

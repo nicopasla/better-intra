@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+
+## [0.1.0] - 2026-05-13
+
+### Features 🎉
+
+- feat(logtime): add emoji customization and related settings for logtime feature ([829f9f1](https://github.com/nicopasla/better-intra/commit/829f9f1))
+- feat(shortcuts): add favicon retrieval and enhance shortcut row UI ([56347ca](https://github.com/nicopasla/better-intra/commit/56347ca))
+- feat(shortcuts): add shortcuts feature with UI for managing links ([73492e4](https://github.com/nicopasla/better-intra/commit/73492e4))
+
+### Bug fixes 🐛
+
+- fix(visuals): refine avatar selector to include specific dimensions ([3207100](https://github.com/nicopasla/better-intra/commit/3207100))
+
+### Maintenance 🧹
+
+- chore: Bump version to 0.1.0 and update changelog ([d233063](https://github.com/nicopasla/better-intra/commit/d233063))
+- chore(refactor): Migrate from innerHTML to lit-html templates ([e05b07d](https://github.com/nicopasla/better-intra/commit/e05b07d))
+
+### Other Changes 🔄
+
+- refactor(hub): enhance styling and button sizes in hub modal ([61e9112](https://github.com/nicopasla/better-intra/commit/61e9112))
+- refactor(clusters): consolidate configuration management and remove utility functions ([3d7d18d](https://github.com/nicopasla/better-intra/commit/3d7d18d))
+
 ## [0.0.4] - 2026-05-11
 
 ### Bug fixes 🐛
@@ -37,7 +60,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v0.0.4...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/nicopasla/better-intra/compare/v0.0.4...v0.1.0
 [0.0.4]: https://github.com/nicopasla/better-intra/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/nicopasla/better-intra/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/nicopasla/better-intra/compare/v0.0.1...v0.0.2

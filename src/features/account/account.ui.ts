@@ -69,11 +69,11 @@ export function renderAccountTab(
             <span class="text ">Last synced</span>
             <div class="flex items-center gap-4">
               <div
-                class="size-4 rounded-full ${isConnected
+                class="size-3 rounded-full ${isConnected
                   ? "status status-success"
                   : "status status-error"}"
               ></div>
-              <span class="text-4xl font-mono font-bold tracking-tight"
+              <span class="text-xl font-mono"
                 >${lastSync}</span
               >
             </div>

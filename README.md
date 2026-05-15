@@ -35,10 +35,12 @@ Improves cluster navigation and visual orientation.
 
 Enhances readability and adds local customization options.
 
-* **Locally change your:**
+* **Change your:**
   * Avatar
   * Banner
   * Background
+
+> When viewing another person profile with Better Intra installed you will see his custom images.
 
 * **Event Filtering:**
   * Campus Filter.
@@ -54,6 +56,10 @@ Adds custom quick-access links on the profile page.
 
 * Up to 8 configurable shortcuts
 
+### ☁️ Account
+
+* Store your local settings into a KV database on a Cloudflare Worker.
+
 ---
 
 ### ⚙️ Settings
@@ -65,6 +71,7 @@ Adds custom quick-access links on the profile page.
 <img alt="Profile screenshot" src="images/profile.png"/>
 <img alt="Events screenshot" src="images/profile-events.png"/>
 <img alt="Events screenshot" src="images/shortcuts-settings.png"/>
+<img alt="Account screenshot" src="images/account.png"/>
 
 ## Uninstall
 
@@ -72,7 +79,7 @@ Disable or remove the script from your userscript manager.
 
 ## Disclaimer
 
-This extension is a personal project that only changes the style of the website. It is purely aesthetic and does not fetch anything.
+This extension is a personal project that only changes the style of the website. It is purely aesthetic and does not fetch anything except esthetics settings when visiting others profiles.
 This can break at any time due to intra code changes.
 Always use at your own risk!
 
@@ -82,6 +89,8 @@ Always use at your own risk!
 * [DaisyUI](https://daisyui.com/) (Modal settings dialog, documentation)
 * GitHub Actions to create the changelog and the build when there a new release.
 * Gemini and Copilot Student (Documentation & Optimization)
+* Cloudflare Worker KW for the backend to store settings.
+* SVG icons are from [Font Awesome](https://fontawesome.com/)
 
 ## Compatibility
 
@@ -95,8 +104,8 @@ Tested only on Firefox (Old and new), only work on Intra v3
 
 ## Privacy
 
-- This script is only working on local.
-- Settings are stored locally (userscript storage).
+- This script is only working on local. (Except when sending and receiving settings into a Cloudflare Worker)
+- Settings are stored locally (userscript storage) or if you choose to inside a Cloudflare Worker KV.
 - The release is created using Github Actions from the source.
 
 ## Development

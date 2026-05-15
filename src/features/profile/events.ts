@@ -1,15 +1,11 @@
 import { html, render } from "lit-html";
-import { gmGetValue, gmSetValue } from "../../lib/gm.ts";
+import { gmSetValue } from "../../lib/gm.ts";
+import { getConfig } from "../../config.ts";
 import { HUB_SETTING_DEFS } from "../hub/hubSettings.data.ts";
 
 export async function updateEventFilters() {
-  const settings = {
-    campus_mode: await gmGetValue<string>("PROFILE_CAMPUS_FILTER", "all"),
-    event_filter_mode: await gmGetValue<string>(
-      "PROFILE_EVENT_TYPE_FILTER",
-      "all",
-    ),
-  };
+  const campus_mode = await getConfig("PROFILE_CAMPUS_FILTER");
+  const event_filter_mode = await getConfig("PROFILE_EVENT_TYPE_FILTER");
 
   const eventCards = document.querySelectorAll(
     "div.relative.clear-both.m-1.border.rounded",
@@ -25,22 +21,21 @@ export async function updateEventFilters() {
         ?.nextElementSibling?.textContent?.toLowerCase() || "";
 
     const campusMatch =
-      settings.campus_mode === "all" ||
-      (settings.campus_mode === "brussels" &&
+      campus_mode === "all" ||
+      (campus_mode === "brussels" &&
         (locationText.includes("brussels") ||
           locationText.includes("bru") ||
           /\b(shi|fu|mi|belfius)\b/i.test(locationText))) ||
-      (settings.campus_mode === "antwerp" &&
+      (campus_mode === "antwerp" &&
         (locationText.includes("antwerp") ||
           locationText.includes("ant") ||
           /\b(a1|a2)\b/i.test(locationText)));
 
     let typeMatch = true;
-    if (settings.event_filter_mode === "exam")
-      typeMatch = typeText.includes("exam");
-    else if (settings.event_filter_mode === "pedago")
+    if (event_filter_mode === "exam") typeMatch = typeText.includes("exam");
+    else if (event_filter_mode === "pedago")
       typeMatch = typeText.includes("exam") || typeText.includes("challenge");
-    else if (settings.event_filter_mode === "social")
+    else if (event_filter_mode === "social")
       typeMatch = ["association", "conference", "workshop"].some((t) =>
         typeText.includes(t),
       );
@@ -83,10 +78,7 @@ export async function injectEventsSelect() {
   );
   if (!eventDef?.options) return;
 
-  const currentFilter = await gmGetValue<string>(
-    "PROFILE_EVENT_TYPE_FILTER",
-    "all",
-  );
+  const currentFilter = await getConfig("PROFILE_EVENT_TYPE_FILTER");
 
   const container = document.createElement("div");
 

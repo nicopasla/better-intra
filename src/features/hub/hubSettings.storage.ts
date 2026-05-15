@@ -1,4 +1,5 @@
-import { gmGetValue, gmSetValue } from "../../lib/gm.ts";
+import { gmSetValue } from "../../lib/gm.ts";
+import { getConfig } from "../../config.ts";
 import {
   FEATURE_DEFS,
   FEATURE_IDS,
@@ -8,6 +9,7 @@ import {
 
 function normalizeActive(raw: unknown): FeatureId[] {
   let parsed: unknown = raw;
+
   if (typeof raw === "string") {
     try {
       parsed = JSON.parse(raw);
@@ -15,18 +17,23 @@ function normalizeActive(raw: unknown): FeatureId[] {
       parsed = [];
     }
   }
-  if (!Array.isArray(parsed)) {
+
+  if (!Array.isArray(parsed) || parsed.length === 0) {
     return FEATURE_DEFS.map((f) => f.id);
   }
-  const ids = parsed.filter((v): v is FeatureId =>
+
+  const ids = (parsed as string[]).filter((v): v is FeatureId =>
     FEATURE_IDS.has(v as FeatureId),
   );
+
   return ids.length ? ids : FEATURE_DEFS.map((f) => f.id);
 }
 
-export function getActiveFeatures(): FeatureId[] {
-  const raw = gmGetValue<unknown>(STORAGE_KEY, null);
+export async function getActiveFeatures(): Promise<FeatureId[]> {
+  const raw = await getConfig("ACTIVE_SCRIPTS");
   const active = normalizeActive(raw);
-  gmSetValue(STORAGE_KEY, JSON.stringify(active));
+
+  await gmSetValue(STORAGE_KEY, JSON.stringify(active));
+
   return active;
 }

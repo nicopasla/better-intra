@@ -66,7 +66,10 @@ function renderLegacyGearButton(
 export function mountGearButton(): void {
   const open = async () => {
     const { openHubModal } = await import("./hubSettings.ui.ts");
-    await openHubModal(getActiveFeatures());
+
+    const active = await getActiveFeatures();
+
+    await openHubModal(active);
   };
 
   const sidebar = findSidebarMainGroup();
@@ -85,8 +88,8 @@ export function mountGearButton(): void {
   }
 }
 
-export function initHubSettings(): FeatureId[] {
-  const active = getActiveFeatures();
+export async function initHubSettings(): Promise<FeatureId[]> {
+  const active = await getActiveFeatures();
   mountGearButton();
   const hubInterval = setInterval(mountGearButton, 500);
   setTimeout(() => clearInterval(hubInterval), 10000);

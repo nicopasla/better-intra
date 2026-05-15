@@ -14,7 +14,9 @@ import {
   getStoredLinks,
   extractLinksFromForm,
   renderShortcutsSettings,
+  type ShortcutLink,
 } from "../shortcuts/shortcuts.ui.ts";
+import { initAccountSettings } from "../account/account.ui.ts";
 import HUB_CSS from "../../assets/style.css?inline";
 
 export async function openHubModal(active: FeatureId[]) {
@@ -45,7 +47,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
 
   if (def.kind === "shortcuts" && def.key === "SHORTCUTS_LINKS") {
     const container = document.createElement("div");
-    let links = getStoredLinks(gmGetValue);
+    let links: ShortcutLink[] = [];
 
     const save = () => {
       links = extractLinksFromForm(container);
@@ -74,7 +76,17 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
       );
     };
 
-    update();
+    getStoredLinks().then((storedLinks) => {
+      links = storedLinks;
+      update();
+    });
+
+    return container;
+  }
+
+  if (def.kind === "account") {
+    const container = document.createElement("div");
+    initAccountSettings(container);
     return container;
   }
 
@@ -445,7 +457,10 @@ function createModal(active: FeatureId[]): void {
         </button>
       </div>
 
-      <div role="tablist" class="tabs tabs-lg tabs-border flex-1 overflow-hidden">
+      <div
+        role="tablist"
+        class="tabs tabs-lg tabs-border flex-1 overflow-hidden"
+      >
         ${tabsContent}
       </div>
 
@@ -536,7 +551,7 @@ function createModal(active: FeatureId[]): void {
   });
 }
 
-function saveHubState(root: ShadowRoot | HTMLElement): FeatureId[] {
+function saveHubState(root: ShadowRoot | HTMLElement) {
   const selected = Array.from(
     root.querySelectorAll<HTMLInputElement>("input.hub-feature-toggle"),
   )
@@ -580,15 +595,12 @@ function saveHubState(root: ShadowRoot | HTMLElement): FeatureId[] {
   ) as HTMLElement | null;
   if (shortcutsPanel) {
     const links = extractLinksFromForm(shortcutsPanel);
-
     if (links.length > 0) {
       gmSetValue("SHORTCUTS_LINKS", JSON.stringify(links));
     } else {
       gmDeleteValue("SHORTCUTS_LINKS");
     }
   }
-
-  return selected;
 }
 
 function resetFeatureSettings(

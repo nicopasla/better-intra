@@ -35,9 +35,7 @@ export async function injectShortcutsDisplay() {
     infoBlock.classList.remove("w-full");
   }
 
-  const links = getStoredLinks((key: string, defaultValue: unknown) =>
-    gmGetValue(key, defaultValue),
-  );
+  const links = await getStoredLinks();
 
   let wrapper = document.getElementById(CONTAINER_ID);
   if (!wrapper) {

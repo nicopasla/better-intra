@@ -2,6 +2,8 @@ import CLOCK from "../../assets/svg/clock.svg?raw";
 import CLUSTERS from "../../assets/svg/grip-vertical.svg?raw";
 import USER from "../../assets/svg/user.svg?raw";
 import SHORTCUT from "../../assets/svg/shortcut.svg?raw";
+import CLOUD from "../../assets/svg/cloud.svg?raw";
+import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
 
 export const HUB_INFO = {
   name: "Better Intra",
@@ -37,6 +39,12 @@ export const FEATURE_DEFS = [
     icon: SHORTCUT,
     desc: "Manage custom navigation links.",
   },
+  {
+    id: "account",
+    name: "Account",
+    icon: CLOUD,
+    desc: "Sync your settings to the cloud and manage your session.",
+  },
 ] as const;
 
 export type FeatureId = (typeof FEATURE_DEFS)[number]["id"];
@@ -54,7 +62,8 @@ export type SettingKind =
   | "radio-group"
   | "divider"
   | "shortcuts"
-  | "emoji";
+  | "emoji"
+  | "account";
 
 export const INTRA_FONT =
   'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
@@ -62,7 +71,7 @@ export const INTRA_FONT =
 export type HubSettingDef = {
   feature: FeatureId;
   label: string;
-  key?: string;
+  key?: ConfigKey;
   desc?: string;
   kind: SettingKind;
   nullable?: boolean;
@@ -86,7 +95,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "number",
       min: 0,
       step: 1,
-      defaultValue: 140,
+      defaultValue: CONFIG_DEFAULT.LOGTIME_GOAL_HOURS,
       grid: true,
     },
     {
@@ -95,7 +104,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Show average",
       desc: "Displays your average hours per day.",
       kind: "toggle",
-      defaultValue: true,
+      defaultValue: CONFIG_DEFAULT.LOGTIME_SHOW_AVERAGE,
       grid: true,
     },
     {
@@ -104,7 +113,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Show goal",
       desc: "Shows the goal indicator.",
       kind: "toggle",
-      defaultValue: true,
+      defaultValue: CONFIG_DEFAULT.LOGTIME_SHOW_GOAL,
       grid: true,
     },
     {
@@ -113,7 +122,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Disable Animations",
       desc: "Removes transition effects.",
       kind: "toggle",
-      defaultValue: false,
+      defaultValue: CONFIG_DEFAULT.DISABLE_ANIMATIONS,
       grid: true,
     },
     {
@@ -122,7 +131,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Show emoji",
       desc: "Enables the emoji visual markers.",
       kind: "toggle",
-      defaultValue: false,
+      defaultValue: CONFIG_DEFAULT.LOGTIME_SHOW_TACOS,
       grid: true,
     },
     {
@@ -132,7 +141,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       desc: "Replace 🌮 with your 3 favorites emojis.",
       kind: "emoji",
       placeholder: "🌮",
-      defaultValue: "🌮",
+      defaultValue: CONFIG_DEFAULT.LOGTIME_EMOJI,
       grid: true,
     },
     {
@@ -141,7 +150,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Emoji Value",
       desc: "Value of the emoji.",
       kind: "number",
-      defaultValue: 8.7,
+      defaultValue: CONFIG_DEFAULT.LOGTIME_EMOJI_DIVISOR,
       grid: true,
     },
     {
@@ -150,7 +159,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Hourly Earning",
       desc: "How much you earn per hour.",
       kind: "number",
-      defaultValue: 2,
+      defaultValue: CONFIG_DEFAULT.LOGTIME_EMOJI_RATE,
       grid: true,
     },
 
@@ -160,7 +169,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Day labels mode",
       desc: "Chooses how the day labels are displayed.",
       kind: "radio-group",
-      defaultValue: "date",
+      defaultValue: CONFIG_DEFAULT.LOGTIME_SHOW_DAYS_MODE,
       options: [
         { label: "17/04", value: "date" },
         { label: "17/04 (2 days ago)", value: "both" },
@@ -175,7 +184,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       desc: "Accent color used for the calendar.",
       kind: "color",
       placeholder: "#00BCBA",
-      defaultValue: "#00BCBA",
+      defaultValue: CONFIG_DEFAULT.LOGTIME_CALENDAR_COLOR,
       grid: true,
     },
     {
@@ -185,7 +194,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       desc: "Accent color used for labels and totals.",
       kind: "color",
       placeholder: "#26a641",
-      defaultValue: "#26a641",
+      defaultValue: CONFIG_DEFAULT.LOGTIME_LABELS_COLOR,
       grid: true,
     },
   ],
@@ -196,7 +205,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Show markers",
       desc: "Shows the direction markers on the cluster screen.",
       kind: "toggle",
-      defaultValue: true,
+      defaultValue: CONFIG_DEFAULT.CLUSTERS_SHOW_MARKERS,
       grid: true,
     },
     {
@@ -206,7 +215,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       desc: "Prefills a cluster ID when the page opens.",
       kind: "number",
       placeholder: "",
-      defaultValue: "",
+      defaultValue: CONFIG_DEFAULT.CLUSTERS_DEFAULT_ID,
       grid: true,
     },
   ],
@@ -222,7 +231,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Campus Display Mode",
       desc: "Choose which campus events to display on your profile.",
       kind: "radio-group",
-      defaultValue: "all",
+      defaultValue: CONFIG_DEFAULT.PROFILE_CAMPUS_FILTER,
       options: [
         { label: "Show All", value: "all" },
         { label: "Brussels", value: "brussels" },
@@ -235,7 +244,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Event visibility",
       desc: "Choose which types of events you want to see.",
       kind: "radio-group",
-      defaultValue: "all",
+      defaultValue: CONFIG_DEFAULT.PROFILE_EVENT_TYPE_FILTER,
       options: [
         { label: "Show All", value: "all" },
         { label: "Exams", value: "exam" },
@@ -258,7 +267,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       fullWidth: true,
       nullable: true,
       placeholder: "URL",
-      defaultValue: "",
+      defaultValue: CONFIG_DEFAULT.PROFILE_IMAGE_URL,
     },
     {
       feature: "profile",
@@ -269,7 +278,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       fullWidth: true,
       nullable: true,
       placeholder: "",
-      defaultValue: "",
+      defaultValue: CONFIG_DEFAULT.PROFILE_BANNER_URL,
     },
     {
       feature: "profile",
@@ -280,7 +289,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       fullWidth: true,
       nullable: true,
       placeholder: "",
-      defaultValue: "",
+      defaultValue: CONFIG_DEFAULT.PROFILE_BACKGROUND_URL,
     },
 
     {
@@ -294,7 +303,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Slots button redirection",
       desc: "Redirects the 'Manage slots' button to the proper Slots webpage.",
       kind: "toggle",
-      defaultValue: true,
+      defaultValue: CONFIG_DEFAULT.PROFILE_SLOTS_REDIRECTION,
     },
   ],
   shortcuts: [
@@ -303,6 +312,15 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       key: "SHORTCUTS_LINKS",
       label: "",
       kind: "shortcuts",
+      fullWidth: true,
+    },
+  ],
+  account: [
+    {
+      feature: "account",
+      key: "ACCOUNT",
+      label: "",
+      kind: "account",
       fullWidth: true,
     },
   ],

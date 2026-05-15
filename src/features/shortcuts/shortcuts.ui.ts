@@ -1,4 +1,6 @@
 import { html, render } from "lit-html";
+import { getConfig } from "../../config.ts";
+import { gmSetValue } from "../../lib/gm.ts";
 import GLOBE from "../../assets/svg/globe.svg";
 
 export const SHORTCUTS_FEATURE_ID = "shortcuts";
@@ -153,10 +155,8 @@ export function renderShortcutsSettings(
   `;
 }
 
-export function getStoredLinks(
-  getValue: (key: string, defaultValue: unknown) => unknown,
-): ShortcutLink[] {
-  const stored = getValue("SHORTCUTS_LINKS", null);
+export async function getStoredLinks(): Promise<ShortcutLink[]> {
+  const stored = await getConfig("SHORTCUTS_LINKS");
 
   if (!stored) {
     return [{ name: "", url: "", color: "#7dd3fc" }];
@@ -267,12 +267,13 @@ export function renderShortcutsDisplay(
   `;
 }
 
-export function initShortcutsSettings(
-  container: HTMLElement,
-  getValue: any,
-  setValue: any,
-) {
-  let links = getStoredLinks(getValue);
+export async function initShortcutsSettings(container: HTMLElement) {
+  let links: ShortcutLink[] = await getStoredLinks();
+
+  const save = () => {
+    const updated = extractLinksFromForm(container);
+    gmSetValue("SHORTCUTS_LINKS", JSON.stringify(updated));
+  };
 
   const update = () => {
     render(
@@ -294,11 +295,6 @@ export function initShortcutsSettings(
       ),
       container,
     );
-  };
-
-  const save = () => {
-    const updated = extractLinksFromForm(container);
-    setValue("SHORTCUTS_LINKS", JSON.stringify(updated));
   };
 
   update();

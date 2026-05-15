@@ -1,5 +1,6 @@
 import { html, render } from "lit-html";
-import { gmGetValue, gmSetValue } from "../../lib/gm.ts";
+import { gmSetValue } from "../../lib/gm.ts";
+import { getConfig } from "../../config.ts";
 import { SCREENS, CLUSTERS, CLUSTER_CONFIG } from "./clusters.data.ts";
 
 type Config = {
@@ -252,10 +253,9 @@ export async function initClusters() {
   }
 
   async function start() {
-    CONFIG = {
-      show_markers: await gmGetValue("CLUSTERS_SHOW_MARKERS", true),
-      default_id: await gmGetValue("CLUSTERS_DEFAULT_ID", ""),
-    };
+    const show_markers = await getConfig("CLUSTERS_SHOW_MARKERS");
+    const default_id = await getConfig("CLUSTERS_DEFAULT_ID");
+    CONFIG = { show_markers, default_id };
 
     const findAndAttach = () => {
       const svg = document.querySelector<SVGSVGElement>("svg");

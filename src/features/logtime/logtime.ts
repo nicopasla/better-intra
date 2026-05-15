@@ -1,5 +1,5 @@
 import { html, render } from "lit-html";
-import { gmGetValue } from "../../lib/gm.ts";
+import { getConfig } from "../../config.ts";
 import LOGTIME_CSS from "./logtime.css?inline";
 
 const MAX_INTENSITY_SECS = 3600 * 12;
@@ -15,25 +15,22 @@ const COLORS = {
 const INTRA_FONT =
   'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
-const getSettings = async () => ({
-  goal_hours: await gmGetValue<number>("LOGTIME_GOAL_HOURS", 140),
-  show_average: await gmGetValue<boolean>("LOGTIME_SHOW_AVERAGE", true),
-  show_goal: await gmGetValue<boolean>("LOGTIME_SHOW_GOAL", true),
-  show_tacos: await gmGetValue<boolean>("LOGTIME_SHOW_TACOS", false),
-  emoji: limit(await gmGetValue<string>("LOGTIME_EMOJI", "🌮")),
-  divisor: await gmGetValue<number>("LOGTIME_EMOJI_DIVISOR", 8.7),
-  rate: await gmGetValue<number>("LOGTIME_EMOJI_RATE", 2),
-  show_days_mode: await gmGetValue<"date" | "both" | "days">(
-    "LOGTIME_SHOW_DAYS_MODE",
-    "date",
-  ),
-  calendar_color: await gmGetValue<string>("LOGTIME_CALENDAR_COLOR", "#00BCBA"),
-  labels_color: await gmGetValue<string>("LOGTIME_LABELS_COLOR", "#26a641"),
-  disable_animations: await gmGetValue<boolean>("DISABLE_ANIMATIONS", false),
+const getConfigs = async () => ({
+  goal_hours: await getConfig("LOGTIME_GOAL_HOURS"),
+  show_average: await getConfig("LOGTIME_SHOW_AVERAGE"),
+  show_goal: await getConfig("LOGTIME_SHOW_GOAL"),
+  show_tacos: await getConfig("LOGTIME_SHOW_TACOS"),
+  emoji: limit(await getConfig("LOGTIME_EMOJI")),
+  divisor: await getConfig("LOGTIME_EMOJI_DIVISOR"),
+  rate: await getConfig("LOGTIME_EMOJI_RATE"),
+  show_days_mode: await getConfig("LOGTIME_SHOW_DAYS_MODE"),
+  calendar_color: await getConfig("LOGTIME_CALENDAR_COLOR"),
+  labels_color: await getConfig("LOGTIME_LABELS_COLOR"),
+  disable_animations: await getConfig("DISABLE_ANIMATIONS"),
 });
 
 let isLoaded = false;
-let CONFIG: Awaited<ReturnType<typeof getSettings>>;
+let CONFIG: Awaited<ReturnType<typeof getConfigs>>;
 
 const rgbaCache = new Map<string, string>();
 
@@ -575,7 +572,7 @@ export async function initLogtime() {
   if (isLoaded) return;
   installFetchHook();
 
-  CONFIG = await getSettings();
+  CONFIG = await getConfigs();
   setupStyles();
 
   if (isProfileV3TargetPage()) {

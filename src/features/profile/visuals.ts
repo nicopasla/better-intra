@@ -1,5 +1,12 @@
 import { html, render } from "lit-html";
-import { gmGetValue, gmSetValue, gmDeleteValue } from "../../lib/gm.ts";
+import { gmSetValue, gmDeleteValue } from "../../lib/gm.ts";
+import { getConfig } from "../../config.ts";
+import { getIntraLogin } from "../account/account.ts";
+import { fetchUserVisuals } from "./visual.cloud.ts";
+
+let isFetching = false;
+let visualCache: any = null;
+let lastUser: string | null = null;
 
 export const injectCustomStyles = () => {
   if (document.getElementById("ft-hub-custom-styles")) return;
@@ -25,62 +32,94 @@ export const injectCustomStyles = () => {
   document.head.appendChild(style);
 };
 
-export const updateVisuals = async () => {
-  const avatar = document.querySelector(
-    'div.rounded-full[style*="background-image"]',
-  ) as HTMLElement;
-
-  if (avatar && !avatar.dataset.modalListener) {
-    avatar.style.cursor = "pointer";
-    avatar.addEventListener("click", (e) => {
-      e.stopPropagation();
-      createSettingsModal();
-    });
-    avatar.dataset.modalListener = "true";
-  }
-
-  await applyImgs();
-};
-
-export const applyImgs = async (urls?: {
-  avatar?: string;
-  banner?: string;
-  background?: string;
-}) => {
-  const currentUrls = urls || {
-    avatar: await gmGetValue("PROFILE_IMAGE_URL", ""),
-    banner: await gmGetValue("PROFILE_BANNER_URL", ""),
-    background: await gmGetValue("PROFILE_BACKGROUND_URL", ""),
-  };
+export const applyImgs = (urls: any) => {
+  if (!urls) return;
 
   const avatar = document.querySelector(
     'div.rounded-full.w-52.h-52[style*="background-image"]',
-  ) as HTMLElement;
+  );
   const banner = document.querySelector(
     "div.border-neutral-600.bg-ft-gray\\/50",
-  ) as HTMLElement;
+  );
   const background = document.querySelector(
     ".w-full.xl\\:h-72.bg-center.bg-cover.bg-ft-black",
-  ) as HTMLElement;
+  );
 
-  if (avatar && currentUrls.avatar)
-    avatar.style.setProperty(
+  if (avatar && urls.avatar) {
+    (avatar as HTMLElement).style.setProperty(
       "background-image",
-      `url("${currentUrls.avatar}")`,
+      `url("${urls.avatar}")`,
       "important",
     );
-  if (banner && currentUrls.banner)
-    banner.style.setProperty(
+  }
+  if (banner && urls.banner) {
+    (banner as HTMLElement).style.setProperty(
       "background-image",
-      `url("${currentUrls.banner}")`,
+      `url("${urls.banner}")`,
       "important",
     );
-  if (background && currentUrls.background)
-    background.style.setProperty(
+  }
+  if (background && urls.background) {
+    (background as HTMLElement).style.setProperty(
       "background-image",
-      `url("${currentUrls.background}")`,
+      `url("${urls.background}")`,
       "important",
     );
+  }
+};
+
+export const updateVisuals = async () => {
+  const myLogin = getIntraLogin();
+  if (!myLogin) return;
+
+  const pathParts = location.pathname.split("/").filter((p) => p);
+  const targetLogin =
+    pathParts[0] === "users" && pathParts[1] ? pathParts[1] : myLogin;
+
+  if (targetLogin !== lastUser) {
+    visualCache = null;
+    lastUser = targetLogin;
+    isFetching = false;
+  }
+
+  if (targetLogin === myLogin) {
+    const avatarEl = document.querySelector(
+      'div.rounded-full[style*="background-image"]',
+    ) as HTMLElement;
+    if (avatarEl && !avatarEl.dataset.modalListener) {
+      avatarEl.style.cursor = "pointer";
+      avatarEl.onclick = (e) => {
+        e.stopPropagation();
+        createSettingsModal();
+      };
+      avatarEl.dataset.modalListener = "true";
+    }
+  }
+
+  if (visualCache) {
+    applyImgs(visualCache);
+    return;
+  }
+
+  if (!isFetching) {
+    if (targetLogin === myLogin) {
+      visualCache = {
+        avatar: await getConfig("PROFILE_IMAGE_URL"),
+        banner: await getConfig("PROFILE_BANNER_URL"),
+        background: await getConfig("PROFILE_BACKGROUND_URL"),
+      };
+
+      applyImgs(visualCache);
+    } else {
+      isFetching = true;
+      const cloudUrls = await fetchUserVisuals(targetLogin);
+
+      if (cloudUrls) {
+        visualCache = cloudUrls;
+        applyImgs(visualCache);
+      }
+    }
+  }
 };
 
 function renderModalContent(saved: {
@@ -150,20 +189,24 @@ function setupModalEventListeners(overlay: HTMLElement) {
   });
 
   saveBtn?.addEventListener("click", async () => {
-    const avatarInput = document.getElementById(
-      "in-avatar",
-    ) as HTMLInputElement;
-    const bannerInput = document.getElementById(
-      "in-banner",
-    ) as HTMLInputElement;
-    const backgroundInput = document.getElementById(
-      "in-background",
-    ) as HTMLInputElement;
+    const vals = {
+      avatar: (
+        document.getElementById("in-avatar") as HTMLInputElement
+      ).value.trim(),
+      banner: (
+        document.getElementById("in-banner") as HTMLInputElement
+      ).value.trim(),
+      background: (
+        document.getElementById("in-background") as HTMLInputElement
+      ).value.trim(),
+    };
 
-    await gmSetValue("PROFILE_IMAGE_URL", avatarInput.value.trim());
-    await gmSetValue("PROFILE_BANNER_URL", bannerInput.value.trim());
-    await gmSetValue("PROFILE_BACKGROUND_URL", backgroundInput.value.trim());
-    location.reload();
+    await gmSetValue("PROFILE_IMAGE_URL", vals.avatar);
+    await gmSetValue("PROFILE_BANNER_URL", vals.banner);
+    await gmSetValue("PROFILE_BACKGROUND_URL", vals.background);
+
+    await applyImgs(vals);
+    overlay.remove();
   });
 
   resetBtn?.addEventListener("click", async () => {
@@ -184,9 +227,9 @@ export const createSettingsModal = async () => {
   if (document.getElementById("profile-modal-overlay")) return;
 
   const saved = {
-    avatar: await gmGetValue("PROFILE_IMAGE_URL", ""),
-    banner: await gmGetValue("PROFILE_BANNER_URL", ""),
-    background: await gmGetValue("PROFILE_BACKGROUND_URL", ""),
+    avatar: await getConfig("PROFILE_IMAGE_URL"),
+    banner: await getConfig("PROFILE_BANNER_URL"),
+    background: await getConfig("PROFILE_BACKGROUND_URL"),
   };
 
   const overlay = document.createElement("div");

@@ -7,10 +7,10 @@ import { initShortcuts } from "./features/shortcuts/shortcuts.ts";
 const bootstrap = async () => {
   console.log("Better Intra started...");
 
-  const active = initHubSettings();
+  const active = await initHubSettings();
 
-  const enabled = (id: "logtime" | "clusters" | "profile" | "shortcuts") =>
-    active.includes(id);
+  const enabled = (id: string) =>
+    Array.isArray(active) && active.includes(id as any);
 
   try {
     if (enabled("logtime")) await initLogtime();

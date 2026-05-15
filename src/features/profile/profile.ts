@@ -3,22 +3,21 @@ import { findSlotsButton } from "./shortcuts.ts";
 import { injectCustomStyles, updateVisuals } from "./visuals.ts";
 
 export async function initProfile() {
-  "use strict";
-
   injectCustomStyles();
-
-  if (location.origin !== "https://profile-v3.intra.42.fr" || location.pathname !== "/") return;
+  if (location.origin !== "https://profile-v3.intra.42.fr") return;
 
   const updateUI = async () => {
     await updateVisuals();
-    await findSlotsButton();
-    await injectEventsSelect();
-    await updateEventFilters();
+    if (location.pathname === "/") {
+      await findSlotsButton();
+      await injectEventsSelect();
+      await updateEventFilters();
+    }
   };
 
-  const observer = new MutationObserver(() => requestAnimationFrame(() => updateUI()));
+  const observer = new MutationObserver(() =>
+    requestAnimationFrame(() => updateUI()),
+  );
   observer.observe(document.body, { childList: true, subtree: true });
-  
   updateUI();
-  console.log("Profile loaded!");
 }

@@ -1,10 +1,10 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  root: "#hub-shadow-wrapper";
+  root: "#hub-shadow-wrapper", "#agenda-filters-wrapper";
   themes: "light", "dark";
   include: [
     'button', 'toggle', 'input', 'select', 'radio', 'label',
-    'card', 'tabs', 'modal', 'divider', 'swap', 'fieldset', 'status'
+    'card', 'tabs', 'modal', 'divider', 'swap', 'fieldset', 'status',
   ]
 }
 

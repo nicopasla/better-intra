@@ -1,10 +1,12 @@
 import { html, render } from "lit-html";
 import { getConfig } from "../../config.ts";
 import { HUB_SETTING_DEFS } from "../hub/hubSettings.data.ts";
+import CSS from "../../assets/style.css?inline";
 
 export async function updateEventFilters() {
-  const campus_mode = await getConfig("PROFILE_CAMPUS_FILTER");
-  const event_filter_mode = await getConfig("PROFILE_EVENT_TYPE_FILTER");
+  const campus_mode = (await getConfig("PROFILE_CAMPUS_FILTER")) || "all";
+  const event_filter_mode =
+    (await getConfig("PROFILE_EVENT_TYPE_FILTER")) || "all";
 
   const eventCards = document.querySelectorAll(
     "div.relative.clear-both.m-1.border.rounded",
@@ -47,27 +49,33 @@ export async function updateEventFilters() {
   });
 }
 
-function renderEventFilterSelect(
-  options: Array<{ value: string; label: string }>,
-  currentValue: string,
-  onchange: (value: string) => void,
+function renderFilterSelectBar(
+  eventOptions: Array<{ value: string; label: string }>,
+  currentFilter: string,
+  onEventChange: (value: string) => void,
 ): ReturnType<typeof html> {
-  return html`<select
-    id="custom-event-filter"
-    class="text-center text-legacy-main bg-transparent border border-legacy-main py-1 px-2 cursor-pointer text-xs uppercase"
-    @change="${(e: Event) => onchange((e.target as HTMLSelectElement).value)}"
-  >
-    ${options.map(
-      (opt) =>
-        html`<option
-          value="${opt.value}"
-          ?selected="${opt.value === currentValue}"
-          style="background: white; color: black;"
-        >
-          ${opt.label}
-        </option>`,
-    )}
-  </select>`;
+  return html`
+    <select
+      class="select select-info select-sm rounded-none tracking-wide text-xs bg-base-100 min-w-40 uppercase font-bold"
+      @change="${(e: Event) =>
+        onEventChange((e.target as HTMLSelectElement).value)}"
+    >
+      <option value="all" disabled ?selected="${currentFilter === "all"}">
+        Pick an Event Type
+      </option>
+
+      ${eventOptions.map(
+        (opt) => html`
+          <option
+            value="${opt.value}"
+            ?selected="${currentFilter === opt.value}"
+          >
+            ${opt.label === "all" ? "SHOW ALL" : opt.label}
+          </option>
+        `,
+      )}
+    </select>
+  `;
 }
 
 export async function injectEventsSelect() {
@@ -82,20 +90,39 @@ export async function injectEventsSelect() {
   if (!eventDef?.options) return;
   agendaContainer.dataset.filterInjected = "true";
 
-  const currentFilter = await getConfig("PROFILE_EVENT_TYPE_FILTER");
+  agendaContainer.style.setProperty("display", "flex", "important");
+  agendaContainer.style.setProperty("flex-direction", "row", "important");
+  agendaContainer.style.setProperty("align-items", "center", "important");
+  agendaContainer.style.setProperty("gap", "12px", "important");
+
+  const currentFilter = (await getConfig("PROFILE_EVENT_TYPE_FILTER")) || "all";
+
+  const shadowHost = document.createElement("div");
+  shadowHost.id = "ft-agenda-filters-host";
+  shadowHost.style.setProperty("display", "inline-flex", "important");
+
+  const shadowRoot = shadowHost.attachShadow({ mode: "open" });
+  const style = document.createElement("style");
+  style.textContent = CSS;
+  shadowRoot.appendChild(style);
 
   const wrapper = document.createElement("div");
-  wrapper.style.display = "inline-block";
+  wrapper.id = "agenda-filters-wrapper";
+  wrapper.setAttribute("data-theme", "light");
+  wrapper.style.setProperty("display", "flex", "important");
+  wrapper.style.setProperty("flex-direction", "row", "important");
+  wrapper.style.setProperty("align-items", "center", "important");
 
-  const handleChange = async (value: string) => {
+  const handleEventChange = async (value: string) => {
     await browser.storage.local.set({ PROFILE_EVENT_TYPE_FILTER: value });
     updateEventFilters();
   };
 
   render(
-    renderEventFilterSelect(eventDef.options, currentFilter, handleChange),
+    renderFilterSelectBar(eventDef.options, currentFilter, handleEventChange),
     wrapper,
   );
 
-  agendaContainer.appendChild(wrapper.firstElementChild!);
+  shadowRoot.appendChild(wrapper);
+  agendaContainer.appendChild(shadowHost);
 }

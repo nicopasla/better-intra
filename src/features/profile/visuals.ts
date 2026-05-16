@@ -100,7 +100,7 @@ export const updateVisuals = async () => {
   ) as HTMLElement;
 
   if (avatarEl && !showingOriginalAvatar && !visualCache) {
-    avatarEl.style.opacity = "0";
+    avatarEl.style.opacity = "1";
   }
 
   if (visualCache && !showingOriginalAvatar) {

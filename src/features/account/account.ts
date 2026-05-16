@@ -4,11 +4,6 @@ import { CONFIG_KEYS } from "../../config.ts";
 
 const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
 
-export function getIntraLogin(): string | null {
-  const loginElement = document.querySelector("span[data-login]");
-  return loginElement?.getAttribute("data-login")?.trim() || null;
-}
-
 export function loginWith42(): void {
   window.open(`${WORKER_URL}/login`, "42Auth", "width=600,height=700");
 }
@@ -22,28 +17,36 @@ window.addEventListener("message", async (event) => {
   }
 });
 
-export async function testCloudConnection(): Promise<boolean> {
+export async function getCloudLogin(): Promise<string | null> {
+  return (await getConfig("CLOUD_LOGIN")) || null;
+}
+
+export async function testCloudConnection(): Promise<number> {
   const token = await getConfig("CLOUD_TOKEN");
-  const login = getIntraLogin();
-  if (!token || !login) return false;
+  const login = await getCloudLogin();
+  if (!token || !login) return 0;
 
   try {
     const response = await fetch(`${WORKER_URL}?login=${encodeURIComponent(login)}`, {
-      method: "POST",
+      method: "GET",
       headers: { 
-        "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({ settings: {} }),
+      }
     });
-    return response.ok;
+
+    if (response.ok) {
+      const data = await response.json() as any;
+      return typeof data.activeSessions === "number" ? data.activeSessions : 1;
+    }
+    
+    return 0;
   } catch {
-    return false;
+    return 0;
   }
 }
 
 export async function syncToCloud(): Promise<boolean> {
-  const login = getIntraLogin();
+  const login = await getCloudLogin();
   const token = await getConfig("CLOUD_TOKEN");
   if (!login || !token) return false;
 
@@ -79,7 +82,7 @@ export async function syncMyVisuals(visuals: {
   banner: string;
   background: string;
 }): Promise<void> {
-  const login = getIntraLogin();
+  const login = await getCloudLogin();
   const token = await getConfig("CLOUD_TOKEN");
   if (!login || !token) return;
 
@@ -121,7 +124,7 @@ export async function fetchUserVisuals(login: string) {
 }
 
 export async function fetchMySettings(): Promise<Record<string, any> | null> {
-  const login = getIntraLogin();
+  const login = await getCloudLogin();
   if (!login) return null;
 
   try {
@@ -136,10 +139,45 @@ export async function fetchMySettings(): Promise<Record<string, any> | null> {
   }
 }
 
-export async function logoutCloud(): Promise<void> {
-  await gmDeleteValue("CLOUD_TOKEN");
-  await gmDeleteValue("CLOUD_LOGIN");
-  await gmDeleteValue("LAST_CLOUD_SYNC");
+export async function logoutCloud(): Promise<boolean> {
+  const token = await getConfig("CLOUD_TOKEN");
+  const login = await getCloudLogin();
+  if (!token || !login) return false;
+
+  try {
+    await fetch(`${WORKER_URL}?login=${encodeURIComponent(login)}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` },
+    });
+  } catch (e) {
+    console.error("Failed to notify worker of logout", e);
+  }
+
+  await gmSetValue("CLOUD_TOKEN", "");
+  await gmSetValue("CLOUD_LOGIN", "");
+  return true;
+}
+
+export async function wipeAllCloudData(): Promise<boolean> {
+  const token = await getConfig("CLOUD_TOKEN");
+  const login = await getCloudLogin();
+  if (!token || !login) return false;
+
+  try {
+    const response = await fetch(`${WORKER_URL}?login=${encodeURIComponent(login)}&all=true`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` },
+    });
+    
+    if (response.ok) {
+      await gmSetValue("CLOUD_TOKEN", "");
+      await gmSetValue("CLOUD_LOGIN", "");
+      return true;
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  return false;
 }
 
 export async function applyCloudSettings(cloudData: Record<string, any>): Promise<void> {

@@ -566,10 +566,8 @@ function installFetchHook() {
           const clone = response.clone();
           try {
             const json = await clone.json();
-            // Extraction simplifiée directement dans la page
             const stats = json?.locations_stats || json?.data?.locations_stats || json;
             if (stats && typeof stats === 'object') {
-              // On renvoie les données vers le Content Script de l'extension
               window.dispatchEvent(new CustomEvent("42_LOGTIME_DATA", { detail: stats }));
             }
           } catch (e) {}
@@ -593,6 +591,6 @@ export async function initLogtime() {
 
   if (isProfileV3TargetPage()) {
     isLoaded = true;
-    console.log("Logtime extension core loaded & hooking network...");
+    console.log("Logtime loaded!");
   }
 }

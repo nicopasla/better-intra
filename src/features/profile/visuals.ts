@@ -1,7 +1,7 @@
 import { html, render } from "lit-html";
 import { gmSetValue, gmDeleteValue } from "../../lib/gm.ts";
 import { getConfig } from "../../config.ts";
-import { getIntraLogin, fetchUserVisuals, syncMyVisuals } from "../account/account.ts";
+import { getCloudLogin, fetchUserVisuals, syncMyVisuals } from "../account/account.ts";
 
 let isFetching = false;
 let visualCache: any = null;
@@ -68,7 +68,7 @@ export const applyImgs = (urls: any) => {
 };
 
 export const updateVisuals = async () => {
-  const myLogin = getIntraLogin();
+  const myLogin = await getCloudLogin();
   if (!myLogin) return;
 
   const pathParts = location.pathname.split("/").filter((p) => p);

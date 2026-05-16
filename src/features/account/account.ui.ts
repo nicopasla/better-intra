@@ -1,12 +1,13 @@
 import { html, render } from "lit-html";
 import {
-  getIntraLogin,
+  getCloudLogin,
   syncToCloud,
   testCloudConnection,
   fetchMySettings,
   applyCloudSettings,
   logoutCloud,
   loginWith42,
+  wipeAllCloudData,
 } from "./account.ts";
 import { gmSetValue } from "../../lib/gm.ts";
 import { getConfig } from "../../config.ts";
@@ -20,8 +21,10 @@ export function renderAccountTab(
   onLogin42: () => void,
   onTestConnection: () => void,
   hasToken: boolean,
-  isConnected: boolean = false,
+  activeSessions: number = 0,
 ): ReturnType<typeof html> {
+  const isConnected = activeSessions > 0;
+
   return html`
     <style>
       :host [data-feature-panel="account"] {
@@ -31,7 +34,7 @@ export function renderAccountTab(
     </style>
 
     <div
-      class="account-settings h-full w-full flex flex-col items-center justify-start p-0 overflow-hidden bg-transparent"
+      class="account-settings relative w-full min-h-full flex flex-col items-center justify-between p-0 pb-12 bg-transparent"
     >
       <div class="grid grid-cols-2 gap-8 w-full max-w-4xl px-8 mt-4">
         <div class="flex flex-col gap-2">
@@ -112,7 +115,9 @@ export function renderAccountTab(
                     type="button"
                     @click="${onTestConnection}"
                   >
-                    ${isConnected ? "Connected" : "Test connection"}
+                    ${isConnected
+                      ? `Connected (${activeSessions}/3)`
+                      : "Test connection"}
                   </button>
                 `
               : ""}
@@ -145,18 +150,49 @@ export function renderAccountTab(
             : ""}
         </div>
       </div>
+
+      ${hasToken
+        ? html`
+            <button
+              class="absolute bottom-2 right-4 btn btn-link btn-xs text-error opacity-40 hover:opacity-100 transition-opacity"
+              type="button"
+              @click="${() => {
+                if (
+                  confirm(
+                    "This will permanently delete ALL your saved settings and sessions from the cloud. Are you sure?",
+                  )
+                ) {
+                  const event = new CustomEvent("wipe-cloud");
+                  window.dispatchEvent(event);
+                }
+              }}"
+            >
+              Wipe all cloud backup data
+            </button>
+          `
+        : ""}
     </div>
   `;
 }
 
 export async function initAccountSettings(container: HTMLElement) {
-  const login = getIntraLogin();
+  const login = await getCloudLogin();
   let token = (await getConfig("CLOUD_TOKEN")) || "";
-  let isConnected = false;
+  let activeSessions = 0;
 
   if (token && login) {
-    isConnected = await testCloudConnection();
+    const res = await testCloudConnection();
+    activeSessions = typeof res === "number" ? res : res ? 1 : 0;
   }
+  window.addEventListener("wipe-cloud", async () => {
+    const success = await wipeAllCloudData();
+    if (success) {
+      alert("All cloud data successfully wiped.");
+      window.location.reload();
+    } else {
+      alert("Failed to delete cloud data. Please try again.");
+    }
+  });
 
   const getSyncLabel = async () => {
     const ts = await getConfig("LAST_CLOUD_SYNC");
@@ -178,7 +214,8 @@ export async function initAccountSettings(container: HTMLElement) {
     if (!btn) return;
 
     btn.classList.add("loading");
-    isConnected = await testCloudConnection();
+    const res = await testCloudConnection();
+    activeSessions = typeof res === "number" ? res : res ? 1 : 0;
     btn.classList.remove("loading");
 
     update();
@@ -199,7 +236,9 @@ export async function initAccountSettings(container: HTMLElement) {
     btn.classList.remove("btn-primary", "btn-success", "btn-error");
     btn.classList.add("btn-info", "loading");
 
-    const isCloudAlive = await testCloudConnection();
+    const res = await testCloudConnection();
+    const isCloudAlive = res ? true : false;
+
     if (!isCloudAlive) {
       btn.classList.remove("btn-info", "loading");
       btn.classList.add("btn-error");
@@ -244,7 +283,8 @@ export async function initAccountSettings(container: HTMLElement) {
     btn.classList.remove("btn-primary", "btn-success", "btn-error");
     btn.classList.add("btn-info", "loading");
 
-    const isCloudAlive = await testCloudConnection();
+    const res = await testCloudConnection();
+    const isCloudAlive = res ? true : false;
 
     if (!isCloudAlive) {
       btn.classList.remove("btn-info", "loading");
@@ -295,7 +335,7 @@ export async function initAccountSettings(container: HTMLElement) {
         handleLogin42,
         handleTestConnection,
         !!token,
-        isConnected,
+        activeSessions,
       ),
       container,
     );

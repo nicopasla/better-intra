@@ -56,11 +56,16 @@ function renderFilterSelectBar(
 ): ReturnType<typeof html> {
   return html`
     <select
-      class="select select-info select-sm rounded-none tracking-wide text-xs bg-base-100 min-w-40 uppercase font-bold"
+      class="select select-info select-sm rounded-none tracking-wide text-xs bg-base-100 text-base-content min-w-40"
       @change="${(e: Event) =>
         onEventChange((e.target as HTMLSelectElement).value)}"
     >
-      <option value="all" disabled ?selected="${currentFilter === "all"}">
+      <option
+        value="all"
+        disabled
+        ?selected="${currentFilter === "all"}"
+        class="bg-base-100 text-base-content"
+      >
         Pick an Event Type
       </option>
 
@@ -69,6 +74,7 @@ function renderFilterSelectBar(
           <option
             value="${opt.value}"
             ?selected="${currentFilter === opt.value}"
+            class="bg-base-100 text-base-content"
           >
             ${opt.label === "all" ? "SHOW ALL" : opt.label}
           </option>
@@ -98,16 +104,26 @@ export async function injectEventsSelect() {
   const currentFilter = (await getConfig("PROFILE_EVENT_TYPE_FILTER")) || "all";
 
   const shadowHost = document.createElement("div");
-  shadowHost.id = "ft-agenda-filters-host";
+  shadowHost.id = "events-shadow-host";
   shadowHost.style.setProperty("display", "inline-flex", "important");
 
   const shadowRoot = shadowHost.attachShadow({ mode: "open" });
   const style = document.createElement("style");
-  style.textContent = CSS;
+  style.textContent = `
+    ${CSS}
+    :host {
+      --id-base-100: #ffffff !important;
+      color: #1f2937 !important;
+    }
+    select, option {
+      background-color: #ffffff !important;
+      color: #1f2937 !important;
+    }
+  `;
   shadowRoot.appendChild(style);
 
   const wrapper = document.createElement("div");
-  wrapper.id = "agenda-filters-wrapper";
+  wrapper.id = "events-shadow-wrapper";
   wrapper.setAttribute("data-theme", "light");
   wrapper.style.setProperty("display", "flex", "important");
   wrapper.style.setProperty("flex-direction", "row", "important");

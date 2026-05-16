@@ -3,8 +3,7 @@ import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { getConfig } from "../../config.ts";
 import { syncMyVisuals } from "../account/account.ts";
 import { applyImgs, injectCustomStyles } from "./visuals.ts";
-
-import PROFILE_CSS from "./profile.css?inline";
+import CSS from "../../assets/style.css?inline";
 
 function handleLivePreview(shadow: ShadowRoot) {
   applyImgs({
@@ -84,9 +83,15 @@ function renderModalContent(
         width: 100%;
         height: 100%;
       }
-      ${unsafeHTML(PROFILE_CSS)} #profile-shadow-wrapper.modal {
+      ${unsafeHTML(CSS)} #profile-shadow-wrapper.modal {
         background: transparent !important;
         background-color: transparent !important;
+        align-items: flex-end;
+      }
+      #profile-shadow-wrapper.modal {
+        background: transparent !important;
+        background-color: transparent !important;
+        align-items: flex-end;
       }
     </style>
 

@@ -8,7 +8,7 @@ export async function initProfile() {
 
   const updateUI = async () => {
     await updateVisuals();
-    if (location.pathname === "/") {
+    if (location.pathname === "/" || location.pathname.startsWith("/users")) {
       await findSlotsButton();
       await injectEventsSelect();
       await updateEventFilters();
@@ -19,5 +19,5 @@ export async function initProfile() {
     requestAnimationFrame(() => updateUI()),
   );
   observer.observe(document.body, { childList: true, subtree: true });
-  updateUI();
+  void updateUI();
 }

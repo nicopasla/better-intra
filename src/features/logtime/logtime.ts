@@ -34,10 +34,11 @@ let CONFIG: Awaited<ReturnType<typeof getConfigs>>;
 
 const rgbaCache = new Map<string, string>();
 
-const limit = (s: string) =>
-  Array.from(s || "🌮")
+function limit(s: unknown) {
+  return Array.from(typeof s === "string" ? s : "🌮")
     .slice(0, 3)
     .join("");
+}
 
 const fmtHours = (secs: number): string => {
   const h = Math.floor(secs / 3600);
@@ -56,42 +57,6 @@ function hexToRgba(hex: string, opacity: number): string {
   return val;
 }
 
-function getFetchUrl(input: RequestInfo | URL): string {
-  if (typeof input === "string") return input;
-  if (input instanceof URL) return input.toString();
-  if (typeof Request !== "undefined" && input instanceof Request)
-    return input.url;
-  return String(input ?? "");
-}
-
-function isStringMap(v: unknown): v is Record<string, string> {
-  if (!v || typeof v !== "object") return false;
-  return Object.values(v as Record<string, unknown>).every(
-    (x) => typeof x === "string",
-  );
-}
-
-function extractStats(payload: unknown): Record<string, string> | null {
-  if (!payload || typeof payload !== "object") return null;
-
-  const p = payload as {
-    locations_stats?: unknown;
-    data?: { locations_stats?: unknown };
-  };
-
-  if (isStringMap(p.locations_stats)) {
-    return p.locations_stats;
-  }
-  if (isStringMap(p.data?.locations_stats)) {
-    return p.data.locations_stats;
-  }
-  if (isStringMap(payload)) {
-    return payload;
-  }
-
-  return null;
-}
-
 const getLastSeenFormatted = (
   stats: Record<string, string>,
   mode: "date" | "both" | "days" = "date",
@@ -103,9 +68,10 @@ const getLastSeenFormatted = (
 
   if (activeDays.length === 0) return "N/A";
   const lastDateStr = activeDays[activeDays.length - 1];
-  const [y, m, d] = lastDateStr.split("-");
-  const dateStr = `${d}/${m}`;
-  if (mode === "date") return dateStr;
+  if (mode === "date") {
+    const [y, m, d] = lastDateStr.split("-");
+    return `${d}/${m}`;
+  }
 
   const lastDate = new Date(lastDateStr);
   const today = new Date();
@@ -121,7 +87,10 @@ const getLastSeenFormatted = (
       : diffDays === 1
         ? "yesterday"
         : `${diffDays} days ago`;
-  return mode === "days" ? relative : `${dateStr} (${relative})`;
+  if (mode === "days") return relative;
+
+  const [y, m, d] = lastDateStr.split("-");
+  return `${d}/${m} (${relative})`;
 };
 
 function setupStyles() {
@@ -136,12 +105,8 @@ function setupStyles() {
         animation: none !important; 
         transition: none !important; 
       }
-      .liquid-fill::after {
-        display: none !important;
-      }
-      .liquid-fill {
-        border-radius: 0 4px 4px 0; 
-      }`
+      .liquid-fill::after { display: none !important; }
+      .liquid-fill { border-radius: 0 4px 4px 0; }`
     : "";
 
   styleEl.textContent = `
@@ -153,7 +118,6 @@ function setupStyles() {
     ${LOGTIME_CSS}
     ${disableAnimCss}
   `;
-
   document.head.appendChild(styleEl);
 }
 
@@ -162,7 +126,7 @@ function renderDayCell(
   dKey: string,
   secs: number,
   todayStr: string,
-): ReturnType<typeof html> {
+) {
   const alpha = Math.min(secs / MAX_INTENSITY_SECS, 1);
   const bgColor =
     secs > 0 ? hexToRgba(CONFIG.calendar_color, alpha) : COLORS.CELL_EMPTY;
@@ -192,7 +156,7 @@ function renderCalendarGrid(
   mon: number,
   data: Record<string, number>,
   lastDayDate: number,
-): ReturnType<typeof html> {
+) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -200,15 +164,10 @@ function renderCalendarGrid(
   const headerRow = ["M", "T", "W", "T", "F", "S", "S", "Total"].map(
     (day, idx) =>
       html`<div
-        style="
-        font-size: 11px;
-        font-weight: 800;
-        text-align: center;
-        color: ${COLORS.TEXT_LIGHT};
-        ${idx === 7
+        style="font-size: 11px; font-weight: 800; text-align: center; color: ${COLORS.TEXT_LIGHT}; ${idx ===
+        7
           ? `border-left: 1px solid #f1f5f9; color: ${CONFIG.labels_color};`
-          : ""}
-      "
+          : ""}"
       >
         ${day}
       </div>`,
@@ -216,7 +175,6 @@ function renderCalendarGrid(
 
   const offset = (new Date(year, mon - 1, 1).getDay() + 6) % 7;
   const emptyCells = Array.from({ length: offset }, () => html`<div></div>`);
-
   const dayRows: ReturnType<typeof html>[] = [];
   let weekSecs = 0;
   let cellCount = offset;
@@ -232,23 +190,12 @@ function renderCalendarGrid(
     if ((cellCount % 7 === 0 && cellCount > 0) || day === lastDayDate) {
       if (day === lastDayDate && cellCount % 7 !== 0) {
         const fillCount = 7 - (cellCount % 7);
-        for (let j = 0; j < fillCount; j++) {
-          dayRows.push(html`<div></div>`);
-        }
+        for (let j = 0; j < fillCount; j++) dayRows.push(html`<div></div>`);
       }
 
       dayRows.push(
         html`<div
-          style="
-          font-size: 14px;
-          font-weight: 700;
-          text-align: right;
-          color: ${CONFIG.labels_color};
-          padding-right: 4px;
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-        "
+          style="font-size: 14px; font-weight: 700; text-align: right; color: ${CONFIG.labels_color}; padding-right: 4px; display: flex; align-items: center; justify-content: flex-end;"
         >
           ${weekSecs > 0 ? fmtHours(weekSecs) : ""}
         </div>`,
@@ -268,7 +215,7 @@ function renderMonthCard(
   ym: string,
   data: Record<string, number>,
   isCurrent: boolean,
-): ReturnType<typeof html> {
+) {
   const [year, mon] = ym.split("-").map(Number);
   const total = Object.values(data).reduce((a, b) => a + b, 0);
   const lastDayDate = new Date(year, mon, 0).getDate();
@@ -290,11 +237,7 @@ function renderMonthCard(
   const badgeClass = isGoalMet ? "badge-rainbow" : "";
 
   const badgeStyles = !badgeClass.includes("badge-rainbow")
-    ? `
-      background: ${isGoalMet ? "#27ae60" : "rgba(39, 174, 96, 0.1)"};
-      color: ${isGoalMet ? "white" : "#27ae60"};
-      border: 1px solid ${isGoalMet ? "transparent" : "rgba(39, 174, 96, 0.2)"};
-    `
+    ? `background: ${isGoalMet ? "#27ae60" : "rgba(39, 174, 96, 0.1)"}; color: ${isGoalMet ? "white" : "#27ae60"}; border: 1px solid ${isGoalMet ? "transparent" : "rgba(39, 174, 96, 0.2)"};`
     : "";
 
   return html`<div
@@ -310,14 +253,7 @@ function renderMonthCard(
       >
       <span
         class="inline-flex items-center justify-center rounded-full transition-all ${badgeClass}"
-        style="
-          height: 30px;
-          padding: 0 10px;
-          font-size: 16px;
-          font-weight: 800;
-          white-space: nowrap;
-          ${badgeStyles}
-        "
+        style="height: 30px; padding: 0 10px; font-size: 16px; font-weight: 800; white-space: nowrap; ${badgeStyles}"
       >
         ${fmtHours(total)}${CONFIG.show_goal ? ` / ${CONFIG.goal_hours}h` : ""}
       </span>
@@ -343,7 +279,7 @@ function renderMonthCard(
       </div>
       ${CONFIG.show_average
         ? html`<span>Avg: <b>${fmtHours(avg)}</b></span>`
-        : html`<span></span>`}
+        : ""}
     </div>
 
     ${CONFIG.show_goal
@@ -388,7 +324,7 @@ function hideOldLogtime(): void {
 function renderHeaderContent(
   stats: Record<string, string>,
   totalYearSecs: number,
-): ReturnType<typeof html> {
+) {
   const lastSeenValue = getLastSeenFormatted(stats, CONFIG.show_days_mode);
   const totalTacos = Math.floor(
     ((totalYearSecs / 3600) * CONFIG.rate) / CONFIG.divisor,
@@ -412,9 +348,8 @@ function renderHeaderContent(
       ${lastSeenValue !== "N/A"
         ? html`<span
             class="ml-auto bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full text-[10px] font-bold normal-case border border-green-500/30"
-          >
-            Active ${lastSeenValue}
-          </span>`
+            >Active ${lastSeenValue}</span
+          >`
         : ""}
     </div>
   </div>`;
@@ -423,7 +358,7 @@ function renderHeaderContent(
 function renderContainer(
   stats: Record<string, string>,
   monthCards: ReturnType<typeof html>[],
-): ReturnType<typeof html> {
+) {
   const totalYearSecs = Object.values(stats).reduce((acc, time) => {
     const [h, m, s] = time.split(":").map(Number);
     return acc + (h * 3600 + m * 60 + s);
@@ -433,7 +368,6 @@ function renderContainer(
     class="bg-white dark:bg-zinc-900 overflow-hidden md:drop-shadow-md md:rounded-lg p-0 mb-4 transition-all lt-box-container"
   >
     ${renderHeaderContent(stats, totalYearSecs)}
-
     <div class="log-slider-fixed">
       <div class="grid-centering-container">${monthCards}</div>
     </div>
@@ -452,15 +386,12 @@ function setupScrollHandlers(scrollWrapper: HTMLElement): void {
     scrollLeft = scrollWrapper.scrollLeft;
   });
 
-  scrollWrapper.addEventListener("mouseleave", () => {
+  const stopDragging = () => {
     isDown = false;
     scrollWrapper.style.cursor = "grab";
-  });
-
-  scrollWrapper.addEventListener("mouseup", () => {
-    isDown = false;
-    scrollWrapper.style.cursor = "grab";
-  });
+  };
+  scrollWrapper.addEventListener("mouseleave", stopDragging);
+  scrollWrapper.addEventListener("mouseup", stopDragging);
 
   scrollWrapper.addEventListener("mousemove", (e) => {
     if (!isDown) return;
@@ -469,12 +400,16 @@ function setupScrollHandlers(scrollWrapper: HTMLElement): void {
     scrollWrapper.scrollLeft = scrollLeft - (x - startX) * 2;
   });
 
-  scrollWrapper.addEventListener("wheel", (e) => {
-    if (e.deltaY !== 0) {
-      e.preventDefault();
-      scrollWrapper.scrollLeft += e.deltaY;
-    }
-  });
+  scrollWrapper.addEventListener(
+    "wheel",
+    (e) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        scrollWrapper.scrollLeft += e.deltaY;
+      }
+    },
+    { passive: false },
+  );
 }
 
 function renderLogtime(stats: Record<string, string>): void {
@@ -512,7 +447,6 @@ function renderLogtime(stats: Record<string, string>): void {
     const scrollWrapper = containerBox.querySelector(
       ".log-slider-fixed",
     ) as HTMLElement;
-
     if (scrollWrapper) {
       setupScrollHandlers(scrollWrapper);
       setTimeout(
@@ -524,7 +458,6 @@ function renderLogtime(stats: Record<string, string>): void {
         300,
       );
     }
-
     return true;
   };
 
@@ -543,15 +476,9 @@ function isProfileV3TargetPage() {
   );
 }
 
-let cachedStats = null;
-
 function installFetchHook() {
   window.addEventListener("42_LOGTIME_DATA", (event: any) => {
-    const stats = event.detail;
-    if (stats) {
-      cachedStats = stats;
-      renderLogtime(stats);
-    }
+    if (event.detail) renderLogtime(event.detail);
   });
 
   const script = document.createElement("script");
@@ -561,7 +488,6 @@ function installFetchHook() {
       window.fetch = async (...args) => {
         const response = await originalFetch(...args);
         const url = args[0] instanceof Request ? args[0].url : String(args[0]);
-
         if (url.includes("/locations_stats")) {
           const clone = response.clone();
           try {
@@ -576,14 +502,12 @@ function installFetchHook() {
       };
     })();
   `;
-  
   (document.head || document.documentElement).appendChild(script);
   script.remove();
 }
 
 export async function initLogtime() {
   if (isLoaded) return;
-  
   installFetchHook();
 
   CONFIG = await getConfigs();

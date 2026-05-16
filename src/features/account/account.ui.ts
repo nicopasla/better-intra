@@ -9,7 +9,6 @@ import {
   loginWith42,
   wipeAllCloudData,
 } from "./account.ts";
-import { gmSetValue } from "../../lib/gm.ts";
 import { getConfig } from "../../config.ts";
 
 export function renderAccountTab(
@@ -257,7 +256,7 @@ export async function initAccountSettings(container: HTMLElement) {
 
     btn.classList.remove("btn-info", "loading");
     if (success) {
-      await gmSetValue("LAST_CLOUD_SYNC", Date.now());
+      await browser.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
       btn.classList.add("btn-success");
       btn.innerHTML = "Synced!";
     } else {
@@ -305,7 +304,7 @@ export async function initAccountSettings(container: HTMLElement) {
     btn.classList.remove("btn-info", "loading");
     if (settings) {
       await applyCloudSettings(settings);
-      await gmSetValue("LAST_CLOUD_SYNC", Date.now());
+      await browser.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
       btn.classList.add("btn-success");
       btn.innerHTML = "Restored!";
       setTimeout(() => window.location.reload(), 1500);

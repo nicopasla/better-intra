@@ -1,11 +1,11 @@
-import { gmGetValue } from "../../lib/gm.ts";
+import { getConfig } from "../../config.ts";
 import { getStoredLinks, renderShortcutsDisplay } from "./shortcuts.ui.ts";
 import { render } from "lit-html";
 
 const CONTAINER_ID = "42-shortcuts-display-wrapper";
 
 export async function injectShortcutsDisplay() {
-  const activeFeatures = await gmGetValue("ACTIVE_SCRIPTS", "[]");
+  const activeFeatures = await getConfig("ACTIVE_SCRIPTS");
   let active: string[] = [];
 
   try {
@@ -17,7 +17,7 @@ export async function injectShortcutsDisplay() {
     return;
   }
 
-  if (!active.includes("shortcuts")) {
+  if (!Array.isArray(active) || !active.includes("shortcuts")) {
     document.getElementById(CONTAINER_ID)?.remove();
     return;
   }
@@ -57,10 +57,10 @@ export async function injectShortcutsDisplay() {
 }
 
 export function setupShortcutsObserver() {
-  let timer: number | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
 
   const observer = new MutationObserver(() => {
-    clearTimeout(timer);
+    if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       injectShortcutsDisplay();
     }, 300);
@@ -75,6 +75,5 @@ export function setupShortcutsObserver() {
 
 export async function initShortcuts() {
   await injectShortcutsDisplay();
-
   setupShortcutsObserver();
 }

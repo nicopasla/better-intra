@@ -1,5 +1,4 @@
 import { html, render } from "lit-html";
-import { gmSetValue } from "../../lib/gm.ts";
 import { getConfig } from "../../config.ts";
 import { SCREENS, CLUSTERS, CLUSTER_CONFIG } from "./clusters.data.ts";
 
@@ -222,16 +221,18 @@ export async function initClusters() {
 
     const container = document.createElement("div");
 
-    const handleClusterChange = (value: string) => {
-      gmSetValue("CLUSTERS_DEFAULT_ID", value);
+    const handleClusterChange = async (value: string) => {
+      await browser.storage.local.set({ CLUSTERS_DEFAULT_ID: value });
       CONFIG.default_id = value;
       window.location.hash = `#cluster-${value}`;
       location.reload();
     };
 
-    const handleMarkerToggle = () => {
+    const handleMarkerToggle = async () => {
       CONFIG.show_markers = !CONFIG.show_markers;
-      gmSetValue("CLUSTERS_SHOW_MARKERS", CONFIG.show_markers);
+      await browser.storage.local.set({
+        CLUSTERS_SHOW_MARKERS: CONFIG.show_markers,
+      });
       reRenderMarkerToggle();
       refreshMarkersSoon();
     };

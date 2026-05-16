@@ -1,0 +1,12 @@
+{
+  "addons": {
+    "better-intra@nicopasla.fr": {
+      "updates": [
+        {
+          "version": "1.0.0",
+          "update_link": "https://github.com/nicopasla/better-intra/releases/download/v1.0.0/better-intra-1.0.0.xpi" /// TO UPDATE
+        }
+      ]
+    }
+  }
+}

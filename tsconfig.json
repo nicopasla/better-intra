@@ -11,7 +11,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "strict": false,
-    "types": ["vite-plugin-monkey/global"]
+    "types": ["firefox-webext-browser"]
   },
   "include": ["src"]
 }

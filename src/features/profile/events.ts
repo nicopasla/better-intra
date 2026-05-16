@@ -1,5 +1,4 @@
 import { html, render } from "lit-html";
-import { gmSetValue } from "../../lib/gm.ts";
 import { getConfig } from "../../config.ts";
 import { HUB_SETTING_DEFS } from "../hub/hubSettings.data.ts";
 
@@ -40,7 +39,11 @@ export async function updateEventFilters() {
         typeText.includes(t),
       );
 
-    htmlCard.style.display = campusMatch && typeMatch ? "flex" : "none";
+    htmlCard.style.setProperty(
+      "display",
+      campusMatch && typeMatch ? "flex" : "none",
+      "important",
+    );
   });
 }
 
@@ -70,27 +73,29 @@ function renderEventFilterSelect(
 export async function injectEventsSelect() {
   const agendaContainer =
     document.querySelector('a[href*="/events"]')?.parentElement;
-  if (!agendaContainer || agendaContainer.querySelector("#custom-event-filter"))
+  if (!agendaContainer || agendaContainer.dataset.filterInjected === "true")
     return;
 
   const eventDef = (HUB_SETTING_DEFS as any).profile?.find(
     (d: any) => d.key === "PROFILE_EVENT_TYPE_FILTER",
   );
   if (!eventDef?.options) return;
+  agendaContainer.dataset.filterInjected = "true";
 
   const currentFilter = await getConfig("PROFILE_EVENT_TYPE_FILTER");
 
-  const container = document.createElement("div");
+  const wrapper = document.createElement("div");
+  wrapper.style.display = "inline-block";
 
   const handleChange = async (value: string) => {
-    await gmSetValue("PROFILE_EVENT_TYPE_FILTER", value);
+    await browser.storage.local.set({ PROFILE_EVENT_TYPE_FILTER: value });
     updateEventFilters();
   };
 
   render(
     renderEventFilterSelect(eventDef.options, currentFilter, handleChange),
-    container,
+    wrapper,
   );
 
-  agendaContainer.appendChild(container.firstElementChild!);
+  agendaContainer.appendChild(wrapper.firstElementChild!);
 }

@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@plugin "daisyui" {
+	root: "#profile-shadow-wrapper";
+	themes: "light", "dark";
+	include: [ 'button', 'input', 'label', 'fieldset', 'modal'
+		]
+}
+
+#profile-shadow-wrapper.modal {
+	background: transparent !important;
+	background-color: transparent !important;
+	align-items: flex-end;
+}

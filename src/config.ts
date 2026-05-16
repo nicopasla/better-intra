@@ -1,4 +1,3 @@
-import { gmGetValue } from "./lib/gm.ts";
 export const CONFIG_KEYS = [
   "ACTIVE_SCRIPTS",
   "BETTER_INTRA_THEME",
@@ -65,6 +64,14 @@ export const CONFIG_DEFAULT: Record<ConfigKey, any> = {
   SHORTCUTS_LINKS: "[]",
 };
 
-export const getConfig = async <T extends ConfigKey>(key: T): Promise<typeof CONFIG_DEFAULT[T]> => {
-  return await gmGetValue(key, CONFIG_DEFAULT[key]);
+export const getConfig = async <T extends ConfigKey>(
+  key: T,
+): Promise<(typeof CONFIG_DEFAULT)[T]> => {
+  const res = await browser.storage.local.get(key);
+
+  if (res && res[key] !== undefined) {
+    return res[key] as (typeof CONFIG_DEFAULT)[T];
+  }
+
+  return CONFIG_DEFAULT[key] as (typeof CONFIG_DEFAULT)[T];
 };

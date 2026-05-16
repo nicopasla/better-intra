@@ -1,4 +1,3 @@
-import { gmSetValue } from "../../lib/gm.ts";
 import { getConfig } from "../../config.ts";
 import {
   FEATURE_DEFS,
@@ -30,10 +29,10 @@ function normalizeActive(raw: unknown): FeatureId[] {
 }
 
 export async function getActiveFeatures(): Promise<FeatureId[]> {
-  const raw = await getConfig("ACTIVE_SCRIPTS");
+  const raw = await getConfig(STORAGE_KEY);
   const active = normalizeActive(raw);
 
-  await gmSetValue(STORAGE_KEY, JSON.stringify(active));
+  await browser.storage.local.set({ [STORAGE_KEY]: JSON.stringify(active) });
 
   return active;
 }

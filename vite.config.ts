@@ -1,31 +1,46 @@
 import { defineConfig } from "vite";
-import tailwindcss from '@tailwindcss/vite';
-import monkey from "vite-plugin-monkey";
+import tailwindcss from "@tailwindcss/vite";
+import { resolve } from "path";
+import fs from "fs";
+import pkg from "./package.json";
 
 export default defineConfig({
   plugins: [
     tailwindcss(),
-    monkey({
-      entry: "src/main.ts",
-      userscript: {
-        name: "Better Intra",
-        namespace: "better-intra/nicopasla",
-        description:"Collection of features inside a single Userscript that improve UI and UX of the 42 Intra v3.",
-        match: ["https://profile-v3.intra.42.fr/*", "https://*.intra.42.fr/*"],
-        grant: ["GM_getValue", "GM_setValue", "GM_deleteValue"],
-        updateURL:
-          "https://github.com/nicopasla/better-intra/releases/latest/download/better-intra.user.js",
-        downloadURL:
-          "https://github.com/nicopasla/better-intra/releases/latest/download/better-intra.user.js",
+    {
+      name: "update-manifest-version",
+      closeBundle() {
+        const manifestPath = resolve(__dirname, "dist/manifest.json");
+        if (fs.existsSync(manifestPath)) {
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+          manifest.version = pkg.version;
+          fs.writeFileSync(
+            manifestPath,
+            JSON.stringify(manifest, null, 2),
+            "utf-8",
+          );
+          console.log(
+            `\nmanifest.json and hubSettings.data synced with v${pkg.version}\n`,
+          );
+        }
       },
-
-      build: {
-        autoGrant: true,
-        fileName: "better-intra.user.js",
-      },
-      server: {
-        open: true,
-      },
-    }),
+    },
   ],
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        content: resolve(__dirname, "src/main.ts"),
+      },
+      output: {
+        format: "iife",
+        entryFileNames: "[name].js",
+        assetFileNames: "[name].[ext]",
+      },
+    },
+  },
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
 });

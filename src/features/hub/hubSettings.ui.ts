@@ -1,6 +1,7 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
-import { gmDeleteValue, gmGetValue, gmSetValue } from "../../lib/gm.ts";
+import { until } from "lit-html/directives/until.js";
+import { getConfig } from "../../config.ts";
 import {
   FEATURE_DEFS,
   HUB_INFO,
@@ -42,16 +43,15 @@ export async function openHubModal(active: FeatureId[]) {
 }
 
 function renderSettingControl(def: HubSettingDef, enabled: boolean) {
-  const storedValue = gmGetValue<unknown>(def.key, null);
-  const value = storedValue !== null ? storedValue : (def.defaultValue ?? "");
-
   if (def.kind === "shortcuts" && def.key === "SHORTCUTS_LINKS") {
     const container = document.createElement("div");
     let links: ShortcutLink[] = [];
 
-    const save = () => {
+    const save = async () => {
       links = extractLinksFromForm(container);
-      gmSetValue("SHORTCUTS_LINKS", JSON.stringify(links));
+      await browser.storage.local.set({
+        SHORTCUTS_LINKS: JSON.stringify(links),
+      });
     };
 
     const update = () => {
@@ -64,9 +64,11 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
               update();
             }
           },
-          (idx) => {
+          async (idx) => {
             links = links.filter((_, i) => i !== idx);
-            gmSetValue("SHORTCUTS_LINKS", JSON.stringify(links));
+            await browser.storage.local.set({
+              SHORTCUTS_LINKS: JSON.stringify(links),
+            });
             update();
           },
           () => save(),
@@ -90,124 +92,134 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
     return container;
   }
 
-  switch (def.kind) {
-    case "toggle":
-      return html`<input
-        type="checkbox"
-        class="toggle toggle-lg toggle-accent"
-        data-setting-key="${def.key}"
-        ?checked="${Boolean(value)}"
-        ?disabled="${!enabled}"
-      />`;
+  return until(
+    (async () => {
+      const value = (await getConfig(def.key)) ?? def.defaultValue ?? "";
 
-    case "number":
-      return html`<input
-        type="number"
-        class="input input-accent w-24"
-        .value="${String(value)}"
-        data-setting-key="${def.key}"
-        ?disabled="${!enabled}"
-      />`;
+      switch (def.kind) {
+        case "toggle":
+          return html`<input
+            type="checkbox"
+            class="toggle toggle-lg toggle-accent"
+            data-setting-key="${def.key}"
+            ?checked="${Boolean(value)}"
+            ?disabled="${!enabled}"
+          />`;
 
-    case "select":
-      return html`<select
-        class="select select-accent"
-        data-setting-key="${def.key}"
-        ?disabled="${!enabled}"
-      >
-        ${(def.options ?? []).map(
-          (o) =>
-            html`<option value="${o.value}" ?selected="${o.value === value}">
-              ${o.label}
-            </option>`,
-        )}
-      </select>`;
-
-    case "color":
-      return html`<input
-        type="color"
-        class="input input-accent p-1 w-20 h-10"
-        .value="${String(value)}"
-        data-setting-key="${def.key}"
-        ?disabled="${!enabled}"
-      />`;
-
-    case "radio-group":
-      return html`<div class="flex flex-wrap gap-2 sm:gap-4">
-        ${(def.options ?? []).map(
-          (o) =>
-            html`<label class="label cursor-pointer gap-2 py-1">
-              <span class="label-text text-xs sm:text-sm">${o.label}</span>
-              <input
-                type="radio"
-                name="${def.key}"
-                value="${o.value}"
-                class="radio radio-accent radio-xs sm:radio-sm"
-                ?checked="${o.value === value}"
-                data-setting-key="${def.key}"
-                ?disabled="${!enabled}"
-              />
-            </label>`,
-        )}
-      </div>`;
-
-    case "url":
-      return html`<div class="w-full">
-        <label
-          class="input input-accent validator flex items-center gap-2 w-full"
-        >
-          <svg
-            class="h-[1em] opacity-50"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <g
-              fill="none"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-            >
-              <path
-                d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
-              ></path>
-              <path
-                d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
-              ></path>
-            </g>
-          </svg>
-          <input
-            type="url"
-            required
-            placeholder="https://beemovie.com/beemovie.gif"
+        case "number":
+          return html`<input
+            type="number"
+            class="input input-accent w-24"
             .value="${String(value)}"
             data-setting-key="${def.key}"
             ?disabled="${!enabled}"
-            pattern="^(https?://)?.*"
-            class="grow"
-          />
-        </label>
-      </div>`;
+          />`;
 
-    case "emoji":
-    default:
-      return html`<input
-        type="text"
-        class="input input-accent w-20"
-        placeholder="${def.placeholder || ""}"
-        maxlength="10"
-        .value="${String(value || "")}"
-        @input="${(e: Event) => {
-          const input = e.target as HTMLInputElement;
-          const symbols = Array.from(input.value);
-          if (symbols.length > 3) {
-            input.value = symbols.slice(0, 3).join("");
-          }
-        }}"
-        data-setting-key="${def.key}"
-        ?disabled="${!enabled}"
-      />`;
-  }
+        case "select":
+          return html`<select
+            class="select select-accent"
+            data-setting-key="${def.key}"
+            ?disabled="${!enabled}"
+          >
+            ${(def.options ?? []).map(
+              (o) =>
+                html`<option
+                  value="${o.value}"
+                  ?selected="${o.value === value}"
+                >
+                  ${o.label}
+                </option>`,
+            )}
+          </select>`;
+
+        case "color":
+          return html`<input
+            type="color"
+            class="input input-accent p-1 w-20 h-10"
+            .value="${String(value)}"
+            data-setting-key="${def.key}"
+            ?disabled="${!enabled}"
+          />`;
+
+        case "radio-group":
+          return html`<div class="flex flex-wrap gap-2 sm:gap-4">
+            ${(def.options ?? []).map(
+              (o) =>
+                html`<label class="label cursor-pointer gap-2 py-1">
+                  <span class="label-text text-xs sm:text-sm">${o.label}</span>
+                  <input
+                    type="radio"
+                    name="${def.key}"
+                    value="${o.value}"
+                    class="radio radio-accent radio-xs sm:radio-sm"
+                    ?checked="${o.value === value}"
+                    data-setting-key="${def.key}"
+                    ?disabled="${!enabled}"
+                  />
+                </label>`,
+            )}
+          </div>`;
+
+        case "url":
+          return html`<div class="w-full">
+            <label
+              class="input input-accent validator flex items-center gap-2 w-full"
+            >
+              <svg
+                class="h-[1em] opacity-50"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+              >
+                <g
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+                  ></path>
+                  <path
+                    d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+                  ></path>
+                </g>
+              </svg>
+              <input
+                type="url"
+                required
+                placeholder="https://beemovie.com/beemovie.gif"
+                .value="${String(value)}"
+                data-setting-key="${def.key}"
+                ?disabled="${!enabled}"
+                pattern="^(https?://)?.*"
+                class="grow"
+              />
+            </label>
+          </div>`;
+
+        case "emoji":
+        default:
+          return html`<input
+            type="text"
+            class="input input-accent w-20"
+            placeholder="${def.placeholder || ""}"
+            maxlength="10"
+            .value="${String(value || "")}"
+            @input="${(e: Event) => {
+              const input = e.target as HTMLInputElement;
+              const symbols = Array.from(input.value);
+              if (symbols.length > 3) {
+                input.value = symbols.slice(0, 3).join("");
+              }
+            }}"
+            data-setting-key="${def.key}"
+            ?disabled="${!enabled}"
+          />`;
+      }
+    })(),
+    html`<div class="loading loading-spinner loading-sm"></div>`,
+  );
 }
 
 function renderSetting(def: HubSettingDef, enabled: boolean) {
@@ -230,7 +242,7 @@ function renderSetting(def: HubSettingDef, enabled: boolean) {
       <div class="flex flex-col">
         <span class="text-sm">${def.label}</span>
         ${def.desc
-          ? html`<span class="text-s opacity-50">${def.desc}</span>`
+          ? html`<span class="text-xs opacity-50">${def.desc}</span>`
           : ""}
       </div>
       <div
@@ -242,8 +254,8 @@ function renderSetting(def: HubSettingDef, enabled: boolean) {
   </div>`;
 }
 
-function getInitialTheme() {
-  const saved = gmGetValue<string>("BETTER_INTRA_THEME", "");
+async function getInitialTheme() {
+  const saved = await getConfig("BETTER_INTRA_THEME");
   if (saved) return saved;
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
@@ -259,7 +271,6 @@ const resetIconSvg = html`<svg
     d="M320 128C263.2 128 212.1 152.7 176.9 192L224 192C241.7 192 256 206.3 256 224C256 241.7 241.7 256 224 256L96 256C78.3 256 64 241.7 64 224L64 96C64 78.3 78.3 64 96 64C113.7 64 128 78.3 128 96L128 150.7C174.9 97.6 243.5 64 320 64C461.4 64 576 178.6 576 320C576 461.4 461.4 576 320 576C233 576 156.1 532.6 109.9 466.3C99.8 451.8 103.3 431.9 117.8 421.7C132.3 411.5 152.2 415.1 162.4 429.6C197.2 479.4 254.8 511.9 320 511.9C426 511.9 512 425.9 512 319.9C512 213.9 426 128 320 128z"
   />
 </svg>`;
-
 const saveIconSvg = html`<svg
   xmlns="http://www.w3.org/2000/svg"
   viewBox="0 0 640 640"
@@ -269,7 +280,6 @@ const saveIconSvg = html`<svg
     d="M160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 237.3C544 220.3 537.3 204 525.3 192L448 114.7C436 102.7 419.7 96 402.7 96L160 96zM192 192C192 174.3 206.3 160 224 160L384 160C401.7 160 416 174.3 416 192L416 256C416 273.7 401.7 288 384 288L224 288C206.3 288 192 273.7 192 256L192 192zM320 352C355.3 352 384 380.7 384 416C384 451.3 355.3 480 320 480C284.7 480 256 451.3 256 416C256 380.7 284.7 352 320 352z"
   />
 </svg>`;
-
 const sunIconSvg = html`<svg
   class="swap-on h-5 w-5 fill-current"
   xmlns="http://www.w3.org/2000/svg"
@@ -279,7 +289,6 @@ const sunIconSvg = html`<svg
     d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"
   />
 </svg>`;
-
 const moonIconSvg = html`<svg
   class="swap-off h-5 w-5 fill-current"
   xmlns="http://www.w3.org/2000/svg"
@@ -317,16 +326,16 @@ function renderTabsContent(active: FeatureId[]) {
           >
             <div class="flex flex-col">
               <h2 class="text-lg font-bold leading-tight">${f.name}</h2>
-              <p class="text-s opacity-70">${f.desc}</p>
+              <p class="text-xs opacity-70">${f.desc}</p>
             </div>
             <div class="flex items-center gap-3">
               <button
                 class="btn btn-sm btn-outline btn-error flex items-center gap-2"
                 data-reset-feature="${f.id}"
               >
-                <span class="size-3.5 flex items-center justify-center">
-                  ${resetIconSvg}
-                </span>
+                <span class="size-3.5 flex items-center justify-center"
+                  >${resetIconSvg}</span
+                >
                 Reset
               </button>
               <input
@@ -337,7 +346,6 @@ function renderTabsContent(active: FeatureId[]) {
               />
             </div>
           </div>
-
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
             ${settings}
           </div>
@@ -349,18 +357,13 @@ function renderTabsContent(active: FeatureId[]) {
 function renderDialogShell(): ReturnType<typeof html> {
   return html`<div
     class="modal-box hub-modal-box p-0 overflow-hidden bg-base-100 rounded-3xl shadow-2xl flex flex-col relative"
-    style="
-      width: min(900px, calc(100dvw - 2rem));
-      height: min(600px, calc(100dvh - 2rem));
-      max-width: min(900px, calc(100dvw - 2rem));
-      max-height: min(600px, calc(100dvh - 2rem));
-    "
+    style="width: min(900px, calc(100dvw - 2rem)); height: min(600px, calc(100dvh - 2rem)); max-width: min(900px, calc(100dvw - 2rem)); max-height: min(600px, calc(100dvh - 2rem));"
   >
     <div id="hub-shadow-wrapper"></div>
   </div>`;
 }
 
-function createModal(active: FeatureId[]): void {
+async function createModal(active: FeatureId[]): Promise<void> {
   let dialog = document.getElementById("hub-dialog") as HTMLDialogElement;
   if (!dialog) {
     dialog = document.createElement("dialog");
@@ -412,7 +415,7 @@ function createModal(active: FeatureId[]): void {
   const wrapper = dialog.querySelector("#hub-shadow-wrapper")!;
   const shadow = wrapper.shadowRoot || wrapper.attachShadow({ mode: "open" });
 
-  const currentTheme = getInitialTheme();
+  const currentTheme = await getInitialTheme();
   const tabsContent = renderTabsContent(active);
 
   const modalTemplate = html`<style>
@@ -513,11 +516,11 @@ function createModal(active: FeatureId[]): void {
   const hubContainer = shadow.querySelector("[data-theme]");
   const ghIcon = shadow.querySelector('img[alt="GitHub"]') as HTMLElement;
 
-  themeToggle?.addEventListener("change", () => {
+  themeToggle?.addEventListener("change", async () => {
     const newTheme = themeToggle.checked ? "dark" : "light";
 
     hubContainer?.setAttribute("data-theme", newTheme);
-    gmSetValue("BETTER_INTRA_THEME", newTheme);
+    await browser.storage.local.set({ BETTER_INTRA_THEME: newTheme });
 
     if (ghIcon) {
       ghIcon.style.filter =
@@ -526,8 +529,8 @@ function createModal(active: FeatureId[]): void {
   });
 
   const saveBtn = shadow.querySelector("#hub-save");
-  saveBtn?.addEventListener("click", () => {
-    saveHubState(shadow);
+  saveBtn?.addEventListener("click", async () => {
+    await saveHubState(shadow);
     location.reload();
   });
 
@@ -545,27 +548,30 @@ function createModal(active: FeatureId[]): void {
   });
 
   shadow.querySelectorAll("[data-reset-feature]").forEach((btn: any) => {
-    btn.addEventListener("click", () =>
-      resetFeatureSettings(shadow, btn.dataset.resetFeature),
-    );
+    btn.addEventListener("click", async () => {
+      await resetFeatureSettings(shadow, btn.dataset.resetFeature);
+    });
   });
 }
 
-function saveHubState(root: ShadowRoot | HTMLElement) {
+async function saveHubState(root: ShadowRoot | HTMLElement) {
   const selected = Array.from(
     root.querySelectorAll<HTMLInputElement>("input.hub-feature-toggle"),
   )
     .filter((sw) => sw.checked)
     .map((sw) => sw.dataset.id as FeatureId);
 
-  gmSetValue(STORAGE_KEY, JSON.stringify(selected));
+  const batchData: Record<string, any> = {
+    [STORAGE_KEY]: JSON.stringify(selected),
+  };
 
   const keys = new Set<string>();
   root.querySelectorAll("[data-setting-key]").forEach((el) => {
     keys.add((el as HTMLElement).dataset.settingKey!);
   });
 
-  keys.forEach((key) => {
+  const keysToRemove: string[] = [];
+  Array.from(keys).forEach((key) => {
     const controls = root.querySelectorAll(`[data-setting-key="${key}"]`);
     if (controls.length === 0) return;
 
@@ -584,31 +590,43 @@ function saveHubState(root: ShadowRoot | HTMLElement) {
     }
 
     if (val === "" || val === null || val === undefined) {
-      gmDeleteValue(key);
+      keysToRemove.push(key);
     } else {
-      gmSetValue(key, val);
+      batchData[key] = val;
     }
   });
 
   const shortcutsPanel = root.querySelector(
     '[data-shortcuts-panel="true"]',
   ) as HTMLElement | null;
+
   if (shortcutsPanel) {
     const links = extractLinksFromForm(shortcutsPanel);
     if (links.length > 0) {
-      gmSetValue("SHORTCUTS_LINKS", JSON.stringify(links));
+      batchData["SHORTCUTS_LINKS"] = JSON.stringify(links);
     } else {
-      gmDeleteValue("SHORTCUTS_LINKS");
+      keysToRemove.push("SHORTCUTS_LINKS");
     }
+  }
+  if (Object.keys(batchData).length > 0) {
+    await browser.storage.local.set(batchData);
+  }
+  if (keysToRemove.length > 0) {
+    await browser.storage.local.remove(keysToRemove);
   }
 }
 
-function resetFeatureSettings(
+async function resetFeatureSettings(
   root: ShadowRoot | HTMLElement,
   featureId: FeatureId,
-): void {
-  for (const def of HUB_SETTING_DEFS[featureId] ?? []) {
-    gmDeleteValue(def.key);
+): Promise<void> {
+  const keysToRemove = (HUB_SETTING_DEFS[featureId] ?? []).map(
+    (def) => def.key,
+  );
+  if (keysToRemove.length > 0) {
+    await browser.storage.local.remove(keysToRemove);
+  }
+  (HUB_SETTING_DEFS[featureId] ?? []).forEach((def) => {
     const controls = root.querySelectorAll<HTMLInputElement>(
       `[data-setting-key="${def.key}"]`,
     );
@@ -623,5 +641,5 @@ function resetFeatureSettings(
         control.value = String(val);
       }
     });
-  }
+  });
 }

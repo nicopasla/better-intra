@@ -3,40 +3,42 @@ import { initClusters } from "./features/clusters/clusters.ts";
 import { initProfile } from "./features/profile/profile.ts";
 import { initHubSettings } from "./features/hub/hubSettings.ts";
 import { initShortcuts } from "./features/shortcuts/shortcuts.ts";
+import { getConfig } from "./config.ts";
 
-const bootstrap = async () => {
-  console.log("Better Intra started...");
+(async function runBetterIntra() {
+  const waitForIntra = async () => {
+    const target =
+      document.getElementById("root") ||
+      document.querySelector("div.rounded-full.w-52.h-52") ||
+      document.querySelector("body");
 
-  const active = await initHubSettings();
+    if (target) {
+      try {
+        await initHubSettings();
 
-  const enabled = (id: string) =>
-    Array.isArray(active) && active.includes(id as any);
+        const activeRaw = await getConfig("ACTIVE_SCRIPTS");
+        const active: string[] =
+          typeof activeRaw === "string" ? JSON.parse(activeRaw) : activeRaw;
+        const enabled = (id: string) =>
+          Array.isArray(active) && active.includes(id);
 
-  try {
-    if (enabled("logtime")) await initLogtime();
-  } catch (e) {
-    console.error("[initLogtime] failed:", e);
-  }
-
-  try {
-    if (enabled("clusters")) await initClusters();
-  } catch (e) {
-    console.error("[initClusters] failed:", e);
-  }
-
-  try {
-    if (enabled("profile")) await initProfile();
-  } catch (e) {
-    console.error("[initProfile] failed:", e);
-  }
-
-  try {
-    if (enabled("shortcuts")) {
-      await initShortcuts();
+        if (enabled("logtime")) await initLogtime();
+        if (enabled("clusters")) await initClusters();
+        if (enabled("profile")) await initProfile();
+        if (enabled("shortcuts")) await initShortcuts();
+      } catch (error) {
+        console.error("Error during init of Better Intra :", error);
+      }
+    } else {
+      setTimeout(() => {
+        void waitForIntra();
+      }, 100);
     }
-  } catch (e) {
-    console.error("[initShortcuts] failed:", e);
-  }
-};
+  };
 
-bootstrap().catch((e) => console.error("[bootstrap] failed:", e));
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => waitForIntra());
+  } else {
+    waitForIntra();
+  }
+})();

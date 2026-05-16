@@ -1,6 +1,5 @@
 import { html, render } from "lit-html";
 import { getConfig } from "../../config.ts";
-import { gmSetValue } from "../../lib/gm.ts";
 import GLOBE from "../../assets/svg/globe.svg";
 
 export const SHORTCUTS_FEATURE_ID = "shortcuts";
@@ -270,9 +269,11 @@ export function renderShortcutsDisplay(
 export async function initShortcutsSettings(container: HTMLElement) {
   let links: ShortcutLink[] = await getStoredLinks();
 
-  const save = () => {
+  const save = async () => {
     const updated = extractLinksFromForm(container);
-    gmSetValue("SHORTCUTS_LINKS", JSON.stringify(updated));
+    await browser.storage.local.set({
+      SHORTCUTS_LINKS: JSON.stringify(updated),
+    });
   };
 
   const update = () => {
@@ -285,12 +286,14 @@ export async function initShortcutsSettings(container: HTMLElement) {
             update();
           }
         },
-        (idx) => {
+        async (idx) => {
           links = links.filter((_, i) => i !== idx);
-          save();
+          await save();
           update();
         },
-        () => save(),
+        async () => {
+          await save();
+        },
         () => update(),
       ),
       container,

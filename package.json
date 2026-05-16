@@ -1,21 +1,25 @@
 {
   "name": "better-intra",
   "private": true,
-  "version": "0.2.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "watch": "vite build --watch",
+    "web-ext": "web-ext run --keep-profile-changes --source-dir dist --start-url https://profile-v3.intra.42.fr",
+    "dev": "concurrently \"npm run watch\" \"npm run web-ext\""
   },
   "devDependencies": {
+    "@types/firefox-webext-browser": "^143.0.0",
+    "concurrently": "^9.2.1",
     "daisyui": "^5.5.19",
     "typescript": "~6.0.3",
     "vite": "^8.0.13",
-    "vite-plugin-monkey": "^8.0.5"
+    "web-ext": "^10.1.0"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
     "lit-html": "^3.3.3"
   }
+  
 }

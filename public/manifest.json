@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Better Intra",
+  "version": "__APP_VERSION__",
+  "description": "Collection of features inside a single extension that improve UI and UX of the 42 Intra v3.",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.intra.42.fr/*",
+        "https://profile-v3.intra.42.fr/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "better-intra@nicopasla.fr",
+      "strict_min_version": "109.0",
+      "update_url": "https://raw.githubusercontent.com/nicopasla/better-intra/main/updates.json",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  }
+}

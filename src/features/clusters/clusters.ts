@@ -1,6 +1,7 @@
 import { html, render } from "lit-html";
 import { getConfig } from "../../config.ts";
 import { SCREENS, CLUSTERS, CLUSTER_CONFIG } from "./clusters.data.ts";
+import CSS from "../../assets/style.css?inline";
 
 type Config = {
   show_markers: boolean;
@@ -90,17 +91,11 @@ export async function initClusters() {
   function refreshMarkersSoon() {
     if (refreshQueued) return;
     refreshQueued = true;
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       applyManualScreens();
       applyMarkersVisibility();
-      requestAnimationFrame(() => {
-        applyManualScreens();
-        applyMarkersVisibility();
-        setTimeout(() => {
-          refreshQueued = false;
-        }, 160);
-      });
-    }, 0);
+      refreshQueued = false;
+    });
   }
 
   function getClusterTabsList() {
@@ -120,112 +115,135 @@ export async function initClusters() {
     onClusterChange: (value: string) => void,
     onMarkerToggle: () => void,
   ) {
-    const currentCluster =
-      CLUSTERS.find((c) => String(c.id) === String(currentId)) || CLUSTERS[0];
+    const openSelectDropdown = (e: Event) => {
+      e.preventDefault();
+      const host = (e.currentTarget as HTMLElement).getRootNode() as ShadowRoot;
+      const select = host.getElementById(
+        "cluster-select",
+      ) as HTMLSelectElement | null;
+      if (select) {
+        try {
+          select.showPicker();
+        } catch (err) {
+          select.focus();
+        }
+      }
+    };
 
-    return html`<li
-      id="cluster-li-container"
-      style="
-        float: left;
-        margin-left: -16px;
-        display: inline-flex;
-        align-items: center;
-        height: 100%;
-      "
-    >
+    return html`
       <div
-        style="
-          display: flex;
-          align-items: center;
-          padding: 10px 15px;
-          line-height: 1.42857143;
-          font-family: inherit;
-        "
+        class="flex items-center gap-5 px-4 py-1 text-base-content bg-transparent"
       >
-        <div
-          style="
-            width: 1px;
-            height: 16px;
-            background: #ddd;
-            margin-right: 16px;
-          "
-        ></div>
-        <div
-          style="
-            position: relative;
-            display: flex;
-            align-items: center;
-            margin-right: 14px;
-            gap: 6px;
-            cursor: pointer;
-          "
-        >
-          <span style="color: #888; font-size: 13px;">default:</span>
-          <span
-            id="current-cluster-display"
-            style="color: #00a8a8; font-size: 14px;"
+        <div class="tooltip">
+          <div class="tooltip-content">
+            <div class="text-lg whitespace-nowrap">
+              Choose a default cluster
+            </div>
+          </div>
+
+          <div
+            class="flex items-center gap-3 cursor-pointer select-none py-1"
+            @click="${openSelectDropdown}"
           >
-            ${currentCluster.name.toLowerCase()}
-          </span>
-          <select
-            id="cluster-select"
-            @change="${(e: Event) =>
-              onClusterChange((e.target as HTMLSelectElement).value)}"
-            style="
-              position: absolute;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              opacity: 0;
-              cursor: pointer;
-            "
-          >
-            ${CLUSTERS.map(
-              (c) =>
-                html`<option value="${c.id}" ?selected="${currentId === c.id}">
-                  ${c.name.toLowerCase()}
-                </option>`,
-            )}
-          </select>
+            <select
+              id="cluster-select"
+              class="select select-lg select-ghost text-primary font-black uppercase min-w-32 text-xl focus:bg-transparent px-2"
+              @change="${(e: Event) =>
+                onClusterChange((e.target as HTMLSelectElement).value)}"
+              @click="${(e: Event) => e.stopPropagation()}"
+            >
+              ${CLUSTERS.map(
+                (c) => html`
+                  <option
+                    value="${c.id}"
+                    ?selected="${String(currentId) === String(c.id)}"
+                  >
+                    ${c.name.toLowerCase()}
+                  </option>
+                `,
+              )}
+            </select>
+          </div>
         </div>
-        <div
-          style="
-            width: 1px;
-            height: 16px;
-            background: #ddd;
-            margin-right: 15px;
-          "
-        ></div>
-        <span
-          id="marker-toggle"
+
+        <div class="h-8 w-px bg-base-content/20"></div>
+
+        <button
+          class="btn btn-lg px-8 text-base font-bold uppercase tracking-wider ${showMarkers
+            ? "btn-primary"
+            : "btn-outline opacity-70"}"
           @click="${onMarkerToggle}"
-          style="
-            font-size: 13px;
-            cursor: pointer;
-            padding: 2px 6px;
-            border-radius: 3px;
-            background-color: ${showMarkers ? "#d4edda" : "transparent"};
-            color: ${showMarkers ? "#155724" : "#ccc"};
-          "
         >
           markers
-        </span>
+        </button>
       </div>
-    </li>`;
+    `;
   }
 
   function injectClusterPicker() {
-    const list = getClusterTabsList();
-    if (!list || list.querySelector("#cluster-li-container")) return;
+    const list = getClusterTabsList() as HTMLElement | null;
+    if (!list || document.querySelector("#cluster-shadow-host")) return;
 
-    const container = document.createElement("div");
+    list.style.setProperty("position", "relative", "important");
+
+    const shadowHost = document.createElement("div");
+    shadowHost.id = "cluster-shadow-host";
+
+    shadowHost.style.setProperty("position", "absolute", "important");
+    shadowHost.style.setProperty("top", "50%", "important");
+    shadowHost.style.setProperty("transform", "translateY(-50%)", "important");
+    shadowHost.style.setProperty("right", "0px", "important");
+    shadowHost.style.setProperty("z-index", "10", "important");
+    shadowHost.style.setProperty("display", "inline-flex", "important");
+    shadowHost.style.setProperty("align-items", "center", "important");
+    shadowHost.style.setProperty("height", "64px", "important");
+
+    const shadowRoot = shadowHost.attachShadow({ mode: "open" });
+
+    const style = document.createElement("style");
+    style.textContent = `
+      ${CSS}
+      :host {
+        display: inline-flex !important;
+        align-items: center !important;
+      }
+      .tooltip {
+        position: relative;
+        display: inline-block;
+      }
+      .tooltip .tooltip-content {
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.15s ease, visibility 0.15s ease;
+        z-index: 50;
+      }
+      .tooltip:hover .tooltip-content {
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+    `;
+    shadowRoot.appendChild(style);
+
+    const wrapper = document.createElement("div");
+    wrapper.id = "cluster-li-container";
+    wrapper.setAttribute("data-theme", "light");
+    shadowRoot.appendChild(wrapper);
 
     const handleClusterChange = async (value: string) => {
       await browser.storage.local.set({ CLUSTERS_DEFAULT_ID: value });
       CONFIG.default_id = value;
       window.location.hash = `#cluster-${value}`;
-      location.reload();
+
+      const nativeTab = document.querySelector<HTMLAnchorElement>(
+        `a[href="#cluster-${value}"]`,
+      );
+      if (nativeTab) nativeTab.click();
+
+      reRender();
     };
 
     const handleMarkerToggle = async () => {
@@ -233,11 +251,11 @@ export async function initClusters() {
       await browser.storage.local.set({
         CLUSTERS_SHOW_MARKERS: CONFIG.show_markers,
       });
-      reRenderMarkerToggle();
+      reRender();
       refreshMarkersSoon();
     };
 
-    const reRenderMarkerToggle = () => {
+    const reRender = () => {
       render(
         renderClusterPicker(
           CONFIG.default_id,
@@ -245,12 +263,12 @@ export async function initClusters() {
           handleClusterChange,
           handleMarkerToggle,
         ),
-        container,
+        wrapper,
       );
     };
 
-    reRenderMarkerToggle();
-    list.appendChild(container.firstElementChild!);
+    reRender();
+    list.appendChild(shadowHost);
   }
 
   async function start() {
@@ -258,18 +276,25 @@ export async function initClusters() {
     const default_id = await getConfig("CLUSTERS_DEFAULT_ID");
     CONFIG = { show_markers, default_id };
 
+    refreshMarkersSoon();
+
     const findAndAttach = () => {
       const svg = document.querySelector<SVGSVGElement>("svg");
       if (svg && svg !== observedSvgRoot) {
         if (svgObserver) svgObserver.disconnect();
         observedSvgRoot = svg;
-        svgObserver = new MutationObserver(refreshMarkersSoon);
+
+        svgObserver = new MutationObserver(() => {
+          refreshMarkersSoon();
+        });
+
         svgObserver.observe(svg, {
           childList: true,
           subtree: true,
           attributes: true,
           attributeFilter: ["x", "y", "transform"],
         });
+
         refreshMarkersSoon();
       }
     };
@@ -280,6 +305,9 @@ export async function initClusters() {
     });
 
     bodyObserver.observe(document.body, { childList: true, subtree: true });
+
+    findAndAttach();
+    injectClusterPicker();
 
     const hashMatch = window.location.hash.match(/cluster-(\d+)/);
     const targetId = hashMatch ? hashMatch[1] : CONFIG.default_id;
@@ -295,6 +323,12 @@ export async function initClusters() {
       }, 100);
       setTimeout(() => clearInterval(checkInterval), 3000);
     }
+
+    setInterval(() => {
+      findAndAttach();
+      injectClusterPicker();
+      refreshMarkersSoon();
+    }, 500);
 
     console.log("Clusters loaded!");
   }

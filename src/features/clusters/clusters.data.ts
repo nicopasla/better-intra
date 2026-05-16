@@ -3,17 +3,27 @@ export const CLUSTER_CONFIG = {
   OPACITY: "0.9",
 } as const;
 
-function rowScreens(row, positions, dir) {
+export type ScreenDirection = "UP" | "DOWN" | "LEFT" | "RIGHT" | "NONE";
+
+function rowScreens(
+  row: string,
+  positions: number[],
+  dir: ScreenDirection,
+): Record<string, ScreenDirection> {
   return Object.fromEntries(positions.map((n) => [`${row}-p${n}`, dir]));
 }
 
-function rowsScreens(rows, positions, dir) {
+function rowsScreens(
+  rows: string[],
+  positions: number[],
+  dir: ScreenDirection,
+): Record<string, ScreenDirection> {
   return Object.fromEntries(
     rows.flatMap((row) => positions.map((n) => [`${row}-p${n}`, dir])),
   );
 }
 
-const SHI_SCREENS = {
+const SHI_SCREENS: Record<string, ScreenDirection> = {
   ...rowsScreens(
     ["r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11"],
     [1, 3, 5, 7],
@@ -30,7 +40,7 @@ const SHI_SCREENS = {
   ...rowScreens("c2", [1, 2, 3, 4, 5, 6], "LEFT"),
 };
 
-const FU_SCREENS = {
+const FU_SCREENS: Record<string, ScreenDirection> = {
   ...rowsScreens(
     ["r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"],
     [1, 3, 5, 7],
@@ -49,7 +59,7 @@ const FU_SCREENS = {
   ...rowScreens("c4", [1, 2, 3, 4, 5, 6], "RIGHT"),
 };
 
-const MI_SCREENS = {
+const MI_SCREENS: Record<string, ScreenDirection> = {
   ...rowsScreens(
     ["r1", "r2", "r3", "r4", "r5", "r6", "r7"],
     [1, 3, 5, 7],
@@ -73,17 +83,19 @@ const MI_SCREENS = {
   ...rowScreens("c6", [1, 2, 3, 4], "RIGHT"),
 };
 
-const A1_SCREENS = {};
+const A1_SCREENS: Record<string, ScreenDirection> = {};
+const A2_SCREENS: Record<string, ScreenDirection> = {};
 
-const A2_SCREENS = {};
-
-function prefixScreens(prefix, screens) {
+function prefixScreens(
+  prefix: string,
+  screens: Record<string, ScreenDirection>,
+): Record<string, ScreenDirection> {
   return Object.fromEntries(
     Object.entries(screens).map(([id, dir]) => [`${prefix}-${id}`, dir]),
   );
 }
 
-export const SCREENS = {
+export const SCREENS: Record<string, ScreenDirection> = {
   ...prefixScreens("shi", SHI_SCREENS),
   ...prefixScreens("fu", FU_SCREENS),
   ...prefixScreens("mi", MI_SCREENS),
@@ -97,4 +109,4 @@ export const CLUSTERS = [
   { id: "54", name: "mi" },
   { id: "164", name: "a1" },
   { id: "165", name: "a2" },
-];
+] as const;

@@ -546,54 +546,53 @@ function isProfileV3TargetPage() {
 let cachedStats = null;
 
 function installFetchHook() {
-  const targetWindow =
-    typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
-  const originalFetch = targetWindow.fetch.bind(targetWindow);
-  targetWindow.fetch = async (...args) => {
-    const url = getFetchUrl(args[0]);
-    const response = await originalFetch(...args);
-
-    if (url.includes("/locations_stats")) {
-      const clone = response.clone();
-      try {
-        const json = await clone.json();
-        const stats = extractStats(json);
-        if (stats) {
-          cachedStats = stats;
-          renderLogtime(stats);
-        }
-      } catch (e) {}
+  window.addEventListener("42_LOGTIME_DATA", (event: any) => {
+    const stats = event.detail;
+    if (stats) {
+      cachedStats = stats;
+      renderLogtime(stats);
     }
-    return response;
-  };
+  });
+
+  const script = document.createElement("script");
+  script.textContent = `
+    (() => {
+      const originalFetch = window.fetch;
+      window.fetch = async (...args) => {
+        const response = await originalFetch(...args);
+        const url = args[0] instanceof Request ? args[0].url : String(args[0]);
+
+        if (url.includes("/locations_stats")) {
+          const clone = response.clone();
+          try {
+            const json = await clone.json();
+            // Extraction simplifiée directement dans la page
+            const stats = json?.locations_stats || json?.data?.locations_stats || json;
+            if (stats && typeof stats === 'object') {
+              // On renvoie les données vers le Content Script de l'extension
+              window.dispatchEvent(new CustomEvent("42_LOGTIME_DATA", { detail: stats }));
+            }
+          } catch (e) {}
+        }
+        return response;
+      };
+    })();
+  `;
+  
+  (document.head || document.documentElement).appendChild(script);
+  script.remove();
 }
 
 export async function initLogtime() {
   if (isLoaded) return;
+  
   installFetchHook();
 
   CONFIG = await getConfigs();
   setupStyles();
 
   if (isProfileV3TargetPage()) {
-    const existingResource = performance
-      .getEntriesByType("resource")
-      .find((r) => r.name.includes("/locations_stats"));
-
-    if (existingResource) {
-      try {
-        const res = await fetch(existingResource.name, {
-          credentials: "include",
-        });
-        const stats = extractStats(await res.json());
-        if (stats) {
-          isLoaded = true;
-          renderLogtime(stats);
-          return;
-        }
-      } catch (e) {}
-    }
-
-    console.log("Logtime loaded!");
+    isLoaded = true;
+    console.log("Logtime extension core loaded & hooking network...");
   }
 }

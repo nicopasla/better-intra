@@ -24,8 +24,9 @@ export const CONFIG_KEYS = [
   "SHORTCUTS_LINKS",
   "ACCOUNT",
   "CLOUD_SYNC_ENABLED",
-  "CLOUD_PASSWORD",
   "LAST_CLOUD_SYNC",
+  "CLOUD_TOKEN",
+  "CLOUD_LOGIN",
 ] as const;
 
 export type ConfigKey = (typeof CONFIG_KEYS)[number];
@@ -33,8 +34,9 @@ export type ConfigKey = (typeof CONFIG_KEYS)[number];
 export const CONFIG_DEFAULT: Record<ConfigKey, any> = {
   ACTIVE_SCRIPTS: '["logtime", "clusters", "profile", "shortcuts", "account"]',
   CLOUD_SYNC_ENABLED: false,
-  CLOUD_PASSWORD: "",
   LAST_CLOUD_SYNC: null,
+  CLOUD_TOKEN: "",
+  CLOUD_LOGIN: "",
   ACCOUNT: null,
 
   LOGTIME_GOAL_HOURS: 140,

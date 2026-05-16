@@ -1,8 +1,7 @@
 import { html, render } from "lit-html";
 import { gmSetValue, gmDeleteValue } from "../../lib/gm.ts";
 import { getConfig } from "../../config.ts";
-import { getIntraLogin } from "../account/account.ts";
-import { fetchUserVisuals } from "./visual.cloud.ts";
+import { getIntraLogin, fetchUserVisuals, syncMyVisuals } from "../account/account.ts";
 
 let isFetching = false;
 let visualCache: any = null;
@@ -204,7 +203,8 @@ function setupModalEventListeners(overlay: HTMLElement) {
     await gmSetValue("PROFILE_IMAGE_URL", vals.avatar);
     await gmSetValue("PROFILE_BANNER_URL", vals.banner);
     await gmSetValue("PROFILE_BACKGROUND_URL", vals.background);
-
+    visualCache = vals;
+    await syncMyVisuals(vals);
     await applyImgs(vals);
     overlay.remove();
   });
@@ -214,6 +214,8 @@ function setupModalEventListeners(overlay: HTMLElement) {
       await gmDeleteValue("PROFILE_IMAGE_URL");
       await gmDeleteValue("PROFILE_BANNER_URL");
       await gmDeleteValue("PROFILE_BACKGROUND_URL");
+      visualCache = null;
+      await syncMyVisuals({ avatar: "", banner: "", background: "" });
       location.reload();
     }
   });

@@ -1,12 +1,14 @@
 # Better Intra
 
-Collection of features inside a single Firefox Extension that improve UI and UX of the 42 Intra v3.
+Collection of features inside a Firefox Extension that improve UI and UX of the 42 Intra v3.
 
 ## ⚡ Quick Start
 
-1. **Install the Extension:** Download the latest signed `.xpi` from the [Releases](https://github.com/nicopasla/better-intra/releases) page.
-2. **Accept Permissions:** Allow the extension to access your storage and run on the Intra domain.
-3. Refresh your Intra tab and explore the new features.
+To install this extension, click the button below or visit the [Releases](https://github.com/nicopasla/better-intra/releases) page.
+
+<a href="https://addons.mozilla.org/fr/firefox/addon/better-intra/" target="_blank" rel="noopener noreferrer">
+  <img alt="Install button" src="images/get-the-addon-fx-apr-2020.svg" height="55"/>
+</a>
 
 ## Features
 
@@ -29,9 +31,16 @@ Improves cluster navigation and visual orientation.
 
 ### 👤 Profile
 Enhances readability and adds local customization options.
-* **Change your:** Avatar, Banner, Background.
+* **Change your:**
+  * Avatar
+  * Banner
+  * Background
+
 > When viewing another person profile with Better Intra installed you will see his custom images.
-* **Event Filtering:** Campus Filter, Category Filter.
+
+* **Event Filtering:**
+  * Campus Filter.
+  * Category Filter.
 * Redirection of the "Manage slots" button to the correct webpage.
 * Improved readability using a clean system-font stack.
 
@@ -39,12 +48,14 @@ Enhances readability and adds local customization options.
 
 ### 🔗 Shortcuts
 Adds custom quick-access links on the profile page.
+
 * Up to 8 configurable shortcuts.
 
 ---
 
 ### ☁️ Account
-* Store your local settings into a KV database on a Cloudflare Worker.
+
+* Authenticate with your 42 Intra account and store your local settings into a KV database on a Cloudflare Worker.
 
 ---
 
@@ -56,7 +67,7 @@ Adds custom quick-access links on the profile page.
 <img alt="Logtime screenshot" src="images/logtime.png"/>
 <img alt="Profile screenshot" src="images/profile.png"/>
 <img alt="Events screenshot" src="images/profile-events.png"/>
-<img alt="Events screenshot" src="images/shortcuts-settings.png"/>
+<img alt="Shortcuts screenshot" src="images/shortcuts-settings.png"/>
 <img alt="Account screenshot" src="images/account.png"/>
 
 ## Uninstall

@@ -57,7 +57,7 @@ export async function initClusters() {
 
       const chairW = 22;
       const chairH = 4;
-      let cx, cy, finalW, finalH;
+      let cx: number, cy: number, finalW: number, finalH: number;
 
       if (direction === "UP" || direction === "DOWN") {
         finalW = chairW;

@@ -61,7 +61,7 @@ export async function testCloudConnection(): Promise<number> {
   try {
     const hashedLogin = await hashLogin(login);
     const response = await fetch(
-      `${WORKER_URL}?login=${encodeURIComponent(hashedLogin)}`,
+      `${WORKER_URL}/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}`,
       {
         method: "GET",
         headers: {
@@ -106,7 +106,7 @@ export async function syncToCloud(): Promise<boolean> {
   try {
     const hashedLogin = await hashLogin(login);
     const response = await fetch(
-      `${WORKER_URL}?login=${encodeURIComponent(hashedLogin)}`,
+      `${WORKER_URL}/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}`,
       {
         method: "POST",
         headers: {
@@ -133,20 +133,23 @@ export async function syncMyVisuals(visuals: {
 
   try {
     const hashedLogin = await hashLogin(login);
-    await fetch(`${WORKER_URL}?login=${encodeURIComponent(hashedLogin)}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        settings: {
-          PROFILE_IMAGE_URL: visuals.avatar,
-          PROFILE_BANNER_URL: visuals.banner,
-          PROFILE_BACKGROUND_URL: visuals.background,
+    await fetch(
+      `${WORKER_URL}/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      }),
-    });
+        body: JSON.stringify({
+          settings: {
+            PROFILE_IMAGE_URL: visuals.avatar,
+            PROFILE_BANNER_URL: visuals.banner,
+            PROFILE_BACKGROUND_URL: visuals.background,
+          },
+        }),
+      },
+    );
   } catch (e) {
     console.error("Cloud Quick Sync Error:", e);
   }
@@ -156,15 +159,15 @@ export async function fetchUserVisuals(login: string) {
   try {
     const hashedTarget = await hashLogin(login);
     const response = await fetch(
-      `${WORKER_URL}?login=${encodeURIComponent(hashedTarget)}`,
+      `${WORKER_URL}/api/v1/public/visuals?login=${encodeURIComponent(hashedTarget)}`,
     );
     if (!response.ok) return null;
     const data = await response.json();
 
     return {
-      avatar: data.settings?.PROFILE_IMAGE_URL || "",
-      banner: data.settings?.PROFILE_BANNER_URL || "",
-      background: data.settings?.PROFILE_BACKGROUND_URL || "",
+      avatar: data.avatar || "",
+      banner: data.banner || "",
+      background: data.background || "",
     };
   } catch (error) {
     console.error(error);
@@ -174,12 +177,20 @@ export async function fetchUserVisuals(login: string) {
 
 export async function fetchMySettings(): Promise<Record<string, any> | null> {
   const login = await getCloudLogin();
-  if (!login) return null;
+  const token = await getConfig("CLOUD_TOKEN");
+  if (!login || !token) return null;
 
   try {
     const hashedLogin = await hashLogin(login);
     const response = await fetch(
-      `${WORKER_URL}?login=${encodeURIComponent(hashedLogin)}`,
+      `${WORKER_URL}/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        mode: "cors",
+      },
     );
     if (!response.ok) return null;
     const data = await response.json();
@@ -198,10 +209,13 @@ export async function logoutCloud(): Promise<boolean> {
 
   try {
     const hashedLogin = await hashLogin(login);
-    await fetch(`${WORKER_URL}?login=${encodeURIComponent(hashedLogin)}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await fetch(
+      `${WORKER_URL}/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
   } catch (e) {
     console.error("Failed to notify worker of logout", e);
   }
@@ -218,7 +232,7 @@ export async function wipeAllCloudData(): Promise<boolean> {
   try {
     const hashedLogin = await hashLogin(login);
     const response = await fetch(
-      `${WORKER_URL}?login=${encodeURIComponent(hashedLogin)}&all=true`,
+      `${WORKER_URL}/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}&all=true`,
       {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },

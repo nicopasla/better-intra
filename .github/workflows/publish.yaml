@@ -1,0 +1,41 @@
+name: Build and Publish
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: web-ext build
+        id: web-ext-build
+        uses: kewisch/action-web-ext@v2
+        with:
+          cmd: build
+          source: dist
+          filename: "better-intra.xpi"
+
+      - name: Collect source code
+        run: git archive --format=zip --output=sources.zip ${{ github.ref }}
+
+      - name: web-ext sign
+        id: web-ext-sign
+        uses: kewisch/action-web-ext@v2
+        with:
+          cmd: sign
+          source: ${{ steps.web-ext-build.outputs.target }}
+          sourceCode: sources.zip
+          channel: unlisted
+          apiKey: ${{ secrets.AMO_SIGN_KEY }}
+          apiSecret: ${{ secrets.AMO_SIGN_SECRET }}
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: ${{ steps.web-ext-sign.outputs.target }}

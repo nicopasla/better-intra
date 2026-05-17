@@ -3,6 +3,13 @@ import { CONFIG_KEYS } from "../../config.ts";
 
 const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
 
+async function hashLogin(login: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(login.toLowerCase().trim());
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export async function loginWith42(): Promise<void> {
   const extensionFakeCallback = window.location.href;
   const authUrl = `${WORKER_URL}/login?redirect_uri=${encodeURIComponent(extensionFakeCallback)}`;
@@ -18,8 +25,10 @@ export async function loginWith42(): Promise<void> {
     return;
   }
 
+  const WORKER_ORIGIN = new URL(WORKER_URL).origin;
+
   const messageListener = async (event: MessageEvent) => {
-    if (event.origin !== WORKER_URL) return;
+    if (event.origin !== WORKER_ORIGIN) return;
 
     if (event.data && event.data.type === "42_AUTH_SUCCESS") {
       const { token, login } = event.data;
@@ -50,8 +59,9 @@ export async function testCloudConnection(): Promise<number> {
   if (!token || !login) return 0;
 
   try {
+    const hashedLogin = await hashLogin(login);
     const response = await fetch(
-      `${WORKER_URL}?login=${encodeURIComponent(login)}`,
+      `${WORKER_URL}?login=${encodeURIComponent(hashedLogin)}`,
       {
         method: "GET",
         headers: {
@@ -94,8 +104,9 @@ export async function syncToCloud(): Promise<boolean> {
   );
 
   try {
+    const hashedLogin = await hashLogin(login);
     const response = await fetch(
-      `${WORKER_URL}?login=${encodeURIComponent(login)}`,
+      `${WORKER_URL}?login=${encodeURIComponent(hashedLogin)}`,
       {
         method: "POST",
         headers: {
@@ -121,7 +132,8 @@ export async function syncMyVisuals(visuals: {
   if (!login || !token) return;
 
   try {
-    await fetch(`${WORKER_URL}?login=${encodeURIComponent(login)}`, {
+    const hashedLogin = await hashLogin(login);
+    await fetch(`${WORKER_URL}?login=${encodeURIComponent(hashedLogin)}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -142,8 +154,9 @@ export async function syncMyVisuals(visuals: {
 
 export async function fetchUserVisuals(login: string) {
   try {
+    const hashedTarget = await hashLogin(login);
     const response = await fetch(
-      `${WORKER_URL}?login=${encodeURIComponent(login)}`,
+      `${WORKER_URL}?login=${encodeURIComponent(hashedTarget)}`,
     );
     if (!response.ok) return null;
     const data = await response.json();
@@ -164,8 +177,9 @@ export async function fetchMySettings(): Promise<Record<string, any> | null> {
   if (!login) return null;
 
   try {
+    const hashedLogin = await hashLogin(login);
     const response = await fetch(
-      `${WORKER_URL}?login=${encodeURIComponent(login)}`,
+      `${WORKER_URL}?login=${encodeURIComponent(hashedLogin)}`,
     );
     if (!response.ok) return null;
     const data = await response.json();
@@ -183,7 +197,8 @@ export async function logoutCloud(): Promise<boolean> {
   if (!token || !login) return false;
 
   try {
-    await fetch(`${WORKER_URL}?login=${encodeURIComponent(login)}`, {
+    const hashedLogin = await hashLogin(login);
+    await fetch(`${WORKER_URL}?login=${encodeURIComponent(hashedLogin)}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -201,8 +216,9 @@ export async function wipeAllCloudData(): Promise<boolean> {
   if (!token || !login) return false;
 
   try {
+    const hashedLogin = await hashLogin(login);
     const response = await fetch(
-      `${WORKER_URL}?login=${encodeURIComponent(login)}&all=true`,
+      `${WORKER_URL}?login=${encodeURIComponent(hashedLogin)}&all=true`,
       {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },

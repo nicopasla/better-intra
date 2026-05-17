@@ -1,11 +1,11 @@
-import { html, render, css } from "lit";
+import { html, render } from "lit-html";
 import { CLUSTERS } from "../clusters/clusters.data.ts";
 import ARROW from "../../assets/svg/arrow_share.svg";
 
 if (!document.getElementById("ft-glow-styles")) {
   const style = document.createElement("style");
   style.id = "ft-glow-styles";
-  style.textContent = css`
+  style.textContent = `
     @keyframes ft-pulsate {
       0% {
         filter: drop-shadow(0 0 2px #ff0055) drop-shadow(0 0 5px #ff0055);
@@ -21,7 +21,7 @@ if (!document.getElementById("ft-glow-styles")) {
       animation: ft-pulsate 1.5s infinite ease-in-out !important;
       transition: transform 0.3s ease-out !important;
     }
-  `.cssText;
+  `;
   document.head.appendChild(style);
 }
 
@@ -202,12 +202,12 @@ export async function handleProfileRedirect() {
       const labelTemplate = html`
         <div
           style="
-      display: inline-flex; 
-      align-items: center; 
-      gap: 6px; 
-      cursor: pointer; 
-      transition: all 0.2s ease-in-out;
-    "
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out;
+          "
           title="View seat ${seatText} on the cluster map"
           @mouseenter=${onMouseEnter}
           @mouseleave=${onMouseLeave}
@@ -218,13 +218,13 @@ export async function handleProfileRedirect() {
             src="${ARROW}"
             alt="Share icon"
             style="
-        width: 12px; 
-        height: 12px; 
-        display: block;
-        filter: invert(1);
-        opacity: 0.7;
-        transition: opacity 0.2s ease;
-      "
+              width: 12px; 
+              height: 12px; 
+              display: block;
+              filter: invert(1);
+              opacity: 0.7;
+              transition: opacity 0.2s ease;
+            "
             @mouseenter=${(e: MouseEvent) =>
               ((e.currentTarget as HTMLElement).style.opacity = "1")}
             @mouseleave=${(e: MouseEvent) =>

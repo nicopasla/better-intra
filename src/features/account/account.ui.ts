@@ -11,6 +11,13 @@ import {
 } from "./account.ts";
 import { getConfig } from "../../config.ts";
 
+export interface ButtonState {
+  loading: boolean;
+  success: boolean;
+  error: boolean;
+  text: string;
+}
+
 export function renderAccountTab(
   login: string | null,
   lastSync: string,
@@ -21,6 +28,9 @@ export function renderAccountTab(
   onTestConnection: () => void,
   hasToken: boolean,
   activeSessions: number = 0,
+  pushBtnState: ButtonState,
+  pullBtnState: ButtonState,
+  testBtnLoading: boolean,
 ): ReturnType<typeof html> {
   const isConnected = activeSessions > 0;
 
@@ -74,19 +84,33 @@ export function renderAccountTab(
                 <div class="flex flex-col gap-2 mt-4">
                   <button
                     id="push-cloud-btn"
-                    class="btn btn-primary"
+                    class="btn ${pushBtnState.loading
+                      ? "btn-info loading"
+                      : pushBtnState.success
+                        ? "btn-success"
+                        : pushBtnState.error
+                          ? "btn-error"
+                          : "btn-primary"}"
                     type="button"
+                    ?disabled="${pushBtnState.loading}"
                     @click="${onPush}"
                   >
-                    Push Settings to Cloud
+                    ${pushBtnState.text}
                   </button>
                   <button
                     id="pull-cloud-btn"
-                    class="btn btn-outline btn-primary"
+                    class="btn ${pullBtnState.loading
+                      ? "btn-info loading"
+                      : pullBtnState.success
+                        ? "btn-success"
+                        : pullBtnState.error
+                          ? "btn-error"
+                          : "btn-outline btn-primary"}"
                     type="button"
+                    ?disabled="${pullBtnState.loading}"
                     @click="${onPull}"
                   >
-                    Pull Settings from Cloud
+                    ${pullBtnState.text}
                   </button>
                 </div>
               `}
@@ -108,10 +132,13 @@ export function renderAccountTab(
               ? html`
                   <button
                     id="test-conn-btn"
-                    class="mt-4 btn py-3 px-6 ${isConnected
+                    class="mt-4 btn py-3 px-6 ${testBtnLoading
+                      ? "loading"
+                      : ""} ${isConnected
                       ? "btn-success text-white"
                       : "btn-info"}"
                     type="button"
+                    ?disabled="${testBtnLoading}"
                     @click="${onTestConnection}"
                   >
                     ${isConnected
@@ -179,10 +206,27 @@ export async function initAccountSettings(container: HTMLElement) {
   let token = (await getConfig("CLOUD_TOKEN")) || "";
   let activeSessions = 0;
 
+  const buttonStates = {
+    push: {
+      loading: false,
+      success: false,
+      error: false,
+      text: "Push Settings to Cloud",
+    },
+    pull: {
+      loading: false,
+      success: false,
+      error: false,
+      text: "Pull Settings from Cloud",
+    },
+    testLoading: false,
+  };
+
   if (token && login) {
     const res = await testCloudConnection();
     activeSessions = typeof res === "number" ? res : res ? 1 : 0;
   }
+
   window.addEventListener("wipe-cloud", async () => {
     const success = await wipeAllCloudData();
     if (success) {
@@ -209,14 +253,13 @@ export async function initAccountSettings(container: HTMLElement) {
   };
 
   const handleTestConnection = async () => {
-    const btn = container.querySelector("#test-conn-btn") as HTMLButtonElement;
-    if (!btn) return;
+    buttonStates.testLoading = true;
+    update();
 
-    btn.classList.add("loading");
     const res = await testCloudConnection();
     activeSessions = typeof res === "number" ? res : res ? 1 : 0;
-    btn.classList.remove("loading");
 
+    buttonStates.testLoading = false;
     update();
   };
 
@@ -228,25 +271,35 @@ export async function initAccountSettings(container: HTMLElement) {
   };
 
   const handlePush = async () => {
-    const btn = container.querySelector("#push-cloud-btn") as HTMLButtonElement;
-    if (!btn) return;
+    if (buttonStates.push.loading) return;
 
-    const originalContent = btn.innerHTML;
-    btn.classList.remove("btn-primary", "btn-success", "btn-error");
-    btn.classList.add("btn-info", "loading");
+    buttonStates.push = {
+      loading: true,
+      success: false,
+      error: false,
+      text: "Connecting...",
+    };
+    update();
 
     const res = await testCloudConnection();
-    const isCloudAlive = res ? true : false;
+    const isCloudAlive = !!res;
 
     if (!isCloudAlive) {
-      btn.classList.remove("btn-info", "loading");
-      btn.classList.add("btn-error");
-      btn.innerHTML = "Connection Failed";
+      buttonStates.push = {
+        loading: false,
+        success: false,
+        error: true,
+        text: "Connection Failed",
+      };
+      update();
 
       setTimeout(() => {
-        btn.classList.remove("btn-error");
-        btn.classList.add("btn-primary");
-        btn.innerHTML = originalContent;
+        buttonStates.push = {
+          loading: false,
+          success: false,
+          error: false,
+          text: "Push Settings to Cloud",
+        };
         update();
       }, 2500);
       return;
@@ -254,46 +307,66 @@ export async function initAccountSettings(container: HTMLElement) {
 
     const success = await syncToCloud();
 
-    btn.classList.remove("btn-info", "loading");
     if (success) {
       await browser.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
-      btn.classList.add("btn-success");
-      btn.innerHTML = "Synced!";
+      buttonStates.push = {
+        loading: false,
+        success: true,
+        error: false,
+        text: "Synced!",
+      };
     } else {
-      btn.classList.add("btn-error");
-      btn.innerHTML = "Sync Failed";
+      buttonStates.push = {
+        loading: false,
+        success: false,
+        error: true,
+        text: "Sync Failed",
+      };
     }
+    update();
 
     setTimeout(() => {
-      btn.classList.remove("btn-success", "btn-error");
-      btn.classList.add("btn-primary");
-      btn.innerHTML = originalContent;
+      buttonStates.push = {
+        loading: false,
+        success: false,
+        error: false,
+        text: "Push Settings to Cloud",
+      };
       update();
     }, 2500);
   };
 
   const handlePull = async () => {
-    const btn = container.querySelector("#pull-cloud-btn") as HTMLButtonElement;
-    if (!btn) return;
-
+    if (buttonStates.pull.loading) return;
     if (!confirm("Overwrite current local settings with cloud backup?")) return;
 
-    const originalContent = btn.innerHTML;
-    btn.classList.remove("btn-primary", "btn-success", "btn-error");
-    btn.classList.add("btn-info", "loading");
+    buttonStates.pull = {
+      loading: true,
+      success: false,
+      error: false,
+      text: "Connecting...",
+    };
+    update();
 
     const res = await testCloudConnection();
-    const isCloudAlive = res ? true : false;
+    const isCloudAlive = !!res;
 
     if (!isCloudAlive) {
-      btn.classList.remove("btn-info", "loading");
-      btn.classList.add("btn-error");
-      btn.innerHTML = "Connection Failed";
+      buttonStates.pull = {
+        loading: false,
+        success: false,
+        error: true,
+        text: "Connection Failed",
+      };
+      update();
 
       setTimeout(() => {
-        btn.classList.remove("btn-error");
-        btn.classList.add("btn-primary");
-        btn.innerHTML = originalContent;
+        buttonStates.pull = {
+          loading: false,
+          success: false,
+          error: false,
+          text: "Pull Settings from Cloud",
+        };
         update();
       }, 2500);
       return;
@@ -301,20 +374,33 @@ export async function initAccountSettings(container: HTMLElement) {
 
     const settings = await fetchMySettings();
 
-    btn.classList.remove("btn-info", "loading");
     if (settings) {
       await applyCloudSettings(settings);
       await browser.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
-      btn.classList.add("btn-success");
-      btn.innerHTML = "Restored!";
+      buttonStates.pull = {
+        loading: false,
+        success: true,
+        error: false,
+        text: "Restored!",
+      };
+      update();
       setTimeout(() => window.location.reload(), 1500);
     } else {
-      btn.classList.add("btn-error");
-      btn.innerHTML = "No Data Found";
+      buttonStates.pull = {
+        loading: false,
+        success: false,
+        error: true,
+        text: "No Data Found",
+      };
+      update();
+
       setTimeout(() => {
-        btn.classList.remove("btn-error");
-        btn.classList.add("btn-primary");
-        btn.innerHTML = originalContent;
+        buttonStates.pull = {
+          loading: false,
+          success: false,
+          error: false,
+          text: "Pull Settings from Cloud",
+        };
         update();
       }, 2500);
     }
@@ -335,6 +421,9 @@ export async function initAccountSettings(container: HTMLElement) {
         handleTestConnection,
         !!token,
         activeSessions,
+        buttonStates.push,
+        buttonStates.pull,
+        buttonStates.testLoading,
       ),
       container,
     );

@@ -4,9 +4,9 @@ Collection of features inside a Firefox Extension that improve UI and UX of the 
 
 ## ⚡ Quick Start
 
-To install this extension, click the button below or visit the [Releases](https://github.com/nicopasla/better-intra/releases) page.
+To install this extension, click the button below or visit the [Releases](https://github.com/nicopasla/better-intra/releases/latest/) page.
 
-<a href="https://addons.mozilla.org/fr/firefox/addon/better-intra/" target="_blank" rel="noopener noreferrer">
+<a href="https://github.com/nicopasla/better-intra/releases/latest/download/better-intra.xpi" target="_blank" rel="noopener noreferrer">
   <img alt="Install button" src="images/get-the-addon-fx-apr-2020.svg" height="55"/>
 </a>
 

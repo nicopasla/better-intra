@@ -6,10 +6,7 @@
   "permissions": ["storage"],
   "content_scripts": [
     {
-      "matches": [
-        "https://*.intra.42.fr/*",
-        "https://profile-v3.intra.42.fr/*"
-      ],
+      "matches": ["https://*.intra.42.fr/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }

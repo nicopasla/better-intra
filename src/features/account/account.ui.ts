@@ -1,4 +1,5 @@
 import { html, render } from "lit-html";
+import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import {
   getCloudLogin,
   syncToCloud,
@@ -10,6 +11,7 @@ import {
   wipeAllCloudData,
 } from "./account.ts";
 import { getConfig } from "../../config.ts";
+import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 
 export interface ButtonState {
   loading: boolean;
@@ -53,30 +55,29 @@ export function renderAccountTab(
                   <div class="flex items-center gap-2 mt-2">
                     <span class="text-sm opacity-70">Connected as:</span>
                     <div
-                      class="badge badge-primary font-mono text-sm px-3 py-2"
+                      class="badge badge-outline badge-info font-mono px-3 py-2"
                     >
                       ${login}
                     </div>
                   </div>
                 `
-              : html`
-                  <label class="label py-1">
-                    <span class="label-text opacity-50"
-                      >Not connected to Cloud</span
-                    >
-                  </label>
-                `}
+              : html``}
           </div>
 
           ${!hasToken
             ? html`
                 <div class="flex flex-col gap-2 mt-6">
                   <button
-                    class="btn btn-primary w-full flex items-center justify-center gap-2"
+                    class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] w-full h-16 text-lg flex items-center justify-center gap-3 transition-colors duration-200"
                     type="button"
                     @click="${onLogin42}"
                   >
-                    <span>⚡</span> Connect with 42
+                    <span class="font-bold tracking-wide">Connect with</span>
+                    <span
+                      class="size-10 flex items-center justify-center [&_polygon]:fill-current"
+                    >
+                      ${unsafeHTML(FORTY_TWO_SVG)}
+                    </span>
                   </button>
                 </div>
               `

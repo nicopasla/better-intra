@@ -9,7 +9,7 @@
   themes: "light", "dark";
   include: [ 'button', 'toggle', 'input', 'select', 'radio', 'label',
     'card', 'tabs', 'modal', 'divider', 'swap', 'fieldset', 'status',
-    'tootlip'
+    'tootlip', 'badge'
     ]
 }
 

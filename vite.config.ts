@@ -42,5 +42,10 @@ export default defineConfig({
   },
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
+    __TS_VERSION__: JSON.stringify(pkg.devDependencies.typescript),
+    __VITE_VERSION__: JSON.stringify(pkg.devDependencies.vite),
+    __LIT_VERSION__: JSON.stringify(pkg.dependencies["lit-html"]),
+    __TW_VERSION__: JSON.stringify(pkg.dependencies["@tailwindcss/vite"]),
+    __DAISY_VERSION__: JSON.stringify(pkg.devDependencies.daisyui),
   },
 });

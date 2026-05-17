@@ -3,6 +3,7 @@ import CLUSTERS from "../../assets/svg/grip-vertical.svg?raw";
 import USER from "../../assets/svg/user.svg?raw";
 import SHORTCUT from "../../assets/svg/shortcut.svg?raw";
 import CLOUD from "../../assets/svg/cloud.svg?raw";
+import ABOUT from "../../assets/svg/about.svg?raw";
 import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
 
 export const HUB_INFO = {
@@ -45,6 +46,12 @@ export const FEATURE_DEFS = [
     icon: CLOUD,
     desc: "Sync your settings to the cloud and manage your session.",
   },
+  {
+    id: "about",
+    name: "About",
+    icon: ABOUT,
+    desc: "Information about Better Intra and its technical stack.",
+  },
 ] as const;
 
 export type FeatureId = (typeof FEATURE_DEFS)[number]["id"];
@@ -63,7 +70,8 @@ export type SettingKind =
   | "divider"
   | "shortcuts"
   | "emoji"
-  | "account";
+  | "account"
+  | "about";
 
 export const INTRA_FONT =
   'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
@@ -321,6 +329,14 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       key: "ACCOUNT",
       label: "",
       kind: "account",
+      fullWidth: true,
+    },
+  ],
+  about: [
+    {
+      feature: "about",
+      label: "",
+      kind: "about",
       fullWidth: true,
     },
   ],

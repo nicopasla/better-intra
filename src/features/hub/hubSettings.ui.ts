@@ -19,7 +19,7 @@ import {
 } from "../shortcuts/shortcuts.ui.ts";
 import { initAccountSettings } from "../account/account.ui.ts";
 import HUB_CSS from "../../assets/style.css?inline";
-import GITHUB_SVG from "../../assets/svg/github.svg?raw";
+import { renderAboutPanel } from "./hub.about.ts";
 
 export async function openHubModal(active: FeatureId[]) {
   let dialog = document.getElementById("hub-dialog") as HTMLDialogElement;
@@ -91,6 +91,9 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
     const container = document.createElement("div");
     initAccountSettings(container);
     return container;
+  }
+  if (def.kind === "about") {
+    return renderAboutPanel();
   }
 
   return until(
@@ -319,35 +322,46 @@ function renderTabsContent(active: FeatureId[]) {
         class="tab-content bg-base-100 border-base-300 p-0 overflow-y-auto"
       >
         <div
-          class="flex flex-col ${enabled ? "" : "opacity-40 grayscale"}"
+          class="flex flex-col ${enabled || f.id === "about"
+            ? ""
+            : "opacity-40 grayscale"}"
           data-feature-panel="${f.id}"
         >
-          <div
-            class="sticky top-0 z-20 flex items-center justify-between bg-base-200 px-6 py-4 border-b border-base-300 shadow-sm"
-          >
-            <div class="flex flex-col">
-              <h2 class="text-lg font-bold leading-tight">${f.name}</h2>
-              <p class="text-xs opacity-70">${f.desc}</p>
-            </div>
-            <div class="flex items-center gap-3">
-              <button
-                class="btn btn-sm btn-outline btn-error flex items-center gap-2"
-                data-reset-feature="${f.id}"
-              >
-                <span class="size-3.5 flex items-center justify-center"
-                  >${resetIconSvg}</span
+          ${f.id !== "about"
+            ? html`
+                <div
+                  class="sticky top-0 z-20 flex items-center justify-between bg-base-200 px-6 py-4 border-b border-base-300 shadow-sm"
                 >
-                Reset
-              </button>
-              <input
-                type="checkbox"
-                class="toggle toggle-xl toggle-primary hub-feature-toggle"
-                data-id="${f.id}"
-                ?checked="${enabled}"
-              />
-            </div>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
+                  <div class="flex flex-col">
+                    <h2 class="text-lg font-bold leading-tight">${f.name}</h2>
+                    <p class="text-xs opacity-70">${f.desc}</p>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <button
+                      class="btn btn-sm btn-outline btn-error flex items-center gap-2"
+                      data-reset-feature="${f.id}"
+                    >
+                      <span class="size-3.5 flex items-center justify-center"
+                        >${resetIconSvg}</span
+                      >
+                      Reset
+                    </button>
+                    <input
+                      type="checkbox"
+                      class="toggle toggle-xl toggle-primary hub-feature-toggle"
+                      data-id="${f.id}"
+                      ?checked="${enabled}"
+                    />
+                  </div>
+                </div>
+              `
+            : ""}
+
+          <div
+            class="${f.id === "about"
+              ? "p-6 w-full"
+              : "grid grid-cols-1 md:grid-cols-2 gap-4 p-6"}"
+          >
             ${settings}
           </div>
         </div>
@@ -472,19 +486,6 @@ async function createModal(active: FeatureId[]): Promise<void> {
         class="flex-none p-4 border-t border-base-200 bg-base-200/50 flex justify-between items-center"
       >
         <div class="flex items-center gap-3">
-          <a
-            href="${HUB_INFO.github}"
-            target="_blank"
-            class="btn btn-ghost flex items-center gap-1 text-base-content"
-          >
-            <span
-              class="size-4 flex items-center justify-center fill-current text-base-content"
-            >
-              ${unsafeHTML(GITHUB_SVG)}
-            </span>
-            <span>GitHub</span>
-          </a>
-
           <label class="swap swap-rotate btn btn-circle btn-ghost">
             <input
               type="checkbox"

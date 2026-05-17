@@ -29,6 +29,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    minify: false,
     rollupOptions: {
       input: {
         content: resolve(__dirname, "src/main.ts"),

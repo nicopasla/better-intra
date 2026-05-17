@@ -1,10 +1,13 @@
 import { getConfig } from "../../config.ts";
 import { getStoredLinks, renderShortcutsDisplay } from "./shortcuts.ui.ts";
-import { render } from "lit-html";
+import { render, html } from "lit-html";
+import CSS from "../../assets/style.css?inline";
 
-const CONTAINER_ID = "42-shortcuts-display-wrapper";
+const CONTAINER_ID = "shortcuts-shadow-wrapper";
 
 export async function injectShortcutsDisplay() {
+  if (document.getElementById(CONTAINER_ID)) return;
+
   const activeFeatures = await getConfig("ACTIVE_SCRIPTS");
   let active: string[] = [];
 
@@ -37,23 +40,32 @@ export async function injectShortcutsDisplay() {
 
   const links = await getStoredLinks();
 
-  let wrapper = document.getElementById(CONTAINER_ID);
-  if (!wrapper) {
-    wrapper = document.createElement("div");
-    wrapper.id = CONTAINER_ID;
-    wrapper.style.cssText = `
-      display: flex; 
-      flex-direction: row; 
-      align-items: center; 
-      gap: 16px; 
-      width: 50%; 
-      margin-right: 20px; 
-      box-sizing: border-box;
-    `;
-    banner.appendChild(wrapper);
-  }
+  const wrapper = document.createElement("div");
+  wrapper.id = CONTAINER_ID;
+  wrapper.style.cssText = `
+    display: flex; 
+    flex-direction: row; 
+    align-items: center; 
+    gap: 16px; 
+    width: 50%; 
+    margin-right: 20px; 
+    box-sizing: border-box;
+  `;
 
-  render(renderShortcutsDisplay(links), wrapper);
+  const shadowRoot = wrapper.attachShadow({ mode: "open" });
+  banner.appendChild(wrapper);
+
+  if (shadowRoot) {
+    render(
+      html`
+        <style>
+          ${CSS}
+        </style>
+        ${renderShortcutsDisplay(links)}
+      `,
+      shadowRoot,
+    );
+  }
 }
 
 export function setupShortcutsObserver() {
@@ -62,7 +74,9 @@ export function setupShortcutsObserver() {
   const observer = new MutationObserver(() => {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
-      injectShortcutsDisplay();
+      if (!document.getElementById(CONTAINER_ID)) {
+        injectShortcutsDisplay();
+      }
     }, 300);
   });
 

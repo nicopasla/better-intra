@@ -5,7 +5,8 @@
     "#hub-shadow-wrapper",
     "#events-shadow-wrapper",
     "#profile-shadow-wrapper",
-    "#cluster-shadow-host";
+    "#cluster-shadow-host",
+    "#shortcuts-shadow-wrapper";
   themes: "light", "dark";
   include: [ 'button', 'toggle', 'input', 'select', 'radio', 'label',
     'card', 'tabs', 'modal', 'divider', 'swap', 'fieldset', 'status',

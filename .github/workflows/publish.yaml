@@ -2,7 +2,7 @@ name: Build and Publish
 
 on:
   release:
-    types: [ published ]
+    types: [published]
 
 jobs:
   build:
@@ -12,6 +12,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Extension (Vite)
+        run: npm run build
 
       - name: web-ext build
         id: web-ext-build

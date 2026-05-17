@@ -4,9 +4,7 @@
   "version": "__APP_VERSION__",
   "description": "Collection of features inside a single extension that improve UI and UX of the 42 Intra v3.",
   "permissions": ["storage"],
-  "host_permissions": [
-    "https://better-intra-worker.nicopasla.workers.dev/"
-  ],
+  "host_permissions": ["https://better-intra-worker.nicopasla.workers.dev/"],
   "content_scripts": [
     {
       "matches": ["https://*.intra.42.fr/*"],

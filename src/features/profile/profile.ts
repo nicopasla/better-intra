@@ -1,6 +1,7 @@
 import { updateEventFilters, injectEventsSelect } from "./events.ts";
 import { findSlotsButton } from "./shortcuts.ts";
 import { injectCustomStyles, updateVisuals } from "./visuals.ts";
+import { handleProfileRedirect } from "./highlight.ts"; 
 
 export async function initProfile() {
   injectCustomStyles();
@@ -12,6 +13,7 @@ export async function initProfile() {
       await findSlotsButton();
       await injectEventsSelect();
       await updateEventFilters();
+      await handleProfileRedirect();
     }
   };
 

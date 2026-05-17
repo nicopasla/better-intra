@@ -18,32 +18,26 @@ export async function loginWith42(): Promise<void> {
     return;
   }
 
-  const authInterval = setInterval(async () => {
-    try {
-      if (popup.closed) {
-        clearInterval(authInterval);
-        return;
+  const messageListener = async (event: MessageEvent) => {
+    if (event.origin !== WORKER_URL) return;
+
+    if (event.data && event.data.type === "42_AUTH_SUCCESS") {
+      const { token, login } = event.data;
+
+      if (token && login) {
+        await browser.storage.local.set({
+          CLOUD_TOKEN: token,
+          CLOUD_LOGIN: login,
+        });
+
+        window.removeEventListener("message", messageListener);
+        popup.close();
+        window.location.reload();
       }
+    }
+  };
 
-      const popupUrl = popup.location.href;
-      if (popupUrl.includes("token=") && popupUrl.includes("login=")) {
-        const urlObj = new URL(popupUrl);
-        const token = urlObj.searchParams.get("token");
-        const login = urlObj.searchParams.get("login");
-
-        if (token && login) {
-          await browser.storage.local.set({
-            CLOUD_TOKEN: token,
-            CLOUD_LOGIN: login,
-          });
-
-          clearInterval(authInterval);
-          popup.close();
-          window.location.reload();
-        }
-      }
-    } catch (e) {}
-  }, 500);
+  window.addEventListener("message", messageListener);
 }
 
 export async function getCloudLogin(): Promise<string | null> {
@@ -63,6 +57,7 @@ export async function testCloudConnection(): Promise<number> {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        mode: "cors",
       },
     );
 
@@ -70,7 +65,6 @@ export async function testCloudConnection(): Promise<number> {
       const data = (await response.json()) as any;
       return typeof data.activeSessions === "number" ? data.activeSessions : 1;
     }
-
     return 0;
   } catch {
     return 0;

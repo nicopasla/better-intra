@@ -47,7 +47,10 @@ jobs:
           apiKey: ${{ secrets.AMO_SIGN_KEY }}
           apiSecret: ${{ secrets.AMO_SIGN_SECRET }}
 
+      - name: Rename signed artifact
+        run: mv "${{ steps.web-ext-sign.outputs.target }}" better-intra.xpi
+
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          files: ${{ steps.web-ext-sign.outputs.target }}
+          files: better-intra.xpi

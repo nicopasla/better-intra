@@ -113,7 +113,7 @@ Always use at your own risk!
 
 ### Setup
 ```bash
-git clone [https://github.com/nicopasla/better-intra.git](https://github.com/nicopasla/better-intra.git)
+git clone https://github.com/nicopasla/better-intra.git
 cd better-intra
 npm install
 ```
@@ -125,7 +125,7 @@ npm run dev
 ```bash
 npm run build
 ```
-The output manifest.json and compiled content.js will be generated in the dist/ folder. Zip the contents of this folder to submit your extension.
+The output manifest.json and compiled content.js will be generated in the dist/ folder.
 
 ## License
 

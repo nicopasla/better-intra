@@ -19,6 +19,7 @@ import {
 } from "../shortcuts/shortcuts.ui.ts";
 import { initAccountSettings } from "../account/account.ui.ts";
 import HUB_CSS from "../../assets/style.css?inline";
+import GITHUB_SVG from "../../assets/svg/github.svg?raw";
 
 export async function openHubModal(active: FeatureId[]) {
   let dialog = document.getElementById("hub-dialog") as HTMLDialogElement;
@@ -474,17 +475,14 @@ async function createModal(active: FeatureId[]): Promise<void> {
           <a
             href="${HUB_INFO.github}"
             target="_blank"
-            class="btn btn-ghost flex items-center gap-2 px-3"
+            class="btn btn-ghost flex items-center gap-1 text-base-content"
           >
-            <img
-              src="https://cdn.simpleicons.org/github/white"
-              alt="GitHub"
-              class="w-4 h-4"
-              style="${currentTheme === "light"
-                ? "filter: invert(1) brightness(0);"
-                : ""}"
-            />
-            <span class="text-xs font-bold">GitHub</span>
+            <span
+              class="size-4 flex items-center justify-center fill-current text-base-content"
+            >
+              ${unsafeHTML(GITHUB_SVG)}
+            </span>
+            <span>GitHub</span>
           </a>
 
           <label class="swap swap-rotate btn btn-circle btn-ghost">

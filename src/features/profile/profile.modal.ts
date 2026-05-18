@@ -13,9 +13,15 @@ function handleLivePreview(shadow: ShadowRoot) {
     banner:
       (shadow.getElementById("PROFILE_BANNER_URL") as HTMLInputElement)
         ?.value || "",
+    bannerMode:
+      (shadow.getElementById("PROFILE_BANNER_MODE") as HTMLSelectElement)
+        ?.value || "fill",
     background:
       (shadow.getElementById("PROFILE_BACKGROUND_URL") as HTMLInputElement)
         ?.value || "",
+    backgroundMode:
+      (shadow.getElementById("PROFILE_BACKGROUND_MODE") as HTMLSelectElement)
+        ?.value || "fill",
   });
 }
 
@@ -59,7 +65,6 @@ function renderUrlField(
           required
           placeholder="https://example.com/image.png"
           .value="${value}"
-          data-setting-key="${id}"
           pattern="^(https?://)?.*"
           class="grow"
           @input="${() => handleLivePreview(shadow)}"
@@ -69,8 +74,50 @@ function renderUrlField(
   `;
 }
 
+function renderModeSelect(
+  id: string,
+  label: string,
+  currentValue: string,
+  shadow: ShadowRoot,
+) {
+  return html`
+    <div class="form-control w-full mt-1">
+      <label class="label py-0.5"
+        ><span class="label-text text-xs opacity-60">${label}</span></label
+      >
+      <select
+        id="${id}"
+        class="select select-bordered select-sm w-full border-neutral-700/50 bg-base-300"
+        @change="${() => handleLivePreview(shadow)}"
+      >
+        <option value="fill" ?selected="${currentValue === "fill"}">
+          Fill
+        </option>
+        <option value="fit" ?selected="${currentValue === "fit"}">
+          Fit
+        </option>
+        <option value="stretch" ?selected="${currentValue === "stretch"}">
+          Stretch
+        </option>
+        <option value="center" ?selected="${currentValue === "center"}">
+          Center
+        </option>
+        <option value="tile" ?selected="${currentValue === "tile"}">
+          Tile
+        </option>
+      </select>
+    </div>
+  `;
+}
+
 function renderModalContent(
-  saved: { avatar: string; banner: string; background: string },
+  saved: {
+    avatar: string;
+    banner: string;
+    bannerMode: string;
+    background: string;
+    backgroundMode: string;
+  },
   currentTheme: string,
   onClose: () => void,
   onReset: () => void,
@@ -105,7 +152,7 @@ function renderModalContent(
     >
       <div
         class="modal-box p-6 pt-12 rounded-3xl shadow-2xl flex flex-col relative border border-neutral-700/30 bg-base-100 text-base-content"
-        style="width: min(480px, calc(100dvw - 2rem)); max-width: min(480px, calc(100dvw - 2rem));"
+        style="width: min(480px, calc(100dvw - 2rem)); max-width: min(480px, calc(100dvw - 2rem)); max-height: 90vh; overflow-y: auto;"
         @mousedown="${(e: MouseEvent) => e.stopPropagation()}"
       >
         <button
@@ -118,24 +165,44 @@ function renderModalContent(
         <fieldset
           class="fieldset rounded-box gap-4 border border-base-300 bg-base-200/50 p-4"
         >
-          ${renderUrlField(
-            "PROFILE_IMAGE_URL",
-            "Avatar URL",
-            saved.avatar,
-            shadow,
-          )}
-          ${renderUrlField(
-            "PROFILE_BANNER_URL",
-            "Banner URL",
-            saved.banner,
-            shadow,
-          )}
-          ${renderUrlField(
-            "PROFILE_BACKGROUND_URL",
-            "Background URL",
-            saved.background,
-            shadow,
-          )}
+          <div>
+            ${renderUrlField(
+              "PROFILE_IMAGE_URL",
+              "Avatar URL",
+              saved.avatar,
+              shadow,
+            )}
+          </div>
+
+          <div class="border-t border-neutral-700/20 pt-2">
+            ${renderUrlField(
+              "PROFILE_BANNER_URL",
+              "Banner URL",
+              saved.banner,
+              shadow,
+            )}
+            ${renderModeSelect(
+              "PROFILE_BANNER_MODE",
+              "Alignement de la bannière",
+              saved.bannerMode,
+              shadow,
+            )}
+          </div>
+
+          <div class="border-t border-neutral-700/20 pt-2">
+            ${renderUrlField(
+              "PROFILE_BACKGROUND_URL",
+              "Background URL",
+              saved.background,
+              shadow,
+            )}
+            ${renderModeSelect(
+              "PROFILE_BACKGROUND_MODE",
+              "Alignement du fond d'écran",
+              saved.backgroundMode,
+              shadow,
+            )}
+          </div>
         </fieldset>
 
         <div class="mt-6 flex flex-col gap-2">
@@ -166,7 +233,9 @@ export const createSettingsModal = async (
   const saved = {
     avatar: await getConfig("PROFILE_IMAGE_URL"),
     banner: await getConfig("PROFILE_BANNER_URL"),
+    bannerMode: (await getConfig("PROFILE_BANNER_MODE")) || "fill",
     background: await getConfig("PROFILE_BACKGROUND_URL"),
+    backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
   };
 
   const host = document.createElement("div");
@@ -194,11 +263,19 @@ export const createSettingsModal = async (
       const keys = [
         "PROFILE_IMAGE_URL",
         "PROFILE_BANNER_URL",
+        "PROFILE_BANNER_MODE",
         "PROFILE_BACKGROUND_URL",
+        "PROFILE_BACKGROUND_MODE",
       ];
       await browser.storage.local.remove(keys);
       try {
-        await syncMyVisuals({ avatar: "", banner: "", background: "" });
+        await syncMyVisuals({
+          avatar: "",
+          banner: "",
+          bannerMode: "fill",
+          background: "",
+          backgroundMode: "fill",
+        });
       } catch (e) {}
       close();
       location.reload();
@@ -210,18 +287,28 @@ export const createSettingsModal = async (
 
   shadow.querySelector("#profile-save")?.addEventListener("click", async () => {
     const keys = [
-      "PROFILE_IMAGE_URL",
-      "PROFILE_BANNER_URL",
-      "PROFILE_BACKGROUND_URL",
+      { urlKey: "PROFILE_IMAGE_URL", modeKey: null },
+      { urlKey: "PROFILE_BANNER_URL", modeKey: "PROFILE_BANNER_MODE" },
+      { urlKey: "PROFILE_BACKGROUND_URL", modeKey: "PROFILE_BACKGROUND_MODE" },
     ];
+
     const batchData: Record<string, string> = {};
     const keysToRemove: string[] = [];
 
-    keys.forEach((key) => {
-      const input = shadow.getElementById(key) as HTMLInputElement;
-      const val = input?.value.trim() || "";
-      if (!val) keysToRemove.push(key);
-      else batchData[key] = val;
+    keys.forEach(({ urlKey, modeKey }) => {
+      const input = shadow.getElementById(urlKey) as HTMLInputElement;
+      const urlVal = input?.value.trim() || "";
+
+      if (!urlVal) {
+        keysToRemove.push(urlKey);
+        if (modeKey) keysToRemove.push(modeKey);
+      } else {
+        batchData[urlKey] = urlVal;
+        if (modeKey) {
+          const select = shadow.getElementById(modeKey) as HTMLSelectElement;
+          batchData[modeKey] = select?.value || "fill";
+        }
+      }
     });
 
     if (Object.keys(batchData).length > 0)
@@ -232,7 +319,9 @@ export const createSettingsModal = async (
     const updatedVisuals = {
       avatar: batchData["PROFILE_IMAGE_URL"] || "",
       banner: batchData["PROFILE_BANNER_URL"] || "",
+      bannerMode: batchData["PROFILE_BANNER_MODE"] || "fill",
       background: batchData["PROFILE_BACKGROUND_URL"] || "",
+      backgroundMode: batchData["PROFILE_BACKGROUND_MODE"] || "fill",
     };
 
     try {

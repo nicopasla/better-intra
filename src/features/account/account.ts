@@ -125,7 +125,9 @@ export async function syncToCloud(): Promise<boolean> {
 export async function syncMyVisuals(visuals: {
   avatar: string;
   banner: string;
+  bannerMode?: string;
   background: string;
+  backgroundMode?: string;
 }): Promise<void> {
   const login = await getCloudLogin();
   const token = await getConfig("CLOUD_TOKEN");
@@ -145,7 +147,9 @@ export async function syncMyVisuals(visuals: {
           settings: {
             PROFILE_IMAGE_URL: visuals.avatar,
             PROFILE_BANNER_URL: visuals.banner,
+            PROFILE_BANNER_MODE: visuals.bannerMode || "fill",
             PROFILE_BACKGROUND_URL: visuals.background,
+            PROFILE_BACKGROUND_MODE: visuals.backgroundMode || "fill",
           },
         }),
       },
@@ -167,7 +171,9 @@ export async function fetchUserVisuals(login: string) {
     return {
       avatar: data.avatar || "",
       banner: data.banner || "",
+      bannerMode: data.bannerMode || "fill",
       background: data.background || "",
+      backgroundMode: data.backgroundMode || "fill",
     };
   } catch (error) {
     console.error(error);

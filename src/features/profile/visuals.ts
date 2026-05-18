@@ -19,16 +19,26 @@ export const injectCustomStyles = () => {
       display: flex; align-items: flex-start; justify-content: center;
       pointer-events: auto; padding-top: 12vh;       
     }
+    div.rounded-full.w-52.h-52,
+    div.border-neutral-600.bg-ft-gray\\/50,
+    .w-full.xl\\:h-72.bg-center.bg-cover.bg-ft-black {
+      will-change: background-image, transform;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+    }
+    .bg-mode-fill { background-size: cover !important; background-repeat: no-repeat !important; background-position: center !important; }
+    .bg-mode-fit { background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; }
+    .bg-mode-stretch { background-size: 100% 100% !important; background-repeat: no-repeat !important; background-position: center !important; }
+    .bg-mode-center { background-size: auto !important; background-repeat: no-repeat !important; background-position: center !important; }
+    .bg-mode-tile { background-size: auto !important; background-repeat: repeat !important; background-position: top left !important; }
+
+    .banner-mode-fill { background-size: cover !important; background-repeat: no-repeat !important; background-position: center !important; }
+    .banner-mode-fit { background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; }
+    .banner-mode-stretch { background-size: 100% 100% !important; background-repeat: no-repeat !important; background-position: center !important; }
+    .banner-mode-center { background-size: auto !important; background-repeat: no-repeat !important; background-position: center !important; }
+    .banner-mode-tile { background-size: auto !important; background-repeat: repeat !important; background-position: top left !important; }
   `;
   document.head.appendChild(style);
-};
-
-const getInlineUrl = (el: HTMLElement | null): string => {
-  if (!el) return "";
-  const bg = window.getComputedStyle(el).backgroundImage;
-  if (!bg || bg === "none") return "";
-  const match = bg.match(/url\((['"]?)(.*?)\1\)/);
-  return match ? match[2] : "";
 };
 
 export const applyImgs = (urls: any) => {
@@ -39,10 +49,10 @@ export const applyImgs = (urls: any) => {
   ) as HTMLElement;
   const banner = document.querySelector(
     "div.border-neutral-600.bg-ft-gray\\/50",
-  );
+  ) as HTMLElement;
   const background = document.querySelector(
     ".w-full.xl\\:h-72.bg-center.bg-cover.bg-ft-black",
-  );
+  ) as HTMLElement;
 
   if (avatar && !originalAvatarUrl) {
     const inlineStyle = avatar.style.backgroundImage;
@@ -54,7 +64,6 @@ export const applyImgs = (urls: any) => {
       const match = inlineStyle.match(/url\((['"]?)(.*?)\1\)/);
       if (match) originalAvatarUrl = match[2];
     }
-
     if (!originalAvatarUrl) {
       const computedBg = window.getComputedStyle(avatar).backgroundImage;
       if (
@@ -77,18 +86,39 @@ export const applyImgs = (urls: any) => {
     avatar.style.opacity = "1";
   }
 
-  if (banner && urls.banner)
-    (banner as HTMLElement).style.setProperty(
+  if (banner && urls.banner) {
+    banner.style.setProperty(
       "background-image",
       `url("${urls.banner}")`,
       "important",
     );
-  if (background && urls.background)
-    (background as HTMLElement).style.setProperty(
+    banner.classList.remove(
+      "banner-mode-fill",
+      "banner-mode-fit",
+      "banner-mode-stretch",
+      "banner-mode-center",
+      "banner-mode-tile",
+    );
+    const bannerMode = urls.bannerMode || "fill";
+    banner.classList.add(`banner-mode-${bannerMode}`);
+  }
+
+  if (background && urls.background) {
+    background.style.setProperty(
       "background-image",
       `url("${urls.background}")`,
       "important",
     );
+    background.classList.remove(
+      "bg-mode-fill",
+      "bg-mode-fit",
+      "bg-mode-stretch",
+      "bg-mode-center",
+      "bg-mode-tile",
+    );
+    const bgMode = urls.backgroundMode || "fill";
+    background.classList.add(`bg-mode-${bgMode}`);
+  }
 };
 
 export const updateVisuals = async () => {
@@ -148,7 +178,9 @@ export const updateVisuals = async () => {
       visualCache = {
         avatar: await getConfig("PROFILE_IMAGE_URL"),
         banner: await getConfig("PROFILE_BANNER_URL"),
+        bannerMode: await getConfig("PROFILE_BANNER_MODE"),
         background: await getConfig("PROFILE_BACKGROUND_URL"),
+        backgroundMode: await getConfig("PROFILE_BACKGROUND_MODE"),
       };
 
       if (!visualCache.avatar) {

@@ -2,6 +2,74 @@
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-05-18
+
+### Features 🎉
+
+- feat(profile): add alternative layout and hide achievements options ([3cef0e9](https://github.com/nicopasla/better-intra/commit/3cef0e9))
+- feat(profile): add banner and background mode options ([2a80d24](https://github.com/nicopasla/better-intra/commit/2a80d24))
+
+### Bug fixes 🐛
+
+- fix(logtime): refine CSS selectors for logtime components ([91670b0](https://github.com/nicopasla/better-intra/commit/91670b0))
+- fix(docs): update clone command in README and remove zipping instruction ([1bd69db](https://github.com/nicopasla/better-intra/commit/1bd69db))
+- fix(publish): update artifact handling in GitHub Actions workflow ([8c54cf7](https://github.com/nicopasla/better-intra/commit/8c54cf7))
+
+### Maintenance 🧹
+
+- chore(shortcuts): update display styles for shortcut links and improve layout ([8d4daa9](https://github.com/nicopasla/better-intra/commit/8d4daa9))
+
+## [1.0.1] - 2026-05-17
+
+### Features 🎉
+
+- feat(publish): add GitHub Actions workflow for building and publishing releases ([10f11cd](https://github.com/nicopasla/better-intra/commit/10f11cd))
+- feat(account): implement login hashing for enhanced security ([d98553f](https://github.com/nicopasla/better-intra/commit/d98553f))
+
+### Bug fixes 🐛
+
+- fix(highlight): update style import and formatting for consistency ([c7a9850](https://github.com/nicopasla/better-intra/commit/c7a9850))
+- fix(account): update API endpoints for cloud settings and visuals ([0afa0b3](https://github.com/nicopasla/better-intra/commit/0afa0b3))
+- fix(package): update version to 1.0.1 ([b01eafd](https://github.com/nicopasla/better-intra/commit/b01eafd))
+
+## [1.0.0] - 2026-05-17
+
+### Features 🎉
+
+- feat(about): add About panel with technical stack information and SVG icons ([665aa9c](https://github.com/nicopasla/better-intra/commit/665aa9c))
+- feat(account): integrate 42 logo SVG and update button styles ([19a5259](https://github.com/nicopasla/better-intra/commit/19a5259))
+- feat(hub): add GitHub SVG icon to hub settings modal ([2ca6bac](https://github.com/nicopasla/better-intra/commit/2ca6bac))
+- feat(account): enhance button states for push, pull, and test connection actions ([3024960](https://github.com/nicopasla/better-intra/commit/3024960))
+- feat(profile): add arrow share icon and migrate to lit ([4fadc7c](https://github.com/nicopasla/better-intra/commit/4fadc7c))
+- feat(profile): implement seat highlighting ([6c0be0a](https://github.com/nicopasla/better-intra/commit/6c0be0a))
+- feat(clusters): enhance cluster picker with tooltip and improve rendering logic ([471501e](https://github.com/nicopasla/better-intra/commit/471501e))
+- feat(events): enhance event filter UI with improved styling and functionality ([5fd1bb4](https://github.com/nicopasla/better-intra/commit/5fd1bb4))
+- feat(account): refactor login handling to use cloud login and enhance connection checks ([76ab606](https://github.com/nicopasla/better-intra/commit/76ab606))
+- feat(account): enhance cloud synchronization with token management using oAuth from 42 ([d3b6e1c](https://github.com/nicopasla/better-intra/commit/d3b6e1c))
+- feat(logtime): refactor fetch hook to use event listener for stats extraction ([9a5ab24](https://github.com/nicopasla/better-intra/commit/9a5ab24))
+
+### Bug fixes 🐛
+
+- fix(manifest): update strict minimum version for Gecko settings to 140.0 ([949ef80](https://github.com/nicopasla/better-intra/commit/949ef80))
+- fix(shortcuts): update shortcuts display integration and styling ([de3cdb2](https://github.com/nicopasla/better-intra/commit/de3cdb2))
+- fix(manifest): remove redundant match pattern for content scripts ([3bfb6e1](https://github.com/nicopasla/better-intra/commit/3bfb6e1))
+- fix(clusters): add type annotations for cluster dimensions ([c9bbe72](https://github.com/nicopasla/better-intra/commit/c9bbe72))
+- fix(account): improve 42 authentication handling with message listener and remove polling ([04bcfe5](https://github.com/nicopasla/better-intra/commit/04bcfe5))
+- fix(profile): correct avatar opacity handling in updateVisuals function ([d7e2ead](https://github.com/nicopasla/better-intra/commit/d7e2ead))
+
+### Maintenance 🧹
+
+- chore(manifest): update extension ID and add update URL; add updates.json for version management ([b497345](https://github.com/nicopasla/better-intra/commit/b497345))
+- chore(docs): add new account connection image and update existing account image ([d4b73e7](https://github.com/nicopasla/better-intra/commit/d4b73e7))
+- chore(svg): update settings gear icon ([1f82973](https://github.com/nicopasla/better-intra/commit/1f82973))
+- chore: remove GitHub Actions build workflow ([a6ad81b](https://github.com/nicopasla/better-intra/commit/a6ad81b))
+- chore(profile): refactor event handling and remove unused profile styles ([accbc08](https://github.com/nicopasla/better-intra/commit/accbc08))
+- chore: update dependencies to latest versions ([99b21b8](https://github.com/nicopasla/better-intra/commit/99b21b8))
+
+### Other Changes 🔄
+
+- refactor: migrate entire project from Userscript to standalone Firefox Extension ([5119ec6](https://github.com/nicopasla/better-intra/commit/5119ec6))
+
 
 ## [0.1.0] - 2026-05-13
 
@@ -60,7 +128,10 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/nicopasla/better-intra/compare/v1.0.1...v1.0.2
+[1.0.1]: https://github.com/nicopasla/better-intra/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/nicopasla/better-intra/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/nicopasla/better-intra/compare/v0.0.4...v0.1.0
 [0.0.4]: https://github.com/nicopasla/better-intra/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/nicopasla/better-intra/compare/v0.0.2...v0.0.3

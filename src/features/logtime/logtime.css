@@ -3,11 +3,11 @@
   margin-bottom: 0 !important;
 }
 
-[class*="logtime"],
-.card,
-.card-body,
-.row,
-.col-md-12 {
+.lt-box-container:has([class*="logtime"]) [class*="logtime"],
+.lt-box-container:has([class*="logtime"]) .card,
+.lt-box-container:has([class*="logtime"]) .card-body,
+.lt-box-container:has([class*="logtime"]) .row,
+.lt-box-container:has([class*="logtime"]) .col-md-12 {
   overflow: visible !important;
   height: auto !important;
   min-height: 0 !important;
@@ -115,17 +115,7 @@
 }
 
 .badge-rainbow {
-  background: linear-gradient(270deg,
-      #ff0000,
-      #ff7f00,
-      #ffeb3b,
-      #4caf50,
-      #00bcd4,
-      #2196f3,
-      #3f51b5,
-      #9c27b0,
-      #e91e63,
-      #ff0000);
+  background: linear-gradient(270deg, #ff0000, #ff7f00, #ffeb3b, #4caf50, #00bcd4, #2196f3, #3f51b5, #9c27b0, #e91e63, #ff0000);
   background-size: 400% 400% !important;
   animation: rainbow-shift 3s ease infinite !important;
   border: none !important;

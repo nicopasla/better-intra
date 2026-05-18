@@ -223,7 +223,10 @@ export function renderShortcutsDisplay(
   if (activeLinks.length === 0) return html``;
 
   return html`
-    <div class="flex flex-wrap gap-3 p-1" id="shortcuts-display">
+    <div
+      class="flex flex-wrap gap-3 p-0 m-0 items-center"
+      id="shortcuts-display"
+    >
       ${activeLinks.map((link) => {
         const contrast = getContrastColor(link.color);
         return html`
@@ -231,16 +234,14 @@ export function renderShortcutsDisplay(
             href="${link.url}"
             target="_blank"
             rel="noopener noreferrer"
-            class="group flex items-center gap-3 pl-1.5 pr-4 py-1.5 rounded-lg transition-all duration-300 hover:ring-2"
+            class="btn btn-lg h-auto min-h-12 px-4 py-2 rounded-2xl border-none font-bold uppercase tracking-wider shadow-lg hover:shadow-lg no-underline inline-flex items-center gap-3"
             style="
               background-color: ${link.color};
               color: ${contrast};
-              --tw-ring-color: ${link.color};
-              --tw-ring-offset-color: transparent;
             "
           >
             <div
-              class=" p-1 rounded-md group-hover:rotate-6 transition-transform"
+              class="flex items-center justify-center bg-white/20 p-1 rounded-lg transition-transform hover:rotate-6"
             >
               <img
                 src="${getFaviconUrl(link.url)}"
@@ -256,9 +257,7 @@ export function renderShortcutsDisplay(
               />
             </div>
 
-            <span class="text-[11px] font-bold tracking-wide uppercase">
-              ${link.name}
-            </span>
+            <span class="text-sm"> ${link.name} </span>
           </a>
         `;
       })}

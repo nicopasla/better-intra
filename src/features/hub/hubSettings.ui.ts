@@ -19,6 +19,8 @@ import {
 } from "../shortcuts/shortcuts.ui.ts";
 import { initAccountSettings } from "../account/account.ui.ts";
 import HUB_CSS from "../../assets/style.css?inline";
+import EYE_SVG from "../../assets/svg/eye.svg?raw";
+import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
 import { renderAboutPanel } from "./hub.about.ts";
 
 export async function openHubModal(active: FeatureId[]) {
@@ -94,6 +96,189 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
   }
   if (def.kind === "about") {
     return renderAboutPanel();
+  }
+  if (def.kind === "card-order") {
+    const container = document.createElement("div");
+    container.className = "w-full flex flex-col gap-2 relative mt-2";
+    container.setAttribute("data-card-order-panel", "true");
+
+    let draggedIdx: number | null = null;
+
+    const cardColors: Record<string, string> = {
+      EVALUATIONS: "bg-error text-error-content hover:bg-error/80 border-error",
+      AGENDA: "bg-info text-info-content hover:bg-info/80 border-info",
+      LOGTIME:
+        "bg-success text-success-content hover:bg-success/80 border-success",
+      PROJECTS:
+        "bg-warning text-warning-content hover:bg-warning/80 border-warning",
+      ACHIEVEMENTS:
+        "bg-primary text-primary-content hover:bg-primary/80 border-primary",
+    };
+
+    const getCardColor = (name: string) => {
+      const cleanName = name.startsWith("-") ? name.substring(1) : name;
+      return cardColors[cleanName.toUpperCase().trim()] || "btn-neutral";
+    };
+
+    const renderCardOrder = (currentOrder: string[]) => {
+      render(
+        html`
+          <button
+            type="button"
+            class="btn btn-xs btn-outline btn-error gap-1 absolute -top-11 right-0 md:right-2 z-30"
+            ?disabled="${!enabled}"
+            @click="${() => {
+              if (enabled) resetToDefault();
+            }}"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="size-3"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path
+                d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"
+              />
+            </svg>
+            Reset Order
+          </button>
+
+          <div
+            class="flex flex-wrap gap-3 items-center p-4 bg-base-300/30 rounded-xl border border-base-300 w-full"
+          >
+            ${currentOrder.map((rawName, idx) => {
+              const isDisabled = rawName.startsWith("-");
+              const displayName = isDisabled ? rawName.substring(1) : rawName;
+
+              const toggleVisibility = (e: Event) => {
+                e.stopPropagation();
+                if (!enabled) return;
+
+                const newOrder = [...currentOrder];
+                newOrder[idx] = isDisabled ? displayName : `-${displayName}`;
+
+                renderCardOrder(newOrder);
+
+                const input = container.querySelector<HTMLInputElement>(
+                  "input[type='hidden']",
+                );
+                if (input) {
+                  input.value = JSON.stringify(newOrder);
+                  input.dispatchEvent(new Event("input", { bubbles: true }));
+                }
+              };
+
+              return html`
+                <div
+                  class="btn btn-md border shadow-sm transition-all select-none gap-2 font-bold normal-case px-4 
+      ${getCardColor(rawName)} 
+      ${enabled && !isDisabled
+                    ? "cursor-grab active:cursor-grabbing"
+                    : "cursor-not-allowed"}
+      ${isDisabled ? "opacity-30 line-through saturate-50 scale-95" : ""}"
+                  draggable="${enabled && !isDisabled}"
+                  @dragstart="${(e: DragEvent) =>
+                    enabled && !isDisabled && handleDragStart(e, idx)}"
+                  @dragover="${(e: DragEvent) =>
+                    enabled && handleDragOver(e, idx)}"
+                  @dragend="${() => enabled && handleDragEnd()}"
+                  @drop="${(e: DragEvent) =>
+                    enabled && handleDrop(e, currentOrder, idx)}"
+                >
+                  ${displayName.toUpperCase().trim() !== "EVALUATIONS" &&
+                  displayName.toUpperCase().trim() !== "PENDING EVALUATIONS"
+                    ? html`
+                        <button
+                          type="button"
+                          class="p-1 -ml-1 rounded hover:bg-black/10 transition-colors pointer-events-auto cursor-pointer flex items-center justify-center"
+                          @click="${toggleVisibility}"
+                          title="${isDisabled ? "Show card" : "Hide card"}"
+                        >
+                          ${isDisabled
+                            ? html`<span
+                                class="size-4 opacity-80 flex items-center justify-center"
+                                >${unsafeHTML(EYE_SLASH_SVG)}</span
+                              >`
+                            : html`<span
+                                class="size-4 opacity-60 flex items-center justify-center"
+                                >${unsafeHTML(EYE_SVG)}</span
+                              >`}
+                        </button>
+                      `
+                    : ""}
+
+                  <span class="pointer-events-none">${displayName}</span>
+                </div>
+              `;
+            })}
+          </div>
+
+          <input
+            type="hidden"
+            data-setting-key="${def.key}"
+            .value="${JSON.stringify(currentOrder)}"
+          />
+        `,
+        container,
+      );
+    };
+
+    const handleDragStart = (e: DragEvent, idx: number) => {
+      draggedIdx = idx;
+      if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
+      (e.currentTarget as HTMLElement).style.opacity = "0.3";
+    };
+
+    const handleDragOver = (e: DragEvent, idx: number) => {
+      e.preventDefault();
+    };
+
+    const handleDragEnd = () => {
+      draggedIdx = null;
+      container
+        .querySelectorAll<HTMLElement>(".btn")
+        .forEach((p) => (p.style.opacity = ""));
+    };
+
+    const handleDrop = (
+      e: DragEvent,
+      currentOrder: string[],
+      targetIdx: number,
+    ) => {
+      e.preventDefault();
+      if (draggedIdx === null || draggedIdx === targetIdx) return;
+
+      const newOrder = [...currentOrder];
+      const [removed] = newOrder.splice(draggedIdx, 1);
+      newOrder.splice(targetIdx, 0, removed);
+
+      draggedIdx = null;
+      renderCardOrder(newOrder);
+    };
+
+    const resetToDefault = () => {
+      renderCardOrder((def.defaultValue as string[]) || []);
+    };
+
+    getConfig(def.key).then((savedOrder) => {
+      let order: string[] = def.defaultValue as string[];
+      if (savedOrder) {
+        try {
+          order =
+            typeof savedOrder === "string"
+              ? JSON.parse(savedOrder)
+              : savedOrder;
+        } catch {
+          order = def.defaultValue as string[];
+        }
+      }
+      renderCardOrder(order);
+    });
+
+    return container;
   }
 
   return until(

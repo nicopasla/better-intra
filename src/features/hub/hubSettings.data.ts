@@ -71,7 +71,8 @@ export type SettingKind =
   | "shortcuts"
   | "emoji"
   | "account"
-  | "about";
+  | "about"
+  | "card-order";
 
 export const INTRA_FONT =
   'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
@@ -245,6 +246,15 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.PROFILE_HIDE_ACHIEVEMENTS,
       grid: true,
+    },
+    {
+      feature: "profile",
+      key: "PROFILE_CARD_ORDER",
+      label: "Dashboard Cards Order",
+      desc: "Drag and drop the colored cards to prioritize your dashboard sections.",
+      kind: "card-order",
+      fullWidth: true,
+      defaultValue: CONFIG_DEFAULT.PROFILE_CARD_ORDER,
     },
     {
       feature: "profile",

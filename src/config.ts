@@ -24,6 +24,7 @@ export const CONFIG_KEYS = [
   "PROFILE_SLOTS_REDIRECTION",
   "PROFILE_ALT_LAYOUT",
   "PROFILE_HIDE_ACHIEVEMENTS",
+  "PROFILE_CARD_ORDER",
   "SHORTCUTS_LINKS",
   "ACCOUNT",
   "CLOUD_SYNC_ENABLED",
@@ -67,6 +68,13 @@ export const CONFIG_DEFAULT: Record<ConfigKey, any> = {
   PROFILE_SLOTS_REDIRECTION: true,
   PROFILE_ALT_LAYOUT: false,
   PROFILE_HIDE_ACHIEVEMENTS: false,
+  PROFILE_CARD_ORDER: [
+    "LOGTIME",
+    "AGENDA",
+    "EVALUATIONS",
+    "ACHIEVEMENTS",
+    "PROJECTS",
+  ],
 
   BETTER_INTRA_THEME: "dark",
   SHORTCUTS_LINKS: "[]",
@@ -76,10 +84,16 @@ export const getConfig = async <T extends ConfigKey>(
   key: T,
 ): Promise<(typeof CONFIG_DEFAULT)[T]> => {
   const res = await browser.storage.local.get(key);
+  let value = res && res[key] !== undefined ? res[key] : CONFIG_DEFAULT[key];
 
-  if (res && res[key] !== undefined) {
-    return res[key] as (typeof CONFIG_DEFAULT)[T];
+  if (
+    typeof value === "string" &&
+    (value.startsWith("[") || value.startsWith("{"))
+  ) {
+    try {
+      value = JSON.parse(value);
+    } catch {}
   }
 
-  return CONFIG_DEFAULT[key] as (typeof CONFIG_DEFAULT)[T];
+  return value as (typeof CONFIG_DEFAULT)[T];
 };

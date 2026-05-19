@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-05-19
+
+### Features 🎉
+
+- feat(profile): add drag-and-drop card ordering UI and layout configuration ([bf8ad75](https://github.com/nicopasla/better-intra/commit/bf8ad75))
+
+### Bug fixes 🐛
+
+- fix(hub): update modal dimensions to be responsive and full-width ([788d794](https://github.com/nicopasla/better-intra/commit/788d794))
+- fix(shortcuts): add fallback icon for shortcut links on image load error ([39da338](https://github.com/nicopasla/better-intra/commit/39da338))
+
+### Other Changes 🔄
+
+- refactor(profile): remove 'Hide achievements' setting and update layout configuration ([892e10d](https://github.com/nicopasla/better-intra/commit/892e10d))
+
 ## [1.0.2] - 2026-05-18
 
 ### Features 🎉
@@ -128,7 +143,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.2...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/nicopasla/better-intra/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/nicopasla/better-intra/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/nicopasla/better-intra/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/nicopasla/better-intra/compare/v0.1.0...v1.0.0

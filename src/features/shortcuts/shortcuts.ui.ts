@@ -251,6 +251,15 @@ export function renderShortcutsDisplay(
                 referrerpolicy="no-referrer"
                 @error="${(e: Event) => {
                   const img = e.target as HTMLImageElement;
+
+                  try {
+                    const parsedUrl = new URL(link.url);
+                    if (!img.hasAttribute("data-fallback-tried")) {
+                      img.setAttribute("data-fallback-tried", "true");
+                      img.src = `https://icons.duckduckgo.com/ip3/${parsedUrl.hostname}.ico`;
+                      return;
+                    }
+                  } catch {}
                   img.onerror = null;
                   img.src = GLOBE;
                 }}"

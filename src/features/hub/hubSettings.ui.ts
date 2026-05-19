@@ -555,12 +555,13 @@ function renderTabsContent(active: FeatureId[]) {
 }
 
 function renderDialogShell(): ReturnType<typeof html> {
-  return html`<div
-    class="modal-box hub-modal-box p-0 overflow-hidden bg-base-100 rounded-3xl shadow-2xl flex flex-col relative"
-    style="width: min(900px, calc(100dvw - 2rem)); height: min(600px, calc(100dvh - 2rem)); max-width: min(900px, calc(100dvw - 2rem)); max-height: min(600px, calc(100dvh - 2rem));"
-  >
-    <div id="hub-shadow-wrapper"></div>
-  </div>`;
+  return html`
+    <div
+      class="w-full h-full p-0 overflow-hidden bg-base-100 rounded-3xl shadow-2xl flex flex-col relative"
+    >
+      <div id="hub-shadow-wrapper" class="w-full h-full"></div>
+    </div>
+  `;
 }
 
 async function createModal(active: FeatureId[]): Promise<void> {
@@ -588,18 +589,16 @@ async function createModal(active: FeatureId[]): Promise<void> {
       }
     });
 
-    const box = dialog.querySelector(".hub-modal-box") as HTMLElement;
     const applyDesktopLock = () => {
+      dialog.style.width = "100%";
+      dialog.style.height = "100%";
+
       if (window.matchMedia("(min-width: 1024px)").matches) {
-        box.style.width = "900px";
-        box.style.height = "650px";
-        box.style.maxWidth = "900px";
-        box.style.maxHeight = "650px";
+        dialog.style.maxWidth = "1200px";
+        dialog.style.maxHeight = "800px";
       } else {
-        box.style.width = "min(900px, calc(100dvw - 2rem))";
-        box.style.height = "min(650px, calc(100dvh - 2rem))";
-        box.style.maxWidth = "min(900px, calc(100dvw - 2rem))";
-        box.style.maxHeight = "min(650px, calc(100dvh - 2rem))";
+        dialog.style.maxWidth = "calc(100dvw - 1rem)";
+        dialog.style.maxHeight = "calc(100dvh - 1rem)";
       }
     };
 

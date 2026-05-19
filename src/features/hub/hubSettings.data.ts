@@ -231,24 +231,6 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
   profile: [
     {
       feature: "profile",
-      key: "PROFILE_ALT_LAYOUT",
-      label: "Alternative dashboard layout",
-      desc: "Optimizes the grid layout. (Experimental)",
-      kind: "toggle",
-      defaultValue: CONFIG_DEFAULT.PROFILE_ALT_LAYOUT,
-      grid: true,
-    },
-    {
-      feature: "profile",
-      key: "PROFILE_HIDE_ACHIEVEMENTS",
-      label: "Hide achievements",
-      desc: "Hides the 'Last Achievements' box from your dashboard.",
-      kind: "toggle",
-      defaultValue: CONFIG_DEFAULT.PROFILE_HIDE_ACHIEVEMENTS,
-      grid: true,
-    },
-    {
-      feature: "profile",
       key: "PROFILE_CARD_ORDER",
       label: "Dashboard Cards Order",
       desc: "Drag and drop the colored cards to prioritize your dashboard sections.",
@@ -258,11 +240,21 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
+      key: "PROFILE_ALT_LAYOUT",
+      label: "Alternative dashboard layout",
+      desc: "Optimizes the grid layout. (Experimental)",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.PROFILE_ALT_LAYOUT,
+      grid: true,
+    },
+    {
+      feature: "profile",
       key: "PROFILE_SLOTS_REDIRECTION",
       label: "Slots button redirection",
       desc: "Redirects the 'Manage slots' button to the proper Slots webpage.",
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.PROFILE_SLOTS_REDIRECTION,
+      grid: true,
     },
     {
       feature: "profile",

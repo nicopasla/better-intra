@@ -327,6 +327,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             class="select select-accent w-60"
             data-setting-key="${def.key}"
             ?disabled="${!enabled}"
+            @mousedown="${(e: Event) => e.stopPropagation()}"
+            @click="${(e: Event) => e.stopPropagation()}"
           >
             ${(def.options ?? []).map(
               (o) =>

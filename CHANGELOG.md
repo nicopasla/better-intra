@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-05-20
+
+### Bug fixes 🐛
+
+- fix(hubSettings): prevent event propagation on setting control interactions ([4a00930](https://github.com/nicopasla/better-intra/commit/4a00930))
+- fix(logtime): implement fetch hook in separate hook.js file ([7109a19](https://github.com/nicopasla/better-intra/commit/7109a19))
+
+### Maintenance 🧹
+
+- chore: update daisyui version to 5.5.20 ([460c9ae](https://github.com/nicopasla/better-intra/commit/460c9ae))
+
+### Other Changes 🔄
+
+- refactor(publish.yaml): separate web-ext build steps for Firefox and Chrome ([a260a2b](https://github.com/nicopasla/better-intra/commit/a260a2b))
+- refactor(package.json): add Brave browser support for development scripts ([6a9b67b](https://github.com/nicopasla/better-intra/commit/6a9b67b))
+- refactor(events): integrate Belgium event data and optimize filter logic ([4e1afb2](https://github.com/nicopasla/better-intra/commit/4e1afb2))
+- refactor(clusters): integrate Belgium cluster definitions and refactor screen building logic ([6258906](https://github.com/nicopasla/better-intra/commit/6258906))
+- refactor(hubSettings): update cluster setting to use select input with options ([c0a202d](https://github.com/nicopasla/better-intra/commit/c0a202d))
+- refactor(hubSettings): enhance number input handling with euro suffix and improve select option comparison ([c71e216](https://github.com/nicopasla/better-intra/commit/c71e216))
+- refactor(logtime): improve scroll handling and CSS properties for better performance ([6680392](https://github.com/nicopasla/better-intra/commit/6680392))
+- refactor: migrate storage API from Firefox to Chrome ([4f58f66](https://github.com/nicopasla/better-intra/commit/4f58f66))
+- refactor(games): remove Flagle game integration code ([5ce51de](https://github.com/nicopasla/better-intra/commit/5ce51de))
+- refactor(scripts): separate web-ext commands for Firefox and Chrome ([2fa7641](https://github.com/nicopasla/better-intra/commit/2fa7641))
+- refactor: migrate storage API from Firefox to Chrome ([c86b983](https://github.com/nicopasla/better-intra/commit/c86b983))
+
+
 ## [1.0.3] - 2026-05-19
 
 ### Features 🎉
@@ -143,7 +169,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.3...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/nicopasla/better-intra/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/nicopasla/better-intra/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/nicopasla/better-intra/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/nicopasla/better-intra/compare/v1.0.0...v1.0.1

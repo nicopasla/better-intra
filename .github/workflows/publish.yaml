@@ -25,13 +25,21 @@ jobs:
       - name: Build Extension (Vite)
         run: npm run build
 
-      - name: web-ext build
-        id: web-ext-build
+      - name: web-ext build (Firefox)
+        id: web-ext-build-ff
         uses: kewisch/action-web-ext@v2
         with:
           cmd: build
           source: dist
           filename: "better-intra.xpi"
+
+      - name: web-ext build (Chrome)
+        id: web-ext-build-chrome
+        uses: kewisch/action-web-ext@v2
+        with:
+          cmd: build
+          source: dist
+          filename: "better-intra-chrome.zip"
 
       - name: Collect source code
         run: git archive --format=zip --output=sources.zip ${{ github.ref }}
@@ -41,7 +49,7 @@ jobs:
         uses: kewisch/action-web-ext@v2
         with:
           cmd: sign
-          source: ${{ steps.web-ext-build.outputs.target }}
+          source: ${{ steps.web-ext-build-ff.outputs.target }}
           sourceCode: sources.zip
           channel: unlisted
           apiKey: ${{ secrets.AMO_SIGN_KEY }}
@@ -53,4 +61,6 @@ jobs:
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          files: better-intra.xpi
+          files: |
+             better-intra.xpi
+             better-intra-chrome.zip

@@ -279,7 +279,7 @@ export async function initShortcutsSettings(container: HTMLElement) {
 
   const save = async () => {
     const updated = extractLinksFromForm(container);
-    await browser.storage.local.set({
+    await chrome.storage.local.set({
       SHORTCUTS_LINKS: JSON.stringify(updated),
     });
   };

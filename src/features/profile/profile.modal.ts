@@ -267,7 +267,7 @@ export const createSettingsModal = async (
         "PROFILE_BACKGROUND_URL",
         "PROFILE_BACKGROUND_MODE",
       ];
-      await browser.storage.local.remove(keys);
+      await chrome.storage.local.remove(keys);
       try {
         await syncMyVisuals({
           avatar: "",
@@ -312,9 +312,9 @@ export const createSettingsModal = async (
     });
 
     if (Object.keys(batchData).length > 0)
-      await browser.storage.local.set(batchData);
+      await chrome.storage.local.set(batchData);
     if (keysToRemove.length > 0)
-      await browser.storage.local.remove(keysToRemove);
+      await chrome.storage.local.remove(keysToRemove);
 
     const updatedVisuals = {
       avatar: batchData["PROFILE_IMAGE_URL"] || "",

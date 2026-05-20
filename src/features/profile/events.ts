@@ -130,7 +130,7 @@ export async function injectEventsSelect() {
   wrapper.style.setProperty("align-items", "center", "important");
 
   const handleEventChange = async (value: string) => {
-    await browser.storage.local.set({ PROFILE_EVENT_TYPE_FILTER: value });
+    await chrome.storage.local.set({ PROFILE_EVENT_TYPE_FILTER: value });
     updateEventFilters();
   };
 

@@ -23,10 +23,12 @@
   width: 100%;
   margin-top: -10px !important;
   display: flex !important;
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
+  overscroll-behavior-x: none;
   cursor: grab;
   user-select: none;
   scrollbar-width: none;
+  touch-action: pan-x;
 }
 
 .log-slider-fixed::-webkit-scrollbar {
@@ -39,6 +41,7 @@
   padding: 0 10px !important;
   margin: 0 auto;
   min-width: min-content;
+  will-change: transform;
 }
 
 .month-card {

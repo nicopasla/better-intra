@@ -375,36 +375,34 @@ function renderContainer(
 }
 
 function setupScrollHandlers(scrollWrapper: HTMLElement): void {
-  let isDown = false,
-    startX = 0,
-    scrollLeft = 0;
+  let isDown = false;
+  let startX: number;
+  let scrollLeft: number;
 
   scrollWrapper.addEventListener("mousedown", (e) => {
     isDown = true;
-    scrollWrapper.style.cursor = "grabbing";
     startX = e.pageX - scrollWrapper.offsetLeft;
     scrollLeft = scrollWrapper.scrollLeft;
   });
 
-  const stopDragging = () => {
+  const stop = () => {
     isDown = false;
-    scrollWrapper.style.cursor = "grab";
   };
-  scrollWrapper.addEventListener("mouseleave", stopDragging);
-  scrollWrapper.addEventListener("mouseup", stopDragging);
+  scrollWrapper.addEventListener("mouseleave", stop);
+  scrollWrapper.addEventListener("mouseup", stop);
 
   scrollWrapper.addEventListener("mousemove", (e) => {
     if (!isDown) return;
-    e.preventDefault();
     const x = e.pageX - scrollWrapper.offsetLeft;
-    scrollWrapper.scrollLeft = scrollLeft - (x - startX) * 2;
+    const walk = (x - startX) * 1.7;
+    scrollWrapper.scrollLeft = scrollLeft - walk;
   });
-
   scrollWrapper.addEventListener(
     "wheel",
     (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       if (e.deltaY !== 0) {
-        e.preventDefault();
         scrollWrapper.scrollLeft += e.deltaY;
       }
     },
@@ -437,8 +435,8 @@ function renderLogtime(stats: Record<string, string>): void {
 
   const tryMount = (): boolean => {
     const mount = findLogtimeMount();
-    if (!mount || document.querySelector(".lt-box-container"))
-      return !!document.querySelector(".lt-box-container");
+    const existing = document.querySelector(".lt-box-container");
+    if (!mount || existing) return !!existing;
 
     hideOldLogtime();
     const containerBox = container.firstElementChild as HTMLElement;
@@ -449,14 +447,11 @@ function renderLogtime(stats: Record<string, string>): void {
     ) as HTMLElement;
     if (scrollWrapper) {
       setupScrollHandlers(scrollWrapper);
-      setTimeout(
-        () =>
-          scrollWrapper.scrollTo({
-            left: scrollWrapper.scrollWidth,
-            behavior: "smooth",
-          }),
-        300,
-      );
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollWrapper.scrollLeft = scrollWrapper.scrollWidth;
+        });
+      });
     }
     return true;
   };

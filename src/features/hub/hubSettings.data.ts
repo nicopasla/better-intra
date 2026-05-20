@@ -5,6 +5,7 @@ import SHORTCUT from "../../assets/svg/shortcut.svg?raw";
 import CLOUD from "../../assets/svg/cloud.svg?raw";
 import ABOUT from "../../assets/svg/about.svg?raw";
 import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
+import { CLUSTERS as CLUSTER_OPTIONS } from "../clusters/clusters.data.ts";
 
 export const HUB_INFO = {
   name: "Better Intra",
@@ -221,10 +222,13 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       feature: "clusters",
       key: "CLUSTERS_DEFAULT_ID",
       label: "Default cluster",
-      desc: "Prefills a cluster ID when the page opens.",
-      kind: "number",
-      placeholder: "",
-      defaultValue: CONFIG_DEFAULT.CLUSTERS_DEFAULT_ID,
+      desc: "Prefills a cluster page when the page opens.",
+      kind: "select",
+      defaultValue: String(CONFIG_DEFAULT.CLUSTERS_DEFAULT_ID),
+      options: CLUSTER_OPTIONS.map((c) => ({
+        label: c.name.toUpperCase(),
+        value: c.id,
+      })),
       grid: true,
     },
   ],

@@ -6,8 +6,10 @@
   "scripts": {
     "build": "tsc && vite build",
     "watch": "vite build --watch",
-    "web-ext": "web-ext run --keep-profile-changes --source-dir dist --start-url https://profile-v3.intra.42.fr",
-    "dev": "concurrently \"npm run watch\" \"npm run web-ext\""
+    "web-ext:firefox": "web-ext run --keep-profile-changes --source-dir dist --start-url https://profile-v3.intra.42.fr",
+    "web-ext:chrome": "web-ext run -t chromium --source-dir dist --start-url https://profile-v3.intra.42.fr",
+    "dev:firefox": "concurrently \"npm run watch\" \"npm run web-ext:firefox\"",
+    "dev:chrome": "concurrently \"npm run watch\" \"npm run web-ext:chrome\""
   },
   "devDependencies": {
     "@types/chrome": "^0.1.42",

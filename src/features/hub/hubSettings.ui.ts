@@ -295,18 +295,36 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             ?disabled="${!enabled}"
           />`;
 
-        case "number":
-          return html`<input
-            type="number"
-            class="input input-accent w-24"
-            .value="${String(value)}"
-            data-setting-key="${def.key}"
-            ?disabled="${!enabled}"
-          />`;
+        case "number": {
+          const showEuroSuffix =
+            def.key === "LOGTIME_EMOJI_RATE" ||
+            def.key === "LOGTIME_EMOJI_DIVISOR";
+
+          return showEuroSuffix
+            ? html`<label
+                class="input input-accent w-24 flex items-center gap-1"
+              >
+                <input
+                  type="number"
+                  class="w-full"
+                  .value="${String(value)}"
+                  data-setting-key="${def.key}"
+                  ?disabled="${!enabled}"
+                />
+                <span class="opacity-70">€</span>
+              </label>`
+            : html`<input
+                type="number"
+                class="input input-accent w-24"
+                .value="${String(value)}"
+                data-setting-key="${def.key}"
+                ?disabled="${!enabled}"
+              />`;
+        }
 
         case "select":
           return html`<select
-            class="select select-accent"
+            class="select select-accent w-60"
             data-setting-key="${def.key}"
             ?disabled="${!enabled}"
           >
@@ -314,7 +332,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
               (o) =>
                 html`<option
                   value="${o.value}"
-                  ?selected="${o.value === value}"
+                  ?selected="${String(o.value) === String(value)}"
                 >
                   ${o.label}
                 </option>`,

@@ -102,7 +102,7 @@ Always use at your own risk!
 ## Privacy
 
 - This extension runs entirely locally, except when syncing settings with the Cloudflare Worker KV.
-- Settings are stored securely via the WebExtensions `browser.storage.local` API.
+- Settings are stored securely via the WebExtensions `chrome.storage.local` API.
 - The extension requires zero data collection permissions.
 
 ## Development

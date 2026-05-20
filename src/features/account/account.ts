@@ -34,7 +34,7 @@ export async function loginWith42(): Promise<void> {
       const { token, login } = event.data;
 
       if (token && login) {
-        await browser.storage.local.set({
+        await chrome.storage.local.set({
           CLOUD_TOKEN: token,
           CLOUD_LOGIN: login,
         });
@@ -226,7 +226,7 @@ export async function logoutCloud(): Promise<boolean> {
     console.error("Failed to notify worker of logout", e);
   }
 
-  await browser.storage.local.remove(["CLOUD_TOKEN", "CLOUD_LOGIN"]);
+  await chrome.storage.local.remove(["CLOUD_TOKEN", "CLOUD_LOGIN"]);
   return true;
 }
 
@@ -246,7 +246,7 @@ export async function wipeAllCloudData(): Promise<boolean> {
     );
 
     if (response.ok) {
-      await browser.storage.local.remove(["CLOUD_TOKEN", "CLOUD_LOGIN"]);
+      await chrome.storage.local.remove(["CLOUD_TOKEN", "CLOUD_LOGIN"]);
       return true;
     }
   } catch (e) {
@@ -267,6 +267,6 @@ export async function applyCloudSettings(
   });
 
   if (Object.keys(dataToSave).length > 0) {
-    await browser.storage.local.set(dataToSave);
+    await chrome.storage.local.set(dataToSave);
   }
 }

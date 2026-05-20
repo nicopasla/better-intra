@@ -11,7 +11,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "strict": false,
-    "types": ["firefox-webext-browser"]
+    "types": ["chrome"]
   },
   "include": ["src"]
 }

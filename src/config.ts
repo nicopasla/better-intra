@@ -81,7 +81,7 @@ export const CONFIG_DEFAULT: Record<ConfigKey, any> = {
 export const getConfig = async <T extends ConfigKey>(
   key: T,
 ): Promise<(typeof CONFIG_DEFAULT)[T]> => {
-  const res = await browser.storage.local.get(key);
+  const res = await chrome.storage.local.get(key);
   let value = res && res[key] !== undefined ? res[key] : CONFIG_DEFAULT[key];
 
   if (

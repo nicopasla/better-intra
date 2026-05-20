@@ -10,7 +10,7 @@
     "dev": "concurrently \"npm run watch\" \"npm run web-ext\""
   },
   "devDependencies": {
-    "@types/firefox-webext-browser": "^143.0.0",
+    "@types/chrome": "^0.1.42",
     "concurrently": "^9.2.1",
     "daisyui": "^5.5.19",
     "typescript": "~6.0.3",

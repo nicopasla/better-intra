@@ -52,7 +52,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
 
     const save = async () => {
       links = extractLinksFromForm(container);
-      await browser.storage.local.set({
+      await chrome.storage.local.set({
         SHORTCUTS_LINKS: JSON.stringify(links),
       });
     };
@@ -69,7 +69,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
           },
           async (idx) => {
             links = links.filter((_, i) => i !== idx);
-            await browser.storage.local.set({
+            await chrome.storage.local.set({
               SHORTCUTS_LINKS: JSON.stringify(links),
             });
             update();
@@ -703,7 +703,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
     const newTheme = themeToggle.checked ? "dark" : "light";
 
     hubContainer?.setAttribute("data-theme", newTheme);
-    await browser.storage.local.set({ BETTER_INTRA_THEME: newTheme });
+    await chrome.storage.local.set({ BETTER_INTRA_THEME: newTheme });
 
     if (ghIcon) {
       ghIcon.style.filter =
@@ -792,10 +792,10 @@ async function saveHubState(root: ShadowRoot | HTMLElement) {
     }
   }
   if (Object.keys(batchData).length > 0) {
-    await browser.storage.local.set(batchData);
+    await chrome.storage.local.set(batchData);
   }
   if (keysToRemove.length > 0) {
-    await browser.storage.local.remove(keysToRemove);
+    await chrome.storage.local.remove(keysToRemove);
   }
 }
 
@@ -807,7 +807,7 @@ async function resetFeatureSettings(
     (def) => def.key,
   );
   if (keysToRemove.length > 0) {
-    await browser.storage.local.remove(keysToRemove);
+    await chrome.storage.local.remove(keysToRemove);
   }
   (HUB_SETTING_DEFS[featureId] ?? []).forEach((def) => {
     const controls = root.querySelectorAll<HTMLInputElement>(

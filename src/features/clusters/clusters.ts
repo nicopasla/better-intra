@@ -234,7 +234,7 @@ export async function initClusters() {
     shadowRoot.appendChild(wrapper);
 
     const handleClusterChange = async (value: string) => {
-      await browser.storage.local.set({ CLUSTERS_DEFAULT_ID: value });
+      await chrome.storage.local.set({ CLUSTERS_DEFAULT_ID: value });
       CONFIG.default_id = value;
       window.location.hash = `#cluster-${value}`;
 
@@ -248,7 +248,7 @@ export async function initClusters() {
 
     const handleMarkerToggle = async () => {
       CONFIG.show_markers = !CONFIG.show_markers;
-      await browser.storage.local.set({
+      await chrome.storage.local.set({
         CLUSTERS_SHOW_MARKERS: CONFIG.show_markers,
       });
       reRender();

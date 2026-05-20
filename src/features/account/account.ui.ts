@@ -309,7 +309,7 @@ export async function initAccountSettings(container: HTMLElement) {
     const success = await syncToCloud();
 
     if (success) {
-      await browser.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
+      await chrome.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
       buttonStates.push = {
         loading: false,
         success: true,
@@ -377,7 +377,7 @@ export async function initAccountSettings(container: HTMLElement) {
 
     if (settings) {
       await applyCloudSettings(settings);
-      await browser.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
+      await chrome.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
       buttonStates.pull = {
         loading: false,
         success: true,

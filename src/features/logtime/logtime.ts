@@ -477,33 +477,14 @@ function isProfileV3TargetPage() {
 }
 
 function installFetchHook() {
-  window.addEventListener("42_LOGTIME_DATA", (event: any) => {
+  document.addEventListener("42_LOGTIME_DATA", (event: any) => {
     if (event.detail) renderLogtime(event.detail);
   });
 
   const script = document.createElement("script");
-  script.textContent = `
-    (() => {
-      const originalFetch = window.fetch;
-      window.fetch = async (...args) => {
-        const response = await originalFetch(...args);
-        const url = args[0] instanceof Request ? args[0].url : String(args[0]);
-        if (url.includes("/locations_stats")) {
-          const clone = response.clone();
-          try {
-            const json = await clone.json();
-            const stats = json?.locations_stats || json?.data?.locations_stats || json;
-            if (stats && typeof stats === 'object') {
-              window.dispatchEvent(new CustomEvent("42_LOGTIME_DATA", { detail: stats }));
-            }
-          } catch (e) {}
-        }
-        return response;
-      };
-    })();
-  `;
+  script.src = chrome.runtime.getURL("hook.js");
   (document.head || document.documentElement).appendChild(script);
-  script.remove();
+  script.onload = () => script.remove();
 }
 
 export async function initLogtime() {

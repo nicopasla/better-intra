@@ -41,6 +41,9 @@ jobs:
           source: dist
           filename: "better-intra-chrome.zip"
 
+      - name: Move artifacts
+        run: mv web-ext-artifacts/better-intra-chrome.zip .
+
       - name: Collect source code
         run: git archive --format=zip --output=sources.zip ${{ github.ref }}
 

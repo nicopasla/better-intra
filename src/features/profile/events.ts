@@ -2,50 +2,26 @@ import { html, render } from "lit-html";
 import { getConfig } from "../../config.ts";
 import { HUB_SETTING_DEFS } from "../hub/hubSettings.data.ts";
 import CSS from "../../assets/style.css?inline";
+import eventData from "./events.belgium.json";
 
 export async function updateEventFilters() {
   const campus_mode = (await getConfig("PROFILE_CAMPUS_FILTER")) || "all";
-  const event_filter_mode =
-    (await getConfig("PROFILE_EVENT_TYPE_FILTER")) || "all";
+  const event_mode = (await getConfig("PROFILE_EVENT_TYPE_FILTER")) || "all";
 
-  const eventCards = document.querySelectorAll(
-    "div.relative.clear-both.m-1.border.rounded",
-  );
+  const eventCards = document.querySelectorAll("div.relative.clear-both.m-1.border.rounded");
 
   eventCards.forEach((card) => {
     const htmlCard = card as HTMLElement;
-    const typeText =
-      htmlCard.querySelector("b")?.textContent?.toLowerCase() || "";
-    const locationText =
-      htmlCard
-        .querySelector("svg.lucide-map-pin")
-        ?.nextElementSibling?.textContent?.toLowerCase() || "";
+    const typeText = htmlCard.querySelector("b")?.textContent?.toLowerCase() || "";
+    const loc = htmlCard.querySelector("svg.lucide-map-pin")?.nextElementSibling?.textContent?.toLowerCase() || "";
 
-    const campusMatch =
-      campus_mode === "all" ||
-      (campus_mode === "brussels" &&
-        (locationText.includes("brussels") ||
-          locationText.includes("bru") ||
-          /\b(shi|fu|mi|belfius)\b/i.test(locationText))) ||
-      (campus_mode === "antwerp" &&
-        (locationText.includes("antwerp") ||
-          locationText.includes("ant") ||
-          /\b(a1|a2)\b/i.test(locationText)));
+    const campusMatch = campus_mode === "all" || 
+      eventData.campus[campus_mode as keyof typeof eventData.campus]?.keywords.some(k => loc.includes(k));
 
-    let typeMatch = true;
-    if (event_filter_mode === "exam") typeMatch = typeText.includes("exam");
-    else if (event_filter_mode === "pedago")
-      typeMatch = typeText.includes("exam") || typeText.includes("challenge");
-    else if (event_filter_mode === "social")
-      typeMatch = ["association", "conference", "workshop"].some((t) =>
-        typeText.includes(t),
-      );
+    const typeMatch = event_mode === "all" || 
+      eventData.event_types[event_mode as keyof typeof eventData.event_types]?.some(t => typeText.includes(t));
 
-    htmlCard.style.setProperty(
-      "display",
-      campusMatch && typeMatch ? "flex" : "none",
-      "important",
-    );
+    htmlCard.style.setProperty("display", campusMatch && typeMatch ? "flex" : "none", "important");
   });
 }
 

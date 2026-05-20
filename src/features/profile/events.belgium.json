@@ -1,0 +1,17 @@
+{
+  "campus": {
+    "brussels": {
+      "display": "Brussels",
+      "keywords": ["brussels", "bru", "shi", "fu", "mi", "belfius"]
+    },
+    "antwerp": {
+      "display": "Antwerp",
+      "keywords": ["antwerp", "ant", "a1", "a2"]
+    }
+  },
+  "event_types": {
+    "exam": ["exam"],
+    "pedago": ["exam", "challenge"],
+    "social": ["association", "conference", "workshop"]
+  }
+}

@@ -1,6 +1,6 @@
 import { html, render } from "lit-html";
 import { getConfig } from "../../config.ts";
-import { SCREENS, CLUSTERS, CLUSTER_CONFIG } from "./clusters.data.ts";
+import { SCREENS, CLUSTERS } from "./clusters.data.ts";
 import CSS from "../../assets/style.css?inline";
 
 type Config = {
@@ -76,8 +76,8 @@ export async function initClusters() {
       chair.setAttribute("x", String(cx));
       chair.setAttribute("y", String(cy));
       chair.setAttribute("rx", "1");
-      chair.style.setProperty("fill", CLUSTER_CONFIG.COLOR, "important");
-      chair.style.opacity = CLUSTER_CONFIG.OPACITY;
+      chair.style.setProperty("fill", "#00babc", "important");
+      chair.style.opacity = "0.9";
       chair.style.pointerEvents = "none";
 
       const t = el.getAttribute("transform");

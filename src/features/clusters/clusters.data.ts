@@ -1,9 +1,24 @@
-export const CLUSTER_CONFIG = {
-  COLOR: "#00babc",
-  OPACITY: "0.9",
-} as const;
+import data from "./clusters.belgium.json";
 
 export type ScreenDirection = "UP" | "DOWN" | "LEFT" | "RIGHT" | "NONE";
+
+interface RowConfig {
+  range: string;
+  pos: number[];
+  dir: ScreenDirection;
+}
+
+interface ManualConfig {
+  row: string;
+  pos: number[];
+  dir: ScreenDirection;
+}
+
+interface ClusterDefinition {
+  rows?: RowConfig[];
+  manual?: ManualConfig[];
+  overrides?: Record<string, ScreenDirection>;
+}
 
 function rowScreens(
   row: string,
@@ -23,69 +38,6 @@ function rowsScreens(
   );
 }
 
-const SHI_SCREENS: Record<string, ScreenDirection> = {
-  ...rowsScreens(
-    ["r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11"],
-    [1, 3, 5, 7],
-    "UP",
-  ),
-  ...rowsScreens(
-    ["r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11"],
-    [2, 4, 6, 8],
-    "DOWN",
-  ),
-  ...rowScreens("r1", [1, 2, 3, 4, 5, 6, 7], "DOWN"),
-  ...rowScreens("r12", [1, 2, 3, 4], "UP"),
-  ...rowScreens("c1", [1, 2, 3, 4, 5, 6], "LEFT"),
-  ...rowScreens("c2", [1, 2, 3, 4, 5, 6], "LEFT"),
-};
-
-const FU_SCREENS: Record<string, ScreenDirection> = {
-  ...rowsScreens(
-    ["r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"],
-    [1, 3, 5, 7],
-    "UP",
-  ),
-  ...rowsScreens(
-    ["r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10"],
-    [2, 4, 6, 8],
-    "DOWN",
-  ),
-  ...rowScreens("c1", [1, 2, 3, 5], "LEFT"),
-  "c1-p5": "NONE",
-  ...rowScreens("c2", [1, 2, 3], "LEFT"),
-  "c2-p4": "UP",
-  ...rowScreens("c3", [1, 2, 3, 4, 5, 6], "RIGHT"),
-  ...rowScreens("c4", [1, 2, 3, 4, 5, 6], "RIGHT"),
-};
-
-const MI_SCREENS: Record<string, ScreenDirection> = {
-  ...rowsScreens(
-    ["r1", "r2", "r3", "r4", "r5", "r6", "r7"],
-    [1, 3, 5, 7],
-    "UP",
-  ),
-  ...rowsScreens(
-    ["r1", "r2", "r3", "r4", "r5", "r6", "r7"],
-    [2, 4, 6, 8],
-    "DOWN",
-  ),
-  "r1-p5": "NONE",
-  "r8-p1": "RIGHT",
-  "r8-p2": "NONE",
-  "r8-p3": "RIGHT",
-  ...rowScreens("c1", [1, 2], "DOWN"),
-  ...rowScreens("c2", [1, 2, 3, 4, 5, 6, 7, 8], "LEFT"),
-  ...rowScreens("c3", [1, 2, 3], "LEFT"),
-  ...rowScreens("c4", [1, 2, 3], "UP"),
-  ...rowScreens("c4", [4, 5], "RIGHT"),
-  ...rowScreens("c5", [1], "RIGHT"),
-  ...rowScreens("c6", [1, 2, 3, 4], "RIGHT"),
-};
-
-const A1_SCREENS: Record<string, ScreenDirection> = {};
-const A2_SCREENS: Record<string, ScreenDirection> = {};
-
 function prefixScreens(
   prefix: string,
   screens: Record<string, ScreenDirection>,
@@ -95,18 +47,46 @@ function prefixScreens(
   );
 }
 
-export const SCREENS: Record<string, ScreenDirection> = {
-  ...prefixScreens("shi", SHI_SCREENS),
-  ...prefixScreens("fu", FU_SCREENS),
-  ...prefixScreens("mi", MI_SCREENS),
-  ...prefixScreens("a1", A1_SCREENS),
-  ...prefixScreens("a2", A2_SCREENS),
+const expandRange = (range: string) => {
+  const [start, end] = range.split("-");
+  const prefix = start[0];
+  const startN = parseInt(start.slice(1));
+  const endN = parseInt(end.slice(1));
+  return Array.from(
+    { length: endN - startN + 1 },
+    (_, i) => `${prefix}${startN + i}`,
+  );
 };
 
-export const CLUSTERS = [
-  { id: "20", name: "shi" },
-  { id: "21", name: "fu" },
-  { id: "54", name: "mi" },
-  { id: "164", name: "a1" },
-  { id: "165", name: "a2" },
-] as const;
+const buildScreens = () => {
+  const final: Record<string, ScreenDirection> = {};
+
+  const definitions = data.definitions as Record<string, ClusterDefinition>;
+
+  Object.entries(definitions).forEach(([clusterName, config]) => {
+    config.rows?.forEach((r) => {
+      const rows = expandRange(r.range);
+      Object.assign(
+        final,
+        prefixScreens(clusterName, rowsScreens(rows, r.pos, r.dir)),
+      );
+    });
+
+    config.manual?.forEach((m) => {
+      Object.assign(
+        final,
+        prefixScreens(clusterName, rowScreens(m.row, m.pos, m.dir)),
+      );
+    });
+
+    if (config.overrides) {
+      Object.entries(config.overrides).forEach(([k, v]) => {
+        final[`${clusterName}-${k}`] = v;
+      });
+    }
+  });
+  return final;
+};
+
+export const SCREENS = buildScreens();
+export const CLUSTERS = data.clusters;

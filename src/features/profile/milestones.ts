@@ -69,12 +69,11 @@ function injectMilestoneStyles() {
       z-index: 1;
     }
 
-    .timeline-indicator {
-      width: 12px;
-      height: 100%;
-      flex-shrink: 0;
-      display: block;
-    }
+	.bg-legacy-main {
+  border: 1px solid rgba(82, 255, 82, 0.35);
+  box-shadow: 0 0 10px rgba(82, 255, 82, 0.15);
+  border-radius: 12px;
+}
   `;
   document.head.appendChild(style);
 }

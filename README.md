@@ -96,8 +96,8 @@ Always use at your own risk!
 | Browser | Support |           Note            |
 |:-------:|:-------:|:-------------------------:|
 | Firefox |    ✅    | Main target (Manifest v3) |
-| Chrome  |    ❓    | Not officially supported  |
-|  Brave  |    ❓    | Not officially supported  |
+| Chrome  |    ✅    |         Supported         |
+|  Brave  |    ✅    |         Supported         |
 
 ## Privacy
 

@@ -43,12 +43,12 @@ export async function injectShortcutsDisplay() {
   const wrapper = document.createElement("div");
   wrapper.id = CONTAINER_ID;
   wrapper.style.cssText = `
-    display: flex; 
-    flex-direction: row; 
-    align-items: center; 
-    gap: 16px; 
-    width: 50%; 
-    margin-right: 20px; 
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    width: 50%;
+    margin-right: 20px;
     box-sizing: border-box;
   `;
 
@@ -59,8 +59,15 @@ export async function injectShortcutsDisplay() {
     render(
       html`
         <style>
-          ${CSS}
+          ${CSS} .separator {
+            width: 3px;
+            height: 100px;
+            background-color: var(--base-300, #cbd5e1);
+            margin: 0 8px;
+            flex-shrink: 0;
+          }
         </style>
+        <div class="separator"></div>
         ${renderShortcutsDisplay(links)}
       `,
       shadowRoot,

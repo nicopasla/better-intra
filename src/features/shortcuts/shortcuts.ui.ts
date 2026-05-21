@@ -8,6 +8,7 @@ export interface ShortcutLink {
   name: string;
   url: string;
   color: string;
+  emoji?: string;
 }
 
 const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
@@ -33,15 +34,12 @@ export const sanitizeUrl = (url: unknown): string => {
 };
 
 export const normalizeLink = (link: unknown): ShortcutLink => {
-  if (!link || typeof link !== "object") {
-    return { name: "", url: "", color: "#7dd3fc" };
-  }
-
   const obj = link as Record<string, unknown>;
   return {
     name: typeof obj.name === "string" ? obj.name.trim() : "",
     url: sanitizeUrl(obj.url),
     color: sanitizeColor(obj.color),
+    emoji: typeof obj.emoji === "string" ? obj.emoji.trim() : "",
   };
 };
 
@@ -69,6 +67,16 @@ export function renderShortcutRow(
   return html` <div
     class="link-group flex flex-row gap-2 border border-base-300 rounded-lg p-2 bg-base-200/30 items-end"
   >
+    <div class="flex flex-row gap-2">
+      <input
+        type="text"
+        class="input w-16 text-center text-xl"
+        data-shortcuts-emoji
+        .value="${link.emoji || ""}"
+        placeholder="🐝"
+        maxlength="2"
+      />
+    </div>
     <div class="flex-1">
       <input
         type="text"
@@ -156,32 +164,21 @@ export function renderShortcutsSettings(
 
 export async function getStoredLinks(): Promise<ShortcutLink[]> {
   const stored = await getConfig("SHORTCUTS_LINKS");
-
-  if (!stored) {
-    return [{ name: "", url: "", color: "#7dd3fc" }];
-  }
-
+  const fallback = [{ name: "", url: "", color: "#7dd3fc", emoji: "" }];
+  if (!stored) return fallback;
   try {
+    let parsed: any;
     if (typeof stored === "string") {
-      const parsed = JSON.parse(stored);
-      if (!Array.isArray(parsed))
-        return [{ name: "", url: "", color: "#7dd3fc" }];
-      const normalized = parsed.map(normalizeLink).slice(0, 8);
-      return normalized.length
-        ? normalized
-        : [{ name: "", url: "", color: "#7dd3fc" }];
+      parsed = JSON.parse(stored);
+    } else {
+      parsed = stored;
     }
-    if (Array.isArray(stored)) {
-      const normalized = stored.map(normalizeLink).slice(0, 8);
-      return normalized.length
-        ? normalized
-        : [{ name: "", url: "", color: "#7dd3fc" }];
-    }
+    if (!Array.isArray(parsed)) return fallback;
+    const normalized = parsed.map(normalizeLink).slice(0, 8);
+    return normalized.length > 0 ? normalized : fallback;
   } catch {
-    return [{ name: "", url: "", color: "#7dd3fc" }];
+    return fallback;
   }
-
-  return [{ name: "", url: "", color: "#7dd3fc" }];
 }
 
 export function extractLinksFromForm(root: HTMLElement): ShortcutLink[] {
@@ -198,12 +195,16 @@ export function extractLinksFromForm(root: HTMLElement): ShortcutLink[] {
     const colorInput = row.querySelector(
       "[data-shortcuts-color]",
     ) as HTMLInputElement;
+    const emojiInput = row.querySelector(
+      "[data-shortcuts-emoji]",
+    ) as HTMLInputElement;
 
     if (nameInput && urlInput && colorInput) {
       const link = normalizeLink({
         name: nameInput.value,
         url: urlInput.value,
         color: colorInput.value,
+        emoji: emojiInput ? emojiInput.value : "",
       });
 
       if (link.url && link.name) {
@@ -229,41 +230,43 @@ export function renderShortcutsDisplay(
     >
       ${activeLinks.map((link) => {
         const contrast = getContrastColor(link.color);
+        const hasEmoji = link.emoji && link.emoji.trim().length > 0;
+
         return html`
           <a
             href="${link.url}"
             target="_blank"
             rel="noopener noreferrer"
             class="btn btn-lg h-auto min-h-12 px-4 py-2 rounded-2xl border-none font-bold uppercase tracking-wider shadow-lg hover:shadow-lg no-underline inline-flex items-center gap-3"
-            style="
-              background-color: ${link.color};
-              color: ${contrast};
-            "
+            style="background-color: ${link.color}; color: ${contrast};"
           >
             <div
-              class="flex items-center justify-center bg-white/20 p-1 rounded-lg transition-transform hover:rotate-6"
+              class="flex items-center justify-center bg-white/20 p-1 rounded-lg transition-transform hover:rotate-6 w-10 h-10"
             >
-              <img
-                src="${getFaviconUrl(link.url)}"
-                class="w-8 h-8 object-contain"
-                alt=""
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                @error="${(e: Event) => {
-                  const img = e.target as HTMLImageElement;
-
-                  try {
-                    const parsedUrl = new URL(link.url);
-                    if (!img.hasAttribute("data-fallback-tried")) {
-                      img.setAttribute("data-fallback-tried", "true");
-                      img.src = `https://icons.duckduckgo.com/ip3/${parsedUrl.hostname}.ico`;
-                      return;
-                    }
-                  } catch {}
-                  img.onerror = null;
-                  img.src = GLOBE;
-                }}"
-              />
+              ${hasEmoji
+                ? html`<span class="text-2xl">${link.emoji}</span>`
+                : html`
+                    <img
+                      src="${getFaviconUrl(link.url)}"
+                      class="w-8 h-8 object-contain"
+                      alt=""
+                      loading="lazy"
+                      referrerpolicy="no-referrer"
+                      @error="${(e: Event) => {
+                        const img = e.target as HTMLImageElement;
+                        try {
+                          const parsedUrl = new URL(link.url);
+                          if (!img.hasAttribute("data-fallback-tried")) {
+                            img.setAttribute("data-fallback-tried", "true");
+                            img.src = `https://icons.duckduckgo.com/ip3/${parsedUrl.hostname}.ico`;
+                            return;
+                          }
+                        } catch {}
+                        img.onerror = null;
+                        img.src = GLOBE;
+                      }}"
+                    />
+                  `}
             </div>
 
             <span class="text-sm"> ${link.name} </span>

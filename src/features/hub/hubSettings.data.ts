@@ -112,7 +112,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       feature: "logtime",
       key: "LOGTIME_SHOW_AVERAGE",
       label: "Show average",
-      desc: "Displays your average hours per day.",
+      desc: "Displays average hours per active day.",
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.LOGTIME_SHOW_AVERAGE,
       grid: true,

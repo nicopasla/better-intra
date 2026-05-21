@@ -436,22 +436,25 @@ function renderLogtime(stats: Record<string, string>): void {
   const tryMount = (): boolean => {
     const mount = findLogtimeMount();
     const existing = document.querySelector(".lt-box-container");
-    if (!mount || existing) return !!existing;
-
+    if (!mount) return false;
+    if (existing) existing.remove();
     hideOldLogtime();
     const containerBox = container.firstElementChild as HTMLElement;
     mount.prepend(containerBox);
-
     const scrollWrapper = containerBox.querySelector(
       ".log-slider-fixed",
     ) as HTMLElement;
     if (scrollWrapper) {
       setupScrollHandlers(scrollWrapper);
+      const scrollToLatest = () => {
+        scrollWrapper.scrollLeft =
+          scrollWrapper.scrollWidth - scrollWrapper.clientWidth;
+      };
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          scrollWrapper.scrollLeft = scrollWrapper.scrollWidth;
-        });
+        requestAnimationFrame(scrollToLatest);
       });
+      window.addEventListener("load", scrollToLatest);
+      setTimeout(scrollToLatest, 100);
     }
     return true;
   };
@@ -484,6 +487,9 @@ function installFetchHook() {
 
 export async function initLogtime() {
   if (isLoaded) return;
+  if ("scrollRestoration" in history) {
+    history.scrollRestoration = "manual";
+  }
   installFetchHook();
 
   CONFIG = await getConfigs();

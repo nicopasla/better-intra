@@ -18,11 +18,8 @@
 .log-slider-fixed {
   overflow-x: auto !important;
   overflow-y: hidden !important;
-  max-height: fit-content !important;
-  align-items: flex-start !important;
   width: 100%;
-  margin-top: -10px !important;
-  display: flex !important;
+  display: block !important;
   scroll-behavior: auto;
   overscroll-behavior-x: none;
   cursor: grab;
@@ -31,17 +28,11 @@
   touch-action: pan-x;
 }
 
-.log-slider-fixed::-webkit-scrollbar {
-  display: none !important;
-}
-
 .grid-centering-container {
   display: flex;
   gap: 16px;
+  width: max-content;
   padding: 0 10px !important;
-  margin: 0 auto;
-  min-width: min-content;
-  will-change: transform;
 }
 
 .month-card {

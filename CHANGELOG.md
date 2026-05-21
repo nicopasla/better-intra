@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-05-21
+
+### Features 🎉
+
+- feat(shortcuts): add separator styling to shortcuts display for improved layout ([4463049](https://github.com/nicopasla/better-intra/commit/4463049))
+- feat(shortcuts): add emoji support to shortcut links and enhance rendering ([2a1f6c7](https://github.com/nicopasla/better-intra/commit/2a1f6c7))
+- feat(milestones): add milestone animations and styles to enhance profile visuals ([256e507](https://github.com/nicopasla/better-intra/commit/256e507))
+
+### Bug fixes 🐛
+
+- fix(profile): update placeholder text and translate alignment labels in modal ([dc1b2d8](https://github.com/nicopasla/better-intra/commit/dc1b2d8))
+- fix(milestones): remove not used CSS ([d14a719](https://github.com/nicopasla/better-intra/commit/d14a719))
+- fix(milestones): refactor animation function and improve milestone enhancement logic ([a898912](https://github.com/nicopasla/better-intra/commit/a898912))
+- fix(logtime): improve log slider behavior and enhance scroll functionality ([66bf033](https://github.com/nicopasla/better-intra/commit/66bf033))
+- fix(visuals): enhance text styles for better readability in profile section ([401dbdf](https://github.com/nicopasla/better-intra/commit/401dbdf))
+- fix(manifest): ensure incognito mode is set to not allowed ([df97180](https://github.com/nicopasla/better-intra/commit/df97180))
+- fix(publish): move Chrome artifact to the root directory ([b9f7291](https://github.com/nicopasla/better-intra/commit/b9f7291))
+
+### Maintenance 🧹
+
+- chore(hubSettings): update description for logtime average display setting ([da0960c](https://github.com/nicopasla/better-intra/commit/da0960c))
+
 ## [1.0.4] - 2026-05-20
 
 ### Bug fixes 🐛
@@ -169,7 +191,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.4...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.5...HEAD
+[1.0.5]: https://github.com/nicopasla/better-intra/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/nicopasla/better-intra/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/nicopasla/better-intra/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/nicopasla/better-intra/compare/v1.0.1...v1.0.2

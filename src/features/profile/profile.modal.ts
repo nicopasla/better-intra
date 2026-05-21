@@ -63,7 +63,7 @@ function renderUrlField(
           type="url"
           id="${id}"
           required
-          placeholder="https://example.com/image.png"
+          placeholder="https://example.com/beemovie.png"
           .value="${value}"
           pattern="^(https?://)?.*"
           class="grow"
@@ -183,7 +183,7 @@ function renderModalContent(
             )}
             ${renderModeSelect(
               "PROFILE_BANNER_MODE",
-              "Alignement de la bannière",
+              "Banner alignment",
               saved.bannerMode,
               shadow,
             )}
@@ -198,7 +198,7 @@ function renderModalContent(
             )}
             ${renderModeSelect(
               "PROFILE_BACKGROUND_MODE",
-              "Alignement du fond d'écran",
+              "Background alignment",
               saved.backgroundMode,
               shadow,
             )}

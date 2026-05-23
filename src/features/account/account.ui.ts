@@ -22,12 +22,13 @@ export interface ButtonState {
 
 export function renderAccountTab(
   login: string | null,
-  lastSync: string,
   onPush: () => void,
   onPull: () => void,
   onDelete: () => void,
   onLogin42: () => void,
   onTestConnection: () => void,
+  isSyncEnabled: boolean,
+  onToggleSync: (v: boolean) => void,
   hasToken: boolean,
   activeSessions: number = 0,
   pushBtnState: ButtonState,
@@ -83,21 +84,35 @@ export function renderAccountTab(
               `
             : html`
                 <div class="flex flex-col gap-2 mt-4">
-                  <button
-                    id="push-cloud-btn"
-                    class="btn ${pushBtnState.loading
-                      ? "btn-info loading"
-                      : pushBtnState.success
-                        ? "btn-success"
-                        : pushBtnState.error
-                          ? "btn-error"
-                          : "btn-primary"}"
-                    type="button"
-                    ?disabled="${pushBtnState.loading}"
-                    @click="${onPush}"
-                  >
-                    ${pushBtnState.text}
-                  </button>
+                  <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+                    <label
+                      class="flex items-center gap-2 cursor-pointer p-2 bg-base-200 rounded-lg"
+                    >
+                      <span class="font-medium">Sync</span>
+                      <input
+                        type="checkbox"
+                        class="toggle toggle-primary"
+                        ?checked="${isSyncEnabled}"
+                        @change="${(e: Event) =>
+                          onToggleSync((e.target as HTMLInputElement).checked)}"
+                      />
+                    </label>
+                    <button
+                      id="push-cloud-btn"
+                      class="btn ${pushBtnState.loading
+                        ? "btn-info loading"
+                        : pushBtnState.success
+                          ? "btn-success"
+                          : pushBtnState.error
+                            ? "btn-error"
+                            : "btn-primary"}"
+                      type="button"
+                      ?disabled="${pushBtnState.loading}"
+                      @click="${onPush}"
+                    >
+                      ${pushBtnState.text}
+                    </button>
+                  </div>
                   <button
                     id="pull-cloud-btn"
                     class="btn ${pullBtnState.loading
@@ -119,33 +134,28 @@ export function renderAccountTab(
 
         <div class="flex flex-col items-center pt-2 justify-between h-[45]">
           <div class="flex flex-col items-center">
-            <span class="text">Last synced</span>
-            <div class="flex items-center gap-4">
-              <div
-                class="size-3 rounded-full ${isConnected
-                  ? "status status-success"
-                  : "status status-error"}"
-              ></div>
-              <span class="text-xl font-mono">${lastSync}</span>
-            </div>
-
             ${hasToken
               ? html`
-                  <button
-                    id="test-conn-btn"
-                    class="mt-4 btn py-3 px-6 ${testBtnLoading
-                      ? "loading"
-                      : ""} ${isConnected
-                      ? "btn-success text-white"
-                      : "btn-info"}"
-                    type="button"
-                    ?disabled="${testBtnLoading}"
-                    @click="${onTestConnection}"
+                  <div
+                    class="mt-4 flex items-center justify-center gap-2 px-6 py-3 border border-base-300 rounded-lg"
                   >
-                    ${isConnected
-                      ? `Connected (${activeSessions}/3)`
-                      : "Test connection"}
-                  </button>
+                    <span class="text-sm opacity-70">Sessions:</span>
+                    <div
+                      class="badge ${isConnected
+                        ? "badge-success"
+                        : "badge-error"} font-mono"
+                    >
+                      ${activeSessions}/10
+                    </div>
+                    ${!isConnected
+                      ? html`<button
+                          class="btn btn-xs btn-ghost"
+                          @click="${onTestConnection}"
+                        >
+                          Retry
+                        </button>`
+                      : ""}
+                  </div>
                 `
               : ""}
           </div>
@@ -205,20 +215,27 @@ export function renderAccountTab(
 export async function initAccountSettings(container: HTMLElement) {
   const login = await getCloudLogin();
   let token = (await getConfig("CLOUD_TOKEN")) || "";
+  let isSyncEnabled = (await getConfig("CLOUD_SYNC_ENABLED")) ?? true;
   let activeSessions = 0;
+
+  const handleToggleSync = async (enabled: boolean) => {
+    isSyncEnabled = enabled;
+    await chrome.storage.local.set({ CLOUD_SYNC_ENABLED: enabled });
+    update();
+  };
 
   const buttonStates = {
     push: {
       loading: false,
       success: false,
       error: false,
-      text: "Push Settings to Cloud",
+      text: "Push Settings",
     },
     pull: {
       loading: false,
       success: false,
       error: false,
-      text: "Pull Settings from Cloud",
+      text: "Pull Settings",
     },
     testLoading: false,
   };
@@ -250,7 +267,10 @@ export async function initAccountSettings(container: HTMLElement) {
   };
 
   const handleLogin42 = () => {
-    loginWith42();
+    loginWith42(() => {
+      console.log("Settings refreshed without reload!");
+      update();
+    });
   };
 
   const handleTestConnection = async () => {
@@ -369,7 +389,7 @@ export async function initAccountSettings(container: HTMLElement) {
           text: "Pull Settings from Cloud",
         };
         update();
-      }, 2500);
+      }, 2000);
       return;
     }
 
@@ -403,23 +423,32 @@ export async function initAccountSettings(container: HTMLElement) {
           text: "Pull Settings from Cloud",
         };
         update();
-      }, 2500);
+      }, 2000);
     }
   };
 
   const update = async () => {
-    const syncLabel = await getSyncLabel();
-    token = (await getConfig("CLOUD_TOKEN")) || "";
+    const newLogin = await getCloudLogin();
+    const newToken = await getConfig("CLOUD_TOKEN");
+
+    token = newToken || "";
+    const login = newLogin || "";
+
+    if (token && login) {
+      const res = await testCloudConnection();
+      activeSessions = typeof res === "number" ? res : res ? 1 : 0;
+    }
 
     render(
       renderAccountTab(
         login,
-        syncLabel,
         handlePush,
         handlePull,
         handleDelete,
         handleLogin42,
         handleTestConnection,
+        isSyncEnabled,
+        handleToggleSync,
         !!token,
         activeSessions,
         buttonStates.push,

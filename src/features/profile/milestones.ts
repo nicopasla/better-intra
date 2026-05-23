@@ -32,27 +32,63 @@ function injectMilestoneStyles() {
   style.textContent = `
     .fire-milestone {
       position: relative;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #ff6a00, #ff8c00) !important;
-      box-shadow: 0 0 12px rgba(30, 144, 255, 0.4);
       overflow: hidden;
       isolation: isolate;
+      border-radius: 16px;
+      background:
+        linear-gradient(
+          135deg,
+          #ff6a00 0%,
+          #ff8c00 40%,
+          #ff9f1c 100%
+        ) !important;
+
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        inset 0 -8px 18px rgba(0,0,0,0.18);
     }
 
     .fire-milestone::before {
       content: "";
       position: absolute;
       inset: 0;
+      padding: 3px;
+      border-radius: inherit;
+      background:
+        conic-gradient(
+          from var(--angle, 0deg),
+          #ff3c00,
+          #ff7b00,
+          #ffd000,
+          #fff0a0,
+          #ff7b00,
+          #ff3c00
+        );
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+
+      z-index: 3;
+      pointer-events: none;
+    }
+    .fire-milestone::after {
+      content: "";
+      position: absolute;
+      inset: -8px;
       padding: 4px;
       border-radius: inherit;
-      background: conic-gradient(
-        from var(--angle, 0deg),
-        #ff6a00,
-        #ff8c00,
-        #ffb347,
-        #ff8c00,
-        #ff6a00
-      );
+
+      background:
+        conic-gradient(
+          from var(--angle, 0deg),
+          #ff3c00,
+          #ff7b00,
+          #ffd000,
+          #ff7b00,
+          #ff3c00
+        );
 
       -webkit-mask:
         linear-gradient(#000 0 0) content-box,
@@ -60,20 +96,22 @@ function injectMilestoneStyles() {
       -webkit-mask-composite: xor;
       mask-composite: exclude;
 
+      filter:
+        blur(18px)
+        brightness(1.4);
+      opacity: 0.95;
+      z-index: 1;
       pointer-events: none;
-      z-index: 2;
     }
 
     .fire-milestone > * {
       position: relative;
-      z-index: 1;
+      z-index: 2;
     }
 
-	.bg-legacy-main {
-  border: 1px solid rgba(82, 255, 82, 0.35);
-  box-shadow: 0 0 10px rgba(82, 255, 82, 0.15);
-  border-radius: 12px;
-}
-  `;
+    .bg-legacy-main {
+      border-radius: 16px;
+    }
+`;
   document.head.appendChild(style);
 }

@@ -37,6 +37,12 @@ const ABOUT_STACK = [
     color: "badge-warning text-warning-content",
     url: "https://github.com/vitejs/vite",
   },
+  {
+    name: "web-ext",
+    version: __WEB_EXT_VERSION__,
+    color: "badge-success text-warning-content",
+    url: "https://github.com/mozilla/web-ext",
+  },
 ];
 
 export function renderAboutPanel(): ReturnType<typeof html> {

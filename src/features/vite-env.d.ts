@@ -20,3 +20,4 @@ declare const __VITE_VERSION__: string;
 declare const __TW_VERSION__: string;
 declare const __LIT_VERSION__: string;
 declare const __DAISY_VERSION__: string;
+declare const __WEB_EXT_VERSION__: string;

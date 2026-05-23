@@ -5,6 +5,18 @@ import { initHubSettings } from "./features/hub/hubSettings.ts";
 import { initShortcuts } from "./features/shortcuts/shortcuts.ts";
 import { getConfig } from "./config.ts";
 
+/**
+ * A map that links feature ID strings to their initialization functions.
+ * This prevents the need for a long list of if-statements and makes adding
+ * new features cleaner.
+ */
+const featureInitializers: { [key: string]: () => Promise<void> } = {
+  logtime: initLogtime,
+  clusters: initClusters,
+  profile: initProfile,
+  shortcuts: initShortcuts,
+};
+
 (async function runBetterIntra() {
   const waitForIntra = async () => {
     const target =
@@ -14,18 +26,18 @@ import { getConfig } from "./config.ts";
 
     if (target) {
       try {
+        // Hub settings are always initialized for the settings page.
         await initHubSettings();
 
-        const activeRaw = await getConfig("ACTIVE_SCRIPTS");
-        const active: string[] =
-          typeof activeRaw === "string" ? JSON.parse(activeRaw) : activeRaw;
-        const enabled = (id: string) =>
-          Array.isArray(active) && active.includes(id);
+        // Get the list of scripts the user has enabled.
+        const activeScripts = await getConfig("ACTIVE_SCRIPTS");
 
-        if (enabled("logtime")) await initLogtime();
-        if (enabled("clusters")) await initClusters();
-        if (enabled("profile")) await initProfile();
-        if (enabled("shortcuts")) await initShortcuts();
+        // Loop through the user's active scripts and initialize them if they exist in our map.
+        for (const scriptId of activeScripts) {
+          if (featureInitializers[scriptId]) {
+            await featureInitializers[scriptId]();
+          }
+        }
       } catch (error) {
         console.error("Error during init of Better Intra :", error);
       }

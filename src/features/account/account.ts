@@ -10,7 +10,7 @@ async function hashLogin(login: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-export async function loginWith42(): Promise<void> {
+export async function loginWith42(onSuccess?: () => void): Promise<void> {
   const extensionFakeCallback = window.location.href;
   const authUrl = `${WORKER_URL}/login?redirect_uri=${encodeURIComponent(extensionFakeCallback)}`;
 
@@ -41,7 +41,11 @@ export async function loginWith42(): Promise<void> {
 
         window.removeEventListener("message", messageListener);
         popup.close();
-        window.location.reload();
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          window.location.reload();
+        }
       }
     }
   };

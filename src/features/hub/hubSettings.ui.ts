@@ -18,6 +18,7 @@ import {
   type ShortcutLink,
 } from "../shortcuts/shortcuts.ui.ts";
 import { initAccountSettings } from "../account/account.ui.ts";
+import { syncToCloud } from "../account/account.ts";
 import HUB_CSS from "../../assets/style.css?inline";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
 import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
@@ -636,6 +637,16 @@ async function createModal(active: FeatureId[]): Promise<void> {
 
   const currentTheme = await getInitialTheme();
   const tabsContent = renderTabsContent(active);
+  const lastSync = (await chrome.storage.local.get("LAST_CLOUD_SYNC"))
+    .LAST_CLOUD_SYNC;
+  const isConnected = !!(await getConfig("CLOUD_TOKEN"));
+  const dateString =
+    typeof lastSync === "number" || typeof lastSync === "string"
+      ? new Date(lastSync).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "--:--";
 
   const modalTemplate = html`<style>
       :host {
@@ -698,6 +709,21 @@ async function createModal(active: FeatureId[]): Promise<void> {
             />
             ${sunIconSvg} ${moonIconSvg}
           </label>
+          <div class="flex items-center gap-2 text-xs font-bold opacity-60">
+            <div
+              class="size-2 rounded-full ${isConnected
+                ? "bg-success"
+                : "bg-error"}"
+            ></div>
+            ${isConnected
+              ? html`<span class="flex items-center gap-1">
+                  ☁️ Connected
+                </span>`
+              : "Offline"}
+            <span class="text-[10px] opacity-40 font-mono"
+              >Synced at ${dateString}</span
+            >
+          </div>
         </div>
         <button
           id="hub-save"
@@ -758,64 +784,141 @@ async function createModal(active: FeatureId[]): Promise<void> {
 }
 
 async function saveHubState(root: ShadowRoot | HTMLElement) {
-  const selected = Array.from(
-    root.querySelectorAll<HTMLInputElement>("input.hub-feature-toggle"),
-  )
-    .filter((sw) => sw.checked)
-    .map((sw) => sw.dataset.id as FeatureId);
+  const saveBtn = root.querySelector("#hub-save") as HTMLButtonElement;
 
-  const batchData: Record<string, any> = {
-    [STORAGE_KEY]: JSON.stringify(selected),
-  };
+  if (!saveBtn) return;
 
-  const keys = new Set<string>();
-  root.querySelectorAll("[data-setting-key]").forEach((el) => {
-    keys.add((el as HTMLElement).dataset.settingKey!);
-  });
+  // Store original state for error recovery
+  const originalText = saveBtn.innerText;
+  const originalDisabled = saveBtn.disabled;
 
-  const keysToRemove: string[] = [];
-  Array.from(keys).forEach((key) => {
-    const controls = root.querySelectorAll(`[data-setting-key="${key}"]`);
-    if (controls.length === 0) return;
+  try {
+    // Disable button and show saving state
+    saveBtn.disabled = true;
+    saveBtn.innerText = "Saving local...";
+    saveBtn.classList.add("opacity-70", "animate-pulse");
 
-    const first = controls[0] as HTMLInputElement;
-    let val: any;
+    // Collect and save local settings
+    const selected = Array.from(
+      root.querySelectorAll<HTMLInputElement>("input.hub-feature-toggle"),
+    )
+      .filter((sw) => sw.checked)
+      .map((sw) => sw.dataset.id as FeatureId);
 
-    if (first.type === "radio") {
-      const checkedRadio = Array.from(controls).find(
-        (r) => (r as HTMLInputElement).checked,
-      ) as HTMLInputElement;
-      val = checkedRadio ? checkedRadio.value : null;
-    } else if (first.type === "checkbox") {
-      val = first.checked;
-    } else {
-      val = first.value;
+    const batchData: Record<string, any> = {
+      [STORAGE_KEY]: JSON.stringify(selected),
+    };
+    const keys = new Set<string>();
+
+    root.querySelectorAll("[data-setting-key]").forEach((el) => {
+      keys.add((el as HTMLElement).dataset.settingKey!);
+    });
+
+    const keysToRemove: string[] = [];
+    Array.from(keys).forEach((key) => {
+      const controls = root.querySelectorAll(`[data-setting-key="${key}"]`);
+      if (controls.length === 0) return;
+      const first = controls[0] as HTMLInputElement;
+      let val: any;
+
+      if (first.type === "radio") {
+        const checkedRadio = Array.from(controls).find(
+          (r) => (r as HTMLInputElement).checked,
+        ) as HTMLInputElement;
+        val = checkedRadio ? checkedRadio.value : null;
+      } else if (first.type === "checkbox") {
+        val = first.checked;
+      } else {
+        val = first.value;
+      }
+
+      if (val === "" || val === null || val === undefined) {
+        keysToRemove.push(key);
+      } else {
+        batchData[key] = val;
+      }
+    });
+
+    // Handle shortcuts panel
+    const shortcutsPanel = root.querySelector(
+      '[data-shortcuts-panel="true"]',
+    ) as HTMLElement | null;
+    if (shortcutsPanel) {
+      const links = extractLinksFromForm(shortcutsPanel);
+      if (links.length > 0) {
+        batchData["SHORTCUTS_LINKS"] = JSON.stringify(links);
+      } else {
+        keysToRemove.push("SHORTCUTS_LINKS");
+      }
     }
 
-    if (val === "" || val === null || val === undefined) {
-      keysToRemove.push(key);
-    } else {
-      batchData[key] = val;
+    // Save to local storage
+    if (Object.keys(batchData).length > 0) {
+      await chrome.storage.local.set(batchData);
     }
-  });
-
-  const shortcutsPanel = root.querySelector(
-    '[data-shortcuts-panel="true"]',
-  ) as HTMLElement | null;
-
-  if (shortcutsPanel) {
-    const links = extractLinksFromForm(shortcutsPanel);
-    if (links.length > 0) {
-      batchData["SHORTCUTS_LINKS"] = JSON.stringify(links);
-    } else {
-      keysToRemove.push("SHORTCUTS_LINKS");
+    if (keysToRemove.length > 0) {
+      await chrome.storage.local.remove(keysToRemove);
     }
-  }
-  if (Object.keys(batchData).length > 0) {
-    await chrome.storage.local.set(batchData);
-  }
-  if (keysToRemove.length > 0) {
-    await chrome.storage.local.remove(keysToRemove);
+
+    // Check if cloud sync is enabled and attempt sync
+    const isSyncEnabled = await getConfig("CLOUD_SYNC_ENABLED");
+    const hasCloudToken = await getConfig("CLOUD_TOKEN");
+
+    if (isSyncEnabled && hasCloudToken) {
+      // User has enabled cloud sync and is logged in
+      saveBtn.innerText = "☁️ Syncing to cloud...";
+
+      const syncSuccess = await syncToCloud();
+
+      if (syncSuccess) {
+        // Cloud sync succeeded
+        await chrome.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
+        saveBtn.innerText = "✓ Cloud synced!";
+        saveBtn.classList.remove("opacity-70", "animate-pulse");
+        saveBtn.classList.add("btn-success");
+      } else {
+        // Cloud sync failed but local saved
+        console.warn("Cloud sync failed, but local settings were saved");
+        saveBtn.innerText = "⚠️ Local saved (cloud failed)";
+        saveBtn.classList.remove("opacity-70", "animate-pulse");
+        saveBtn.classList.add("btn-warning");
+
+        // Wait before reloading
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+      }
+    } else if (isSyncEnabled && !hasCloudToken) {
+      // Cloud sync is enabled but user is not logged in
+      saveBtn.innerText = "⚠️ Not logged in to cloud";
+      saveBtn.classList.remove("opacity-70", "animate-pulse");
+      saveBtn.classList.add("btn-info");
+    } else {
+      // Cloud sync is disabled
+      saveBtn.innerText = "Settings saved";
+      saveBtn.classList.remove("opacity-70", "animate-pulse");
+      saveBtn.classList.add("btn-success");
+    }
+
+    // Wait for user to see the result, then reload
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    location.reload();
+  } catch (error) {
+    // Error handling: allow user to retry
+    console.error("Error saving hub state:", error);
+    saveBtn.innerText = "✗ Save failed, retrying...";
+    saveBtn.classList.remove("opacity-70", "animate-pulse");
+    saveBtn.classList.add("btn-error");
+
+    // Reset button after 3 seconds
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    saveBtn.innerText = originalText;
+    saveBtn.disabled = originalDisabled;
+    saveBtn.classList.remove(
+      "btn-error",
+      "btn-success",
+      "btn-warning",
+      "btn-info",
+    );
+    saveBtn.classList.add("btn-success");
   }
 }
 

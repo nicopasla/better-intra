@@ -533,7 +533,7 @@ function renderTabsContent(active: FeatureId[]) {
             : "opacity-40 grayscale"}"
           data-feature-panel="${f.id}"
         >
-          ${f.id !== "about"
+          ${f.id !== "about" && f.id !== "account"
             ? html`
                 <div
                   class="sticky top-0 z-20 flex items-center justify-between bg-base-200 px-6 py-4 border-b border-base-300 shadow-sm"

@@ -3,7 +3,7 @@ import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { getCloudLogin, testCloudConnection } from "./account.ts";
 import { getConfig } from "../../config.ts";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
-import { AccountState, ButtonState, createInitialState } from "./state.ts";
+import { AccountState, createInitialState } from "./state.ts";
 import { createHandlers } from "./handlers.ts";
 
 function renderAccountTab(
@@ -12,174 +12,154 @@ function renderAccountTab(
 ): ReturnType<typeof html> {
   const isConnected = state.activeSessions > 0;
 
+  // If not logged in, show a simple, centered connect button.
+  if (!state.token) {
+    return html`
+      <div
+        class="w-full h-full flex flex-col items-center justify-center p-8 gap-4"
+      >
+        <div class="text-center">
+          <h2 class="text-2xl font-bold">Connect your Account</h2>
+          <p class="opacity-70 mt-1">Sync your settings across devices.</p>
+        </div>
+        <button
+          class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] w-full max-w-sm h-16 text-lg flex items-center justify-center gap-3 transition-colors duration-200 mt-4"
+          type="button"
+          @click="${handlers.handleLogin42}"
+        >
+          <span class="font-bold tracking-wide">Connect with</span>
+          <span
+            class="size-10 flex items-center justify-center [&_polygon]:fill-current"
+          >
+            ${unsafeHTML(FORTY_TWO_SVG)}
+          </span>
+        </button>
+      </div>
+    `;
+  }
+
+  // Main dashboard view for logged-in users.
   return html`
-    <style>
-      :host [data-feature-panel="account"] {
-        height: 100%;
-        overflow: hidden !important;
-      }
-    </style>
-
     <div
-      class="account-settings relative w-full min-h-full flex flex-col items-center justify-between p-0 pb-12 bg-transparent"
+      class="w-full h-full p-6 pt-2 pb-2 flex flex-col justify-between gap-4"
     >
-      <div class="grid grid-cols-2 gap-8 w-full max-w-4xl px-8 mt-4">
-        <div class="flex flex-col gap-2">
-          <div class="form-control">
-            ${state.token && state.login
-              ? html`
-                  <div class="flex items-center gap-2 mt-2">
-                    <span class="text-sm opacity-70">Connected as:</span>
-                    <div
-                      class="badge badge-outline badge-info font-mono px-3 py-2"
-                    >
-                      ${state.login}
-                    </div>
-                  </div>
-                `
-              : html``}
+      <!-- Top Section: Status & Sync Info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Left Card: Account Status -->
+        <div class="card bg-base-200 shadow-sm p-3 sm:p-4">
+          <h2 class="text-lg font-bold">Account Status</h2>
+          <div class="flex flex-col gap-4 mt-3">
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-sm">Login:</span>
+              <div class="badge badge-outline badge-info font-mono">
+                ${state.login}
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-sm">Cloud:</span>
+              <div
+                class="badge ${isConnected ? "badge-success" : "badge-error"}"
+              >
+                ${isConnected ? "Connected" : "Disconnected"}
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-sm">Active Sessions:</span>
+              <div class="badge badge-success">${state.activeSessions}/10</div>
+            </div>
           </div>
-
-          ${!state.token
-            ? html`
-                <div class="flex flex-col gap-2 mt-6">
-                  <button
-                    class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] w-full h-16 text-lg flex items-center justify-center gap-3 transition-colors duration-200"
-                    type="button"
-                    @click="${handlers.handleLogin42}"
-                  >
-                    <span class="font-bold tracking-wide">Connect with</span>
-                    <span
-                      class="size-10 flex items-center justify-center [&_polygon]:fill-current"
-                    >
-                      ${unsafeHTML(FORTY_TWO_SVG)}
-                    </span>
-                  </button>
-                </div>
-              `
-            : html`
-                <div class="flex flex-col gap-2 mt-4">
-                  <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
-                    <label
-                      class="flex items-center gap-2 cursor-pointer p-2 bg-base-200 rounded-lg"
-                    >
-                      <span class="font-medium">Sync</span>
-                      <input
-                        type="checkbox"
-                        class="toggle toggle-primary"
-                        ?checked="${state.isSyncEnabled}"
-                        @change="${(e: Event) =>
-                          handlers.handleToggleSync(
-                            (e.target as HTMLInputElement).checked,
-                          )}"
-                      />
-                    </label>
-                    <button
-                      id="push-cloud-btn"
-                      class="btn ${state.buttons.push.loading
-                        ? "btn-info loading"
-                        : state.buttons.push.success
-                          ? "btn-success"
-                          : state.buttons.push.error
-                            ? "btn-error"
-                            : "btn-primary"}"
-                      type="button"
-                      ?disabled="${state.buttons.push.loading}"
-                      @click="${handlers.handlePush}"
-                    >
-                      ${state.buttons.push.text}
-                    </button>
-                  </div>
-                  <button
-                    id="pull-cloud-btn"
-                    class="btn ${state.buttons.pull.loading
-                      ? "btn-info loading"
-                      : state.buttons.pull.success
-                        ? "btn-success"
-                        : state.buttons.pull.error
-                          ? "btn-error"
-                          : "btn-outline btn-primary"}"
-                    type="button"
-                    ?disabled="${state.buttons.pull.loading}"
-                    @click="${handlers.handlePull}"
-                  >
-                    ${state.buttons.pull.text}
-                  </button>
-                </div>
-              `}
         </div>
 
-        <div class="flex flex-col items-center pt-2 justify-between h-[45]">
-          <div class="flex flex-col items-center">
-            ${state.token
-              ? html`
-                  <div
-                    class="mt-4 flex items-center justify-center gap-2 px-6 py-3 border border-base-300 rounded-lg"
-                  >
-                    <span class="text-sm opacity-70">Sessions:</span>
-                    <div
-                      class="badge ${isConnected
-                        ? "badge-success"
-                        : "badge-error"} font-mono"
-                    >
-                      ${state.activeSessions}/10
-                    </div>
-                    ${!isConnected
-                      ? html`<button
-                          class="btn btn-xs btn-ghost ${state.buttons
-                            .testLoading
-                            ? "loading"
-                            : ""}"
-                          @click="${handlers.handleTestConnection}"
-                          ?disabled="${state.buttons.testLoading}"
-                        >
-                          Retry
-                        </button>`
-                      : ""}
-                  </div>
-                `
-              : ""}
+        <!-- Right Card: Cloud Sync -->
+        <div class="card bg-base-200 shadow-sm p-3 sm:p-4">
+          <h2 class="text-lg font-bold">Cloud Sync</h2>
+          <div class="flex flex-col gap-4 mt-3">
+            <button
+              id="pull-cloud-btn"
+              class="btn btn-primary h-12 text-base ${
+                state.buttons.pull.loading
+                  ? "loading"
+                  : state.buttons.pull.success
+                    ? "btn-success"
+                    : state.buttons.pull.error
+                      ? "btn-error"
+                      : ""
+              }"
+              type="button"
+              ?disabled="${state.buttons.pull.loading}"
+              @click="${handlers.handlePull}"
+            >
+              ${state.buttons.pull.text}
+            </button>
+            <div class="flex items-center justify-between">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  class="toggle toggle-primary"
+                  ?checked="${state.isSyncEnabled}"
+                  @change="${(e: Event) =>
+                    handlers.handleToggleSync(
+                      (e.target as HTMLInputElement).checked,
+                    )}"
+                />
+                <span class="font-medium">Auto-sync</span>
+              </label>
+              <button
+                id="push-cloud-btn"
+                class="btn btn-sm ${
+                  state.buttons.push.loading
+                    ? "btn-ghost loading"
+                    : "btn-success"
+                }"
+                type="button"
+                ?disabled="${state.buttons.push.loading}"
+                @click="${handlers.handlePush}"
+              >
+                ${state.buttons.push.text}
+              </button>
+            </div>
           </div>
-
-          ${state.token
-            ? html`
-                <button
-                  class="btn btn-error btn-outline mt-4 py-3 px-6"
-                  type="button"
-                  @click="${handlers.handleDelete}"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="size-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                  Disconnect
-                </button>
-              `
-            : ""}
         </div>
       </div>
 
-      ${state.token
-        ? html`
+      <!-- Bottom Card: Actions -->
+      <div class="card bg-base-200 shadow-sm p-3 sm:p-4 mt-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex items-center">
             <button
-              class="absolute bottom-2 right-4 btn btn-link btn-xs text-error opacity-40 hover:opacity-100 transition-opacity"
+              class="btn btn-outline btn-error w-full"
               type="button"
-              @click="${handlers.handleWipe}"
+              @click="${handlers.handleDelete}"
             >
-              Wipe all cloud backup data
+              Disconnect
             </button>
-          `
-        : ""}
+          </div>
+          <div class="flex items-center">
+            <div
+              tabindex="0"
+              class="collapse collapse-arrow border border-error/50 rounded-box w-full"
+            >
+              <div class="collapse-title text-sm font-medium text-error">
+                Wipe All Data
+              </div>
+                <div class="collapse-content text-sm">
+                  Permanently delete all synced settings from the cloud.
+                  <strong>This action cannot be undone.</strong>
+                  <div class="flex justify-end">
+                  <button
+                    class="btn btn-xs btn-error"
+                    type="button"
+                    @click="${handlers.handleWipe}"
+                  >
+                    Wipe All Data
+                  </button>
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 }

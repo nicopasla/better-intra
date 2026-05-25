@@ -45,48 +45,81 @@ const ABOUT_STACK = [
   },
 ];
 
+const ACTION_LINKS = [
+  {
+    href: HUB_INFO.github,
+    svg: GITHUB_SVG,
+    label: "GitHub",
+    tooltip: "View source code",
+  },
+  {
+    href: HUB_INFO.issues,
+    svg: ISSUES_SVG,
+    label: "Issues",
+    tooltip: "Report or view issues",
+  },
+  {
+    href: `${HUB_INFO.github}/pulls`,
+    svg: PR_SVG,
+    label: "PRs",
+    tooltip: "View pull requests",
+  },
+];
+
 export function renderAboutPanel(): ReturnType<typeof html> {
   return html`
     <div
       class="card bg-base-100 border border-base-300 shadow-sm w-full h-full overflow-hidden select-none"
     >
       <div
-        class="card-body p-5 flex flex-col gap-6 text-base-content overflow-hidden"
+        class="card-body p-6 flex flex-col gap-6 text-base-content overflow-y-auto"
       >
+        <!-- Header Section -->
         <div
-          class="flex flex-col gap-1 bg-base-200/60 p-4 rounded-xl border border-base-300 shrink-0"
+          class="flex flex-col gap-3 bg-base-200/40 p-5 rounded-xl border border-base-300 shadow-sm shrink-0"
         >
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold tracking-wide text-base-content">
-              ${HUB_INFO.name}
-            </h2>
-            <span
-              class="badge font-mono px-3 py-2 text-xs font-bold text-white border-none"
-              style="background-color: #00babc;"
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex flex-col gap-1 flex-1">
+              <h1 class="text-2xl font-bold tracking-tight text-base-content">
+                ${HUB_INFO.name}
+              </h1>
+              <p class="text-sm opacity-70">
+                A modern extension designed to enhance the 42 Intra experience.
+              </p>
+            </div>
+            <a
+              href="${HUB_INFO.github}/releases"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="badge badge-lg gap-2 px-4 py-3 font-mono font-bold text-primary-content border-none shadow-md transition-all hover:shadow-lg active:scale-95 bg-primary"
             >
-              v${HUB_INFO.version}
-            </span>
+              <span>v${HUB_INFO.version}</span>
+            </a>
           </div>
-          <p class="text-xs opacity-70 mt-1">
-            A modern extension designed to enhance the 42 Intra experience.
-          </p>
         </div>
 
-        <div class="flex flex-col gap-2 shrink-0">
-          <h3 class="text-xs font-semibold uppercase tracking-wider opacity-60">
-            Built With
-          </h3>
-          <div class="flex flex-wrap gap-2 items-center">
+        <!-- Tech Stack Section -->
+        <div class="flex flex-col gap-3 shrink-0">
+          <div class="flex items-center gap-2">
+            <h2
+              class="text-sm font-semibold uppercase tracking-widest text-base-content"
+            >
+              Built With
+            </h2>
+            <div class="flex-1 h-px bg-base-300/40"></div>
+          </div>
+          <div class="flex flex-wrap gap-2">
             ${ABOUT_STACK.map(
-              (tech) => html`
+              (tech, index) => html`
                 <a
                   href="${tech.url}"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="badge ${tech.color} badge-sm gap-1.5 py-3 px-2.5 font-semibold border-none transition-transform hover:scale-105 active:scale-95"
+                  class="badge ${tech.color} badge-md gap-2 py-3 px-3 font-medium border-none transition-all hover:shadow-md hover:scale-110 active:scale-95 cursor-pointer"
+                  title="${tech.name}"
                 >
                   <span>${tech.name}</span>
-                  <span class="opacity-80 text-[10px] font-mono"
+                  <span class="opacity-70 font-mono text-[11px]"
                     >${tech.version}</span
                   >
                 </a>
@@ -95,63 +128,66 @@ export function renderAboutPanel(): ReturnType<typeof html> {
           </div>
         </div>
 
-        <div class="divider my-0.5 opacity-20 shrink-0"></div>
-
-        <div
-          class="flex flex-row gap-2 w-full justify-between border border-base-300 bg-base-200/40 p-1.5 rounded-xl shadow-inner shrink-0"
-        >
-          <a
-            href="${HUB_INFO.github}"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-ghost hover:bg-base-300/80 border-solid border border-base-300 btn-md flex-1 flex items-center justify-center gap-2 text-sm font-bold text-base-content"
-          >
-            <span
-              class="size-5 flex items-center justify-center fill-current text-base-content"
+        <!-- Action Buttons Section -->
+        <div class="flex flex-col gap-3 shrink-0">
+          <div class="flex items-center gap-2">
+            <h2
+              class="text-sm font-semibold uppercase tracking-widest text-base-content"
             >
-              ${unsafeHTML(GITHUB_SVG)}
-            </span>
-            <span>GitHub</span>
-          </a>
-
-          <a
-            href="${HUB_INFO.issues}"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-ghost hover:bg-base-300/80 border-solid border border-base-300 btn-md flex-1 flex items-center justify-center gap-2 text-sm font-bold text-base-content"
-          >
-            <span
-              class="size-5 flex items-center justify-center fill-current text-base-content"
-            >
-              ${unsafeHTML(ISSUES_SVG)}
-            </span>
-            <span>Open Issue</span>
-          </a>
-
-          <a
-            href="${HUB_INFO.github}/pulls"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-ghost hover:bg-base-300/80 border-solid border border-base-300 btn-md flex-1 flex items-center justify-center gap-2 text-sm font-bold text-base-content"
-          >
-            <span
-              class="size-5 flex items-center justify-center fill-current text-base-content"
-            >
-              ${unsafeHTML(PR_SVG)}
-            </span>
-            <span>PRs</span>
-          </a>
+              Quick Links
+            </h2>
+            <div class="flex-1 h-px bg-base-300/40"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            ${ACTION_LINKS.map(
+              (link, index) => {
+                const colors = [
+                  "btn-primary",
+                  "btn-secondary",
+                  "btn-accent",
+                ];
+                const color = colors[index % colors.length];
+                return html`
+                  <div
+                    class="tooltip tooltip-bottom w-full"
+                    data-tip="${link.tooltip}"
+                  >
+                    <a
+                      href="${link.href}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="btn ${color} btn-sm w-full gap-2 transition-all active:scale-95 text-white shadow-sm hover:shadow-md"
+                    >
+                      <span
+                        class="size-4 flex items-center justify-center fill-current"
+                      >
+                        ${unsafeHTML(link.svg)}
+                      </span>
+                      <span class="text-xs font-semibold">${link.label}</span>
+                    </a>
+                  </div>
+                `;
+              },
+            )}
+          </div>
         </div>
 
-        <div class="text-center text-[11px] opacity-40 mt-auto shrink-0">
-          Made by
+        <!-- Divider -->
+        <div class="divider my-1 opacity-20 shrink-0"></div>
+
+        <!-- Footer -->
+        <div
+          class="text-center text-[12px] opacity-50 mt-auto shrink-0 pt-2 space-y-1"
+        >
+          <p class="font-medium">Made for 42 Belgium</p>
           <a
             href="${HUB_INFO.author}"
             target="_blank"
             rel="noopener noreferrer"
-            class="link link-hover font-medium text-base-content"
-            >nicopasla</a
+            class="link link-hover font-semibold text-base-content opacity-80 hover:opacity-100"
+            >by @nicopasla</a
           >
+          <p class="text-[11px] opacity-40 pt-1">${HUB_INFO.license} License</p>
         </div>
       </div>
     </div>

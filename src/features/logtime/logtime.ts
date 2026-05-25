@@ -16,15 +16,18 @@ const getConfigs = async () => ({
   calendar_color: await getConfig("LOGTIME_CALENDAR_COLOR"),
   labels_color: await getConfig("LOGTIME_LABELS_COLOR"),
   disable_animations: await getConfig("DISABLE_ANIMATIONS"),
+  max_earnings: await getConfig("LOGTIME_MAX_EARNINGS"),
 });
 
 export type LogtimeConfig = Awaited<ReturnType<typeof getConfigs>>;
 
 let isLoaded = false;
 let CONFIG: LogtimeConfig;
+let lastStats: Record<string, string> | null = null;
 
 function renderLogtime(stats: Record<string, string>): void {
   if (!stats) return;
+  lastStats = stats;
 
   const byMonth: Record<string, Record<string, number>> = {};
   Object.keys(stats)
@@ -42,13 +45,8 @@ function renderLogtime(stats: Record<string, string>): void {
   const monthCards = monthKeys.map((ym, index) =>
     renderMonthCard(ym, byMonth[ym], index === monthKeys.length - 1, CONFIG),
   );
-
-  const totalYearSecs = Object.values(stats).reduce((acc, time) => {
-    const [h, m, s] = time.split(":").map(Number);
-    return acc + (h * 3600 + m * 60 + s);
-  }, 0);
   const lastSeenValue = getLastSeenFormatted(stats, CONFIG.show_days_mode);
-  const header = renderHeaderContent(lastSeenValue, totalYearSecs, CONFIG);
+  const header = renderHeaderContent(lastSeenValue, byMonth, CONFIG);
 
   const container = document.createElement("div");
   render(renderContainer(header, monthCards), container);
@@ -103,6 +101,32 @@ function installFetchHook() {
   script.src = chrome.runtime.getURL("hook.js");
   (document.head || document.documentElement).appendChild(script);
   script.onload = () => script.remove();
+}
+
+export function applyPublicLogtimeSettings(logtime: {
+  calendarColor?: string;
+  labelsColor?: string;
+  emoji?: string;
+  emojiDivisor?: string | number;
+  emojiRate?: string | number;
+}) {
+  if (!isLoaded || !logtime) return;
+
+  CONFIG.calendar_color = logtime.calendarColor ?? CONFIG.calendar_color;
+  CONFIG.labels_color = logtime.labelsColor ?? CONFIG.labels_color;
+  CONFIG.emoji = logtime.emoji ? limit(logtime.emoji) : CONFIG.emoji;
+  CONFIG.divisor =
+    logtime.emojiDivisor !== undefined ? Number(logtime.emojiDivisor) : CONFIG.divisor;
+  CONFIG.rate =
+    logtime.emojiRate !== undefined ? Number(logtime.emojiRate) : CONFIG.rate;
+
+
+  setupStyles(CONFIG);
+
+  if (lastStats) {
+    renderLogtime(lastStats);
+  } else {
+  }
 }
 
 export async function initLogtime() {

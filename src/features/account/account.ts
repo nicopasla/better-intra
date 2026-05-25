@@ -204,6 +204,8 @@ export async function fetchUserVisuals(login: string) {
       bannerMode: data.bannerMode || "fill",
       background: data.background || "",
       backgroundMode: data.backgroundMode || "fill",
+      theme: data.theme || null,
+      logtime: data.logtime || null,
     };
   } catch (error) {
     console.error(error);

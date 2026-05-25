@@ -3,10 +3,10 @@ import LOGTIME_CSS from "./logtime.css?inline";
 import { LogtimeConfig } from "./logtime";
 
 export function setupStyles(config: LogtimeConfig) {
-  if (!document.head || document.getElementById("logtime-custom-styles"))
-    return;
-
-  const styleEl = document.createElement("style");
+  if (!document.head) return;
+  let styleEl = document.getElementById("logtime-custom-styles");
+  if (styleEl) styleEl.remove();
+  styleEl = document.createElement("style");
   styleEl.id = "logtime-custom-styles";
 
   const disableAnimCss = config.disable_animations

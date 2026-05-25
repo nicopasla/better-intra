@@ -1,12 +1,59 @@
 import { getConfig } from "../../config.ts";
 import { getCloudLogin, fetchUserVisuals } from "../account/account.ts";
 import { createSettingsModal } from "./profile.modal.ts";
+import { applyThemeToProfileCard } from "./profile-card.ts";
+import { applyPublicLogtimeSettings, initLogtime } from "../logtime/logtime.ts";
 
 let isFetching = false;
 let visualCache: any = null;
 let lastUser: string | null = null;
 let showingOriginalAvatar = false;
 let originalAvatarUrl: string | null = null;
+
+let lastAppliedUser: string | null = null;
+let lastAppliedKey: string | null = null;
+
+const getVisualKey = (urls: any) =>
+  JSON.stringify({
+    avatar: urls?.avatar || "",
+    banner: urls?.banner || "",
+    bannerMode: urls?.bannerMode || "",
+    background: urls?.background || "",
+    backgroundMode: urls?.backgroundMode || "",
+    theme: urls?.theme || null,
+    logtime: urls?.logtime || null,
+  });
+
+const hasBackground = (el: HTMLElement | null, url?: string) => {
+  if (!url) return true;
+  if (!el) return false;
+  const inline = el.style.backgroundImage || "";
+  const computed = window.getComputedStyle(el).backgroundImage || "";
+  return inline.includes(url) || computed.includes(url);
+};
+
+const needsReapply = (urls: any) => {
+  const avatar = document.querySelector(
+    "div.rounded-full.w-52.h-52",
+  ) as HTMLElement | null;
+  const banner = document.querySelector(
+    "div.border-neutral-600.bg-ft-gray\\/50",
+  ) as HTMLElement | null;
+  const background = document.querySelector(
+    ".w-full.xl\\:h-72.bg-center.bg-cover.bg-ft-black",
+  ) as HTMLElement | null;
+
+  if (
+    urls?.avatar &&
+    !showingOriginalAvatar &&
+    !hasBackground(avatar, urls.avatar)
+  )
+    return true;
+  if (urls?.banner && !hasBackground(banner, urls.banner)) return true;
+  if (urls?.background && !hasBackground(background, urls.background))
+    return true;
+  return false;
+};
 
 export const injectCustomStyles = () => {
   if (document.getElementById("ft-profile-host-styles")) return;
@@ -43,7 +90,7 @@ export const injectCustomStyles = () => {
   document.head.appendChild(style);
 };
 
-export const applyImgs = (urls: any) => {
+export const applyImgs = async (urls: any) => {
   if (!urls) return;
 
   const avatar = document.querySelector(
@@ -121,6 +168,15 @@ export const applyImgs = (urls: any) => {
     const bgMode = urls.backgroundMode || "fill";
     background.classList.add(`bg-mode-${bgMode}`);
   }
+
+  if (urls.theme) {
+    applyThemeToProfileCard(urls.theme);
+  }
+
+  if (urls.logtime) {
+    await initLogtime();
+    applyPublicLogtimeSettings(urls.logtime);
+  }
 };
 
 export const updateVisuals = async () => {
@@ -135,10 +191,6 @@ export const updateVisuals = async () => {
     avatarEl.style.opacity = "1";
   }
 
-  if (visualCache && !showingOriginalAvatar) {
-    applyImgs(visualCache);
-  }
-
   let myLogin = await getCloudLogin();
   if (!myLogin) myLogin = "me";
 
@@ -151,6 +203,8 @@ export const updateVisuals = async () => {
     showingOriginalAvatar = false;
     lastUser = targetLogin;
     isFetching = false;
+    lastAppliedUser = null;
+    lastAppliedKey = null;
     if (avatarEl) avatarEl.style.opacity = "1";
   }
 
@@ -165,13 +219,22 @@ export const updateVisuals = async () => {
         createSettingsModal((updatedVisuals) => {
           visualCache = updatedVisuals;
           applyImgs(visualCache);
+          lastAppliedUser = targetLogin;
+          lastAppliedKey = getVisualKey(visualCache);
         });
       });
     }
   }
 
   if (visualCache) {
-    applyImgs(visualCache);
+    const key = getVisualKey(visualCache);
+    const reapply = needsReapply(visualCache);
+    if (lastAppliedUser === targetLogin && lastAppliedKey === key && !reapply)
+      return;
+
+    await applyImgs(visualCache);
+    lastAppliedUser = targetLogin;
+    lastAppliedKey = key;
     return;
   }
 
@@ -188,7 +251,9 @@ export const updateVisuals = async () => {
       if (!visualCache.avatar) {
         avatarEl.style.opacity = "1";
       } else {
-        applyImgs(visualCache);
+        await applyImgs(visualCache);
+        lastAppliedUser = targetLogin;
+        lastAppliedKey = getVisualKey(visualCache);
       }
     } else {
       isFetching = true;
@@ -199,7 +264,9 @@ export const updateVisuals = async () => {
         (cloudUrls.avatar || cloudUrls.banner || cloudUrls.background)
       ) {
         visualCache = cloudUrls;
-        applyImgs(visualCache);
+        await applyImgs(visualCache);
+        lastAppliedUser = targetLogin;
+        lastAppliedKey = getVisualKey(visualCache);
 
         if (!avatarEl.dataset.toggleListener) {
           avatarEl.dataset.toggleListener = "true";

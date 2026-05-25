@@ -4,6 +4,7 @@ import { injectCustomStyles, updateVisuals } from "./visuals.ts";
 import { handleProfileRedirect } from "./highlight.ts";
 import { initLayoutManager } from "./layout.ts";
 import { initMilestones } from "./milestones.ts";
+import { initProfileCardStyling } from "./profile-card.ts";
 
 export async function initProfile() {
   injectCustomStyles();
@@ -13,6 +14,7 @@ export async function initProfile() {
     await updateVisuals();
     if (location.pathname === "/" || location.pathname.startsWith("/users")) {
       await initLayoutManager();
+      await initProfileCardStyling();
       await findSlotsButton();
       await injectEventsSelect();
       await updateEventFilters();

@@ -413,17 +413,10 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
         default:
           return html`<input
             type="text"
-            class="input input-accent w-20"
-            placeholder="${def.placeholder || ""}"
-            maxlength="10"
+            class="input input-accent w-30 text-center text-xl"
+            placeholder="${def.placeholder || "🐝"}"
+            maxlength="2"
             .value="${String(value || "")}"
-            @input="${(e: Event) => {
-              const input = e.target as HTMLInputElement;
-              const symbols = Array.from(input.value);
-              if (symbols.length > 3) {
-                input.value = symbols.slice(0, 3).join("");
-              }
-            }}"
             data-setting-key="${def.key}"
             ?disabled="${!enabled}"
           />`;

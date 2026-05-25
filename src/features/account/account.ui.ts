@@ -27,7 +27,7 @@ function renderAccountTab(
           type="button"
           @click="${handlers.handleLogin42}"
         >
-          <span class="font-bold tracking-wide">Connect with</span>
+          <span class="font-bold tracking-wide text-base">Connect with</span>
           <span
             class="size-10 flex items-center justify-center [&_polygon]:fill-current"
           >
@@ -40,125 +40,131 @@ function renderAccountTab(
 
   // Main dashboard view for logged-in users.
   return html`
-    <div
-      class="w-full h-full p-6 pt-2 pb-2 flex flex-col justify-between gap-4"
-    >
+    <div class="w-full h-full flex flex-col gap-4 overflow-y-auto">
       <!-- Top Section: Status & Sync Info -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Left Card: Account Status -->
-        <div class="card bg-base-200 shadow-sm p-3 sm:p-4">
-          <h2 class="text-lg font-bold">Account Status</h2>
-          <div class="flex flex-col gap-4 mt-3">
-            <div class="flex items-center justify-between">
-              <span class="font-medium text-sm">Login:</span>
-              <div class="badge badge-outline badge-info font-mono">
+        <div class="card bg-base-200 shadow-md p-5 border border-base-300">
+          <h2 class="text-lg font-bold text-base-content mb-4">
+            Account Status
+          </h2>
+          <div class="flex flex-col gap-3">
+            <div
+              class="flex items-center justify-between bg-base-100 p-3 rounded-lg border border-base-300"
+            >
+              <span class="font-medium text-sm text-base-content">Login</span>
+              <div
+                class="badge badge-info font-mono font-bold text-info-content"
+              >
                 ${state.login}
               </div>
             </div>
-            <div class="flex items-center justify-between">
-              <span class="font-medium text-sm">Cloud:</span>
-              <div
-                class="badge ${isConnected ? "badge-success" : "badge-error"}"
+            <div
+              class="flex items-center justify-between bg-base-100 p-3 rounded-lg border border-base-300"
+            >
+              <span class="font-medium text-sm text-base-content"
+                >Cloud Status</span
               >
-                ${isConnected ? "Connected" : "Disconnected"}
+              <div
+                class="badge ${isConnected
+                  ? "badge-success"
+                  : "badge-warning"} font-bold"
+              >
+                ${isConnected ? "Connected" : "Offline"}
               </div>
             </div>
-            <div class="flex items-center justify-between">
-              <span class="font-medium text-sm">Active Sessions:</span>
-              <div class="badge badge-success">${state.activeSessions}/10</div>
+            <div
+              class="flex items-center justify-between bg-base-100 p-3 rounded-lg border border-base-300"
+            >
+              <span class="font-medium text-sm text-base-content"
+                >Sessions</span
+              >
+              <div class="badge badge-success font-bold text-success-content">
+                ${state.activeSessions}/10
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Right Card: Cloud Sync -->
-        <div class="card bg-base-200 shadow-sm p-3 sm:p-4">
-          <h2 class="text-lg font-bold">Cloud Sync</h2>
-          <div class="flex flex-col gap-4 mt-3">
+        <div class="card bg-base-200 shadow-md p-5 border border-base-300">
+          <h2 class="text-lg font-bold text-base-content mb-4">Cloud Sync</h2>
+          <div class="grid grid-cols-2 gap-3">
+            <!-- Pull Button -->
             <button
               id="pull-cloud-btn"
-              class="btn btn-primary h-12 text-base ${
-                state.buttons.pull.loading
-                  ? "loading"
-                  : state.buttons.pull.success
-                    ? "btn-success"
-                    : state.buttons.pull.error
-                      ? "btn-error"
-                      : ""
-              }"
+              class="btn btn-info font-bold transition-all text-info-content h-full py-3 text-base row-span-2 ${state
+                .buttons.pull.loading
+                ? "loading"
+                : state.buttons.pull.success
+                  ? "btn-success text-success-content"
+                  : state.buttons.pull.error
+                    ? "btn-error text-error-content"
+                    : ""}"
               type="button"
               ?disabled="${state.buttons.pull.loading}"
               @click="${handlers.handlePull}"
             >
-              ${state.buttons.pull.text}
+              ${state.buttons.pull.loading
+                ? "Pulling..."
+                : state.buttons.pull.text}
             </button>
-            <div class="flex items-center justify-between">
-              <label class="flex items-center gap-3 cursor-pointer">
+
+            <!-- Auto-sync Toggle -->
+            <div
+              class="bg-base-100 p-3 rounded-lg border border-base-300 flex items-center justify-between"
+            >
+              <label class="flex items-center gap-2 cursor-pointer w-full">
                 <input
                   type="checkbox"
-                  class="toggle toggle-primary"
+                  class="toggle toggle-info"
                   ?checked="${state.isSyncEnabled}"
                   @change="${(e: Event) =>
                     handlers.handleToggleSync(
                       (e.target as HTMLInputElement).checked,
                     )}"
                 />
-                <span class="font-medium">Auto-sync</span>
+                <span class="font-medium text-base text-base-content"
+                  >Auto-sync</span
+                >
               </label>
-              <button
-                id="push-cloud-btn"
-                class="btn btn-sm ${
-                  state.buttons.push.loading
-                    ? "btn-ghost loading"
-                    : "btn-success"
-                }"
-                type="button"
-                ?disabled="${state.buttons.push.loading}"
-                @click="${handlers.handlePush}"
-              >
-                ${state.buttons.push.text}
-              </button>
             </div>
+
+            <!-- Push Button -->
+            <button
+              id="push-cloud-btn"
+              class="btn btn-success text-success-content font-bold transition-all text-base h-auto py-3 ${state
+                .buttons.push.loading
+                ? "loading"
+                : ""}"
+              type="button"
+              ?disabled="${state.buttons.push.loading}"
+              @click="${handlers.handlePush}"
+            >
+              ${state.buttons.push.loading
+                ? "Pushing..."
+                : state.buttons.push.text}
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Bottom Card: Actions -->
-      <div class="card bg-base-200 shadow-sm p-3 sm:p-4 mt-auto">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="flex items-center">
-            <button
-              class="btn btn-outline btn-error w-full"
-              type="button"
-              @click="${handlers.handleDelete}"
-            >
-              Disconnect
-            </button>
-          </div>
-          <div class="flex items-center">
-            <div
-              tabindex="0"
-              class="collapse collapse-arrow border border-error/50 rounded-box w-full"
-            >
-              <div class="collapse-title text-sm font-medium text-error">
-                Wipe All Data
-              </div>
-                <div class="collapse-content text-sm">
-                  Permanently delete all synced settings from the cloud.
-                  <strong>This action cannot be undone.</strong>
-                  <div class="flex justify-end">
-                  <button
-                    class="btn btn-xs btn-error"
-                    type="button"
-                    @click="${handlers.handleWipe}"
-                  >
-                    Wipe All Data
-                  </button>
-                </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- Bottom Section: Action Buttons -->
+      <div class="flex justify-between gap-4 mt-auto pt-4">
+        <button
+          class="btn btn-error text-error-content font-bold transition-all text-base"
+          type="button"
+          @click="${handlers.handleDelete}"
+        >
+          Disconnect
+        </button>
+        <button
+          class="btn btn-error text-error-content font-bold transition-all text-base"
+          type="button"
+          @click="${handlers.handleWipe}"
+        >
+          Wipe All Data
+        </button>
       </div>
     </div>
   `;

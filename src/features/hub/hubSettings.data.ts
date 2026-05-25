@@ -172,7 +172,15 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       defaultValue: CONFIG_DEFAULT.LOGTIME_EMOJI_RATE,
       grid: true,
     },
-
+    {
+      feature: "logtime",
+      key: "LOGTIME_MAX_EARNINGS",
+      label: "Max Earnings",
+      desc: "Cap on total earnings per month.",
+      kind: "number",
+      defaultValue: CONFIG_DEFAULT.LOGTIME_MAX_EARNINGS,
+      grid: true,
+    },
     {
       feature: "logtime",
       key: "LOGTIME_SHOW_DAYS_MODE",

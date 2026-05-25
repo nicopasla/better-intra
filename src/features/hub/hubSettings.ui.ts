@@ -299,7 +299,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
         case "number": {
           const showEuroSuffix =
             def.key === "LOGTIME_EMOJI_RATE" ||
-            def.key === "LOGTIME_EMOJI_DIVISOR";
+            def.key === "LOGTIME_EMOJI_DIVISOR" ||
+            def.key === "LOGTIME_MAX_EARNINGS";
 
           return showEuroSuffix
             ? html`<label
@@ -528,7 +529,7 @@ function renderTabsContent(active: FeatureId[]) {
         class="tab-content bg-base-100 border-base-300 p-0 overflow-y-auto"
       >
         <div
-          class="flex flex-col ${enabled || f.id === "about"
+          class="flex flex-col ${enabled || f.id === "about" || f.id === "account"
             ? ""
             : "opacity-40 grayscale"}"
           data-feature-panel="${f.id}"
@@ -564,7 +565,7 @@ function renderTabsContent(active: FeatureId[]) {
             : ""}
 
           <div
-            class="${f.id === "about"
+            class="${f.id === "about" || f.id === "account"
               ? "p-6 w-full"
               : "grid grid-cols-1 md:grid-cols-2 gap-4 p-6"}"
           >

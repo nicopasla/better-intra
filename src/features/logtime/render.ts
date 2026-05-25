@@ -139,6 +139,13 @@ export function renderMonthCard(
       };`
     : "";
 
+  const monthEarnings = (total / 3600) * config.rate;
+  const isMonthCapped = config.max_earnings > 0 && monthEarnings >= config.max_earnings;
+  const cappedMonthEarnings = config.max_earnings > 0 && monthEarnings > config.max_earnings
+    ? config.max_earnings
+    : monthEarnings;
+  const monthTacos = Math.round(cappedMonthEarnings / config.divisor);
+
   return html`<div
     class="month-card ${isCurrent ? "current-month" : ""}"
     style="${!isCurrent ? `opacity: ${PAST_MONTHS_OPACITY};` : ""}"
@@ -167,8 +174,7 @@ export function renderMonthCard(
       >
         ${config.show_goal ? html`<b>${goalPercent}% </b>` : ""}
         ${config.show_tacos
-          ? html` ${Math.round(((total / 3600) * config.rate) / config.divisor)}
-            ${config.emoji}`
+          ? html` ${monthTacos}${isMonthCapped ? "+" : ""} ${config.emoji}`
           : ""}
         ${config.show_goal
           ? html`<div class="day-tooltip">
@@ -199,12 +205,22 @@ export function renderMonthCard(
 
 export function renderHeaderContent(
   lastSeenValue: string,
-  totalYearSecs: number,
+  monthsData: Record<string, Record<string, number>>,
   config: LogtimeConfig,
 ) {
-  const totalTacos = Math.floor(
-    ((totalYearSecs / 3600) * config.rate) / config.divisor,
-  );
+  // Sum all monthly earnings (capped if enabled)
+  let totalCappedEarnings = 0;
+
+  for (const data of Object.values(monthsData)) {
+    const monthSecs = Object.values(data).reduce((a, b) => a + b, 0);
+    const monthEarnings = (monthSecs / 3600) * config.rate;
+    const cappedMonthEarnings = config.max_earnings
+      ? Math.min(monthEarnings, config.max_earnings)
+      : monthEarnings;
+    totalCappedEarnings += cappedMonthEarnings;
+  }
+
+  const totalTacos = Math.floor(totalCappedEarnings / config.divisor);
 
   return html`<div
     class="flex items-center justify-between p-4"

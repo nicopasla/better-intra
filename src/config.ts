@@ -30,6 +30,7 @@ export interface BetterIntraConfig {
   LOGTIME_EMOJI: string;
   LOGTIME_EMOJI_DIVISOR: number;
   LOGTIME_EMOJI_RATE: number;
+  LOGTIME_MAX_EARNINGS: number;
   LOGTIME_SHOW_DAYS_MODE: "date" | "days" | "both";
   LOGTIME_CALENDAR_COLOR: string;
   LOGTIME_LABELS_COLOR: string;
@@ -75,6 +76,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   LOGTIME_EMOJI: "🌮",
   LOGTIME_EMOJI_DIVISOR: 8.7,
   LOGTIME_EMOJI_RATE: 2,
+  LOGTIME_MAX_EARNINGS: 320,
   LOGTIME_SHOW_DAYS_MODE: "date",
   LOGTIME_CALENDAR_COLOR: "#00BCBA",
   LOGTIME_LABELS_COLOR: "#26a641",

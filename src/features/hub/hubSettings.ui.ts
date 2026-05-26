@@ -522,7 +522,9 @@ function renderTabsContent(active: FeatureId[]) {
         class="tab-content bg-base-100 border-base-300 p-0 overflow-y-auto"
       >
         <div
-          class="flex flex-col ${enabled || f.id === "about" || f.id === "account"
+          class="flex flex-col ${enabled ||
+          f.id === "about" ||
+          f.id === "account"
             ? ""
             : "opacity-40 grayscale"}"
           data-feature-panel="${f.id}"

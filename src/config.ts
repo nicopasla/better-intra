@@ -50,6 +50,7 @@ export interface BetterIntraConfig {
   PROFILE_SLOTS_REDIRECTION: boolean;
   PROFILE_ALT_LAYOUT: boolean;
   PROFILE_CARD_ORDER: string[];
+  PROFILE_USE_CUSTOM_COLOR: boolean;
 
   // Shortcuts Feature Settings
   SHORTCUTS_LINKS: { name: string; url: string }[];
@@ -100,6 +101,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
     "ACHIEVEMENTS",
     "PROJECTS",
   ],
+  PROFILE_USE_CUSTOM_COLOR: true,
 
   BETTER_INTRA_THEME: "dark",
   SHORTCUTS_LINKS: [],

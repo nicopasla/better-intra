@@ -253,6 +253,15 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
+      key: "PROFILE_USE_CUSTOM_COLOR",
+      label: "Use custom color on card",
+      desc: "Applies the logtime calendar color to the profile card.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.PROFILE_USE_CUSTOM_COLOR,
+      grid: true,
+    },
+    {
+      feature: "profile",
       key: "PROFILE_ALT_LAYOUT",
       label: "Alternative dashboard layout",
       desc: "Optimizes the grid layout. (Experimental)",

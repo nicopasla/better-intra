@@ -189,6 +189,9 @@ export async function initProfileCardStyling() {
   profileCard.classList.add(PROFILE_CARD_CLASS);
 
   // Set the color for the progress bar and other elements from the central config
-  const calendarColor = await getConfig("LOGTIME_CALENDAR_COLOR");
-  applyThemeToProfileCard({ profileColor: calendarColor });
+  const useCustomColor = await getConfig("PROFILE_USE_CUSTOM_COLOR");
+  if (useCustomColor) {
+    const calendarColor = await getConfig("LOGTIME_CALENDAR_COLOR");
+    applyThemeToProfileCard({ profileColor: calendarColor });
+  }
 }

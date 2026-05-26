@@ -2,6 +2,44 @@
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-05-27
+
+### Features 🎉
+
+- feat(profile): add option to use custom color on profile card ([0aa21c5](https://github.com/nicopasla/better-intra/commit/0aa21c5))
+- feat(profile-card): add custom styling and theme application for profile card ([a05cfbb](https://github.com/nicopasla/better-intra/commit/a05cfbb))
+- feat(logtime): add new fetched visuals for other profiles ([b255237](https://github.com/nicopasla/better-intra/commit/b255237))
+- feat(render): implement capping logic ([b02c43e](https://github.com/nicopasla/better-intra/commit/b02c43e))
+- feat(milestones): enhance milestone styles with improved gradients and shadows ([1780b41](https://github.com/nicopasla/better-intra/commit/1780b41))
+- feat(hubSettings): implement cloud sync functionality and update save button states ([f8ae016](https://github.com/nicopasla/better-intra/commit/f8ae016))
+- feat(account): add sync toggle and update button states in account tab ([2f356ad](https://github.com/nicopasla/better-intra/commit/2f356ad))
+- feat(account): add optional success callback to loginWith42 function ([3aac664](https://github.com/nicopasla/better-intra/commit/3aac664))
+
+### Bug fixes 🐛
+
+- fix(logtime-settings): change orders of two options ([42aad6c](https://github.com/nicopasla/better-intra/commit/42aad6c))
+- fix(hub-settings): update input field styling and placeholder, adjust maxlength to improve user experience ([7b98dc5](https://github.com/nicopasla/better-intra/commit/7b98dc5))
+
+### Maintenance 🧹
+
+- chore(account): enhance account tab layout and styling with improved card designs and action buttons ([c1dbd1b](https://github.com/nicopasla/better-intra/commit/c1dbd1b))
+- chore(about-panel): enhance layout and styling of the about panel with new action links and improved tech stack presentation ([89c3eaa](https://github.com/nicopasla/better-intra/commit/89c3eaa))
+- chore(clusters): update overrides for row positions in Belgium clusters ([8934e99](https://github.com/nicopasla/better-intra/commit/8934e99))
+- chore: update subproject commit reference in better-intra-worker ([5738919](https://github.com/nicopasla/better-intra/commit/5738919))
+- chore(about): add web-ext version to about panel and update vite config ([4357cc1](https://github.com/nicopasla/better-intra/commit/4357cc1))
+- chore: update subproject commit reference in better-intra-worker ([6e48db0](https://github.com/nicopasla/better-intra/commit/6e48db0))
+- chore: update dependencies in package.json and package-lock.json ([78b74c1](https://github.com/nicopasla/better-intra/commit/78b74c1))
+
+### Other Changes 🔄
+
+- refactor(highlight): enhance structure and readability of highlight logic and style injection ([ad53b78](https://github.com/nicopasla/better-intra/commit/ad53b78))
+- refactor(account): simplify account tab rendering and enhance UI layout ([0d59447](https://github.com/nicopasla/better-intra/commit/0d59447))
+- refactor(main): streamline feature initialization by using a mapping approach ([3f35e37](https://github.com/nicopasla/better-intra/commit/3f35e37))
+- refactor(clusters): modularize cluster handling by separating DOM and UI logic ([28ed341](https://github.com/nicopasla/better-intra/commit/28ed341))
+- refactor(account): refactor account management with improved state handling and modular handlers ([c75af7a](https://github.com/nicopasla/better-intra/commit/c75af7a))
+- refactor(config): restructure configuration management and enhance type safety ([4a2e052](https://github.com/nicopasla/better-intra/commit/4a2e052))
+- refactor(logtime): Split logtime feature into separate modules ([effa28c](https://github.com/nicopasla/better-intra/commit/effa28c))
+
 ## [1.0.5] - 2026-05-21
 
 ### Features 🎉
@@ -191,7 +229,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.5...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.6...HEAD
+[1.0.6]: https://github.com/nicopasla/better-intra/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/nicopasla/better-intra/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/nicopasla/better-intra/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/nicopasla/better-intra/compare/v1.0.2...v1.0.3

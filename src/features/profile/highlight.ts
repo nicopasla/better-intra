@@ -37,7 +37,8 @@ function injectHighlightStyles() {
       animation: ft-pulsate 2s infinite ease-in-out !important;
     }
   `;
-  document.head.appendChild(style);
+  const target = document.head || document.documentElement;
+  target.appendChild(style);
 }
 
 /**

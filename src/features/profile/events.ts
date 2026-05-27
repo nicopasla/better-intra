@@ -8,20 +8,36 @@ export async function updateEventFilters() {
   const campus_mode = (await getConfig("PROFILE_CAMPUS_FILTER")) || "all";
   const event_mode = (await getConfig("PROFILE_EVENT_TYPE_FILTER")) || "all";
 
-  const eventCards = document.querySelectorAll("div.relative.clear-both.m-1.border.rounded");
+  const eventCards = document.querySelectorAll(
+    "div.relative.clear-both.m-1.border.rounded",
+  );
 
   eventCards.forEach((card) => {
     const htmlCard = card as HTMLElement;
-    const typeText = htmlCard.querySelector("b")?.textContent?.toLowerCase() || "";
-    const loc = htmlCard.querySelector("svg.lucide-map-pin")?.nextElementSibling?.textContent?.toLowerCase() || "";
+    const typeText =
+      htmlCard.querySelector("b")?.textContent?.toLowerCase() || "";
+    const loc =
+      htmlCard
+        .querySelector("svg.lucide-map-pin")
+        ?.nextElementSibling?.textContent?.toLowerCase() || "";
 
-    const campusMatch = campus_mode === "all" || 
-      eventData.campus[campus_mode as keyof typeof eventData.campus]?.keywords.some(k => loc.includes(k));
+    const campusMatch =
+      campus_mode === "all" ||
+      eventData.campus[
+        campus_mode as keyof typeof eventData.campus
+      ]?.keywords.some((k) => loc.includes(k));
 
-    const typeMatch = event_mode === "all" || 
-      eventData.event_types[event_mode as keyof typeof eventData.event_types]?.some(t => typeText.includes(t));
+    const typeMatch =
+      event_mode === "all" ||
+      eventData.event_types[
+        event_mode as keyof typeof eventData.event_types
+      ]?.some((t) => typeText.includes(t));
 
-    htmlCard.style.setProperty("display", campusMatch && typeMatch ? "flex" : "none", "important");
+    htmlCard.style.setProperty(
+      "display",
+      campusMatch && typeMatch ? "flex" : "none",
+      "important",
+    );
   });
 }
 
@@ -88,12 +104,14 @@ export async function injectEventsSelect() {
   style.textContent = `
     ${CSS}
     :host {
-      --id-base-100: #ffffff !important;
-      color: #1f2937 !important;
+      --base-100: hsl(var(--b1));
+      --base-content: hsl(var(--bc));
     }
-    select, option {
-      background-color: #ffffff !important;
-      color: #1f2937 !important;
+    
+    select {
+      background-color: var(--base-100) !important;
+      color: var(--base-content) !important;
+      border-color: var(--bc) !important;
     }
   `;
   shadowRoot.appendChild(style);

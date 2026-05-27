@@ -18,8 +18,9 @@ function renderDayCell(
 ) {
   const alpha = Math.min(secs / MAX_INTENSITY_SECS, 1);
   const bgColor =
-    secs > 0 ? hexToRgba(config.calendar_color, alpha) : COLORS.CELL_EMPTY;
-  const textColor = secs > MAX_INTENSITY_SECS / 2 ? "#fff" : COLORS.TEXT_DARK;
+    secs > 0 ? hexToRgba(config.calendar_color, alpha) : "var(--muted)";
+
+  const textColor = secs > MAX_INTENSITY_SECS / 2 ? "#fff" : "var(--muted-foreground)";
 
   return html`<div
     class="day-cell ${dKey === todayStr ? "today-highlight" : ""}"
@@ -140,10 +141,12 @@ export function renderMonthCard(
     : "";
 
   const monthEarnings = (total / 3600) * config.rate;
-  const isMonthCapped = config.max_earnings > 0 && monthEarnings >= config.max_earnings;
-  const cappedMonthEarnings = config.max_earnings > 0 && monthEarnings > config.max_earnings
-    ? config.max_earnings
-    : monthEarnings;
+  const isMonthCapped =
+    config.max_earnings > 0 && monthEarnings >= config.max_earnings;
+  const cappedMonthEarnings =
+    config.max_earnings > 0 && monthEarnings > config.max_earnings
+      ? config.max_earnings
+      : monthEarnings;
   const monthTacos = Math.round(cappedMonthEarnings / config.divisor);
 
   return html`<div

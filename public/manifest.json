@@ -16,7 +16,7 @@
     {
       "matches": ["https://*.intra.42.fr/*"],
       "js": ["content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_start"
     }
   ],
   "browser_specific_settings": {

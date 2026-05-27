@@ -1,0 +1,226 @@
+html.dark {
+  color-scheme: dark;
+  --background: 220 20% 4%;
+  --card: 220 20% 10%;
+  --foreground: 213 31% 91%;
+  --muted: 220 20% 15%;
+  --primary: 199 89% 48%;
+  --input: 220 20% 12%;
+  /* Ajouté */
+  --border: 220 20% 18%;
+}
+
+/* ============================================================================
+   CORE: Page & Root Elements
+   ============================================================================ */
+
+html.dark,
+html.dark body,
+html.dark main,
+html.dark footer,
+html.dark header,
+html.dark #root,
+html.dark #root>div,
+html.dark [class*="min-h-screen"] {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* ============================================================================
+   TEXT: Headings, Paragraphs, Lists
+   ============================================================================ */
+
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6,
+html.dark p,
+html.dark span,
+html.dark li,
+html.dark dt,
+html.dark dd,
+html.dark [role="listitem"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* ============================================================================
+   FORMS: Inputs, Selects, Textareas
+   ============================================================================ */
+
+html.dark input,
+html.dark textarea,
+html.dark select,
+html.dark [class*="input"],
+html.dark [class*="field"] {
+  background-color: hsl(var(--input)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+  caret-color: hsl(var(--foreground)) !important;
+}
+
+html.dark select option {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: hsl(var(--muted-foreground)) !important;
+  opacity: 1 !important;
+}
+
+/* ============================================================================
+   BUTTONS & TABS
+   ============================================================================ */
+
+html.dark button,
+html.dark [role="button"],
+html.dark [class*="button"],
+html.dark .btn,
+html.dark [role="tab"],
+html.dark [class*="tab"],
+html.dark [class*="nav-button"],
+html.dark button.nav {
+  color: hsl(var(--foreground)) !important;
+  font-weight: 600;
+}
+
+html.dark [role="tab"][aria-selected="true"],
+html.dark [class*="tab"].active,
+html.dark [class*="tab-active"] {
+  color: hsl(var(--primary)) !important;
+  background-color: hsl(var(--primary) / 0.2) !important;
+}
+
+/* ============================================================================
+   CONTAINERS: Cards, Panels, Sections
+   ============================================================================ */
+
+html.dark [class*="calendar"],
+html.dark [class*="logtime"],
+html.dark [class*="event"],
+html.dark [class*="agenda"],
+html.dark [class*="projects"],
+html.dark [class*="project-item"],
+html.dark [class*="pending"],
+html.dark [class*="evaluation"] {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Secondary text in components */
+html.dark [class*="event-time"],
+html.dark [class*="event-location"],
+html.dark [class*="agenda-meta"],
+html.dark [class*="user-stats"],
+html.dark [class*="user-info"] {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+/* ============================================================================
+   LINKS & INTERACTIVE: Underlines, Hover States
+   ============================================================================ */
+
+html.dark [class*="info-link"],
+html.dark [class*="tool-link"],
+html.dark [class*="resource-link"] {
+  color: hsl(var(--primary)) !important;
+  text-decoration: underline;
+}
+
+html.dark [style*="color: white"],
+html.dark [style*="color:white"],
+html.dark [style*="color: #FFF"],
+html.dark [style*="color: #FFFFFF"],
+html.dark [style*="color: black"],
+html.dark [style*="color:black"],
+html.dark [style*="color: #000"],
+html.dark [style*="color: #000000"],
+html.dark [style*="color: rgb(0, 0, 0)"],
+html.dark [style*="color: rgba(0, 0, 0"] {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* ============================================================================
+   UTILITY CLASS OVERRIDES: Tailwind & Common Classes
+   ============================================================================ */
+
+html.dark .text-white,
+html.dark .text-black,
+html.dark .text-gray-50,
+html.dark .text-gray-100,
+html.dark .text-cyan-300,
+html.dark .text-cyan-400,
+html.dark .text-cyan-500 {
+  color: hsl(var(--foreground)) !important;
+}
+
+html.dark div.bg-white {
+  background-color: hsl(var(--card)) !important;
+}
+
+html.dark div.bg-gray-50,
+html.dark div.bg-gray-100,
+html.dark div.bg-neutral-50,
+html.dark div.bg-neutral-100,
+html.dark div.bg-zinc-50,
+html.dark div.bg-zinc-100,
+html.dark div.bg-slate-50,
+html.dark div.bg-slate-100,
+html.dark div.bg-\[\#fafafa\],
+html.dark div.bg-\[\#f8f9fa\],
+html.dark div.bg-\[\#f3f4f6\],
+html.dark div[class*="bg-neutral-"],
+html.dark div[style*="background-color: #fafafa"],
+html.dark div[style*="background-color: #f8f9fa"],
+html.dark div[style*="background-color: #f3f4f6"],
+html.dark div[style*="background-color: rgb(250, 250, 250)"],
+html.dark div[style*="background-color: rgb(249, 250, 251)"],
+html.dark div[style*="background: #fff"],
+html.dark div[style*="background-color: #ffffff"],
+html.dark div[style*="background-color: #fff"] {
+  background-color: hsl(var(--background)) !important;
+}
+
+/* ============================================================================
+   ACCESSIBILITY: Focus States
+   ============================================================================ */
+
+html.dark *:focus,
+html.dark *:focus-visible {
+  outline: 2px solid hsl(var(--primary)) !important;
+  outline-offset: 2px !important;
+}
+
+/* ============================================================================
+   CONTEXT-SPECIFIC: Calendar & Logtime
+  ============================================================================ */
+
+html.dark [class*="logtime"] button,
+html.dark [class*="calendar"] button,
+html.dark [class*="logtime"] span,
+html.dark [class*="calendar"] span {
+  color: hsl(var(--foreground)) !important;
+}
+
+html.dark .bg-green-500\/20 {
+  background-color: rgba(34, 197, 94, 0.15) !important;
+}
+
+html.dark .text-green-500 {
+  color: #4ade80 !important;
+}
+
+/* ============================================================================
+   SVG
+  ============================================================================ */
+
+html.dark header svg path,
+html.dark [class*="bg-white"] svg path {
+  stroke: hsl(var(--foreground)) !important;
+}
+
+html.dark .stroke-legacy-main {
+  stroke: #00a7a8 !important;
+}

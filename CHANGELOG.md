@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-05-27
+
+### Features 🎉
+
+- feat: implement dark mode ([3fa719a](https://github.com/nicopasla/better-intra/commit/3fa719a))
+
+### Bug fixes 🐛
+
+- fix(profile-card): update progress bar styling to hide wave when progress is 0 ([ac01671](https://github.com/nicopasla/better-intra/commit/ac01671))
+
 ## [1.0.6] - 2026-05-27
 
 ### Features 🎉
@@ -229,7 +239,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.6...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.7...HEAD
+[1.0.7]: https://github.com/nicopasla/better-intra/compare/v1.0.6...v1.0.7
 [1.0.6]: https://github.com/nicopasla/better-intra/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/nicopasla/better-intra/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/nicopasla/better-intra/compare/v1.0.3...v1.0.4

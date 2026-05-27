@@ -96,9 +96,8 @@ function injectProfileCardStyles() {
       opacity: 1;
     }
 
-    /* Hide wave if progress is 0 */
-    .ft-profile-card div[role="progressbar"] > div[style*="width: 0%"]::after,
-    .ft-profile-card div[role="progressbar"] > div[style*="width:0%"]::after {
+    /* Hide wave if progress is 0 (translateX is -100%) */
+    .ft-profile-card div[role="progressbar"] > div[style*="transform: translateX(-100%)"]::after {
       display: none;
     }
 

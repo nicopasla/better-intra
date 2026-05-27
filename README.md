@@ -90,6 +90,7 @@ Always use at your own risk!
 * Cloudflare Workers & KV (Serverless backend for cloud settings storage)
 * 42 API (OAuth2) (Secure user identification and authentication)
 * Font Awesome (SVG icons)
+* Intra v2 dark mode from [Improved Intra](https://github.com/FreekBes/improved_intra/tree/main/features/themes)
 
 ## Compatibility
 

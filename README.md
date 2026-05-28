@@ -4,11 +4,21 @@ Collection of features inside a Firefox Extension that improve UI and UX of the 
 
 ## ⚡ Quick Start
 
-To install this extension, click the button below or visit the [Releases](https://github.com/nicopasla/better-intra/releases/latest/) page.
+To install this extension, click the buttons below or visit the [Releases](https://github.com/nicopasla/better-intra/releases/latest/) page.
 
 <a href="https://github.com/nicopasla/better-intra/releases/latest/download/better-intra.xpi" target="_blank" rel="noopener noreferrer">
-  <img alt="Install button" src="images/get-the-addon-fx-apr-2020.svg" height="60"/>
+  <img alt="Install button firefox" src="images/get-the-addon-firefox.svg" height="60"/>
 </a>
+<a href="https://github.com/nicopasla/better-intra/releases/latest/download/better-intra-chrome.zip" target="_blank" rel="noopener noreferrer">
+  <img alt="Install button chrome" src="images/get-the-addon-chrome.svg" height="60"/>
+</a>
+
+### Chrome — Quick install (manual)  
+1. Unzip the archive to a folder.  
+2. In Chrome, open chrome://extensions.  
+3. Enable "Developer mode" (top-right).  
+4. Click "Load unpacked" and select the unzipped folder (the one containing manifest.json).  
+5. The extension will load; to update, replace the files and click "Reload" on the extension card.
 
 ## Features
 

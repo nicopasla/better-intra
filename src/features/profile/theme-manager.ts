@@ -1,6 +1,6 @@
 import { getConfig } from "../../config";
-import themeV3 from "./theme-V3.css?inline";
-import themeV2 from "./theme-v2.css?inline";
+import themev3 from "./theme-v3.css?inline";
+import themev2 from "./theme-v2.css?inline";
 
 /**
  * Applies the selected theme by adding/removing the 'dark' class 
@@ -26,9 +26,9 @@ function applyTheme(theme: "dark" | "light") {
       styleEl = document.createElement("style");
       styleEl.id = "better-intra-theme-stylesheet";
       if (window.location.hostname === "profile-v3.intra.42.fr") {
-        styleEl.textContent = themeV3;
+        styleEl.textContent = themev3;
       } else {
-        styleEl.textContent = themeV2;
+        styleEl.textContent = themev2;
       }
       
       // Target head, fallback to documentElement if head isn't parsed yet

@@ -4,8 +4,8 @@
   "version": "1.0.8",
   "type": "module",
   "scripts": {
-    "build": "tsc && vite build",
-    "watch": "vite build --watch",
+    "build": "tsc && vite build && vite build --config vite.background.config.ts",
+    "watch": "concurrently \"vite build --watch\" \"vite build --watch --config vite.background.config.ts\"",
     "web-ext:firefox": "web-ext run --keep-profile-changes --source-dir dist --start-url https://profile-v3.intra.42.fr",
     "web-ext:chrome": "web-ext run -t chromium --source-dir dist --start-url https://profile-v3.intra.42.fr",
     "web-ext:brave": "web-ext run -t chromium --chromium-binary \"C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe\" --source-dir dist --start-url https://profile-v3.intra.42.fr",

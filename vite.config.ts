@@ -19,21 +19,17 @@ export default defineConfig({
             JSON.stringify(manifest, null, 2),
             "utf-8",
           );
-          console.log(
-            `\nmanifest.json and hubSettings.data synced with v${pkg.version}\n`,
-          );
+          console.log(`\nmanifest.json synced with v${pkg.version}\n`);
         }
       },
     },
   ],
   build: {
     outDir: "dist",
-    emptyOutDir: true,
+    emptyOutDir: false,
     minify: false,
     rollupOptions: {
-      input: {
-        content: resolve(__dirname, "src/main.ts"),
-      },
+      input: { content: resolve(__dirname, "src/main.ts") },
       output: {
         format: "iife",
         entryFileNames: "[name].js",

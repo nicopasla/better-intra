@@ -6,12 +6,6 @@
   "permissions": ["storage"],
   "incognito": "not_allowed",
   "host_permissions": ["https://better-intra-worker.nicopasla.workers.dev/"],
-  "web_accessible_resources": [
-    {
-      "resources": ["hook.js"],
-      "matches": ["https://profile-v3.intra.42.fr/*"]
-    }
-  ],
   "content_scripts": [
     {
       "matches": ["https://*.intra.42.fr/*"],

@@ -1,7 +1,16 @@
 import { render } from "lit-html";
 import { getConfig } from "../../config.ts";
-import { findLogtimeMount, hideOldLogtime, setupScrollHandlers, setupStyles } from "./dom.js";
-import { renderContainer, renderHeaderContent, renderMonthCard } from "./render.js";
+import {
+  findLogtimeMount,
+  hideOldLogtime,
+  setupScrollHandlers,
+  setupStyles,
+} from "./dom.js";
+import {
+  renderContainer,
+  renderHeaderContent,
+  renderMonthCard,
+} from "./render.js";
 import { getLastSeenFormatted, limit } from "./utils.js";
 
 const getConfigs = async () => ({
@@ -97,10 +106,27 @@ function installFetchHook() {
     if (event.detail) renderLogtime(event.detail);
   });
 
+  const hookCode = `
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      const response = await originalFetch(...args);
+      const url = args[0] instanceof Request ? args[0].url : String(args[0]);
+      if (url.includes("/locations_stats")) {
+        response.clone().json().then(json => {
+          const stats = json?.locations_stats || json?.data?.locations_stats || json;
+          if (stats) {
+            document.dispatchEvent(new CustomEvent("42_LOGTIME_DATA", { detail: stats }));
+          }
+        }).catch(() => {});
+      }
+      return response;
+    };
+  `;
+
   const script = document.createElement("script");
-  script.src = chrome.runtime.getURL("hook.js");
+  script.textContent = hookCode;
   (document.head || document.documentElement).appendChild(script);
-  script.onload = () => script.remove();
+  script.remove();
 }
 
 export function applyPublicLogtimeSettings(logtime: {
@@ -116,10 +142,11 @@ export function applyPublicLogtimeSettings(logtime: {
   CONFIG.labels_color = logtime.labelsColor ?? CONFIG.labels_color;
   CONFIG.emoji = logtime.emoji ? limit(logtime.emoji) : CONFIG.emoji;
   CONFIG.divisor =
-    logtime.emojiDivisor !== undefined ? Number(logtime.emojiDivisor) : CONFIG.divisor;
+    logtime.emojiDivisor !== undefined
+      ? Number(logtime.emojiDivisor)
+      : CONFIG.divisor;
   CONFIG.rate =
     logtime.emojiRate !== undefined ? Number(logtime.emojiRate) : CONFIG.rate;
-
 
   setupStyles(CONFIG);
 

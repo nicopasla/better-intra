@@ -65,7 +65,7 @@ Adds custom quick-access links on the profile page.
 
 ### ☁️ Account
 
-* Authenticate with your 42 Intra account and store your local settings into a KV database on a Cloudflare Worker.
+* Authenticate with your 42 Intra account and store your local settings into a KV database on a Cloudflare Worker. (See Better Intra Worker repo)
 
 ---
 

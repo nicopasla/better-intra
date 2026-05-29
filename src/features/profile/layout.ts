@@ -45,33 +45,6 @@ function getCards(): HTMLElement[] {
   return cachedCards;
 }
 
-function injectStyles(): void {
-  if (document.getElementById("42-alt-layout-styles")) return;
-  const style = document.createElement("style");
-  style.id = "42-alt-layout-styles";
-  style.textContent = `
-    .alt-layout-grid {
-      display: grid !important;
-      grid-template-columns: repeat(auto-fit, minmax(400px, max-content)) !important;
-      grid-auto-flow: row dense !important;
-      justify-content: start !important;
-      gap: 16px !important;
-      padding: 0 16px !important;
-    }
-    .alt-card-logtime {
-      grid-column: span 1 !important;
-      width: 690px !important; min-width: 690px !important; max-width: 690px !important;
-      overflow-x: auto !important;
-    }
-    .alt-card-fixed-400 {
-      grid-column: span 1 !important;
-      width: 400px !important; min-width: 400px !important; max-width: 400px !important;
-    }
-    .alt-card-fixed-400 > * { width: 100% !important; max-width: 100% !important; }
-  `;
-  document.head.appendChild(style);
-}
-
 function getCardTitle(card: HTMLElement): string {
   const titleEl = card.querySelector("[class*='uppercase']");
   if (titleEl?.textContent) return titleEl.textContent.trim().toUpperCase();
@@ -116,12 +89,7 @@ function reorderCards(grid: HTMLElement, customOrder: string[]): boolean {
 }
 
 export async function optimizeLayout() {
-  injectStyles();
-
-  const [altLayoutEnabled, cardOrder] = await Promise.all([
-    getConfig("PROFILE_ALT_LAYOUT"),
-    getConfig("PROFILE_CARD_ORDER") as Promise<string[] | null>,
-  ]);
+  const cardOrder = (await getConfig("PROFILE_CARD_ORDER")) as string[] | null;
 
   const hideCardByText = (searchText: string, shouldHide: boolean) => {
     const cleanSearch = searchText.toUpperCase().trim();
@@ -156,34 +124,9 @@ export async function optimizeLayout() {
   const cards = getCards();
   if (!cards.length) return;
 
-  if (cachedGrid) {
-    cachedGrid.classList.toggle("alt-layout-grid", !!altLayoutEnabled);
-
-    if (cardOrder && cardOrder.length > 0) {
-      if (reorderCards(cachedGrid, cardOrder)) cachedCards = null;
-    } else if (altLayoutEnabled) {
-      const liveChildren = Array.from(cachedGrid.children) as HTMLElement[];
-      const agenda = liveChildren.find((c) => getCardTitle(c) === "AGENDA");
-      const pending = liveChildren.find(
-        (c) => getCardTitle(c) === "PENDING EVALUATIONS",
-      );
-
-      if (agenda && pending && agenda.previousElementSibling !== pending) {
-        agenda.insertAdjacentElement("beforebegin", pending);
-        cachedCards = null;
-      }
-    }
+  if (cachedGrid && cardOrder && cardOrder.length > 0) {
+    if (reorderCards(cachedGrid, cardOrder)) cachedCards = null;
   }
-
-  cards.forEach((card) => {
-    const title = getCardTitle(card);
-    const isLogtime = title.includes("LOGTIME") && !!altLayoutEnabled;
-    const isFixed400 =
-      ["PENDING EVALUATIONS", "AGENDA"].includes(title) && !!altLayoutEnabled;
-
-    card.classList.toggle("alt-card-logtime", isLogtime);
-    card.classList.toggle("alt-card-fixed-400", isFixed400);
-  });
 }
 
 export async function initLayoutManager() {

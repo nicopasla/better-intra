@@ -48,7 +48,6 @@ export interface BetterIntraConfig {
   PROFILE_BACKGROUND_URL: string;
   PROFILE_BACKGROUND_MODE: "fill" | "fit";
   PROFILE_SLOTS_REDIRECTION: boolean;
-  PROFILE_ALT_LAYOUT: boolean;
   PROFILE_CARD_ORDER: string[];
   PROFILE_USE_CUSTOM_COLOR: boolean;
 
@@ -93,7 +92,6 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   PROFILE_BACKGROUND_URL: "",
   PROFILE_BACKGROUND_MODE: "fill",
   PROFILE_SLOTS_REDIRECTION: true,
-  PROFILE_ALT_LAYOUT: false,
   PROFILE_CARD_ORDER: [
     "LOGTIME",
     "AGENDA",

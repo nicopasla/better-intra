@@ -262,15 +262,6 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
-      key: "PROFILE_ALT_LAYOUT",
-      label: "Alternative dashboard layout",
-      desc: "Optimizes the grid layout. (Experimental)",
-      kind: "toggle",
-      defaultValue: CONFIG_DEFAULT.PROFILE_ALT_LAYOUT,
-      grid: true,
-    },
-    {
-      feature: "profile",
       key: "PROFILE_SLOTS_REDIRECTION",
       label: "Slots button redirection",
       desc: "Redirects the 'Manage slots' button to the proper Slots webpage.",

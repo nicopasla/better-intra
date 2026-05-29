@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Better Intra</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #1d2028;
+      color: #f2f2f2;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 20px 24px;
+      gap: 8px;
+    }
+    h2 { font-size: 15px; font-weight: 700; color: #00babc; }
+    p { font-size: 14px; opacity: 0.85; }
+    span { font-size: 12px; opacity: 0.55; }
+    button {
+      margin-top: 12px;
+      padding: 8px;
+      background: #00babc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    button:hover { background: #02807c; }
+  </style>
+</head>
+<body>
+  <h2 id="title"></h2>
+  <p id="message"></p>
+  <span id="time"></span>
+  <a id="link" href="#" target="_blank" style="display:none">
+    <button id="view-profile">View Profile on Intra</button>
+  </a>
+  <button id="dismiss">Dismiss</button>
+  <script src="alert.js"></script>
+</body>

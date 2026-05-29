@@ -3,7 +3,7 @@ import themev3 from "./theme-v3.css?inline";
 import themev2 from "./theme-v2.css?inline";
 
 /**
- * Applies the selected theme by adding/removing the 'dark' class 
+ * Applies the selected theme by adding/removing the 'dark' class
  * AND injecting/removing the custom CSS string.
  * @param theme The theme to apply, either 'dark' or 'light'.
  */
@@ -30,7 +30,6 @@ function applyTheme(theme: "dark" | "light") {
       } else {
         styleEl.textContent = themev2;
       }
-      
       // Target head, fallback to documentElement if head isn't parsed yet
       const target = document.head || document.documentElement;
       target.appendChild(styleEl);
@@ -68,7 +67,10 @@ async function getEffectiveTheme(): Promise<"dark" | "light"> {
  * Sets up listeners for theme changes and system preference changes.
  */
 export async function initThemeManager() {
-  const cachedTheme = sessionStorage.getItem("intra-theme") as "dark" | "light" | null;
+  const cachedTheme = sessionStorage.getItem("intra-theme") as
+    | "dark"
+    | "light"
+    | null;
   if (cachedTheme) {
     applyTheme(cachedTheme);
   }
@@ -79,7 +81,7 @@ export async function initThemeManager() {
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local" && changes.BETTER_INTRA_THEME) {
       sessionStorage.removeItem("intra-theme");
-      initThemeManager(); 
+      initThemeManager();
     }
   });
   window
@@ -90,8 +92,6 @@ export async function initThemeManager() {
         applyTheme(e.matches ? "dark" : "light");
       }
     });
-
-  console.log("BetterIntra: Theme manager initialized successfully.");
 }
 
 /**

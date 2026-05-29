@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-05-29
+
+### Bug fixes 🐛
+
+- fix(theme-manager): clean up code formatting and remove unnecessary whitespace ([a487b5a](https://github.com/nicopasla/better-intra/commit/a487b5a))
+- fix(theme-v2): fix cluster layout and remove unused CSS rules ([bce5abb](https://github.com/nicopasla/better-intra/commit/bce5abb))
+- fix(theme-manager): correct variable casing for theme imports ([f9fdcc8](https://github.com/nicopasla/better-intra/commit/f9fdcc8))
+
+### Maintenance 🧹
+
+- chore(docs): update README ([e80493b](https://github.com/nicopasla/better-intra/commit/e80493b))
+
+### Other Changes 🔄
+
+- docs: add Intra v2 dark mode feature reference to README ([b9f6b7f](https://github.com/nicopasla/better-intra/commit/b9f6b7f))
+
 ## [1.0.7] - 2026-05-27
 
 ### Features 🎉
@@ -239,7 +255,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.7...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.8...HEAD
+[1.0.8]: https://github.com/nicopasla/better-intra/compare/v1.0.7...v1.0.8
 [1.0.7]: https://github.com/nicopasla/better-intra/compare/v1.0.6...v1.0.7
 [1.0.6]: https://github.com/nicopasla/better-intra/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/nicopasla/better-intra/compare/v1.0.4...v1.0.5

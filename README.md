@@ -72,13 +72,6 @@ Adds custom quick-access links on the profile page.
 ### ⚙️ Settings
 <img alt="Settings" src="images/settings.gif"/>
 
-## Screenshots
-
-<img alt="Logtime screenshot" src="images/logtime.png"/>
-<img alt="Profile screenshot" src="images/profile.png"/>
-<img alt="Events screenshot" src="images/profile-events.png"/>
-<img alt="Shortcuts screenshot" src="images/shortcuts-settings.png"/>
-<img alt="Account screenshot" src="images/account.png"/>
 
 ## Uninstall
 

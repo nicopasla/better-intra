@@ -1,9 +1,11 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
 
+const outDir = process.env.BUILD_OUT_DIR || "dist";
+
 export default defineConfig({
   build: {
-    outDir: process.env.BUILD_OUT_DIR || 'dist',
+    outDir: outDir,
     emptyOutDir: false,
     minify: false,
     rollupOptions: {

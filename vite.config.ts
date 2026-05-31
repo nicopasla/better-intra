@@ -5,6 +5,7 @@ import fs from "fs";
 import pkg from "./package.json";
 
 const target = (process.env.TARGET || "firefox") as "firefox" | "chrome";
+const outDir = process.env.BUILD_OUT_DIR || "dist";
 
 export default defineConfig({
   plugins: [
@@ -16,7 +17,7 @@ export default defineConfig({
           __dirname,
           `manifests/manifest.${target}.json`,
         );
-        const manifestDst = resolve(__dirname, "dist/manifest.json");
+        const manifestDst = resolve(__dirname, `${outDir}/manifest.json`);
 
         if (!fs.existsSync(manifestSrc)) {
           console.error(`\nManifest not found: ${manifestSrc}\n`);
@@ -35,7 +36,7 @@ export default defineConfig({
     },
   ],
   build: {
-    outDir: process.env.BUILD_OUT_DIR || 'dist',
+    outDir: outDir,
     emptyOutDir: false,
     minify: false,
     rollupOptions: {

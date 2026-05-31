@@ -22,83 +22,142 @@ async function hashLogin(login: string): Promise<string> {
 
 function showBookingAlert(evaluation: ScaleTeam): void {
   const beginAt = new Date(evaluation.begin_at);
-  const timeStr = beginAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  const dateStr = beginAt.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+  const timeStr = beginAt.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const dateStr = beginAt.toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
 
-  const title = encodeURIComponent("🎯 Evaluation booked on your project");
+  const title = encodeURIComponent("Someone booked an evaluation");
   const message = encodeURIComponent(`${evaluation.project_name}`);
   const time = encodeURIComponent(`${dateStr} at ${timeStr}`);
 
   chrome.windows.getAll({ windowTypes: ["popup"] }, (windows) => {
-    windows.forEach((w) => { if (w.id) chrome.windows.remove(w.id); });
+    windows.forEach((w) => {
+      if (w.id) chrome.windows.remove(w.id);
+    });
     chrome.windows.create({
       url: `alert.html?title=${title}&message=${message}&time=${time}`,
       type: "popup",
-      width: 380,
-      height: 160,
       focused: true,
     });
   });
 }
 
 function showReminderAlert(evaluation: ScaleTeam): void {
-  const title = encodeURIComponent("⏰ Evaluation starting soon");
-  const message = encodeURIComponent(`${evaluation.project_name} with ${evaluation.user}`);
+  const title = encodeURIComponent("Evaluation starting soon!");
+  const message = encodeURIComponent(evaluation.project_name);
   const time = encodeURIComponent("Starting in ~15 minutes");
-  const link = encodeURIComponent(`https://profile.intra.42.fr/users/${evaluation.user}`);
+  const link = encodeURIComponent(
+    `https://profile.intra.42.fr/users/${evaluation.user}`,
+  );
+  const type = encodeURIComponent("reminder");
+  const user = encodeURIComponent(evaluation.user);
 
   chrome.windows.getAll({ windowTypes: ["popup"] }, (windows) => {
-    windows.forEach((w) => { if (w.id) chrome.windows.remove(w.id); });
+    windows.forEach((w) => {
+      if (w.id) chrome.windows.remove(w.id);
+    });
     chrome.windows.create({
-      url: `alert.html?title=${title}&message=${message}&time=${time}&link=${link}`,
+      url: `alert.html?title=${title}&message=${message}&time=${time}&link=${link}&type=${type}&user=${user}`,
       type: "popup",
-      width: 380,
-      height: 180,
       focused: true,
     });
   });
 }
 
 async function checkEvaluations(): Promise<void> {
+  console.log(
+    `checkEvaluations() called at ${new Date().toLocaleTimeString()}`,
+  );
+
   const token = await getConfig("CLOUD_TOKEN");
   const login = await getConfig("CLOUD_LOGIN");
   const notificationsEnabled = await getConfig("EVAL_NOTIFICATIONS_ENABLED");
   const snapshot = await getConfig("EVALUATION_SNAPSHOT");
   const reminderSnapshot = await getConfig("EVALUATION_REMINDER_SNAPSHOT");
 
-  if (!token || !login) return;
-  if (!notificationsEnabled) return;
+  console.log("Config:", {
+    hasToken: !!token,
+    login,
+    notificationsEnabled,
+    snapshotIds: snapshot,
+    reminderSnapshotIds: reminderSnapshot,
+  });
+
+  if (!token || !login) {
+    console.log("Skipping: not logged in");
+    return;
+  }
+  if (!notificationsEnabled) {
+    console.log("Skipping: notifications disabled");
+    return;
+  }
 
   try {
     const hashedLogin = await hashLogin(login);
-    const res = await fetch(
-      `${WORKER_URL}/api/v1/private/evaluations?login=${hashedLogin}&intra_login=${encodeURIComponent(login)}`,
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+    const url = `${WORKER_URL}/api/v1/private/evaluations?login=${hashedLogin}&intra_login=${encodeURIComponent(login)}`;
+    console.log(`Fetching: ${url}`);
 
-    if (!res.ok) return;
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-    const { evaluations } = (await res.json()) as { evaluations: ScaleTeam[] };
+    console.log(`Response status: ${res.status}`);
+
+    if (!res.ok) {
+      console.log(`Fetch failed: ${res.status} ${res.statusText}`);
+      return;
+    }
+
+    const json = (await res.json()) as { evaluations: ScaleTeam[] };
+    console.log("Raw response JSON:", JSON.stringify(json, null, 2));
+
+    const { evaluations } = json;
+    console.log(`Found ${evaluations.length} upcoming evaluations`);
+    evaluations.forEach((e, i) => {
+      console.log(`Evaluation #${i + 1}:`, JSON.stringify(e, null, 2));
+    });
+
     const now = Date.now();
+    console.log(`Current time: ${new Date(now).toLocaleTimeString()}`);
 
     const newBookings = evaluations
-      .filter((e) => e.kind === "evaluated")
+      .filter((e) => e.kind === "evaluator")
       .filter((e) => !snapshot.includes(e.id));
+
+    console.log(`New bookings (not in snapshot): ${newBookings.length}`);
+    newBookings.forEach((e) => {
+      console.log(`→ New booking: ${e.project_name} (id: ${e.id})`);
+    });
 
     for (const evaluation of newBookings) {
       showBookingAlert(evaluation);
     }
 
     const in15min = now + 15 * 60 * 1000;
-    const in20min = now + 20 * 60 * 1000;
+    console.log(
+      `Checking reminders between now and ${new Date(in15min).toLocaleTimeString()}`,
+    );
 
     const upcomingReminders = evaluations
-      .filter((e) => e.kind === "evaluated")
+      .filter((e) => e.kind === "evaluator")
       .filter((e) => !reminderSnapshot.includes(e.id))
       .filter((e) => {
         const t = new Date(e.begin_at).getTime();
-        return t > now && t <= in20min;
+        const inWindow = t > now && t <= in15min;
+        console.log(
+          `Reminder check for ${e.project_name}: begin_at=${e.begin_at}, inWindow=${inWindow}`,
+        );
+        return inWindow;
       });
+
+    console.log(`Upcoming reminders: ${upcomingReminders.length}`);
 
     for (const evaluation of upcomingReminders) {
       showReminderAlert(evaluation);
@@ -112,24 +171,28 @@ async function checkEvaluations(): Promise<void> {
       ],
     });
 
+    console.log(`Snapshot updated. Done. Next check in 15 minutes.`);
   } catch (err) {
     console.error("Evaluation check failed:", err);
   }
 }
 
-chrome.alarms.create("evaluation-check", { periodInMinutes: 15 });
+function ensureAlarm() {
+  chrome.alarms.get("evaluation-check", (alarm) => {
+    if (!alarm) {
+      chrome.alarms.create("evaluation-check", { periodInMinutes: 15 });
+      console.log("evaluation-check alarm created");
+    } else {
+      const nextFire = new Date(alarm.scheduledTime).toLocaleTimeString();
+      console.log(`Alarm already exists, next fire at ${nextFire}`);
+    }
+  });
+}
+
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "evaluation-check") checkEvaluations();
 });
-chrome.runtime.onStartup.addListener(checkEvaluations);
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.notifications.create({
-    type: "basic",
-    iconUrl: "assets/about.svg",
-    title: "Better Intra",
-    message: "Extension loaded!",
-  });
-  checkEvaluations();
-});
 
-(globalThis as any).checkEvaluations = checkEvaluations;
+chrome.runtime.onStartup.addListener(() => {
+  ensureAlarm();
+});

@@ -12,7 +12,6 @@ function renderAccountTab(
 ): ReturnType<typeof html> {
   const isConnected = state.activeSessions > 0;
 
-  // If not logged in, show a simple, centered connect button.
   if (!state.token) {
     return html`
       <div
@@ -38,13 +37,14 @@ function renderAccountTab(
     `;
   }
 
-  // Main dashboard view for logged-in users.
   return html`
     <div class="w-full h-full flex flex-col gap-4 overflow-y-auto">
       <!-- Top Section: Status & Sync Info -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Left Card: Account Status -->
-        <div class="card bg-base-200 shadow-md p-5 border border-base-300">
+        <div
+          class="bg-base-200 shadow-md p-5 rounded-xl border border-base-300"
+        >
           <h2 class="text-lg font-bold text-base-content mb-4">
             Account Status
           </h2>
@@ -87,13 +87,13 @@ function renderAccountTab(
         </div>
 
         <!-- Right Card: Cloud Sync -->
-        <div class="card bg-base-200 shadow-md p-5 border border-base-300">
+        <div class="bg-base-200 shadow-md rounded-xl border border-base-300">
           <h2 class="text-lg font-bold text-base-content mb-4">Cloud Sync</h2>
           <div class="grid grid-cols-2 gap-3">
-            <!-- Pull Button -->
+            <!-- Pull Button - spans rows 1+2 -->
             <button
               id="pull-cloud-btn"
-              class="btn btn-info font-bold transition-all text-info-content h-full py-3 text-base row-span-2 ${state
+              class="btn btn-info font-bold transition-all text-info-content text-base row-span-2 h-full ${state
                 .buttons.pull.loading
                 ? "loading"
                 : state.buttons.pull.success
@@ -110,30 +110,10 @@ function renderAccountTab(
                 : state.buttons.pull.text}
             </button>
 
-            <!-- Auto-sync Toggle -->
-            <div
-              class="bg-base-100 p-3 rounded-lg border border-base-300 flex items-center justify-between"
-            >
-              <label class="flex items-center gap-2 cursor-pointer w-full">
-                <input
-                  type="checkbox"
-                  class="toggle toggle-info"
-                  ?checked="${state.isSyncEnabled}"
-                  @change="${(e: Event) =>
-                    handlers.handleToggleSync(
-                      (e.target as HTMLInputElement).checked,
-                    )}"
-                />
-                <span class="font-medium text-base text-base-content"
-                  >Auto-sync</span
-                >
-              </label>
-            </div>
-
-            <!-- Push Button -->
+            <!-- Push Button - row 1 right -->
             <button
               id="push-cloud-btn"
-              class="btn btn-success text-success-content font-bold transition-all text-base h-auto py-3 ${state
+              class="btn btn-success text-success-content font-bold transition-all text-base ${state
                 .buttons.push.loading
                 ? "loading"
                 : ""}"
@@ -145,6 +125,54 @@ function renderAccountTab(
                 ? "Pushing..."
                 : state.buttons.push.text}
             </button>
+
+            <!-- Auto-sync - row 2 right -->
+            <div class="bg-base-100 p-3 rounded-lg border border-base-300">
+              <label
+                class="flex items-center justify-between cursor-pointer w-full"
+              >
+                <span class="font-medium text-sm text-base-content"
+                  >Auto-sync</span
+                >
+                <input
+                  type="checkbox"
+                  class="toggle toggle-info"
+                  ?checked="${state.isSyncEnabled}"
+                  @change="${(e: Event) =>
+                    handlers.handleToggleSync(
+                      (e.target as HTMLInputElement).checked,
+                    )}"
+                />
+              </label>
+            </div>
+
+            <!-- Evaluation alerts - spans full width row 3 -->
+            <div
+              class="col-span-2 bg-base-100 p-3 rounded-lg border border-base-300"
+            >
+              <label
+                class="flex items-center justify-between cursor-pointer w-full"
+              >
+                <div class="flex flex-col">
+                  <span class="font-medium text-sm text-base-content"
+                    >Evaluation alerts</span
+                  >
+                  <span class="text-xs opacity-50"
+                    >Notify when someone books one of your evaluation
+                    slots.</span
+                  >
+                </div>
+                <input
+                  type="checkbox"
+                  class="toggle toggle-info"
+                  ?checked="${state.isNotificationsEnabled}"
+                  @change="${(e: Event) =>
+                    handlers.handleToggleNotifications(
+                      (e.target as HTMLInputElement).checked,
+                    )}"
+                />
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -187,5 +215,8 @@ export async function initAccountSettings(container: HTMLElement) {
 
   // Initial load
   state.isSyncEnabled = (await getConfig("CLOUD_SYNC_ENABLED")) ?? true;
+  state.isSyncEnabled = (await getConfig("CLOUD_SYNC_ENABLED")) ?? true;
+  state.isNotificationsEnabled =
+    (await getConfig("EVAL_NOTIFICATIONS_ENABLED")) ?? true;
   await update();
 }

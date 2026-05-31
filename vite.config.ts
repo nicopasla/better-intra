@@ -4,23 +4,33 @@ import { resolve } from "path";
 import fs from "fs";
 import pkg from "./package.json";
 
+const target = (process.env.TARGET || "firefox") as "firefox" | "chrome";
+
 export default defineConfig({
   plugins: [
     tailwindcss(),
     {
-      name: "update-manifest-version",
+      name: "write-manifest",
       closeBundle() {
-        const manifestPath = resolve(__dirname, "dist/manifest.json");
-        if (fs.existsSync(manifestPath)) {
-          const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
-          manifest.version = pkg.version;
-          fs.writeFileSync(
-            manifestPath,
-            JSON.stringify(manifest, null, 2),
-            "utf-8",
-          );
-          console.log(`\nmanifest.json synced with v${pkg.version}\n`);
+        const manifestSrc = resolve(
+          __dirname,
+          `manifests/manifest.${target}.json`,
+        );
+        const manifestDst = resolve(__dirname, "dist/manifest.json");
+
+        if (!fs.existsSync(manifestSrc)) {
+          console.error(`\nManifest not found: ${manifestSrc}\n`);
+          return;
         }
+
+        const manifest = JSON.parse(fs.readFileSync(manifestSrc, "utf-8"));
+        manifest.version = pkg.version;
+        fs.writeFileSync(
+          manifestDst,
+          JSON.stringify(manifest, null, 2),
+          "utf-8",
+        );
+        console.log(`\nmanifest.json written for ${target} v${pkg.version}\n`);
       },
     },
   ],

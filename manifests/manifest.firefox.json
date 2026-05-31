@@ -1,13 +1,18 @@
 {
   "manifest_version": 3,
   "name": "Better Intra",
-  "version": "__APP_VERSION__",
+  "version": "1.0.8",
   "description": "Collection of features inside a single extension that improve UI and UX of the 42 Intra v3.",
   "permissions": ["storage", "notifications", "alarms", "windows"],
+  "web_accessible_resources": [
+    {
+      "resources": ["hook.js"],
+      "matches": ["https://*.intra.42.fr/*"]
+    }
+  ],
   "incognito": "not_allowed",
   "host_permissions": ["https://better-intra-worker.nicopasla.workers.dev/"],
   "background": {
-    "service_worker": "background.js",
     "scripts": ["background.js"]
   },
   "content_scripts": [

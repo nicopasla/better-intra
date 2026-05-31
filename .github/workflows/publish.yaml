@@ -22,8 +22,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Extension (Vite)
-        run: npm run build
+      - name: Build Extension (Firefox)
+        run: npm run build:firefox
 
       - name: web-ext build (Firefox)
         id: web-ext-build-ff
@@ -33,6 +33,9 @@ jobs:
           source: dist
           filename: "better-intra.xpi"
 
+      - name: Build Extension (Chrome)
+        run: npm run build:chrome
+
       - name: web-ext build (Chrome)
         id: web-ext-build-chrome
         uses: kewisch/action-web-ext@v2
@@ -41,13 +44,13 @@ jobs:
           source: dist
           filename: "better-intra-chrome.zip"
 
-      - name: Move artifacts
+      - name: Move Chrome artifact
         run: mv web-ext-artifacts/better-intra-chrome.zip .
 
       - name: Collect source code
         run: git archive --format=zip --output=sources.zip ${{ github.ref }}
 
-      - name: web-ext sign
+      - name: web-ext sign (Firefox)
         id: web-ext-sign
         uses: kewisch/action-web-ext@v2
         with:
@@ -65,5 +68,5 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           files: |
-             better-intra.xpi
-             better-intra-chrome.zip
+            better-intra.xpi
+            better-intra-chrome.zip

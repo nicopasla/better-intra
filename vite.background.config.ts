@@ -3,7 +3,7 @@ import { resolve } from "path";
 
 export default defineConfig({
   build: {
-    outDir: "dist",
+    outDir: process.env.BUILD_OUT_DIR || 'dist',
     emptyOutDir: false,
     minify: false,
     rollupOptions: {

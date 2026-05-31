@@ -31,7 +31,7 @@ jobs:
         uses: kewisch/action-web-ext@v2
         with:
           cmd: build
-          source: dist
+          source: dist-firefox
           filename: "better-intra.xpi"
 
       - name: Build Extension (Chrome)
@@ -42,7 +42,7 @@ jobs:
         uses: kewisch/action-web-ext@v2
         with:
           cmd: build
-          source: dist
+          source: dist-chrome
           filename: "better-intra-chrome.zip"
 
       - name: Move Chrome artifact

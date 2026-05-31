@@ -4,8 +4,8 @@
   "version": "1.1.0",
   "type": "module",
   "scripts": {
-    "build:chrome": "cross-env TARGET=chrome tsc && vite build && vite build --config vite.background.config.ts",
-    "build:firefox": "cross-env TARGET=firefox tsc && vite build && vite build --config vite.background.config.ts",
+    "build:chrome": "cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome tsc && vite build && vite build --config vite.background.config.ts",
+    "build:firefox": "cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && vite build && vite build --config vite.background.config.ts",
     "build": "npm run build:firefox",
     "watch:firefox": "concurrently \"cross-env TARGET=firefox vite build --watch\" \"cross-env TARGET=firefox vite build --watch --config vite.background.config.ts\"",
     "watch:chrome": "concurrently \"cross-env TARGET=chrome vite build --watch\" \"cross-env TARGET=chrome vite build --watch --config vite.background.config.ts\"",

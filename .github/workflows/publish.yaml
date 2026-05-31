@@ -5,7 +5,58 @@ on:
     types: [published]
 
 jobs:
-  build:
+  build-prerelease:
+    if: github.event.release.prerelease == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Extension (Firefox)
+        run: npm run build:firefox
+
+      - name: web-ext build (Firefox)
+        id: web-ext-build-ff
+        uses: kewisch/action-web-ext@v2
+        with:
+          cmd: build
+          source: dist
+          filename: "better-intra.xpi"
+
+      - name: Build Extension (Chrome)
+        run: npm run build:chrome
+
+      - name: web-ext build (Chrome)
+        id: web-ext-build-chrome
+        uses: kewisch/action-web-ext@v2
+        with:
+          cmd: build
+          source: dist
+          filename: "better-intra-chrome.zip"
+
+      - name: Move Chrome artifact
+        run: mv web-ext-artifacts/better-intra-chrome.zip .
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            web-ext-artifacts/better-intra.xpi
+            better-intra-chrome.zip
+
+  build-and-sign:
+    if: github.event.release.prerelease == false
     runs-on: ubuntu-latest
     permissions:
       contents: write

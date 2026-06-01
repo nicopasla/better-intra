@@ -188,6 +188,15 @@ function ensureAlarm() {
     }
   });
 }
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local") return;
+
+  const relevant = ["EVAL_NOTIFICATIONS_ENABLED", "CLOUD_TOKEN", "CLOUD_LOGIN"];
+  if (relevant.some((key) => key in changes)) {
+    ensureAlarm();
+    checkEvaluations();
+  }
+});
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "evaluation-check") checkEvaluations();

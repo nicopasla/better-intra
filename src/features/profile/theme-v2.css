@@ -459,6 +459,10 @@ hr,
 	background-color: var(--input-background-color-transparent) !important;
 }
 
+text[style*="text-shadow"] {
+	text-shadow: none !important;
+}
+
 .projects-menu-list a.project-item:not([style*="color:"]) {
 	color: var(--left-navbar-icon-color) !important;
 }

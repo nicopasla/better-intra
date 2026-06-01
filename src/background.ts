@@ -191,7 +191,7 @@ function ensureAlarm() {
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local") return;
 
-  const relevant = ["EVAL_NOTIFICATIONS_ENABLED", "CLOUD_TOKEN", "CLOUD_LOGIN"];
+  const relevant = ["EVAL_NOTIFICATIONS_ENABLED"];
   if (relevant.some((key) => key in changes)) {
     ensureAlarm();
     checkEvaluations();

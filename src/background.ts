@@ -52,7 +52,7 @@ function showBookingAlert(evaluation: ScaleTeam): void {
 function showReminderAlert(evaluation: ScaleTeam): void {
   const title = encodeURIComponent("Evaluation starting soon!");
   const message = encodeURIComponent(evaluation.project_name);
-  const time = encodeURIComponent("Starting in ~15 minutes");
+  const time = encodeURIComponent("Starting in ~14 minutes");
   const link = encodeURIComponent(
     `https://profile.intra.42.fr/users/${evaluation.user}`,
   );
@@ -79,8 +79,9 @@ async function checkEvaluations(): Promise<void> {
   const token = await getConfig("CLOUD_TOKEN");
   const login = await getConfig("CLOUD_LOGIN");
   const notificationsEnabled = await getConfig("EVAL_NOTIFICATIONS_ENABLED");
-  const snapshot = await getConfig("EVALUATION_SNAPSHOT");
-  const reminderSnapshot = await getConfig("EVALUATION_REMINDER_SNAPSHOT");
+  const snapshot = (await getConfig("EVALUATION_SNAPSHOT")) ?? [];
+  const reminderSnapshot =
+    (await getConfig("EVALUATION_REMINDER_SNAPSHOT")) ?? [];
 
   console.log("Config:", {
     hasToken: !!token,
@@ -140,9 +141,10 @@ async function checkEvaluations(): Promise<void> {
       showBookingAlert(evaluation);
     }
 
-    const in15min = now + 15 * 60 * 1000;
+    const reminderBuffer = 14 * 60 * 1000;
+    const reminderDeadline = now + reminderBuffer;
     console.log(
-      `Checking reminders between now and ${new Date(in15min).toLocaleTimeString()}`,
+      `Checking reminders between now and ${new Date(reminderDeadline).toLocaleTimeString()}`,
     );
 
     const upcomingReminders = evaluations
@@ -150,7 +152,7 @@ async function checkEvaluations(): Promise<void> {
       .filter((e) => !reminderSnapshot.includes(e.id))
       .filter((e) => {
         const t = new Date(e.begin_at).getTime();
-        const inWindow = t > now && t <= in15min;
+        const inWindow = t > now && t <= reminderDeadline;
         console.log(
           `Reminder check for ${e.project_name}: begin_at=${e.begin_at}, inWindow=${inWindow}`,
         );
@@ -180,21 +182,34 @@ async function checkEvaluations(): Promise<void> {
 function ensureAlarm() {
   chrome.alarms.get("evaluation-check", (alarm) => {
     if (!alarm) {
-      chrome.alarms.create("evaluation-check", { periodInMinutes: 15 });
-      console.log("evaluation-check alarm created");
+      const randomPeriod = 14 + Math.random();
+      chrome.alarms.create("evaluation-check", {
+        periodInMinutes: randomPeriod,
+      });
+      console.log(
+        `evaluation-check alarm created with period: ${randomPeriod.toFixed(2)} minutes`,
+      );
     } else {
       const nextFire = new Date(alarm.scheduledTime).toLocaleTimeString();
       console.log(`Alarm already exists, next fire at ${nextFire}`);
     }
   });
 }
+
+function clearAlarm(): void {
+  chrome.alarms.clear("evaluation-check");
+}
+
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local") return;
 
-  const relevant = ["EVAL_NOTIFICATIONS_ENABLED"];
-  if (relevant.some((key) => key in changes)) {
-    ensureAlarm();
-    checkEvaluations();
+  if ("EVAL_NOTIFICATIONS_ENABLED" in changes) {
+    if (changes.EVAL_NOTIFICATIONS_ENABLED.newValue) {
+      ensureAlarm();
+      checkEvaluations();
+    } else {
+      clearAlarm();
+    }
   }
 });
 
@@ -204,4 +219,10 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 chrome.runtime.onStartup.addListener(() => {
   ensureAlarm();
+  getConfig("EVAL_NOTIFICATIONS_ENABLED").then((enabled) => {
+    if (enabled) checkEvaluations();
+  });
 });
+
+// For testing purpose
+globalThis.checkEvaluations = checkEvaluations;

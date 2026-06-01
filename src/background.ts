@@ -33,7 +33,7 @@ function showBookingAlert(evaluation: ScaleTeam): void {
     month: "short",
   });
 
-  const title = encodeURIComponent("Someone booked an evaluation");
+  const title = encodeURIComponent("Someone booked an evaluation!");
   const message = encodeURIComponent(`${evaluation.project_name}`);
   const time = encodeURIComponent(`${dateStr} at ${timeStr}`);
 
@@ -224,5 +224,13 @@ chrome.runtime.onStartup.addListener(() => {
   });
 });
 
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.action === "openTester") {
+    chrome.tabs.create({ url: chrome.runtime.getURL("test.html") });
+  }
+});
+
 // For testing purpose
 globalThis.checkEvaluations = checkEvaluations;
+globalThis.showBookingAlert = showBookingAlert;
+globalThis.showReminderAlert = showReminderAlert;

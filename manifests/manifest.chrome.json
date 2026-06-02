@@ -6,7 +6,7 @@
   "permissions": ["storage", "notifications", "alarms", "windows"],
   "web_accessible_resources": [
     {
-      "resources": ["hook.js", "test.html", "test.js"],
+      "resources": ["hook.js"],
       "matches": ["https://*.intra.42.fr/*"]
     }
   ],

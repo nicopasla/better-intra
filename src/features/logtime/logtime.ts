@@ -5,13 +5,13 @@ import {
   hideOldLogtime,
   setupScrollHandlers,
   setupStyles,
-} from "./dom.js";
+} from "./dom.ts";
 import {
   renderContainer,
   renderHeaderContent,
   renderMonthCard,
-} from "./render.js";
-import { getLastSeenFormatted, limit } from "./utils.js";
+} from "./render.ts";
+import { getLastSeenFormatted, limit } from "./utils.ts";
 
 const getConfigs = async () => ({
   goal_hours: await getConfig("LOGTIME_GOAL_HOURS"),

@@ -21,7 +21,7 @@ export interface BetterIntraConfig {
   CLOUD_TOKEN: string;
   CLOUD_LOGIN: string;
   ACCOUNT: object | null; // Stores user account info from 42 API
-  EVAL_NOTIFICATIONS_ENABLED: true,
+  EVAL_NOTIFICATIONS_ENABLED: boolean,
   EVALUATION_SNAPSHOT: number[];
   EVALUATION_REMINDER_SNAPSHOT: number[];
 

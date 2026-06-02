@@ -215,7 +215,6 @@ export async function initAccountSettings(container: HTMLElement) {
 
   // Initial load
   state.isSyncEnabled = (await getConfig("CLOUD_SYNC_ENABLED")) ?? true;
-  state.isSyncEnabled = (await getConfig("CLOUD_SYNC_ENABLED")) ?? true;
   state.isNotificationsEnabled =
     (await getConfig("EVAL_NOTIFICATIONS_ENABLED")) ?? true;
   await update();

@@ -8,8 +8,6 @@ interface ScaleTeam {
   project_name: string;
   user: string;
   kind: "evaluator" | "evaluated";
-  can_cancel: boolean;
-  can_report: boolean;
 }
 
 async function hashLogin(login: string): Promise<string> {
@@ -113,11 +111,26 @@ async function checkEvaluations(): Promise<void> {
 
     if (!res.ok) {
       console.log(`Fetch failed: ${res.status} ${res.statusText}`);
+      const errorText = await res.text();
+      console.error("Error body:", errorText);
       return;
     }
 
-    const json = (await res.json()) as { evaluations: ScaleTeam[] };
-    console.log("Raw response JSON:", JSON.stringify(json, null, 2));
+    const json = (await res.json()) as {
+      evaluations: ScaleTeam[];
+      rawScaleTeams?: any;
+      forwardedQuery?: Record<string, string>;
+    };
+    console.log("--- Worker Response (processed) ---");
+    console.log(json.evaluations);
+
+    if (json.rawScaleTeams) {
+      console.log("--- Raw 42 API Response ---");
+      console.log(JSON.stringify(json.rawScaleTeams, null, 2));
+    }
+    if (json.forwardedQuery) {
+      console.log("Forwarded query sent to 42 API:", json.forwardedQuery);
+    }
 
     const { evaluations } = json;
     console.log(`Found ${evaluations.length} upcoming evaluations`);
@@ -224,13 +237,5 @@ chrome.runtime.onStartup.addListener(() => {
   });
 });
 
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.action === "openTester") {
-    chrome.tabs.create({ url: chrome.runtime.getURL("test.html") });
-  }
-});
-
 // For testing purpose
 globalThis.checkEvaluations = checkEvaluations;
-globalThis.showBookingAlert = showBookingAlert;
-globalThis.showReminderAlert = showReminderAlert;

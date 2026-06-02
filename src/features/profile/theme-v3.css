@@ -1,12 +1,11 @@
 html.dark {
   color-scheme: dark;
-  --background: 220 20% 4%;
+  --background: 225 17% 14%;
   --card: 220 20% 10%;
   --foreground: 213 31% 91%;
   --muted: 220 20% 15%;
   --primary: 199 89% 48%;
   --input: 220 20% 12%;
-  /* Ajouté */
   --border: 220 20% 18%;
 }
 
@@ -24,6 +23,47 @@ html.dark #root>div,
 html.dark [class*="min-h-screen"] {
   background-color: hsl(var(--background)) !important;
   color: hsl(var(--foreground)) !important;
+}
+
+/* ============================================================================
+   SIDEBAR & NAVIGATION
+   ============================================================================ */
+
+html.dark [class*="sidebar"],
+html.dark [class*="nav-left"],
+html.dark [class*="navigation"],
+html.dark .main-left-navbar {
+  background-color: hsl(var(--card)) !important;
+  border-right: 1px solid hsl(var(--border)) !important;
+}
+
+html.dark [class*="sidebar"] a,
+html.dark [class*="nav-left"] a {
+  color: hsl(var(--foreground)) !important;
+  transition: all 0.2s ease;
+}
+
+html.dark [class*="sidebar"] a:hover,
+html.dark [class*="nav-left"] a:hover {
+  background-color: hsl(var(--muted)) !important;
+  color: hsl(var(--primary)) !important;
+}
+
+html.dark [class*="sidebar"] a.active,
+html.dark [class*="nav-left"] a.active,
+html.dark [class*="sidebar"] a[aria-current="page"] {
+  color: hsl(var(--primary)) !important;
+  background-color: hsl(var(--primary) / 0.1) !important;
+  border-left: 3px solid hsl(var(--primary)) !important;
+}
+
+html.dark [class*="sidebar"] svg,
+html.dark [class*="nav-left"] svg {
+  stroke: hsl(var(--foreground)) !important;
+}
+
+html.dark [class*="sidebar"] a:hover svg {
+  stroke: hsl(var(--primary)) !important;
 }
 
 /* ============================================================================
@@ -216,11 +256,7 @@ html.dark .text-green-500 {
    SVG
   ============================================================================ */
 
-html.dark header svg path,
-html.dark [class*="bg-white"] svg path {
-  stroke: hsl(var(--foreground)) !important;
-}
-
-html.dark .stroke-legacy-main {
-  stroke: #00a7a8 !important;
+html.dark .flex.flex-row.items-center.justify-between svg path,
+html.dark .flex.flex-row.items-center.justify-between svg line {
+  stroke: #fff !important;
 }

@@ -10,7 +10,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "strict": false,
+    "strict": true,
     "types": ["chrome"]
   },
   "include": ["src"]

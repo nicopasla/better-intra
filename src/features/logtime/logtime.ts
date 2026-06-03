@@ -151,6 +151,5 @@ export async function initLogtime() {
 
   if (isProfileV3TargetPage()) {
     isLoaded = true;
-    console.log("Logtime loaded!");
   }
 }

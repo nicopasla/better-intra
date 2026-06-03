@@ -145,34 +145,6 @@ function renderAccountTab(
                 />
               </label>
             </div>
-
-            <!-- Evaluation alerts - spans full width row 3 -->
-            <div
-              class="col-span-2 bg-base-100 p-3 rounded-lg border border-base-300"
-            >
-              <label
-                class="flex items-center justify-between cursor-pointer w-full"
-              >
-                <div class="flex flex-col">
-                  <span class="font-medium text-sm text-base-content"
-                    >Evaluation alerts</span
-                  >
-                  <span class="text-xs opacity-50"
-                    >Notify when someone books one of your evaluation
-                    slots.</span
-                  >
-                </div>
-                <input
-                  type="checkbox"
-                  class="toggle toggle-info"
-                  ?checked="${state.isNotificationsEnabled}"
-                  @change="${(e: Event) =>
-                    handlers.handleToggleNotifications(
-                      (e.target as HTMLInputElement).checked,
-                    )}"
-                />
-              </label>
-            </div>
           </div>
         </div>
       </div>
@@ -215,7 +187,5 @@ export async function initAccountSettings(container: HTMLElement) {
 
   // Initial load
   state.isSyncEnabled = (await getConfig("CLOUD_SYNC_ENABLED")) ?? true;
-  state.isNotificationsEnabled =
-    (await getConfig("EVAL_NOTIFICATIONS_ENABLED")) ?? true;
   await update();
 }

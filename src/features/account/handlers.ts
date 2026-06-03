@@ -142,16 +142,10 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
       }, 2000);
     }
   };
-  const handleToggleNotifications = async (enabled: boolean) => {
-    state.isNotificationsEnabled = enabled;
-    await chrome.storage.local.set({ EVAL_NOTIFICATIONS_ENABLED: enabled });
-    updateUI();
-  };
 
   return {
     handleLogin42,
     handleToggleSync,
-    handleToggleNotifications,
     handleTestConnection,
     handleDelete,
     handleWipe,

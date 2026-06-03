@@ -9,7 +9,6 @@ export interface AccountState {
   login: string | null;
   token: string;
   isSyncEnabled: boolean;
-  isNotificationsEnabled: boolean;
   activeSessions: number;
   buttons: {
     push: ButtonState;
@@ -23,7 +22,6 @@ export function createInitialState(): AccountState {
     login: null,
     token: "",
     isSyncEnabled: true,
-    isNotificationsEnabled: true,
     activeSessions: 0,
     buttons: {
       push: {

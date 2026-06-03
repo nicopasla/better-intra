@@ -21,9 +21,6 @@ export interface BetterIntraConfig {
   CLOUD_TOKEN: string;
   CLOUD_LOGIN: string;
   ACCOUNT: object | null; // Stores user account info from 42 API
-  EVAL_NOTIFICATIONS_ENABLED: boolean,
-  EVALUATION_SNAPSHOT: number[];
-  EVALUATION_REMINDER_SNAPSHOT: number[];
 
   // Logtime Feature Settings
   LOGTIME_GOAL_HOURS: number;
@@ -70,9 +67,6 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   CLOUD_TOKEN: "",
   CLOUD_LOGIN: "",
   ACCOUNT: null,
-  EVAL_NOTIFICATIONS_ENABLED: true,
-  EVALUATION_SNAPSHOT: [],
-  EVALUATION_REMINDER_SNAPSHOT: [],
 
   LOGTIME_GOAL_HOURS: 140,
   LOGTIME_SHOW_AVERAGE: true,

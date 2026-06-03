@@ -5,27 +5,53 @@ import { handleProfileRedirect } from "./highlight.ts";
 import { initLayoutManager } from "./layout.ts";
 import { initMilestones } from "./milestones.ts";
 import { initProfileCardStyling } from "./profile-card.ts";
+import { injectFriendsWidget } from "../friends/friends.ui.ts";
+
+const waitForBody = () =>
+  document.body
+    ? Promise.resolve()
+    : new Promise<void>((r) => {
+        const id = setInterval(() => {
+          if (document.body) { clearInterval(id); r(); }
+        }, 10);
+      });
 
 export async function initProfile() {
   injectCustomStyles();
   if (location.origin !== "https://profile-v3.intra.42.fr") return;
 
+  await waitForBody();
+
+  let isUpdating = false;
   const updateUI = async () => {
-    await updateVisuals();
-    if (location.pathname === "/" || location.pathname.startsWith("/users")) {
-      await initLayoutManager();
-      await initProfileCardStyling();
-      await findSlotsButton();
-      await injectEventsSelect();
-      await updateEventFilters();
-      await handleProfileRedirect();
-      await initMilestones();
+    if (isUpdating) return;
+    isUpdating = true;
+    try {
+      await updateVisuals();
+      if (location.pathname === "/" || location.pathname.startsWith("/users")) {
+        await initLayoutManager();
+        await initProfileCardStyling();
+        await findSlotsButton();
+        await injectEventsSelect();
+        await updateEventFilters();
+        await handleProfileRedirect();
+        await initMilestones();
+        await injectFriendsWidget();
+      }
+    } finally {
+      isUpdating = false;
     }
   };
 
-  const observer = new MutationObserver(() =>
-    requestAnimationFrame(() => updateUI()),
-  );
+  let pending = false;
+  const observer = new MutationObserver(() => {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => {
+      pending = false;
+      updateUI();
+    });
+  });
   observer.observe(document.body, {
     childList: true,
     subtree: true,

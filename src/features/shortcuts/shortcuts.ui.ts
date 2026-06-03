@@ -2,8 +2,6 @@ import { html, render } from "lit-html";
 import { getConfig } from "../../config.ts";
 import GLOBE from "../../assets/svg/globe.svg";
 
-export const SHORTCUTS_FEATURE_ID = "shortcuts";
-
 export interface ShortcutLink {
   name: string;
   url: string;
@@ -277,7 +275,7 @@ export function renderShortcutsDisplay(
   `;
 }
 
-export async function initShortcutsSettings(container: HTMLElement) {
+async function initShortcutsSettings(container: HTMLElement) {
   let links: ShortcutLink[] = await getStoredLinks();
 
   const save = async () => {

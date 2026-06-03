@@ -107,13 +107,13 @@ export async function initClusters() {
       setTimeout(() => clearInterval(checkInterval), 3000);
     }
 
-    setInterval(() => {
+    const pollTimer = setInterval(() => {
       findAndAttach();
       injectUI(shadowHost);
       refreshMarkersSoon();
     }, 500);
+    addEventListener("pagehide", () => clearInterval(pollTimer), { once: true });
 
-    console.log("Clusters loaded!");
   }
 
   start();

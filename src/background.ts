@@ -133,6 +133,15 @@ async function checkEvaluations(): Promise<void> {
     }
 
     const { evaluations } = json;
+    if (snapshot.length === 0) {
+      await chrome.storage.local.set({
+        EVALUATION_SNAPSHOT: evaluations.map((e) => e.id),
+        EVALUATION_REMINDER_SNAPSHOT: [],
+      });
+    
+      console.log("Initialized snapshot, skipping notifications");
+      return;
+    }
     console.log(`Found ${evaluations.length} upcoming evaluations`);
     evaluations.forEach((e, i) => {
       console.log(`Evaluation #${i + 1}:`, JSON.stringify(e, null, 2));
@@ -140,9 +149,9 @@ async function checkEvaluations(): Promise<void> {
 
     const now = Date.now();
     console.log(`Current time: ${new Date(now).toLocaleTimeString()}`);
-
     const newBookings = evaluations
       .filter((e) => e.kind === "evaluator")
+      .filter((e) => new Date(e.begin_at).getTime() > now)
       .filter((e) => !snapshot.includes(e.id));
 
     console.log(`New bookings (not in snapshot): ${newBookings.length}`);
@@ -179,10 +188,17 @@ async function checkEvaluations(): Promise<void> {
     }
 
     await chrome.storage.local.set({
-      EVALUATION_SNAPSHOT: evaluations.map((e) => e.id),
+      EVALUATION_SNAPSHOT: [
+        ...new Set([
+          ...snapshot,
+          ...evaluations.map((e) => e.id),
+        ]),
+      ],
       EVALUATION_REMINDER_SNAPSHOT: [
-        ...reminderSnapshot,
-        ...upcomingReminders.map((e) => e.id),
+        ...new Set([
+          ...reminderSnapshot,
+          ...upcomingReminders.map((e) => e.id),
+        ]),
       ],
     });
 

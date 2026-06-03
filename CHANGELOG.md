@@ -2,7 +2,26 @@
 
 ## [Unreleased]
 
-## [1.0.7] - 2026-05-29
+## [1.0.9] - 2026-06-03
+
+### Features 🎉
+
+- feat: changed dark mode color ([b526d8b](https://github.com/nicopasla/better-intra/commit/b526d8b))
+- feat: improve Chrome and Firefox builds ([11abc21](https://github.com/nicopasla/better-intra/commit/11abc21))
+
+### Bug fixes 🐛
+
+- fix: change config to use boolean instead of true ([ac68878](https://github.com/nicopasla/better-intra/commit/ac68878))
+- fix: rename js imports to ts imports ([c0d77f3](https://github.com/nicopasla/better-intra/commit/c0d77f3))
+- fix: remove duplicate config call ([f46c8a4](https://github.com/nicopasla/better-intra/commit/f46c8a4))
+- fix: remove text-shadow from elements with inline styles ([4dcbd33](https://github.com/nicopasla/better-intra/commit/4dcbd33))
+- 
+### Maintenance 🧹
+
+- chore: remove alternative layout ([2fc4db9](https://github.com/nicopasla/better-intra/commit/2fc4db9))
+- chore: Bump concurrently from ^9.2.1 to ^10.0.0 ([23b5fb7](https://github.com/nicopasla/better-intra/commit/23b5fb7))
+
+## [1.0.8] - 2026-05-29
 
 ### Bug fixes 🐛
 

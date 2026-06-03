@@ -12,7 +12,6 @@ import { AccountState, resetButtonState } from "./state";
 export function createHandlers(state: AccountState, updateUI: () => void) {
   const handleLogin42 = () => {
     loginWith42(() => {
-      console.log("Settings refreshed without reload!");
       updateUI();
     });
   };
@@ -20,14 +19,6 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
   const handleToggleSync = async (enabled: boolean) => {
     state.isSyncEnabled = enabled;
     await chrome.storage.local.set({ CLOUD_SYNC_ENABLED: enabled });
-    updateUI();
-  };
-
-  const handleTestConnection = async () => {
-    state.buttons.testLoading = true;
-    updateUI();
-    state.activeSessions = await testCloudConnection();
-    state.buttons.testLoading = false;
     updateUI();
   };
 
@@ -146,7 +137,6 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
   return {
     handleLogin42,
     handleToggleSync,
-    handleTestConnection,
     handleDelete,
     handleWipe,
     handlePush,

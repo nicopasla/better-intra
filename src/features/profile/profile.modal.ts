@@ -276,7 +276,7 @@ export const createSettingsModal = async (
           background: "",
           backgroundMode: "fill",
         });
-      } catch (e) {}
+      } catch (e) { console.error("Failed to update visuals:", e); }
       close();
       location.reload();
     }
@@ -326,7 +326,7 @@ export const createSettingsModal = async (
 
     try {
       await syncMyVisuals(updatedVisuals);
-    } catch (e) {}
+    } catch (e) { console.error("Failed to sync visuals:", e); }
     onSaveCallback(updatedVisuals);
     close();
   });

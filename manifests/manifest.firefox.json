@@ -12,9 +12,6 @@
   ],
   "incognito": "not_allowed",
   "host_permissions": ["https://better-intra-worker.nicopasla.workers.dev/"],
-  "background": {
-    "scripts": ["background.js"]
-  },
   "content_scripts": [
     {
       "matches": ["https://*.intra.42.fr/*"],

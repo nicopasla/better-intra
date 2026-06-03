@@ -1,7 +1,7 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { until } from "lit-html/directives/until.js";
-import { getConfig } from "../../config.ts";
+import { getConfig, type ConfigKey } from "../../config.ts";
 import {
   FEATURE_DEFS,
   HUB_INFO,
@@ -264,6 +264,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
       renderCardOrder((def.defaultValue as string[]) || []);
     };
 
+    if (!def.key) return container;
     getConfig(def.key).then((savedOrder) => {
       let order: string[] = def.defaultValue as string[];
       if (savedOrder) {
@@ -284,7 +285,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
 
   return until(
     (async () => {
-      const value = (await getConfig(def.key)) ?? def.defaultValue ?? "";
+      const value = def.key ? ((await getConfig(def.key)) ?? def.defaultValue ?? "") : (def.defaultValue ?? "");
 
       switch (def.kind) {
         case "toggle":
@@ -922,9 +923,9 @@ async function resetFeatureSettings(
   root: ShadowRoot | HTMLElement,
   featureId: FeatureId,
 ): Promise<void> {
-  const keysToRemove = (HUB_SETTING_DEFS[featureId] ?? []).map(
-    (def) => def.key,
-  );
+  const keysToRemove = (HUB_SETTING_DEFS[featureId] ?? [])
+    .map((def) => def.key)
+    .filter((k): k is ConfigKey => k !== undefined);
   if (keysToRemove.length > 0) {
     await chrome.storage.local.remove(keysToRemove);
   }

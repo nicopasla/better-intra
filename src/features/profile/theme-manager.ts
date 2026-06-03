@@ -1,4 +1,4 @@
-import { getConfig } from "../../config";
+import { getConfig } from "../../config.ts";
 import themev3 from "./theme-v3.css?inline";
 import themev2 from "./theme-v2.css?inline";
 
@@ -50,7 +50,7 @@ function applyTheme(theme: "dark" | "light") {
  * Falls back to system preference if set to 'system'.
  * @returns A promise that resolves to the effective theme.
  */
-async function getEffectiveTheme(): Promise<"dark" | "light"> {
+export async function getEffectiveTheme(): Promise<"dark" | "light"> {
   const savedTheme = await getConfig("BETTER_INTRA_THEME");
 
   if (savedTheme === "system") {
@@ -66,6 +66,8 @@ async function getEffectiveTheme(): Promise<"dark" | "light"> {
  * Initializes the theme manager on page load.
  * Sets up listeners for theme changes and system preference changes.
  */
+let themeManagerInitialized = false;
+
 export async function initThemeManager() {
   const cachedTheme = sessionStorage.getItem("intra-theme") as
     | "dark"
@@ -78,6 +80,10 @@ export async function initThemeManager() {
   if (initialTheme !== cachedTheme) {
     applyTheme(initialTheme);
   }
+
+  if (themeManagerInitialized) return;
+  themeManagerInitialized = true;
+
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local" && changes.BETTER_INTRA_THEME) {
       sessionStorage.removeItem("intra-theme");
@@ -94,17 +100,4 @@ export async function initThemeManager() {
     });
 }
 
-/**
- * Helper function to manually toggle dark mode (useful for testing)
- */
-export function toggleTheme() {
-  const isDark = document.documentElement.classList.contains("dark");
-  applyTheme(isDark ? "light" : "dark");
-}
 
-/**
- * Get the current theme
- */
-export function getCurrentTheme(): "dark" | "light" {
-  return document.documentElement.classList.contains("dark") ? "dark" : "light";
-}

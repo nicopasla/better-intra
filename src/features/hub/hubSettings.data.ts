@@ -75,8 +75,7 @@ export type SettingKind =
   | "about"
   | "card-order";
 
-export const INTRA_FONT =
-  'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+export { INTRA_FONT } from "../logtime/constants.ts";
 
 export type HubSettingDef = {
   feature: FeatureId;

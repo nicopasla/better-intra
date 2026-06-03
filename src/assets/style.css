@@ -6,11 +6,13 @@
     "#events-shadow-wrapper",
     "#profile-shadow-wrapper",
     "#cluster-shadow-host",
-    "#shortcuts-shadow-wrapper";
+    "#shortcuts-shadow-wrapper",
+    "#friends-shadow-wrapper";
   themes: "light", "dark";
   include: [ 'button', 'toggle', 'input', 'select', 'radio', 'label',
     'card', 'tabs', 'modal', 'divider', 'swap', 'fieldset', 'status',
-    'tootlip', 'badge', 'collapse', 'ring'
+    'tooltip', 'badge', 'collapse', 'ring', 'avatar', 'indicator',
+    'list', 'loading', 'join', 'kbd', 'dropdown', 'menu'
     ]
 }
 

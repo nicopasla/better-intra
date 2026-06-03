@@ -7,7 +7,7 @@ const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
  * @param login The user's 42 login.
  * @returns A promise that resolves to the hex-encoded SHA-256 hash.
  */
-async function hashLogin(login: string): Promise<string> {
+export async function hashLogin(login: string): Promise<string> {
   const msgBuffer = new TextEncoder().encode(login.toLowerCase().trim());
   const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));

@@ -13,7 +13,6 @@ export interface AccountState {
   buttons: {
     push: ButtonState;
     pull: ButtonState;
-    testLoading: boolean;
   };
 }
 
@@ -36,7 +35,6 @@ export function createInitialState(): AccountState {
         error: false,
         text: "Pull Settings",
       },
-      testLoading: false,
     },
   };
 }

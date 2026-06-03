@@ -3,7 +3,7 @@
   "name": "Better Intra",
   "version": "1.0.8",
   "description": "Collection of features inside a single extension that improve UI and UX of the 42 Intra v3.",
-  "permissions": ["storage", "notifications", "alarms"],
+  "permissions": ["storage"],
   "web_accessible_resources": [
     {
       "resources": ["hook.js"],

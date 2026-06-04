@@ -3,15 +3,21 @@
   "name": "Better Intra",
   "version": "1.0.8",
   "description": "Collection of features inside a single extension that improve UI and UX of the 42 Intra v3.",
-  "permissions": ["storage"],
+  "permissions": ["storage", "activeTab"],
   "web_accessible_resources": [
     {
       "resources": ["hook.js"],
       "matches": ["https://*.intra.42.fr/*"]
     }
   ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Better Intra"
+  },
   "icons": {
-    "48": "icons/icon-48.png"
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
   },
   "incognito": "not_allowed",
   "host_permissions": ["https://better-intra-worker.nicopasla.workers.dev/"],

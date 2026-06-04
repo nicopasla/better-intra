@@ -15,6 +15,7 @@ function renderAccountTab(
   if (!state.token) {
     return html`
       <div
+        data-theme="light"
         class="w-full h-full flex flex-col items-center justify-center p-8 gap-4"
       >
         <div class="text-center">
@@ -38,7 +39,7 @@ function renderAccountTab(
   }
 
   return html`
-    <div class="w-full h-full flex flex-col gap-4 overflow-y-auto">
+    <div data-theme="light" class="w-full h-full flex flex-col gap-4 overflow-y-auto">
       <!-- Top Section: Status & Sync Info -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Left Card: Account Status -->
@@ -87,7 +88,7 @@ function renderAccountTab(
         </div>
 
         <!-- Right Card: Cloud Sync -->
-        <div class="bg-base-200 shadow-md rounded-xl border border-base-300">
+        <div class="bg-base-200 shadow-md p-5 rounded-xl border border-base-300">
           <h2 class="text-lg font-bold text-base-content mb-4">Cloud Sync</h2>
           <div class="grid grid-cols-2 gap-3">
             <!-- Pull Button - spans rows 1+2 -->

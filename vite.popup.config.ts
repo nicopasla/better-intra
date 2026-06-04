@@ -2,8 +2,8 @@ import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "path";
 import fs from "fs";
-import { cp } from "fs/promises";
 import pkg from "./package.json";
+import { cp } from "fs/promises";
 
 const target = (process.env.TARGET || "firefox") as "firefox" | "chrome";
 const outDir = process.env.BUILD_OUT_DIR || "dist";
@@ -12,27 +12,32 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     {
-      name: "write-manifest",
+      name: "write-popup-html",
       closeBundle() {
-        const manifestSrc = resolve(
-          __dirname,
-          `manifests/manifest.${target}.json`,
-        );
-        const manifestDst = resolve(__dirname, `${outDir}/manifest.json`);
-
-        if (!fs.existsSync(manifestSrc)) {
-          console.error(`\nManifest not found: ${manifestSrc}\n`);
-          return;
-        }
-
-        const manifest = JSON.parse(fs.readFileSync(manifestSrc, "utf-8"));
-        manifest.version = pkg.version;
+        const popupHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Better Intra</title>
+  <style>
+    html, body { margin: 0; padding: 0; width: 420px; min-height: 320px; }
+    #popup-root { width: 100%; min-height: 320px; background: var(--color-base-100); }
+  </style>
+</head>
+<body>
+  <div id="popup-root" data-theme="light">
+    <div id="account-root" class="p-4"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>`;
         fs.writeFileSync(
-          manifestDst,
-          JSON.stringify(manifest, null, 2),
+          resolve(__dirname, outDir, "popup.html"),
+          popupHtml,
           "utf-8",
         );
-        console.log(`\nmanifest.json written for ${target} v${pkg.version}\n`);
+        console.log(`popup.html written`);
         // Copy icons
         const iconsSrc = resolve(__dirname, "public/icons");
         const iconsDst = resolve(__dirname, `${outDir}/icons`);
@@ -51,7 +56,7 @@ export default defineConfig({
     emptyOutDir: false,
     minify: false,
     rollupOptions: {
-      input: { content: resolve(__dirname, "src/main.ts") },
+      input: { popup: resolve(__dirname, "src/popup/popup.ts") },
       output: {
         format: "iife",
         entryFileNames: "[name].js",

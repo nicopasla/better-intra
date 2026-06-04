@@ -3,7 +3,7 @@
   "name": "Better Intra",
   "version": "1.0.8",
   "description": "Collection of features inside a single extension that improve UI and UX of the 42 Intra v3.",
-  "permissions": ["storage"],
+  "permissions": ["storage", "activeTab"],
   "web_accessible_resources": [
     {
       "resources": ["hook.js"],
@@ -19,6 +19,15 @@
       "run_at": "document_start"
     }
   ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Better Intra"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
   "browser_specific_settings": {
     "gecko": {
       "id": "better-intra@nicopasla.42",

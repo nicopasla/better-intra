@@ -21,6 +21,15 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
 };
 
 (async function runBetterIntra() {
+  const oauthParams = new URLSearchParams(window.location.search);
+  const oauthToken = oauthParams.get("token");
+  const oauthLogin = oauthParams.get("login");
+  if (oauthToken && oauthLogin) {
+    await chrome.storage.local.set({ CLOUD_TOKEN: oauthToken, CLOUD_LOGIN: oauthLogin });
+    window.close();
+    return;
+  }
+
   const waitForIntra = async () => {
     const target =
       document.getElementById("root") ||

@@ -35,33 +35,49 @@ export async function loginWith42(onSuccess?: () => void): Promise<void> {
   }
 
   const WORKER_ORIGIN = new URL(WORKER_URL).origin;
+  const isExtension = window.location.protocol === "chrome-extension:" || window.location.protocol === "moz-extension:";
 
   const messageListener = async (event: MessageEvent) => {
-    // Ensure the message is from the trusted worker origin
     if (event.origin !== WORKER_ORIGIN) return;
 
     if (event.data && event.data.type === "42_AUTH_SUCCESS") {
       const { token, login } = event.data;
 
       if (token && login) {
-        // Save the new token and login to local storage
         await chrome.storage.local.set({
           CLOUD_TOKEN: token,
           CLOUD_LOGIN: login,
         });
 
         window.removeEventListener("message", messageListener);
+        if (pollInterval) clearInterval(pollInterval);
         popup.close();
         if (onSuccess) {
-          onSuccess(); // Execute callback if provided
+          onSuccess();
         } else {
-          window.location.reload(); // Default to reloading the page
+          window.location.reload();
         }
       }
     }
   };
 
   window.addEventListener("message", messageListener);
+
+  let pollInterval: ReturnType<typeof setInterval> | undefined;
+  if (isExtension) {
+    pollInterval = setInterval(async () => {
+      if (!popup.closed) return;
+      clearInterval(pollInterval);
+      window.removeEventListener("message", messageListener);
+      await new Promise(r => setTimeout(r, 300));
+      const savedLogin = await getCloudLogin();
+      const savedToken = await getConfig("CLOUD_TOKEN");
+      if (savedLogin && savedToken) {
+        if (onSuccess) onSuccess();
+        else window.location.reload();
+      }
+    }, 500);
+  }
 }
 
 /**

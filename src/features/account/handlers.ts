@@ -11,8 +11,9 @@ import { AccountState, resetButtonState } from "./state";
 
 export function createHandlers(state: AccountState, updateUI: () => void) {
   const handleLogin42 = () => {
-    loginWith42(() => {
+    loginWith42(async () => {
       updateUI();
+      await reloadTab();
     });
   };
 
@@ -22,10 +23,15 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
     updateUI();
   };
 
+  const reloadTab = async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id) chrome.tabs.reload(tab.id);
+  };
+
   const handleDelete = async () => {
     if (confirm("Disconnect and clear your cloud session data locally?")) {
       await logoutCloud();
-      window.location.reload();
+      await reloadTab();
     }
   };
 
@@ -40,7 +46,7 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
     const success = await wipeAllCloudData();
     if (success) {
       alert("All cloud data successfully wiped.");
-      window.location.reload();
+      await reloadTab();
     } else {
       alert("Failed to delete cloud data. Please try again.");
     }
@@ -119,7 +125,7 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
         text: "Restored!",
       } as any;
       updateUI();
-      setTimeout(() => window.location.reload(), 1500);
+      setTimeout(() => reloadTab(), 1500);
     } else {
       state.buttons.pull = {
         loading: false,

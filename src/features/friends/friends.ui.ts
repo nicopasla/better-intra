@@ -117,12 +117,12 @@ function renderFriendRow(
           : ""}
       </div>
 
-      <!-- Cursus + grade -->
-      ${friend.cursus || friend.grade
+      <!-- Grade + pool -->
+      ${friend.grade
         ? html` <div class="text-xs opacity-50 truncate mb-1.5">
-            ${[friend.grade].filter(Boolean).join(" · ")}
-            ${friend.poolYear
-              ? html`<span class="opacity-70">· ${friend.poolYear}</span>`
+            ${friend.grade}
+            ${friend.poolLabel
+              ? html`<span class="opacity-70">· ${friend.poolLabel}</span>`
               : ""}
           </div>`
         : ""}

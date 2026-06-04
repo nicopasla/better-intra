@@ -9,10 +9,9 @@ export interface FriendData {
   avatar: string | null;
   level: number;
   grade: string | null;
-  cursus: string | null;
   isOnline: boolean;
   lastSeen: string | null;
-  poolYear: string | null;
+  poolLabel: string | null;
   wallet: number;
   correctionPoints: number;
 }

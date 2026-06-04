@@ -2,6 +2,38 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-04
+
+### Features 🎉
+
+- feat: add new friends menu to track your friends stats ([23427fe](https://github.com/nicopasla/better-intra/commit/23427fe))
+- feat: add new icon menu for the account settings ([836973b](https://github.com/nicopasla/better-intra/commit/836973b))
+- feat: add basic icon ([4c0a89c](https://github.com/nicopasla/better-intra/commit/4c0a89c))
+- feat: add pool month ([2b79117](https://github.com/nicopasla/better-intra/commit/2b79117))
+
+### Bug fixes 🐛
+
+- fix: update old daisyui var ([1d02eec](https://github.com/nicopasla/better-intra/commit/1d02eec))
+- fix: remove friends cache ([aea2e98](https://github.com/nicopasla/better-intra/commit/aea2e98))
+- fix: updated rainbow animations to be less catchy ([3d0c5e5](https://github.com/nicopasla/better-intra/commit/3d0c5e5))
+- fix: input focus after adding a friend ([5a03782](https://github.com/nicopasla/better-intra/commit/5a03782))
+- fix: remove console log and add pollTimer ([b7b1cc3](https://github.com/nicopasla/better-intra/commit/b7b1cc3))
+- fix: export only once INTRA_FONT ([aee447c](https://github.com/nicopasla/better-intra/commit/aee447c))
+- fix: refactor to fix ts issues ([25534a9](https://github.com/nicopasla/better-intra/commit/25534a9))
+- fix: remove console log ([2e76d45](https://github.com/nicopasla/better-intra/commit/2e76d45))
+- fix: remove strict type errors ([f95f19f](https://github.com/nicopasla/better-intra/commit/f95f19f))
+- fix: add console errors when syncMyVisuals fail ([71cf18b](https://github.com/nicopasla/better-intra/commit/71cf18b))
+- fix: improve observer in profile main ([f20a139](https://github.com/nicopasla/better-intra/commit/f20a139))
+
+### Maintenance 🧹
+
+- chore: remove account tab ([532fa08](https://github.com/nicopasla/better-intra/commit/532fa08))
+- chore: remove tests ([2b46c3f](https://github.com/nicopasla/better-intra/commit/2b46c3f))
+- chore: remove handleTestConnection ([17a1a5d](https://github.com/nicopasla/better-intra/commit/17a1a5d))
+- chore: refactor shortcut export ([82efc6c](https://github.com/nicopasla/better-intra/commit/82efc6c))
+- chore: refactor and delete testing functions ([b1a5f80](https://github.com/nicopasla/better-intra/commit/b1a5f80))
+- chore: remove background.ts ([4b11b7d](https://github.com/nicopasla/better-intra/commit/4b11b7d))
+
 ## [1.0.9] - 2026-06-03
 
 ### Features 🎉
@@ -274,7 +306,9 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.0.8...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/nicopasla/better-intra/compare/v1.0.9...v1.1.0
+[1.0.9]: https://github.com/nicopasla/better-intra/compare/v1.0.8...v1.0.9
 [1.0.8]: https://github.com/nicopasla/better-intra/compare/v1.0.7...v1.0.8
 [1.0.7]: https://github.com/nicopasla/better-intra/compare/v1.0.6...v1.0.7
 [1.0.6]: https://github.com/nicopasla/better-intra/compare/v1.0.5...v1.0.6

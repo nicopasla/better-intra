@@ -1,16 +1,16 @@
 {
   "name": "better-intra",
   "private": true,
-  "version": "1.0.9",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev:firefox": "concurrently \"npm run watch:firefox\" \"npm run web-ext:firefox\"",
     "dev:chrome": "concurrently \"npm run watch:chrome\" \"npm run web-ext:chrome\"",
     "dev:brave": "concurrently \"npm run watch:chrome\" \"npm run web-ext:brave\"",
-    "build:chrome": "cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome tsc && cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome vite build",
-    "build:firefox": "cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build",
-    "watch:firefox": "cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build --watch",
-    "watch:chrome": "cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome vite build --watch",
+    "build:chrome": "cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome tsc && cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome vite build && cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome vite build --config vite.popup.config.ts",
+    "build:firefox": "cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build && cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build --config vite.popup.config.ts",
+    "watch:firefox": "concurrently \"cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build --watch\" \"cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build --config vite.popup.config.ts --watch\"",
+    "watch:chrome": "concurrently \"cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome vite build --watch\" \"cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome vite build --config vite.popup.config.ts --watch\"",
     "web-ext:firefox": "web-ext run --keep-profile-changes --source-dir dist-firefox --start-url https://profile-v3.intra.42.fr",
     "web-ext:chrome": "web-ext run -t chromium --source-dir dist --start-url https://profile-v3.intra.42.fr",
     "web-ext:brave": "web-ext run -t chromium --chromium-binary \"C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe\" --source-dir dist-chrome --start-url https://profile-v3.intra.42.fr"
@@ -20,6 +20,7 @@
     "concurrently": "^10.0.0",
     "cross-env": "^10.1.0",
     "daisyui": "^5.5.20",
+    "sharp": "^0.34.5",
     "typescript": "~6.0.3",
     "vite": "^8.0.14",
     "web-ext": "^10.3.0"

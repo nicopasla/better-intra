@@ -25,20 +25,33 @@ function renderLevelBar(level: number, color = "#00babc", highlight?: boolean) {
   const whole = Math.floor(level);
   return html`
     <div class="flex items-center gap-1.5 w-full">
-      <span class="text-lg font-bold opacity-60 w-8 text-right shrink-0">${whole}</span>
+      <span class="text-lg font-bold opacity-60 w-8 text-right shrink-0"
+        >${whole}</span
+      >
       <div class="flex-1 h-3 rounded-full bg-base-300 overflow-hidden relative">
         <div
-          class="h-full rounded-full transition-all duration-500 ${highlight ? "level-bar-rainbow" : ""}"
+          class="h-full rounded-full transition-all duration-500 ${highlight
+            ? "badge-rainbow"
+            : ""}"
           style="width:${pct}%; ${highlight ? "" : `background:${color};`}"
         ></div>
-        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-base-content/70 mix-blend-difference leading-none">${pct}%</span>
+        <span
+          class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-base-content/70 mix-blend-difference leading-none"
+          >${pct}%</span
+        >
       </div>
-      <span class="text-lg font-bold opacity-60 w-8 shrink-0">${whole + 1}</span>
+      <span class="text-lg font-bold opacity-60 w-8 shrink-0"
+        >${whole + 1}</span
+      >
     </div>
   `;
 }
 
-function renderFriendRow(friend: FriendData, onRemove: (login: string) => void, highlight = false) {
+function renderFriendRow(
+  friend: FriendData,
+  onRemove: (login: string) => void,
+  highlight = false,
+) {
   return html`
     <!-- Avatar column -->
     <div class="shrink-0">
@@ -55,12 +68,22 @@ function renderFriendRow(friend: FriendData, onRemove: (login: string) => void, 
                 <img src="${friend.avatar}" alt="${friend.login}" />
               </div>
             </div>`
-          : html`<div class="avatar avatar-placeholder ${friend.isOnline ? "avatar-online" : ""}">
+          : html`<div
+              class="avatar avatar-placeholder ${friend.isOnline
+                ? "avatar-online"
+                : ""}"
+            >
               <div class="w-14 h-14 rounded-full">
-                <span class="text-base font-bold">${friend.login[0].toUpperCase()}</span>
+                <span class="text-base font-bold"
+                  >${friend.login[0].toUpperCase()}</span
+                >
               </div>
             </div>`}
-        <div class="badge badge-primary badge-md font-bold text-xs px-2.5 py-1.5">${friend.level.toFixed(2)}</div>
+        <div
+          class="badge badge-primary badge-md font-bold text-xs px-2.5 py-1.5"
+        >
+          ${friend.level.toFixed(2)}
+        </div>
       </a>
     </div>
 
@@ -74,9 +97,13 @@ function renderFriendRow(friend: FriendData, onRemove: (login: string) => void, 
     >
       <!-- Login + display name + status inline -->
       <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
-        <span class="font-bold text-base text-base-content">${friend.login}</span>
+        <span class="font-bold text-base text-base-content"
+          >${friend.login}</span
+        >
         ${friend.displayName && friend.displayName !== friend.login
-          ? html`<span class="text-xs opacity-60 truncate">${friend.displayName}</span>`
+          ? html`<span class="text-xs opacity-60 truncate"
+              >${friend.displayName}</span
+            >`
           : ""}
         ${friend.isOnline && friend.lastSeen
           ? html`<a
@@ -85,16 +112,18 @@ function renderFriendRow(friend: FriendData, onRemove: (login: string) => void, 
               rel="noopener noreferrer"
               class="badge badge-success badge-sm shrink-0 hover:brightness-110 transition-all cursor-pointer no-underline"
               title="View ${friend.lastSeen} on cluster map"
-            >${friend.lastSeen}</a>`
+              >${friend.lastSeen}</a
+            >`
           : ""}
       </div>
 
       <!-- Cursus + grade -->
       ${friend.cursus || friend.grade
-        ? html`
-          <div class="text-xs opacity-50 truncate mb-1.5">
+        ? html` <div class="text-xs opacity-50 truncate mb-1.5">
             ${[friend.grade].filter(Boolean).join(" · ")}
-            ${friend.poolYear ? html`<span class="opacity-70">· ${friend.poolYear}</span>` : ""}
+            ${friend.poolYear
+              ? html`<span class="opacity-70">· ${friend.poolYear}</span>`
+              : ""}
           </div>`
         : ""}
 
@@ -102,26 +131,44 @@ function renderFriendRow(friend: FriendData, onRemove: (login: string) => void, 
       <div class="mb-1">
         ${renderLevelBar(friend.level, undefined, highlight)}
       </div>
-
     </a>
 
     <!-- Stats column (right-aligned) -->
     <div class="flex flex-col items-end gap-1.5 shrink-0 justify-center">
       <div class="flex items-center gap-1.5" title="Wallet">
-        <span class="text-xs opacity-40">₳</span>
+        <span class="text-xl opacity-40">₳</span>
         <span class="text-base font-bold opacity-80">${friend.wallet}</span>
       </div>
       <div class="flex items-center gap-1.5" title="Correction points">
-        <span class="text-xs opacity-40">✦</span>
-        <span class="text-base font-bold opacity-80">${friend.correctionPoints}</span>
+        <span class="text-xl opacity-40">✦</span>
+        <span class="text-base font-bold opacity-80"
+          >${friend.correctionPoints}</span
+        >
       </div>
     </div>
 
     <!-- Menu column (far right) -->
-    <div class="dropdown dropdown-end opacity-0 group-hover:opacity-60 hover:opacity-100! transition-opacity">
-      <div tabindex="0" role="button" class="btn btn-ghost btn-sm btn-circle">⋮</div>
-      <ul tabindex="-1" class="dropdown-content menu bg-base-100 rounded-box z-10 min-w-32 p-2 shadow-lg border border-base-300">
-        <li><button class="text-error font-bold text-sm" @click="${(e: Event) => { e.stopPropagation(); onRemove(friend.login); }}">✕ Remove</button></li>
+    <div
+      class="dropdown dropdown-end opacity-0 group-hover:opacity-60 hover:opacity-100! transition-opacity"
+    >
+      <div tabindex="0" role="button" class="btn btn-ghost btn-sm btn-circle">
+        ⋮
+      </div>
+      <ul
+        tabindex="-1"
+        class="dropdown-content menu bg-base-100 rounded-box z-10 min-w-32 p-2 shadow-lg border border-base-300"
+      >
+        <li>
+          <button
+            class="text-error font-bold text-sm"
+            @click="${(e: Event) => {
+              e.stopPropagation();
+              onRemove(friend.login);
+            }}"
+          >
+            ✕ Remove
+          </button>
+        </li>
       </ul>
     </div>
   `;
@@ -145,7 +192,9 @@ function clusterUrl(location: string): string {
 function renderEmpty() {
   return html`
     <div class="flex flex-col items-center gap-2 py-16 opacity-40">
-      <span class="w-16 h-16 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current">${unsafeHTML(FRIENDS_SVG)}</span>
+      <span class="w-16 h-16 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
+        >${unsafeHTML(FRIENDS_SVG)}</span
+      >
       <p class="text-sm font-bold">No friends yet</p>
       <p class="text-xs">Add one using the input below</p>
     </div>
@@ -206,13 +255,18 @@ function renderSortSelect(current: SortMode, onChange: (m: SortMode) => void) {
   return html`
     <select
       class="select select-bordered select-sm min-w-32 font-bold tracking-wide"
-      @change="${(e: Event) => onChange((e.target as HTMLSelectElement).value as SortMode)}"
+      @change="${(e: Event) =>
+        onChange((e.target as HTMLSelectElement).value as SortMode)}"
       title="Sort by"
       style="padding-right: 2rem; background-position: right 0.35rem center;"
     >
       ${modes.map(
         (m) => html`
-          <option value="${m}" ?selected="${current === m}" class="bg-base-100 text-base-content">
+          <option
+            value="${m}"
+            ?selected="${current === m}"
+            class="bg-base-100 text-base-content"
+          >
             Sort: ${SORT_LABELS[m]}
           </option>
         `,
@@ -227,19 +281,38 @@ function renderWidget(state: WidgetState) {
 
   return html`
     <style>
-      ${CSS}
-      :host { display: block; }
-
-      @keyframes rainbow-shift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+      ${CSS} :host {
+        display: block;
       }
 
-      .level-bar-rainbow {
-        background: linear-gradient(270deg, #ff0000, #ff7f00, #ffeb3b, #4caf50, #00bcd4, #2196f3, #3f51b5, #9c27b0, #e91e63, #ff0000);
-        background-size: 400% 400%;
-        animation: rainbow-shift 3s ease infinite;
+      @keyframes rainbow-shift {
+        from {
+          background-position: 200% 0;
+        }
+        to {
+          background-position: 0% 0;
+        }
+      }
+
+      .badge-rainbow {
+        background: linear-gradient(
+          90deg,
+          #ff0000,
+          #ff7f00,
+          #ffeb3b,
+          #4caf50,
+          #00bcd4,
+          #2196f3,
+          #3f51b5,
+          #9c27b0,
+          #e91e63,
+          #ff0000
+        );
+        background-size: 200% 100% !important;
+        animation: rainbow-shift 5s linear infinite !important;
+        border: none !important;
+        color: white !important;
+        text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
       }
 
       .friends-fab {
@@ -259,7 +332,9 @@ function renderWidget(state: WidgetState) {
         display: flex;
         flex-direction: column;
         transform-origin: bottom right;
-        transition: opacity 0.15s ease, transform 0.15s ease;
+        transition:
+          opacity 0.15s ease,
+          transform 0.15s ease;
       }
 
       .friends-dropdown.closed {
@@ -280,7 +355,10 @@ function renderWidget(state: WidgetState) {
       <div class="friends-fab">
         <div class="indicator">
           ${onlineCount > 0
-            ? html`<span class="indicator-item badge badge-success badge-sm font-bold min-w-6 px-1.5">${onlineCount}</span>`
+            ? html`<span
+                class="indicator-item badge badge-success badge-sm font-bold min-w-6 px-1.5"
+                >${onlineCount}</span
+              >`
             : ""}
           <button
             type="button"
@@ -290,7 +368,10 @@ function renderWidget(state: WidgetState) {
           >
             <div class="swap ${state.open ? "swap-active" : ""}">
               <span class="swap-on text-lg">✕</span>
-              <span class="swap-off flex items-center justify-center w-6 h-6 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current">${unsafeHTML(FRIENDS_SVG)}</span>
+              <span
+                class="swap-off flex items-center justify-center w-6 h-6 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
+                >${unsafeHTML(FRIENDS_SVG)}</span
+              >
             </div>
           </button>
         </div>
@@ -298,30 +379,51 @@ function renderWidget(state: WidgetState) {
 
       <!-- Dropdown -->
       <div
-        class="friends-dropdown card card-border bg-base-100 shadow-xl ${state.open ? "" : "closed"}"
+        class="friends-dropdown card card-border bg-base-100 shadow-xl ${state.open
+          ? ""
+          : "closed"}"
       >
         <!-- Header -->
-        <div class="flex items-center justify-between px-5 py-4 border-b border-base-300 bg-base-200/50 shrink-0">
+        <div
+          class="flex items-center justify-between px-5 py-4 border-b border-base-300 bg-base-200/50 shrink-0"
+        >
           <div class="flex items-center gap-2.5">
             <span class="font-bold text-lg text-base-content">Friends</span>
             ${state.friends.length > 0
-              ? html`<span class="badge badge-primary badge-md font-bold">${state.friends.length}</span>`
+              ? html`<span class="badge badge-primary badge-md font-bold"
+                  >${state.friends.length}</span
+                >`
               : ""}
             ${onlineCount > 0
-              ? html`<span class="badge badge-success badge-md font-bold">${onlineCount} online</span>`
+              ? html`<span class="badge badge-success badge-md font-bold"
+                  >${onlineCount} online</span
+                >`
               : ""}
-
           </div>
           <div class="flex items-center gap-2">
-            ${state.friends.length > 0 ? renderSortSelect(state.sortBy, state.onSortChange) : ""}
-            <div class="tooltip tooltip-left" data-tip="${state.lastFetch ? `Updated ${formatTimeAgo(state.lastFetch)}` : "Not yet updated"}">
+            ${state.friends.length > 0
+              ? renderSortSelect(state.sortBy, state.onSortChange)
+              : ""}
+            <div
+              class="tooltip tooltip-left"
+              data-tip="${state.lastFetch
+                ? `Updated ${formatTimeAgo(state.lastFetch)}`
+                : "Not yet updated"}"
+            >
               <button
                 type="button"
-                class="btn btn-sm btn-square opacity-50 hover:opacity-100 ${state.loading ? "loading" : ""} ${state.lastFetch && Date.now() - state.lastFetch < 60000 ? "btn-outline btn-success" : "btn-ghost"}"
+                class="btn btn-sm btn-square opacity-50 hover:opacity-100 ${state.loading
+                  ? "loading"
+                  : ""} ${state.lastFetch &&
+                Date.now() - state.lastFetch < 60000
+                  ? "btn-outline btn-success"
+                  : "btn-ghost"}"
                 @click="${state.onRefresh}"
               >
                 <div class="swap ${state.loading ? "swap-active" : ""}">
-                  <span class="swap-on loading loading-spinner loading-xs"></span>
+                  <span
+                    class="swap-on loading loading-spinner loading-xs"
+                  ></span>
                   <span class="swap-off text-lg">↻</span>
                 </div>
               </button>
@@ -332,11 +434,18 @@ function renderWidget(state: WidgetState) {
         <!-- Friend list -->
         <div class="friends-list">
           ${state.loading && state.friends.length === 0
-            ? html`<div class="flex justify-center py-12"><span class="loading loading-spinner loading-md"></span></div>`
+            ? html`<div class="flex justify-center py-12">
+                <span class="loading loading-spinner loading-md"></span>
+              </div>`
             : state.friends.length === 0
               ? renderEmpty()
               : html`<ul class="list">
-                  ${sorted.map((f, i) => html`<li class="list-row group">${renderFriendRow(f, state.onRemove, i === 0)}</li>`)}
+                  ${sorted.map(
+                    (f, i) =>
+                      html`<li class="list-row group">
+                        ${renderFriendRow(f, state.onRemove, i === 0)}
+                      </li>`,
+                  )}
                 </ul>`}
         </div>
 
@@ -348,19 +457,28 @@ function renderWidget(state: WidgetState) {
               class="input input-bordered input-sm join-item flex-1"
               placeholder="Add friend by login..."
               .value="${state.addInput}"
-              @input="${(e: Event) => state.onInputChange((e.target as HTMLInputElement).value)}"
-              @keydown="${(e: KeyboardEvent) => { if (e.key === "Enter") state.onAdd(); }}"
+              @input="${(e: Event) =>
+                state.onInputChange((e.target as HTMLInputElement).value)}"
+              @keydown="${(e: KeyboardEvent) => {
+                if (e.key === "Enter") state.onAdd();
+              }}"
               ?disabled="${state.addLoading}"
             />
             <button
               type="button"
-              class="btn btn-sm btn-primary join-item font-bold ${state.addLoading ? "loading" : ""}"
+              class="btn btn-sm btn-primary join-item font-bold ${state.addLoading
+                ? "loading"
+                : ""}"
               @click="${state.onAdd}"
               ?disabled="${state.addLoading || !state.addInput.trim()}"
-            >${state.addLoading ? "" : "＋ Add"}</button>
+            >
+              ${state.addLoading ? "" : "＋ Add"}
+            </button>
           </div>
           ${state.addError
-            ? html`<p class="text-error text-sm mt-1.5 px-0.5">${state.addError}</p>`
+            ? html`<p class="text-error text-sm mt-1.5 px-0.5">
+                ${state.addError}
+              </p>`
             : ""}
         </div>
       </div>
@@ -477,4 +595,3 @@ export async function injectFriendsWidget() {
   _state.loading = false;
   renderWidgetUI();
 }
-

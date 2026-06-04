@@ -464,6 +464,7 @@ export async function injectFriendsWidget() {
       _state.addInput = "";
       _state.addLoading = false;
       renderWidgetUI();
+      _shadow?.querySelector<HTMLInputElement>('input[type="text"]')?.focus();
     },
   };
 

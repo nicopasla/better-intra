@@ -2,7 +2,6 @@ import CLOCK from "../../assets/svg/clock.svg?raw";
 import CLUSTERS from "../../assets/svg/grip-vertical.svg?raw";
 import USER from "../../assets/svg/user.svg?raw";
 import SHORTCUT from "../../assets/svg/shortcut.svg?raw";
-import CLOUD from "../../assets/svg/cloud.svg?raw";
 import ABOUT from "../../assets/svg/about.svg?raw";
 import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
 import { CLUSTERS as CLUSTER_OPTIONS } from "../clusters/clusters.data.ts";
@@ -42,12 +41,6 @@ export const FEATURE_DEFS = [
     desc: "Manage custom navigation links.",
   },
   {
-    id: "account",
-    name: "Account",
-    icon: CLOUD,
-    desc: "Sync your settings to the cloud and manage your session.",
-  },
-  {
     id: "about",
     name: "About",
     icon: ABOUT,
@@ -71,7 +64,6 @@ export type SettingKind =
   | "divider"
   | "shortcuts"
   | "emoji"
-  | "account"
   | "about"
   | "card-order";
 
@@ -302,15 +294,6 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       key: "SHORTCUTS_LINKS",
       label: "",
       kind: "shortcuts",
-      fullWidth: true,
-    },
-  ],
-  account: [
-    {
-      feature: "account",
-      key: "ACCOUNT",
-      label: "",
-      kind: "account",
       fullWidth: true,
     },
   ],

@@ -17,7 +17,6 @@ import {
   renderShortcutsSettings,
   type ShortcutLink,
 } from "../shortcuts/shortcuts.ui.ts";
-import { initAccountSettings } from "../account/account.ui.ts";
 import { syncToCloud } from "../account/account.ts";
 import HUB_CSS from "../../assets/style.css?inline";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
@@ -90,11 +89,6 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
     return container;
   }
 
-  if (def.kind === "account") {
-    const container = document.createElement("div");
-    initAccountSettings(container);
-    return container;
-  }
   if (def.kind === "about") {
     return renderAboutPanel();
   }
@@ -524,13 +518,12 @@ function renderTabsContent(active: FeatureId[]) {
       >
         <div
           class="flex flex-col ${enabled ||
-          f.id === "about" ||
-          f.id === "account"
+           f.id === "about"
             ? ""
             : "opacity-40 grayscale"}"
           data-feature-panel="${f.id}"
         >
-          ${f.id !== "about" && f.id !== "account"
+          ${f.id !== "about"
             ? html`
                 <div
                   class="sticky top-0 z-20 flex items-center justify-between bg-base-200 px-6 py-4 border-b border-base-300 shadow-sm"
@@ -561,7 +554,7 @@ function renderTabsContent(active: FeatureId[]) {
             : ""}
 
           <div
-            class="${f.id === "about" || f.id === "account"
+            class="${f.id === "about"
               ? "p-6 w-full"
               : "grid grid-cols-1 md:grid-cols-2 gap-4 p-6"}"
           >

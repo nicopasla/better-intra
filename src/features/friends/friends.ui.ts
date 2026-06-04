@@ -527,7 +527,7 @@ export async function injectFriendsWidget() {
       _state.loading = true;
       renderWidgetUI();
       const list = await getFriendsList();
-      _state.friends = await fetchFriendsData(list, true);
+      _state.friends = await fetchFriendsData(list);
       _state.lastFetch = Date.now();
       _state.loading = false;
       renderWidgetUI();
@@ -568,7 +568,7 @@ export async function injectFriendsWidget() {
 
       await addFriend(login);
 
-      const fresh = await fetchFriendsData([login], true);
+      const fresh = await fetchFriendsData([login]);
       if (fresh.length === 0) {
         await removeFriend(login);
         _state.addError = "User not found.";

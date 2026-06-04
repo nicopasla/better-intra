@@ -104,14 +104,14 @@ export async function injectEventsSelect() {
   style.textContent = `
     ${CSS}
     :host {
-      --base-100: hsl(var(--b1));
-      --base-content: hsl(var(--bc));
+      --base-100: var(--color-base-100);
+      --base-content: var(--color-base-content);
     }
     
     select {
       background-color: var(--base-100) !important;
       color: var(--base-content) !important;
-      border-color: var(--bc) !important;
+      border-color: var(--base-content) !important;
     }
   `;
   shadowRoot.appendChild(style);

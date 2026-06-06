@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Better Intra",
   "version": "1.0.8",
-  "description": "Collection of features inside a single extension that improve UI and UX of the 42 Intra v3.",
+  "description": "UI and UX improvements for 42 Intra: logtime calendar, cluster map tools, custom profiles, shortcuts, friends widget, and more.",
   "permissions": ["storage", "activeTab"],
   "web_accessible_resources": [
     {

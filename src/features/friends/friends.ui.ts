@@ -365,7 +365,7 @@ function renderWidget(state: WidgetState) {
       }
     </style>
 
-    <div id="friends-shadow-wrapper" data-theme="${state.theme}">
+    <div data-theme="${state.theme}"
       <!-- FAB -->
       <div class="friends-fab">
         <div class="indicator">
@@ -557,8 +557,6 @@ function renderWidgetUI() {
 export async function injectFriendsWidget() {
   if (_host) return;
 
-  const theme = await getEffectiveTheme();
-
   _host = document.createElement("div");
   _host.id = HOST_ID;
   document.body.appendChild(_host);
@@ -576,7 +574,7 @@ export async function injectFriendsWidget() {
     addLoading: false,
     addError: "",
     lastFetch: null,
-    theme,
+    theme: await getEffectiveTheme(),
     needsReconnect: !!token && authFailed,
     notConnected: !token,
     onToggle: () => {

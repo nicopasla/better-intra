@@ -1,6 +1,7 @@
 import { getConfig } from "../../config.ts";
 import themev3 from "./theme-v3.css?inline";
 import themev2 from "./theme-v2.css?inline";
+import themeLightV3 from "./theme-light-v3.css?inline";
 
 /**
  * Applies the selected theme by adding/removing the 'dark' class
@@ -19,26 +20,30 @@ function applyTheme(theme: "dark" | "light") {
 
   // 2. Manage the injected stylesheet based on the setting
   let styleEl = document.getElementById("better-intra-theme-stylesheet");
+  const isV3 = window.location.hostname === "profile-v3.intra.42.fr";
 
   if (isDark) {
-    // If dark mode is ON, inject the right CSS if it's missing
-    if (!styleEl) {
+    const css = isV3 ? themev3 : themev2;
+    if (styleEl) {
+      styleEl.textContent = css;
+    } else {
       styleEl = document.createElement("style");
       styleEl.id = "better-intra-theme-stylesheet";
-      if (window.location.hostname === "profile-v3.intra.42.fr") {
-        styleEl.textContent = themev3;
-      } else {
-        styleEl.textContent = themev2;
-      }
-      // Target head, fallback to documentElement if head isn't parsed yet
-      const target = document.head || document.documentElement;
-      target.appendChild(styleEl);
+      styleEl.textContent = css;
+      (document.head || document.documentElement).appendChild(styleEl);
     }
-  } else {
-    // If dark mode is OFF, completely remove the CSS
+  } else if (isV3) {
+    const css = themeLightV3;
     if (styleEl) {
-      styleEl.remove();
+      styleEl.textContent = css;
+    } else {
+      styleEl = document.createElement("style");
+      styleEl.id = "better-intra-theme-stylesheet";
+      styleEl.textContent = css;
+      (document.head || document.documentElement).appendChild(styleEl);
     }
+  } else if (styleEl) {
+    styleEl.remove();
   }
 
   // 3. Store in sessionStorage for quick sync access on next navigation
@@ -99,5 +104,3 @@ export async function initThemeManager() {
       }
     });
 }
-
-

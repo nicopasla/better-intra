@@ -5,37 +5,33 @@ import { syncMyVisuals } from "../account/account.ts";
 import { applyImgs, injectCustomStyles } from "./visuals.ts";
 import CSS from "../../assets/style.css?inline";
 
-function handleLivePreview(shadow: ShadowRoot) {
+function handleLivePreview(e: Event) {
+  const root = (e.target as HTMLElement).getRootNode() as ShadowRoot;
   applyImgs({
     avatar:
-      (shadow.getElementById("PROFILE_IMAGE_URL") as HTMLInputElement)?.value ||
+      (root.getElementById("PROFILE_IMAGE_URL") as HTMLInputElement)?.value ||
       "",
     banner:
-      (shadow.getElementById("PROFILE_BANNER_URL") as HTMLInputElement)
-        ?.value || "",
+      (root.getElementById("PROFILE_BANNER_URL") as HTMLInputElement)?.value ||
+      "",
     bannerMode:
-      (shadow.getElementById("PROFILE_BANNER_MODE") as HTMLSelectElement)
+      (root.getElementById("PROFILE_BANNER_MODE") as HTMLSelectElement)
         ?.value || "fill",
     background:
-      (shadow.getElementById("PROFILE_BACKGROUND_URL") as HTMLInputElement)
+      (root.getElementById("PROFILE_BACKGROUND_URL") as HTMLInputElement)
         ?.value || "",
     backgroundMode:
-      (shadow.getElementById("PROFILE_BACKGROUND_MODE") as HTMLSelectElement)
+      (root.getElementById("PROFILE_BACKGROUND_MODE") as HTMLSelectElement)
         ?.value || "fill",
   });
 }
 
-function renderUrlField(
-  id: string,
-  label: string,
-  value: string,
-  shadow: ShadowRoot,
-) {
+function renderUrlField(id: string, label: string, value: string) {
   return html`
     <div class="form-control w-full">
-      <label class="label py-1"
-        ><span class="label-text opacity-80">${label}</span></label
-      >
+      <label class="label py-1">
+        <span class="label-text opacity-80">${label}</span>
+      </label>
       <label
         class="input input-accent validator flex items-center gap-2 w-full"
       >
@@ -63,54 +59,41 @@ function renderUrlField(
           type="url"
           id="${id}"
           required
-          placeholder="https://example.com/beemovie.png"
+          placeholder="https://example.com/image.png"
           .value="${value}"
           pattern="^(https?://)?.*"
           class="grow"
-          @input="${() => handleLivePreview(shadow)}"
+          @input="${handleLivePreview}"
         />
       </label>
     </div>
   `;
 }
 
-function renderModeSelect(
-  id: string,
-  label: string,
-  currentValue: string,
-  shadow: ShadowRoot,
-) {
+function renderModeSelect(id: string, label: string, currentValue: string) {
+  const modes = ["fill", "fit", "stretch", "center", "tile"];
   return html`
     <div class="form-control w-full mt-1">
-      <label class="label py-0.5"
-        ><span class="label-text text-xs opacity-60">${label}</span></label
-      >
+      <label class="label py-0.5">
+        <span class="label-text text-xs opacity-60">${label}</span>
+      </label>
       <select
         id="${id}"
-        class="select select-bordered select-sm w-full border-neutral-700/50 bg-base-300"
-        @change="${() => handleLivePreview(shadow)}"
+        class="select select-bordered select-sm w-full"
+        @change="${handleLivePreview}"
       >
-        <option value="fill" ?selected="${currentValue === "fill"}">
-          Fill
-        </option>
-        <option value="fit" ?selected="${currentValue === "fit"}">
-          Fit
-        </option>
-        <option value="stretch" ?selected="${currentValue === "stretch"}">
-          Stretch
-        </option>
-        <option value="center" ?selected="${currentValue === "center"}">
-          Center
-        </option>
-        <option value="tile" ?selected="${currentValue === "tile"}">
-          Tile
-        </option>
+        ${modes.map(
+          (m) =>
+            html`<option value="${m}" ?selected="${currentValue === m}">
+              ${m.charAt(0).toUpperCase() + m.slice(1)}
+            </option>`,
+        )}
       </select>
     </div>
   `;
 }
 
-function renderModalContent(
+function renderPanelContent(
   saved: {
     avatar: string;
     banner: string;
@@ -121,105 +104,57 @@ function renderModalContent(
   currentTheme: string,
   onClose: () => void,
   onReset: () => void,
-  shadow: ShadowRoot,
 ) {
   return html`
     <style>
-      :host {
-        display: block;
-        width: 100%;
-        height: 100%;
-      }
-      ${unsafeHTML(CSS)} #profile-shadow-wrapper.modal {
-        background: transparent !important;
-        background-color: transparent !important;
-        align-items: flex-end;
-      }
-      #profile-shadow-wrapper.modal {
-        background: transparent !important;
-        background-color: transparent !important;
-        align-items: flex-end;
-      }
+      :host { display: block; width: 100%; height: 100%; }
+      ${unsafeHTML(CSS)}
     </style>
-
     <div
-      id="profile-shadow-wrapper"
-      class="modal modal-open flex justify-center h-full w-full"
       data-theme="${currentTheme}"
-      @mousedown="${(e: MouseEvent) => {
-        if (e.target === e.currentTarget) onClose();
-      }}"
+      class="flex flex-col h-full p-4 gap-3 bg-base-100 rounded-2xl"
     >
-      <div
-        class="modal-box p-6 pt-12 rounded-3xl shadow-2xl flex flex-col relative border border-neutral-700/30 bg-base-100 text-base-content"
-        style="width: min(480px, calc(100dvw - 2rem)); max-width: min(480px, calc(100dvw - 2rem)); max-height: 90vh; overflow-y: auto;"
-        @mousedown="${(e: MouseEvent) => e.stopPropagation()}"
-      >
+      <div class="flex justify-between items-center">
         <button
-          class="btn btn-circle btn-ghost btn-sm absolute right-4 top-4"
-          @click="${onClose}"
+          type="button"
+          @click="${onReset}"
+          class="btn btn-ghost btn-sm text-error"
         >
+          Reset
+        </button>
+        <button class="btn btn-circle btn-ghost btn-sm" @click="${onClose}">
           ✕
         </button>
-
-        <fieldset
-          class="fieldset rounded-box gap-4 border border-base-300 bg-base-200/50 p-4"
-        >
-          <div>
-            ${renderUrlField(
-              "PROFILE_IMAGE_URL",
-              "Avatar URL",
-              saved.avatar,
-              shadow,
-            )}
-          </div>
-
-          <div class="border-t border-neutral-700/20 pt-2">
-            ${renderUrlField(
-              "PROFILE_BANNER_URL",
-              "Banner URL",
-              saved.banner,
-              shadow,
-            )}
-            ${renderModeSelect(
-              "PROFILE_BANNER_MODE",
-              "Banner alignment",
-              saved.bannerMode,
-              shadow,
-            )}
-          </div>
-
-          <div class="border-t border-neutral-700/20 pt-2">
-            ${renderUrlField(
-              "PROFILE_BACKGROUND_URL",
-              "Background URL",
-              saved.background,
-              shadow,
-            )}
-            ${renderModeSelect(
-              "PROFILE_BACKGROUND_MODE",
-              "Background alignment",
-              saved.backgroundMode,
-              shadow,
-            )}
-          </div>
-        </fieldset>
-
-        <div class="mt-6 flex flex-col gap-2">
-          <button
-            id="profile-save"
-            class="btn btn-success font-bold flex items-center justify-center gap-2"
-          >
-            Save Changes
-          </button>
-          <button
-            type="button"
-            @click="${onReset}"
-            class="btn btn-error btn-outline font-bold"
-          >
-            Restore defaults
-          </button>
+      </div>
+      <fieldset
+        class="fieldset rounded-box gap-3 border border-base-300 bg-base-200/50 p-3"
+      >
+        ${renderUrlField("PROFILE_IMAGE_URL", "Avatar URL", saved.avatar)}
+        <div class="border-t border-base-300 pt-3">
+          ${renderUrlField("PROFILE_BANNER_URL", "Banner URL", saved.banner)}
+          ${renderModeSelect(
+            "PROFILE_BANNER_MODE",
+            "Alignment",
+            saved.bannerMode,
+          )}
         </div>
+        <div class="border-t border-base-300 pt-3">
+          ${renderUrlField(
+            "PROFILE_BACKGROUND_URL",
+            "Background URL",
+            saved.background,
+          )}
+          ${renderModeSelect(
+            "PROFILE_BACKGROUND_MODE",
+            "Alignment",
+            saved.backgroundMode,
+          )}
+        </div>
+      </fieldset>
+      <div class="flex flex-col gap-2">
+        <button id="profile-save" class="btn btn-success font-bold">
+          Save Changes
+        </button>
       </div>
     </div>
   `;
@@ -238,78 +173,85 @@ export const createSettingsModal = async (
     backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
   };
 
-  const host = document.createElement("div");
-  host.id = "profile-modal-host";
-  document.body.appendChild(host);
-
-  document.documentElement.style.overflow = "hidden";
-  document.body.style.overflow = "hidden";
-
-  const shadow = host.attachShadow({ mode: "open" });
+  const themePref = await getConfig("BETTER_INTRA_THEME");
   const currentTheme =
-    (await getConfig("BETTER_INTRA_THEME")) ||
-    (window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light");
+    themePref === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+      : themePref || "dark";
+
+  const dialog = Object.assign(document.createElement("dialog"), {
+    id: "profile-modal-host",
+  });
+  Object.assign(dialog.style, {
+    marginTop: "auto",
+    marginBottom: "10vh",
+    width: "min(540px, calc(100dvw - 2rem))",
+    maxHeight: "80vh",
+    borderRadius: "1.5rem",
+    overflow: "hidden",
+    padding: "0",
+    border: "1px solid rgba(128,128,128,0.3)",
+  });
+
+  const content = document.createElement("div");
+  content.style.cssText =
+    "width:100%;height:100%;display:flex;flex-direction:column;";
+  dialog.appendChild(content);
+  document.body.appendChild(dialog);
+
+  const shadow = content.attachShadow({ mode: "open" });
 
   const close = () => {
-    document.documentElement.style.overflow = "";
-    document.body.style.overflow = "";
-    host.remove();
+    dialog.close();
+    dialog.remove();
   };
 
   const reset = async () => {
-    if (confirm("Reset visuals?")) {
-      const keys = [
-        "PROFILE_IMAGE_URL",
-        "PROFILE_BANNER_URL",
-        "PROFILE_BANNER_MODE",
-        "PROFILE_BACKGROUND_URL",
-        "PROFILE_BACKGROUND_MODE",
-      ];
-      await chrome.storage.local.remove(keys);
-      try {
-        await syncMyVisuals({
-          avatar: "",
-          banner: "",
-          bannerMode: "fill",
-          background: "",
-          backgroundMode: "fill",
-        });
-      } catch (e) { console.error("Failed to update visuals:", e); }
-      close();
-      location.reload();
-    }
+    if (!confirm("Reset visuals?")) return;
+    await chrome.storage.local.remove([
+      "PROFILE_IMAGE_URL",
+      "PROFILE_BANNER_URL",
+      "PROFILE_BANNER_MODE",
+      "PROFILE_BACKGROUND_URL",
+      "PROFILE_BACKGROUND_MODE",
+    ]);
+    close();
+    location.reload();
   };
 
   injectCustomStyles();
-  render(renderModalContent(saved, currentTheme, close, reset, shadow), shadow);
+  render(renderPanelContent(saved, currentTheme, close, reset), shadow);
+
+  content.addEventListener("click", (e) => e.stopPropagation());
+  dialog.addEventListener("click", () => close());
+
+  dialog.showModal();
 
   shadow.querySelector("#profile-save")?.addEventListener("click", async () => {
-    const keys = [
-      { urlKey: "PROFILE_IMAGE_URL", modeKey: null },
+    const batchData: Record<string, string> = {};
+    const keysToRemove: string[] = [];
+    const fields = [
+      { urlKey: "PROFILE_IMAGE_URL" },
       { urlKey: "PROFILE_BANNER_URL", modeKey: "PROFILE_BANNER_MODE" },
       { urlKey: "PROFILE_BACKGROUND_URL", modeKey: "PROFILE_BACKGROUND_MODE" },
     ];
 
-    const batchData: Record<string, string> = {};
-    const keysToRemove: string[] = [];
-
-    keys.forEach(({ urlKey, modeKey }) => {
+    for (const { urlKey, modeKey } of fields) {
       const input = shadow.getElementById(urlKey) as HTMLInputElement;
-      const urlVal = input?.value.trim() || "";
-
-      if (!urlVal) {
+      const val = input?.value.trim() || "";
+      if (!val) {
         keysToRemove.push(urlKey);
         if (modeKey) keysToRemove.push(modeKey);
       } else {
-        batchData[urlKey] = urlVal;
+        batchData[urlKey] = val;
         if (modeKey) {
           const select = shadow.getElementById(modeKey) as HTMLSelectElement;
           batchData[modeKey] = select?.value || "fill";
         }
       }
-    });
+    }
 
     if (Object.keys(batchData).length > 0)
       await chrome.storage.local.set(batchData);
@@ -326,7 +268,9 @@ export const createSettingsModal = async (
 
     try {
       await syncMyVisuals(updatedVisuals);
-    } catch (e) { console.error("Failed to sync visuals:", e); }
+    } catch (e) {
+      console.error("Failed to sync visuals:", e);
+    }
     onSaveCallback(updatedVisuals);
     close();
   });

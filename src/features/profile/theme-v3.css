@@ -190,6 +190,14 @@ html.dark .text-white,
 html.dark .text-black,
 html.dark .text-gray-50,
 html.dark .text-gray-100,
+html.dark .text-gray-200,
+html.dark .text-gray-300,
+html.dark .text-gray-400,
+html.dark .text-gray-500,
+html.dark .text-gray-600,
+html.dark .text-gray-700,
+html.dark .text-gray-800,
+html.dark .text-gray-900,
 html.dark .text-cyan-300,
 html.dark .text-cyan-400,
 html.dark .text-cyan-500 {
@@ -202,6 +210,8 @@ html.dark div.bg-white {
 
 html.dark div.bg-gray-50,
 html.dark div.bg-gray-100,
+html.dark div.bg-gray-200,
+html.dark div.bg-white\/50,
 html.dark div.bg-neutral-50,
 html.dark div.bg-neutral-100,
 html.dark div.bg-zinc-50,
@@ -245,10 +255,49 @@ html.dark .text-green-500 {
 }
 
 /* ============================================================================
-   SVG
+   HOVER STATES: Search results, list items
+   ============================================================================ */
+
+html.dark .hover\:bg-gray-50:hover,
+html.dark .hover\:bg-gray-100:hover,
+html.dark .hover\:bg-gray-200:hover,
+html.dark .hover\:bg-gray-300:hover,
+html.dark .hover\:bg-slate-50:hover,
+html.dark .hover\:bg-slate-100:hover,
+html.dark .hover\:bg-slate-200:hover,
+html.dark .hover\:bg-slate-300:hover,
+html.dark .hover\:bg-zinc-50:hover,
+html.dark .hover\:bg-zinc-100:hover,
+html.dark .hover\:bg-zinc-200:hover,
+html.dark .hover\:bg-zinc-300:hover {
+  background-color: hsl(var(--muted)) !important;
+}
+
+html.dark .text-legacy-main {
+  color: hsl(var(--foreground)) !important;
+}
+
+html.dark .border-legacy-main {
+  border-color: hsl(var(--primary)) !important;
+}
+
+html.dark a.text-legacy-main:hover,
+html.dark button.text-legacy-main:hover,
+html.dark .text-legacy-main[role="button"]:hover {
+  background-color: hsl(var(--primary)) !important;
+  color: #fff !important;
+}
+
+/* ============================================================================
+   SVG & SIDEBAR NAV
   ============================================================================ */
 
 html.dark .flex.flex-row.items-center.justify-between svg path,
 html.dark .flex.flex-row.items-center.justify-between svg line {
   stroke: #fff !important;
+}
+
+html.dark .hover\:opacity-100:hover svg path,
+html.dark .hover\:opacity-100:hover svg line {
+  stroke: hsl(var(--primary)) !important;
 }

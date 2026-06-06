@@ -98,9 +98,9 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   PROFILE_BACKGROUND_MODE: "fill",
   PROFILE_SLOTS_REDIRECTION: true,
   PROFILE_CARD_ORDER: [
-    "LOGTIME",
     "AGENDA",
     "EVALUATIONS",
+    "LOGTIME",
     "ACHIEVEMENTS",
     "PROJECTS",
   ],

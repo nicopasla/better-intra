@@ -2128,6 +2128,7 @@ html.dark {
 /* fill empty clusters posts */
 
 .posts rect, 
-.posts polygon {
+.posts polygon,
+rect:not(.custom-screen) {
     fill: #333333 !important;
 }

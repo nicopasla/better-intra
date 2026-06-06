@@ -5,7 +5,7 @@ export function initMilestones() {
 
 function enhanceMilestones() {
   const validatedMilestones =
-    document.querySelectorAll<HTMLElement>(".bg-legacy-main");
+    document.querySelectorAll<HTMLElement>(".bg-legacy-main[data-state]");
 
   validatedMilestones.forEach((milestone) => {
     if (milestone.dataset.fireEnhanced) return;
@@ -76,8 +76,7 @@ function injectMilestoneStyles() {
     .fire-milestone::after {
       content: "";
       position: absolute;
-      inset: -8px;
-      padding: 4px;
+      inset: 0;
       border-radius: inherit;
 
       background:
@@ -99,8 +98,8 @@ function injectMilestoneStyles() {
       filter:
         blur(18px)
         brightness(1.4);
-      opacity: 0.95;
-      z-index: 1;
+      opacity: 0.4;
+      z-index: 0;
       pointer-events: none;
     }
 

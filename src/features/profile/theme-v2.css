@@ -2124,3 +2124,10 @@ html.dark {
 	--event-meet: var(--theme-color);
 	--event-dark-meet: var(--theme-color-dark);
 }
+
+/* fill empty clusters posts */
+
+.posts rect, 
+.posts polygon {
+    fill: #333333 !important;
+}

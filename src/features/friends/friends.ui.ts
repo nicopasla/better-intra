@@ -4,6 +4,7 @@ import CSS from "../../assets/style.css?inline";
 import {
   FriendData,
   addFriend,
+  clearFriendsCache,
   fetchFriendsData,
   getFriendsList,
   isFriend,
@@ -145,6 +146,11 @@ function renderFriendRow(
           >${friend.correctionPoints}</span
         >
       </div>
+      ${!friend.isOnline && friend.lastOnlineTimestamp
+        ? html`<div class="text-xs opacity-60 font-medium" title="Last seen online">
+            ${formatTimeAgo(friend.lastOnlineTimestamp)}
+          </div>`
+        : ""}
     </div>
 
     <!-- Menu column (far right) -->
@@ -201,7 +207,7 @@ function renderEmpty() {
   `;
 }
 
-type SortMode = "online" | "name" | "level" | "wallet";
+type SortMode = "online" | "name" | "level" | "wallet" | "correction";
 
 function sortFriends(friends: FriendData[], mode: SortMode): FriendData[] {
   const sorted = [...friends];
@@ -220,6 +226,9 @@ function sortFriends(friends: FriendData[], mode: SortMode): FriendData[] {
       break;
     case "wallet":
       sorted.sort((a, b) => b.wallet - a.wallet);
+      break;
+    case "correction":
+      sorted.sort((a, b) => b.correctionPoints - a.correctionPoints);
       break;
   }
   return sorted;
@@ -248,10 +257,11 @@ const SORT_LABELS: Record<SortMode, string> = {
   name: "Name",
   level: "Level",
   wallet: "Wallet",
+  correction: "Evaluation",
 };
 
 function renderSortSelect(current: SortMode, onChange: (m: SortMode) => void) {
-  const modes: SortMode[] = ["online", "name", "level", "wallet"];
+  const modes: SortMode[] = ["online", "name", "level", "wallet", "correction"];
   return html`
     <select
       class="select select-bordered select-sm min-w-32 font-bold tracking-wide"
@@ -526,6 +536,7 @@ export async function injectFriendsWidget() {
       if (!_state) return;
       _state.loading = true;
       renderWidgetUI();
+      clearFriendsCache();
       const list = await getFriendsList();
       _state.friends = await fetchFriendsData(list);
       _state.lastFetch = Date.now();
@@ -581,6 +592,7 @@ export async function injectFriendsWidget() {
       _state.lastFetch = Date.now();
       _state.addInput = "";
       _state.addLoading = false;
+      clearFriendsCache();
       renderWidgetUI();
       _shadow?.querySelector<HTMLInputElement>('input[type="text"]')?.focus();
     },

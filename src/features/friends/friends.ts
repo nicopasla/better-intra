@@ -14,6 +14,7 @@ export interface FriendData {
   poolLabel: string | null;
   wallet: number;
   correctionPoints: number;
+  lastOnlineTimestamp: number | null;
 }
 
 export async function getFriendsList(): Promise<string[]> {
@@ -50,6 +51,30 @@ export async function isFriend(login: string): Promise<boolean> {
   return list.includes(login.trim().toLowerCase());
 }
 
+const CACHE_KEY = "FRIENDS_DATA_CACHE";
+const CACHE_TTL = 30_000;
+
+async function getCachedData(): Promise<{ data: FriendData[]; timestamp: number } | null> {
+  try {
+    const raw = await chrome.storage.local.get(CACHE_KEY) as Record<string, unknown>;
+    const val = raw[CACHE_KEY] as { data: FriendData[]; timestamp: number } | undefined;
+    if (val && Array.isArray(val.data) && typeof val.timestamp === "number") return val;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function setCachedData(data: FriendData[]): Promise<void> {
+  await chrome.storage.local.set({
+    [CACHE_KEY]: { data, timestamp: Date.now() },
+  });
+}
+
+export async function clearFriendsCache(): Promise<void> {
+  await chrome.storage.local.remove(CACHE_KEY);
+}
+
 export async function fetchFriendsData(
   logins: string[],
 ): Promise<FriendData[]> {
@@ -59,6 +84,26 @@ export async function fetchFriendsData(
   const cloudLogin = await getConfig("CLOUD_LOGIN");
   if (!token || !cloudLogin) return [];
 
+  // Single-login fetches (add friend validation) always go to API
+  if (logins.length === 1) {
+    try {
+      const hashedLogin = await hashLogin(cloudLogin);
+      const res = await fetch(
+        `${WORKER_URL}/api/v1/private/friends/data?login=${encodeURIComponent(hashedLogin)}&logins=${encodeURIComponent(logins[0])}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      return res.ok ? ((await res.json()) as { friends?: FriendData[] }).friends ?? [] : [];
+    } catch {
+      return [];
+    }
+  }
+
+  // Check cache for full list fetches
+  const cached = await getCachedData();
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+
   try {
     const hashedLogin = await hashLogin(cloudLogin);
     const res = await fetch(
@@ -67,7 +112,9 @@ export async function fetchFriendsData(
     );
     if (res.ok) {
       const data = (await res.json()) as { friends?: FriendData[] };
-      return data.friends ?? [];
+      const friends = data.friends ?? [];
+      setCachedData(friends);
+      return friends;
     }
   } catch (e) {
     console.error("Failed to fetch friends data:", e);

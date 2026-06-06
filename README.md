@@ -1,6 +1,16 @@
 # Better Intra
 
-Collection of features inside a Firefox Extension that improve UI and UX of the 42 Intra v3.
+UI and UX improvements for 42 Intra v3: logtime calendar, cluster map tools, custom profiles, shortcuts, friends widget, and more.
+
+## Screenshots
+
+| Logtime | Profile | Shortcuts |
+|---|---|---|
+| ![Logtime](images-store/logtime-dark.png) | ![Profile](images-store/profile.png) | ![Shortcuts](images-store/shortcuts-settings.png) |
+
+| Account | Friends |
+|---|---|
+| ![Account](images-store/account.png) | ![Friends](images-store/account-connect.png) |
 
 ## ⚡ Quick Start
 
@@ -23,54 +33,84 @@ To install this extension, click the buttons below or visit the [Releases](https
 ## Features
 
 ### 📅 Logtime
-Redesigns logtime tracking to show weekly and total hours.
-* **Goal Tracking:** Set a target number of hours (default: 140) to track your progress.
-* **Daily Average:** Display your average hours per day.
-* **Last active label:** Date can be displayed as "17/04", "2 days ago", or both.
-* **Visual Control:** Fully customize calendar and label colors to match your taste.
-* **Emoji visualizer:** Custom emoji, emoji value and hourly earning.
+
+Replaces the default logtime view with a monthly calendar showing your logged hours at a glance.
+
+* **Monthly calendar** — each month shows your hours as a colour-coded grid. Darker means more hours per day. See weekly totals on the right.
+* **Scroll through months** — click and drag, or use your mouse wheel.
+* **Goal tracking** — set a target (default 140h/month). See a progress bar, your percentage, and remaining hours on hover.
+* **Daily average** — average hours per active day.
+* **Last active label** — shows when you were last seen. Choose between a date, "2 days ago", or both.
+* **Emoji mode** — pick an emoji and set how much it's "worth". Track your earnings with a monthly cap.
+* **Custom colours** — pick your own accent colour for the calendar and labels.
+* **Animations** — smooth progress bar animation; can be turned off.
 
 ---
 
 ### 🖥️ Clusters
-Improves cluster navigation and visual orientation.
-* **Directional Markers:** Adds "chair" icons to the cluster map to show seat orientation.
-* **Default Cluster:** Set a preferred Cluster ID to load your favorite cluster instantly.
+
+* **Directional markers** — small arrows on the cluster map showing which way each seat faces. Works for **Belgium** clusters (shi, fu, mi, a1, a2). Toggle on/off from the cluster tab bar.
+* **Cluster picker** — a dropdown on the cluster tab bar to quickly switch clusters, with a markers on/off button.
+* **Default cluster** — set your preferred cluster and it loads automatically when you open the page.
 
 ---
 
 ### 👤 Profile
-Enhances readability and adds local customization options.
-* **Change your:**
-  * Avatar
-  * Banner
-  * Background
 
-> When viewing another person profile with Better Intra installed you will see his custom images.
-
-* **Event Filtering:**
-  * Campus Filter.
-  * Category Filter.
-* Redirection of the "Manage slots" button to the correct webpage.
-* Improved readability using a clean system-font stack.
+* **Custom visuals** — set your own avatar, banner, and background images. **Click your avatar** on your profile page to open the customisation panel. See a live preview as you type the image URL.
+* **Visuals sync** — your custom images are visible to other Better Intra users when they view your profile. Click any custom avatar to see the original one.
+* **Dashboard cards** — reorder your profile cards (Logtime, Agenda, Evaluations, Projects, Achievements) by dragging them. Hide cards you don't need.
+* **Profile card** — animated level bar with a wave effect, coloured to match your preference.
+* **Event filtering** — filter your agenda by campus and event type (e.g. exams, pedagogy, social).
+* **Slots redirection** — the "Manage slots" button takes you to the correct slots page.
+* **Achievement milestones** — completed achievements get a subtle animated glow.
+* **Clickable seat label** — click someone's seat on their profile to open the cluster map with their seat highlighted and pulsating.
 
 ---
 
 ### 🔗 Shortcuts
-Adds custom quick-access links on the profile page.
 
-* Up to 8 configurable shortcuts.
+Quick-access links shown as colourful buttons on your profile page.
 
----
-
-### ☁️ Account
-
-* Authenticate with your 42 Intra account and store your local settings into a KV database on a Cloudflare Worker. (See Better Intra Worker repo)
+* Up to **8 links**, each with a name, URL, custom colour, and optional emoji.
+* Buttons show the site's icon automatically if you don't set an emoji.
+* Text colour (black or white) is chosen automatically for readability.
+* Set them up in the settings panel.
 
 ---
 
-### ⚙️ Settings
-<img alt="Settings" src="images/settings.gif"/>
+### ☁️ Account (Cloud Sync)
+
+* Authenticate with your 42 Intra account via OAuth through the Cloudflare Worker.
+* **Push** — upload all local settings to the cloud.
+* **Pull** — download and apply settings from the cloud to this device.
+* **Auto-sync** — toggle automatic cloud sync on save.
+* **Disconnect / Wipe All Data** — logout or erase all cloud-stored data.
+* **Share visuals** — synced avatar, banner, and background become visible to other Better Intra users viewing your profile.
+* Account panel is in the **extension popup** (click the extension icon).
+
+---
+
+### 👥 Friends
+
+A friends panel accessible from a button in the bottom-right corner of the page.
+
+* **Add friends** by login using the input at the bottom of the panel.
+* See each friend's **avatar, level bar, wallet, correction points, and online status**.
+* Click a friend's **location badge** to open the cluster map with their seat highlighted.
+* Sort by: online status, name, level, wallet, or evaluation points.
+* The button shows a badge with the **number of friends currently online**.
+* **Requires cloud sync** — you must be logged in with your 42 account.
+* Data refreshes every 30 seconds; tap the refresh button to force an update.
+
+---
+
+### ⚙️ Settings Hub
+
+* All extension settings in one place.
+* Click the **gear icon** on the intra sidebar to open it.
+* Tabs: Logtime, Clusters, Profile, Shortcuts, About.
+* Turn features on/off individually, or reset a feature's settings to default.
 
 
 ## Uninstall
@@ -79,9 +119,7 @@ Go to `about:addons` in Firefox, find **Better Intra** and click **Remove**.
 
 ## Disclaimer
 
-This extension is a personal project that only changes the style of the website. It is purely aesthetic and does not fetch anything except esthetics settings when visiting others profiles.
-This can break at any time due to intra code changes.
-Always use at your own risk!
+This is a personal project. It modifies the appearance of 42 Intra and adds UI improvements (logtime tracking, shortcuts, etc.). It can break at any time due to intra code changes. Use at your own risk.
 
 ## Built with:
 
@@ -99,37 +137,24 @@ Always use at your own risk!
 
 | Browser | Support |           Note            |
 |:-------:|:-------:|:-------------------------:|
-| Firefox |    ✅    | Main target (Manifest v3) |
-| Chrome  |    ✅    |         Supported         |
-|  Brave  |    ✅    |         Supported         |
+| Firefox |    ✅    | Main target |
+| Chrome  |    ✅    | Supported   |
+|  Brave  |    ✅    | Supported   |
 
 ## Privacy
 
-- This extension runs entirely locally, except when syncing settings with the Cloudflare Worker KV.
-- Settings are stored securely via the WebExtensions `chrome.storage.local` API.
-- The extension requires zero data collection permissions.
+See the full [Privacy Policy](./PRIVACY.md).
+
+- All settings are stored locally via `chrome.storage.local`. Nothing is sent anywhere unless you explicitly enable cloud sync.
+- **Cloud sync** (optional): your settings are stored in a Cloudflare Worker KV under a hash of your login, so they can be synced across devices. The worker retains invocation logs for debugging (not used for tracking).
+- **Friends widget** (optional, requires cloud sync): friend logins are stored locally and also included in your synced settings in KV. The worker additionally caches friend user IDs and online status in KV to reduce 42 API calls.
+- **Logtime data** is read from the intra page directly — it never leaves your browser.
+- **Other users' profiles**: when visiting another user's profile, their public custom visuals (avatar, banner, background) are fetched from the Cloudflare Worker if they use Better Intra. No data is sent to third parties.
+- Permissions requested: `storage` (save settings), `activeTab` (interact with the intra page), and access to the extension's Cloudflare Worker for optional sync features. No analytics, tracking, or advertising.
 
 ## Development
 
-### Prerequisites
-- Node.js
-- npm
-
-### Setup
-```bash
-git clone https://github.com/nicopasla/better-intra.git
-cd better-intra
-npm install
-```
-* **Development build** (Watch + Live Reload via web-ext):
-```bash
-npm run dev
-```
-* **Production build**
-```bash
-npm run build
-```
-The output manifest.json and compiled content.js will be generated in the dist/ folder.
+See [DEVELOPMENT.md](./DEVELOPMENT.md).
 
 ## License
 

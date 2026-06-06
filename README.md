@@ -8,10 +8,6 @@ UI and UX improvements for 42 Intra v3: logtime calendar, cluster map tools, cus
 |---|---|---|
 | ![Logtime](images-store/logtime-dark.png) | ![Profile](images-store/profile.png) | ![Shortcuts](images-store/shortcuts-settings.png) |
 
-| Account | Friends |
-|---|---|
-| ![Account](images-store/account.png) | ![Friends](images-store/account-connect.png) |
-
 ## ⚡ Quick Start
 
 To install this extension, click the buttons below or visit the [Releases](https://github.com/nicopasla/better-intra/releases/latest/) page.

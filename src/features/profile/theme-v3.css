@@ -223,15 +223,7 @@ html.dark div[style*="background-color: #fff"] {
   background-color: hsl(var(--background)) !important;
 }
 
-/* ============================================================================
-   ACCESSIBILITY: Focus States
-   ============================================================================ */
 
-html.dark *:focus,
-html.dark *:focus-visible {
-  outline: 2px solid hsl(var(--primary)) !important;
-  outline-offset: 2px !important;
-}
 
 /* ============================================================================
    CONTEXT-SPECIFIC: Calendar & Logtime

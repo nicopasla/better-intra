@@ -92,6 +92,9 @@ export async function fetchFriendsData(
         `${WORKER_URL}/api/v1/private/friends/data?login=${encodeURIComponent(hashedLogin)}&logins=${encodeURIComponent(logins[0])}`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
+      if (res.status === 401) {
+        await chrome.storage.local.set({ CLOUD_AUTH_FAILED: true });
+      }
       return res.ok ? ((await res.json()) as { friends?: FriendData[] }).friends ?? [] : [];
     } catch {
       return [];
@@ -115,6 +118,8 @@ export async function fetchFriendsData(
       const friends = data.friends ?? [];
       setCachedData(friends);
       return friends;
+    } else if (res.status === 401) {
+      await chrome.storage.local.set({ CLOUD_AUTH_FAILED: true });
     }
   } catch (e) {
     console.error("Failed to fetch friends data:", e);

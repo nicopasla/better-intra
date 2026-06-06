@@ -10,10 +10,12 @@ import {
   isFriend,
   removeFriend,
 } from "./friends.ts";
+import { loginWith42, clearAuthFailed } from "../account/account.ts";
 import { getConfig } from "../../config.ts";
 import { getEffectiveTheme } from "../profile/theme-manager.ts";
 import { CLUSTERS } from "../clusters/clusters.data.ts";
 import FRIENDS_SVG from "../../assets/svg/friends.svg?raw";
+import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 
 const HOST_ID = "friends-widget-host";
 
@@ -244,12 +246,15 @@ interface WidgetState {
   addError: string;
   lastFetch: number | null;
   theme: string;
+  needsReconnect: boolean;
+  notConnected: boolean;
   onToggle: () => void;
   onRefresh: () => void;
   onRemove: (login: string) => void;
   onSortChange: (mode: SortMode) => void;
   onInputChange: (val: string) => void;
   onAdd: () => void;
+  onConnect: () => void;
 }
 
 const SORT_LABELS: Record<SortMode, string> = {
@@ -443,54 +448,99 @@ function renderWidget(state: WidgetState) {
 
         <!-- Friend list -->
         <div class="friends-list">
-          ${state.loading && state.friends.length === 0
-            ? html`<div class="flex justify-center py-12">
-                <span class="loading loading-spinner loading-md"></span>
+          ${state.notConnected
+              ? html`<div
+                class="flex flex-col items-center gap-4 py-12 px-6 text-center"
+              >
+                <span class="text-lg font-bold opacity-60"
+                  >Cloud sync required</span
+                >
+                <p class="text-sm opacity-50">
+                  Connect your account to use friends.
+                </p>
+                <button
+                  type="button"
+                  class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] flex items-center justify-center gap-3 mt-2"
+                  style="height:3rem; min-width:15rem; font-size:1rem;"
+                  @click="${state.onConnect}"
+                >
+                  <span class="font-bold tracking-wide">Connect with</span>
+                  <span
+                    class="size-8 flex items-center justify-center [&_polygon]:fill-current"
+                  >
+                    ${unsafeHTML(FORTY_TWO_SVG)}
+                  </span>
+                </button>
               </div>`
-            : state.friends.length === 0
-              ? renderEmpty()
-              : html`<ul class="list">
-                  ${sorted.map(
-                    (f, i) =>
-                      html`<li class="list-row group">
-                        ${renderFriendRow(f, state.onRemove, i === 0)}
-                      </li>`,
-                  )}
-                </ul>`}
+            : state.needsReconnect
+              ? html`<div
+                  class="flex flex-col items-center gap-3 py-12 px-6 text-center"
+                >
+                  <span class="text-lg font-bold opacity-60"
+                    >Session expired</span
+                  >
+                  <p class="text-sm opacity-50">Please reconnect.</p>
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-sm font-bold mt-2"
+                    @click="${state.onConnect}"
+                  >
+                    Reconnect
+                  </button>
+                </div>`
+              : state.loading && state.friends.length === 0
+                ? html`<div class="flex justify-center py-12">
+                    <span class="loading loading-spinner loading-md"></span>
+                  </div>`
+                : state.friends.length === 0
+                  ? renderEmpty()
+                  : html`<ul class="list">
+                      ${sorted.map(
+                        (f, i) =>
+                          html`<li class="list-row group">
+                            ${renderFriendRow(f, state.onRemove, i === 0)}
+                          </li>`,
+                      )}
+                    </ul>`}
         </div>
 
-        <!-- Add friend footer -->
-        <div class="px-5 py-4 border-t border-base-300 bg-base-200/30 shrink-0">
-          <div class="join w-full">
-            <input
-              type="text"
-              class="input input-bordered input-sm join-item flex-1"
-              placeholder="Add friend by login..."
-              .value="${state.addInput}"
-              @input="${(e: Event) =>
-                state.onInputChange((e.target as HTMLInputElement).value)}"
-              @keydown="${(e: KeyboardEvent) => {
-                if (e.key === "Enter") state.onAdd();
-              }}"
-              ?disabled="${state.addLoading}"
-            />
-            <button
-              type="button"
-              class="btn btn-sm btn-primary join-item font-bold ${state.addLoading
-                ? "loading"
-                : ""}"
-              @click="${state.onAdd}"
-              ?disabled="${state.addLoading || !state.addInput.trim()}"
+        <!-- Add friend footer (only when connected) -->
+        ${!state.notConnected && !state.needsReconnect
+          ? html`<div
+              class="px-5 py-4 border-t border-base-300 bg-base-200/30 shrink-0"
             >
-              ${state.addLoading ? "" : "＋ Add"}
-            </button>
-          </div>
-          ${state.addError
-            ? html`<p class="text-error text-sm mt-1.5 px-0.5">
-                ${state.addError}
-              </p>`
-            : ""}
-        </div>
+              <div class="join w-full">
+                <input
+                  type="text"
+                  class="input input-bordered input-sm join-item flex-1"
+                  placeholder="Add friend by login..."
+                  .value="${state.addInput}"
+                  @input="${(e: Event) =>
+                    state.onInputChange((e.target as HTMLInputElement).value)}"
+                  @keydown="${(e: KeyboardEvent) => {
+                    if (e.key === "Enter") state.onAdd();
+                  }}"
+                  ?disabled="${state.addLoading}"
+                />
+                <button
+                  type="button"
+                  class="btn btn-sm btn-primary join-item font-bold ${state
+                    .addLoading
+                    ? "loading"
+                    : ""}"
+                  @click="${state.onAdd}"
+                  ?disabled="${state.addLoading || !state.addInput.trim()}"
+                >
+                  ${state.addLoading ? "" : "＋ Add"}
+                </button>
+              </div>
+              ${state.addError
+                ? html`<p class="text-error text-sm mt-1.5 px-0.5">
+                    ${state.addError}
+                  </p>`
+                : ""}
+            </div>`
+          : ""}
       </div>
     </div>
   `;
@@ -507,15 +557,15 @@ function renderWidgetUI() {
 export async function injectFriendsWidget() {
   if (_host) return;
 
-  const token = await getConfig("CLOUD_TOKEN");
-  if (!token) return;
-
   const theme = await getEffectiveTheme();
 
   _host = document.createElement("div");
   _host.id = HOST_ID;
   document.body.appendChild(_host);
   _shadow = _host.attachShadow({ mode: "open" });
+
+  const token = await getConfig("CLOUD_TOKEN");
+  const authFailed = !!(await getConfig("CLOUD_AUTH_FAILED"));
 
   _state = {
     open: false,
@@ -527,13 +577,15 @@ export async function injectFriendsWidget() {
     addError: "",
     lastFetch: null,
     theme,
+    needsReconnect: !!token && authFailed,
+    notConnected: !token,
     onToggle: () => {
       if (!_state) return;
       _state.open = !_state.open;
       renderWidgetUI();
     },
     onRefresh: async () => {
-      if (!_state) return;
+      if (!_state || _state.notConnected) return;
       _state.loading = true;
       renderWidgetUI();
       clearFriendsCache();
@@ -541,6 +593,9 @@ export async function injectFriendsWidget() {
       _state.friends = await fetchFriendsData(list);
       _state.lastFetch = Date.now();
       _state.loading = false;
+      if (_state.needsReconnect) {
+        _state.needsReconnect = !!(await getConfig("CLOUD_AUTH_FAILED"));
+      }
       renderWidgetUI();
     },
     onSortChange: (mode: SortMode) => {
@@ -562,7 +617,7 @@ export async function injectFriendsWidget() {
       renderWidgetUI();
     },
     onAdd: async () => {
-      if (!_state) return;
+      if (!_state || _state.notConnected) return;
       const login = _state.addInput.trim().toLowerCase();
       if (!login) return;
 
@@ -580,6 +635,9 @@ export async function injectFriendsWidget() {
       await addFriend(login);
 
       const fresh = await fetchFriendsData([login]);
+      if (_state.needsReconnect) {
+        _state.needsReconnect = !!(await getConfig("CLOUD_AUTH_FAILED"));
+      }
       if (fresh.length === 0) {
         await removeFriend(login);
         _state.addError = "User not found.";
@@ -596,14 +654,25 @@ export async function injectFriendsWidget() {
       renderWidgetUI();
       _shadow?.querySelector<HTMLInputElement>('input[type="text"]')?.focus();
     },
+    onConnect: () => {
+      loginWith42(async () => {
+        if (_state) _state.needsReconnect = false;
+        await clearAuthFailed();
+        window.location.reload();
+      });
+    },
   };
 
   renderWidgetUI();
-  _state.loading = true;
-  renderWidgetUI();
-  const list = await getFriendsList();
-  _state.friends = await fetchFriendsData(list);
-  _state.lastFetch = Date.now();
-  _state.loading = false;
+
+  if (!_state.notConnected && !_state.needsReconnect) {
+    _state.loading = true;
+    renderWidgetUI();
+    const list = await getFriendsList();
+    _state.friends = await fetchFriendsData(list);
+    _state.lastFetch = Date.now();
+    _state.loading = false;
+  }
+
   renderWidgetUI();
 }

@@ -1,6 +1,6 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
-import { getCloudLogin, testCloudConnection } from "./account.ts";
+import { clearAuthFailed, getCloudLogin, testCloudConnection } from "./account.ts";
 import { getConfig } from "../../config.ts";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 import { AccountState, createInitialState } from "./state.ts";
@@ -18,6 +18,20 @@ function renderAccountTab(
         data-theme="light"
         class="w-full h-full flex flex-col items-center justify-center p-8 gap-4"
       >
+        ${state.needsReconnect
+          ? html`<div
+              class="alert alert-warning shadow-lg rounded-xl mb-2 max-w-sm flex items-center justify-between"
+            >
+              <span class="text-sm font-semibold">Session expired</span>
+              <button
+                class="btn btn-warning btn-sm font-bold"
+                type="button"
+                @click="${handlers.handleLogin42}"
+              >
+                Reconnect
+              </button>
+            </div>`
+          : ""}
         <div class="text-center">
           <h2 class="text-2xl font-bold">Connect your Account</h2>
           <p class="opacity-70 mt-1">Sync your settings across devices.</p>
@@ -40,6 +54,20 @@ function renderAccountTab(
 
   return html`
     <div data-theme="light" class="w-full h-full flex flex-col gap-4 overflow-y-auto">
+      ${state.needsReconnect
+        ? html`<div
+            class="alert alert-warning shadow-lg rounded-xl flex items-center justify-between"
+          >
+            <span class="text-sm font-semibold">Session expired</span>
+            <button
+              class="btn btn-warning btn-sm font-bold"
+              type="button"
+              @click="${handlers.handleLogin42}"
+            >
+              Reconnect
+            </button>
+          </div>`
+        : ""}
       <!-- Top Section: Status & Sync Info -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Left Card: Account Status -->
@@ -179,6 +207,7 @@ export async function initAccountSettings(container: HTMLElement) {
     // Fetch latest state before re-rendering
     state.login = await getCloudLogin();
     state.token = (await getConfig("CLOUD_TOKEN")) || "";
+    state.needsReconnect = !!(await getConfig("CLOUD_AUTH_FAILED"));
     if (state.token && state.login) {
       state.activeSessions = await testCloudConnection();
     }

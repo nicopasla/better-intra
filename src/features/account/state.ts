@@ -10,6 +10,7 @@ export interface AccountState {
   token: string;
   isSyncEnabled: boolean;
   activeSessions: number;
+  needsReconnect: boolean;
   buttons: {
     push: ButtonState;
     pull: ButtonState;
@@ -22,6 +23,7 @@ export function createInitialState(): AccountState {
     token: "",
     isSyncEnabled: true,
     activeSessions: 0,
+    needsReconnect: false,
     buttons: {
       push: {
         loading: false,

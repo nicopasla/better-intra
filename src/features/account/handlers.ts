@@ -1,5 +1,6 @@
 import {
   applyCloudSettings,
+  clearAuthFailed,
   fetchMySettings,
   loginWith42,
   logoutCloud,
@@ -12,6 +13,7 @@ import { AccountState, resetButtonState } from "./state";
 export function createHandlers(state: AccountState, updateUI: () => void) {
   const handleLogin42 = () => {
     loginWith42(async () => {
+      await clearAuthFailed();
       updateUI();
       await reloadTab();
     });
@@ -74,6 +76,7 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
 
     const success = await syncToCloud();
     if (success) {
+      await clearAuthFailed();
       await chrome.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
       state.buttons.push = {
         loading: false,
@@ -117,6 +120,7 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
 
     const settings = await fetchMySettings();
     if (settings) {
+      await clearAuthFailed();
       await applyCloudSettings(settings);
       await chrome.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
       state.buttons.pull = {

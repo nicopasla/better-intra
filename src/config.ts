@@ -20,6 +20,7 @@ export interface BetterIntraConfig {
   LAST_CLOUD_SYNC: number | null;
   CLOUD_TOKEN: string;
   CLOUD_LOGIN: string;
+  CLOUD_AUTH_FAILED: boolean;
   ACCOUNT: object | null; // Stores user account info from 42 API
 
   // Logtime Feature Settings
@@ -69,6 +70,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   LAST_CLOUD_SYNC: null,
   CLOUD_TOKEN: "",
   CLOUD_LOGIN: "",
+  CLOUD_AUTH_FAILED: false,
   ACCOUNT: null,
 
   LOGTIME_GOAL_HOURS: 140,

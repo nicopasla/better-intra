@@ -2,6 +2,18 @@ import { BetterIntraConfig, ConfigKey, getConfig } from "../../config.ts";
 
 const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
 
+async function handleAuthResponse(response: Response): Promise<boolean> {
+  if (response.status === 401) {
+    await chrome.storage.local.set({ CLOUD_AUTH_FAILED: true });
+    return false;
+  }
+  return response.ok;
+}
+
+export async function clearAuthFailed(): Promise<void> {
+  await chrome.storage.local.remove("CLOUD_AUTH_FAILED");
+}
+
 /**
  * Hashes a login string using SHA-256 for secure, anonymized identification.
  * @param login The user's 42 login.
@@ -105,7 +117,7 @@ export async function testCloudConnection(): Promise<number> {
         headers: { Authorization: `Bearer ${token}` },
       },
     );
-    if (!response.ok) return 0;
+    if (!(await handleAuthResponse(response))) return 0;
     const data = (await response.json()) as any;
     return data.activeSessions ?? 0;
   } catch (error) {
@@ -152,7 +164,7 @@ export async function syncToCloud(): Promise<boolean> {
         body: JSON.stringify({ settings }),
       },
     );
-    return response.ok;
+    return await handleAuthResponse(response);
   } catch (error) {
     console.error("Cloud sync failed:", error);
     return false;
@@ -176,7 +188,7 @@ export async function syncMyVisuals(visuals: {
 
   try {
     const hashedLogin = await hashLogin(login);
-    await fetch(
+    const res = await fetch(
       `${WORKER_URL}/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}`,
       {
         method: "POST",
@@ -195,6 +207,7 @@ export async function syncMyVisuals(visuals: {
         }),
       },
     );
+    await handleAuthResponse(res);
   } catch (e) {
     console.error("Cloud Quick Sync Error:", e);
   }
@@ -246,7 +259,7 @@ export async function fetchMySettings(): Promise<Partial<BetterIntraConfig> | nu
         headers: { Authorization: `Bearer ${token}` },
       },
     );
-    if (!response.ok) return null;
+    if (!(await handleAuthResponse(response))) return null;
     const data = (await response.json()) as any;
     return data.settings || null;
   } catch (error) {
@@ -278,7 +291,7 @@ export async function logoutCloud(): Promise<boolean> {
     }
   }
 
-  await chrome.storage.local.remove(["CLOUD_TOKEN", "CLOUD_LOGIN"]);
+  await chrome.storage.local.remove(["CLOUD_TOKEN", "CLOUD_LOGIN", "CLOUD_AUTH_FAILED"]);
   return true;
 }
 
@@ -302,7 +315,7 @@ export async function wipeAllCloudData(): Promise<boolean> {
     );
 
     if (response.ok) {
-      await chrome.storage.local.remove(["CLOUD_TOKEN", "CLOUD_LOGIN"]);
+      await chrome.storage.local.remove(["CLOUD_TOKEN", "CLOUD_LOGIN", "CLOUD_AUTH_FAILED"]);
       return true;
     }
     return false;

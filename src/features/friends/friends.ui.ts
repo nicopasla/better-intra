@@ -83,7 +83,7 @@ function renderFriendRow(
               </div>
             </div>`}
         <div
-          class="badge badge-primary badge-md font-bold text-xs px-2.5 py-1.5"
+          class="badge badge-primary badge-md font-bold text-md px-2.5 py-1.5"
         >
           ${friend.level.toFixed(2)}
         </div>
@@ -122,7 +122,7 @@ function renderFriendRow(
 
       <!-- Grade + pool -->
       ${friend.grade
-        ? html` <div class="text-xs opacity-50 truncate mb-1.5">
+        ? html` <div class="text-sm opacity-50 truncate mb-1.5">
             ${friend.grade}
             ${friend.poolLabel
               ? html`<span class="opacity-70">· ${friend.poolLabel}</span>`
@@ -155,29 +155,18 @@ function renderFriendRow(
         : ""}
     </div>
 
-    <!-- Menu column (far right) -->
-    <div
-      class="dropdown dropdown-end opacity-0 group-hover:opacity-60 hover:opacity-100! transition-opacity"
-    >
-      <div tabindex="0" role="button" class="btn btn-ghost btn-sm btn-circle">
-        ⋮
-      </div>
-      <ul
-        tabindex="-1"
-        class="dropdown-content menu bg-base-100 rounded-box z-10 min-w-32 p-2 shadow-lg border border-base-300"
+    <!-- Delete button (far right) -->
+    <div class="opacity-0 group-hover:opacity-70 hover:opacity-100! transition-opacity shrink-0">
+      <button
+        class="btn btn-ghost btn-sm btn-circle text-error"
+        title="Remove friend"
+        @click="${(e: Event) => {
+          e.stopPropagation();
+          onRemove(friend.login);
+        }}"
       >
-        <li>
-          <button
-            class="text-error font-bold text-sm"
-            @click="${(e: Event) => {
-              e.stopPropagation();
-              onRemove(friend.login);
-            }}"
-          >
-            ✕ Remove
-          </button>
-        </li>
-      </ul>
+        ✕
+      </button>
     </div>
   `;
 }
@@ -604,6 +593,8 @@ export async function injectFriendsWidget() {
     },
     onRemove: async (login: string) => {
       if (!_state) return;
+      const name = _state.friends.find((f) => f.login === login)?.displayName || login;
+      if (!confirm(`Remove ${name} from your friends list?`)) return;
       await removeFriend(login);
       _state.friends = _state.friends.filter((f) => f.login !== login);
       renderWidgetUI();

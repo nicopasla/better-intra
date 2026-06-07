@@ -2,6 +2,55 @@
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-06-08
+
+### Features 🎉
+
+- feat: add drag and drop to the shortcuts section ([96b6227](https://github.com/nicopasla/better-intra/commit/96b6227))
+- feat: auto-pull of friends and settings after connection ([5f529a7](https://github.com/nicopasla/better-intra/commit/5f529a7))
+- feat: added Chrome Web Store link ([b5e6d91](https://github.com/nicopasla/better-intra/commit/b5e6d91))
+- feat: updated light mode ([d0a9c19](https://github.com/nicopasla/better-intra/commit/d0a9c19))
+- feat: add reconnect flow and add connect button to the friends panel ([9a1cc0f](https://github.com/nicopasla/better-intra/commit/9a1cc0f))
+- feat: add local cache and last active connection label ([45d5500](https://github.com/nicopasla/better-intra/commit/45d5500))
+
+### Bug fixes 🐛
+
+- fix: layout not working after changes in logtime ([1e4d814](https://github.com/nicopasla/better-intra/commit/1e4d814))
+- fix: updated colors for the level ([98a8adf](https://github.com/nicopasla/better-intra/commit/98a8adf))
+- fix: render colors differently for dark theme ([6ff3641](https://github.com/nicopasla/better-intra/commit/6ff3641))
+- fix: the personnal color was used for others profile percentage ([53696c5](https://github.com/nicopasla/better-intra/commit/53696c5))
+- fix: change badges style ([d9f4115](https://github.com/nicopasla/better-intra/commit/d9f4115))
+- fix: project button hovering ([27b49f8](https://github.com/nicopasla/better-intra/commit/27b49f8))
+- fix: change apparence of delete button and add confirmation prompt ([294a0e7](https://github.com/nicopasla/better-intra/commit/294a0e7))
+- fix: update svg selector ([19eb8c0](https://github.com/nicopasla/better-intra/commit/19eb8c0))
+- fix: fill empty clusters posts dark ([b34f2ad](https://github.com/nicopasla/better-intra/commit/b34f2ad))
+- fix: theme was not applying to the friends panel ([21f5873](https://github.com/nicopasla/better-intra/commit/21f5873))
+- fix: update default card order ([63c5810](https://github.com/nicopasla/better-intra/commit/63c5810))
+- fix: update hover color for buttons and inputs ([7bad8c5](https://github.com/nicopasla/better-intra/commit/7bad8c5))
+- fix: update milestone selector ([f958760](https://github.com/nicopasla/better-intra/commit/f958760))
+- fix: remove borders around elements ([286dc57](https://github.com/nicopasla/better-intra/commit/286dc57))
+
+### Maintenance 🧹
+
+- chore: update subproject commit reference in better-intra-worker ([6c17eae](https://github.com/nicopasla/better-intra/commit/6c17eae))
+- chore: add new drag and drop to the README ([3b4d17b](https://github.com/nicopasla/better-intra/commit/3b4d17b))
+- chore: update profile modal ([02c56d6](https://github.com/nicopasla/better-intra/commit/02c56d6))
+- chore: remove friends and account screenshot section ([b24fb8f](https://github.com/nicopasla/better-intra/commit/b24fb8f))
+- chore: update README to latest features ([1187975](https://github.com/nicopasla/better-intra/commit/1187975))
+- chore: remove outdated images ([71317d4](https://github.com/nicopasla/better-intra/commit/71317d4))
+- chore: update subproject commit reference in better-intra-worker ([2051b0d](https://github.com/nicopasla/better-intra/commit/2051b0d))
+- chore: add images fro Chrome store ([e879cf0](https://github.com/nicopasla/better-intra/commit/e879cf0))
+- chore: update description of manifests ([81283dc](https://github.com/nicopasla/better-intra/commit/81283dc))
+- chore: add STORE_LISTING for Chrome listing ([e19dda1](https://github.com/nicopasla/better-intra/commit/e19dda1))
+- chore: add PRIVACY file ([43d315b](https://github.com/nicopasla/better-intra/commit/43d315b))
+- chore: add DEVELOPMENT file ([5b124e0](https://github.com/nicopasla/better-intra/commit/5b124e0))
+- chore: add AGENTS file ([31b4f94](https://github.com/nicopasla/better-intra/commit/31b4f94))
+
+### Other Changes 🔄
+
+- refactor(hub): upgrade settings hub layout ([2c9fb8e](https://github.com/nicopasla/better-intra/commit/2c9fb8e))
+- refactor(logtime): migrated some parts of logtime to Daisyui ([de08ee7](https://github.com/nicopasla/better-intra/commit/de08ee7))
+
 ## [1.1.0] - 2026-06-04
 
 ### Features 🎉
@@ -306,7 +355,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.1.0...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/nicopasla/better-intra/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/nicopasla/better-intra/compare/v1.0.9...v1.1.0
 [1.0.9]: https://github.com/nicopasla/better-intra/compare/v1.0.8...v1.0.9
 [1.0.8]: https://github.com/nicopasla/better-intra/compare/v1.0.7...v1.0.8

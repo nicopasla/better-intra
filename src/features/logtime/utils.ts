@@ -23,6 +23,37 @@ export function hexToRgba(hex: string, opacity: number): string {
   return val;
 }
 
+export function contrastTextColor(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 >= 128 ? "#000000" : "#ffffff";
+}
+
+export function safeLabelsColor(color: string, theme: string): string {
+  const isDark = theme === "dark" || theme === "dim";
+  const r = parseInt(color.slice(1, 3), 16);
+  const g = parseInt(color.slice(3, 5), 16);
+  const b = parseInt(color.slice(5, 7), 16);
+  const luminance = (r * 299 + g * 587 + b * 114) / 1000;
+
+  if (isDark && luminance < 100) {
+    const blend = 0.5;
+    const nr = Math.round(r + (255 - r) * blend);
+    const ng = Math.round(g + (255 - g) * blend);
+    const nb = Math.round(b + (255 - b) * blend);
+    return `#${nr.toString(16).padStart(2, "0")}${ng.toString(16).padStart(2, "0")}${nb.toString(16).padStart(2, "0")}`;
+  }
+  if (!isDark && luminance > 200) {
+    const blend = 0.5;
+    const nr = Math.round(r * (1 - blend));
+    const ng = Math.round(g * (1 - blend));
+    const nb = Math.round(b * (1 - blend));
+    return `#${nr.toString(16).padStart(2, "0")}${ng.toString(16).padStart(2, "0")}${nb.toString(16).padStart(2, "0")}`;
+  }
+  return color;
+}
+
 export const getLastSeenFormatted = (
   stats: Record<string, string>,
   mode: "date" | "both" | "days" = "date",

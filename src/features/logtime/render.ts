@@ -6,7 +6,7 @@ import {
   PAST_MONTHS_OPACITY,
   INTRA_FONT,
 } from "./constants";
-import { fmtHours, hexToRgba } from "./utils";
+import { fmtHours, hexToRgba, safeLabelsColor } from "./utils";
 import { LogtimeConfig } from "./logtime";
 import CSS from "../../assets/style.css?inline";
 import LOGTIME_CSS from "./logtime.css?inline";
@@ -55,7 +55,7 @@ function renderCalendarGrid(
       html`<div
         class="text-[11px] font-extrabold text-center"
         style="color: var(--muted-foreground); ${idx === 7
-          ? `border-left: 1px solid var(--color-base-300); color: ${config.labels_color};`
+          ? `border-left: 1px solid var(--color-base-300); color: var(--labels-color);`
           : ""}"
       >
         ${day}
@@ -86,7 +86,7 @@ function renderCalendarGrid(
 
       dayRows.push(
         html`<div
-          style="font-size: 14px; font-weight: 700; text-align: right; color: ${config.labels_color}; padding-right: 4px; display: flex; align-items: center; justify-content: flex-end;"
+          style="font-size: 14px; font-weight: 700; text-align: right; color: var(--labels-color); padding-right: 4px; display: flex; align-items: center; justify-content: flex-end;"
         >
           ${weekSecs > 0 ? fmtHours(weekSecs) : ""}
         </div>`,
@@ -154,7 +154,7 @@ export function renderMonthCard(
 
     <div
       class="flex justify-between items-center text-sm"
-      style="color: ${config.labels_color}; margin-bottom: 10px;"
+      style="color: var(--labels-color); margin-bottom: 10px;"
     >
       <div
         class="day-cell"
@@ -247,6 +247,8 @@ export function renderContainer(
        .liquid-fill { border-radius: 0 4px 4px 0; }`
     : "";
 
+  const adjustedLabelsColor = safeLabelsColor(config.labels_color, theme);
+
   return html`<style>
       ${CSS}
       ${LOGTIME_CSS}
@@ -254,6 +256,7 @@ export function renderContainer(
         --intra-font: ${INTRA_FONT};
         --border-color: ${config.labels_color};
         --calendar-color: ${config.calendar_color};
+        --labels-color: ${adjustedLabelsColor};
         --muted: color-mix(in srgb, var(--color-base-300) 70%, transparent);
         --muted-foreground: var(--color-base-content);
         display: block;

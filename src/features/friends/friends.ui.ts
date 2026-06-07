@@ -10,7 +10,13 @@ import {
   isFriend,
   removeFriend,
 } from "./friends.ts";
-import { loginWith42, clearAuthFailed } from "../account/account.ts";
+import {
+  loginWith42,
+  clearAuthFailed,
+  fetchMySettings,
+  applyCloudSettings,
+  syncToCloud,
+} from "../account/account.ts";
 import { getConfig } from "../../config.ts";
 import { getEffectiveTheme } from "../profile/theme-manager.ts";
 import { CLUSTERS } from "../clusters/clusters.data.ts";
@@ -598,6 +604,7 @@ export async function injectFriendsWidget() {
       await removeFriend(login);
       _state.friends = _state.friends.filter((f) => f.login !== login);
       renderWidgetUI();
+      syncToCloud();
     },
     onInputChange: (val: string) => {
       if (!_state) return;
@@ -642,11 +649,14 @@ export async function injectFriendsWidget() {
       clearFriendsCache();
       renderWidgetUI();
       _shadow?.querySelector<HTMLInputElement>('input[type="text"]')?.focus();
+      syncToCloud();
     },
     onConnect: () => {
       loginWith42(async () => {
         if (_state) _state.needsReconnect = false;
         await clearAuthFailed();
+        const settings = await fetchMySettings();
+        if (settings) await applyCloudSettings(settings);
         window.location.reload();
       });
     },

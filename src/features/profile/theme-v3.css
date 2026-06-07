@@ -288,6 +288,12 @@ html.dark .text-legacy-main[role="button"]:hover {
   color: #fff !important;
 }
 
+html.dark .hover\:bg-gray-300 a.text-legacy-main:hover,
+html.dark .hover\:bg-slate-300 a.text-legacy-main:hover,
+html.dark .hover\:bg-zinc-300 a.text-legacy-main:hover {
+  background-color: transparent !important;
+}
+
 /* ============================================================================
    SVG & SIDEBAR NAV
   ============================================================================ */

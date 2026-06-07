@@ -21,24 +21,28 @@ export const FEATURE_DEFS = [
     name: "Logtime",
     icon: CLOCK,
     desc: "Redesign the logtime to show weekly and total hours.",
+    cols: 3,
   },
   {
     id: "clusters",
     name: "Clusters",
     icon: CLUSTERS,
     desc: "Adds 'chair' direction markers and a default cluster picker with saved preference.",
+    cols: 2,
   },
   {
     id: "profile",
     name: "Profile",
     icon: USER,
     desc: "Improves readability and allows local profile/background image customization.",
+    cols: 2,
   },
   {
     id: "shortcuts",
     name: "Shortcuts",
     icon: SHORTCUT,
     desc: "Manage custom navigation links.",
+    cols: 3,
   },
   {
     id: "about",
@@ -79,7 +83,9 @@ export type HubSettingDef = {
   defaultValue?: unknown;
   options?: readonly { label: string; value: string }[];
   grid?: boolean;
+  colSpan?: number;
   fullWidth?: boolean;
+  dependsOn?: ConfigKey;
   min?: number;
   max?: number;
   step?: number;
@@ -98,6 +104,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       step: 1,
       defaultValue: CONFIG_DEFAULT.LOGTIME_GOAL_HOURS,
       grid: true,
+      colSpan: 1,
     },
     {
       feature: "logtime",
@@ -107,6 +114,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.LOGTIME_SHOW_AVERAGE,
       grid: true,
+      colSpan: 1,
     },
     {
       feature: "logtime",
@@ -116,6 +124,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.LOGTIME_SHOW_GOAL,
       grid: true,
+      colSpan: 1,
     },
     {
       feature: "logtime",
@@ -132,6 +141,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       grid: false,
     },
 
+    { feature: "logtime", label: "Emoji & Earnings", kind: "divider" },
+
     {
       feature: "logtime",
       key: "LOGTIME_SHOW_TACOS",
@@ -140,6 +151,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.LOGTIME_SHOW_TACOS,
       grid: true,
+      colSpan: 1,
     },
     {
       feature: "logtime",
@@ -150,6 +162,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       placeholder: "🌮🌮🌮",
       defaultValue: CONFIG_DEFAULT.LOGTIME_EMOJI,
       grid: true,
+      colSpan: 1,
+      dependsOn: "LOGTIME_SHOW_TACOS",
     },
     {
       feature: "logtime",
@@ -159,6 +173,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "number",
       defaultValue: CONFIG_DEFAULT.LOGTIME_EMOJI_DIVISOR,
       grid: true,
+      colSpan: 1,
+      dependsOn: "LOGTIME_SHOW_TACOS",
     },
     {
       feature: "logtime",
@@ -168,6 +184,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "number",
       defaultValue: CONFIG_DEFAULT.LOGTIME_EMOJI_RATE,
       grid: true,
+      colSpan: 1,
+      dependsOn: "LOGTIME_SHOW_TACOS",
     },
     {
       feature: "logtime",
@@ -177,7 +195,12 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "number",
       defaultValue: CONFIG_DEFAULT.LOGTIME_MAX_EARNINGS,
       grid: true,
+      colSpan: 1,
+      dependsOn: "LOGTIME_SHOW_TACOS",
     },
+
+    { feature: "logtime", label: "Appearance", kind: "divider" },
+
     {
       feature: "logtime",
       key: "LOGTIME_CALENDAR_COLOR",
@@ -187,6 +210,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       placeholder: "#00BCBA",
       defaultValue: CONFIG_DEFAULT.LOGTIME_CALENDAR_COLOR,
       grid: true,
+      colSpan: 1,
     },
     {
       feature: "logtime",
@@ -197,6 +221,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       placeholder: "#26a641",
       defaultValue: CONFIG_DEFAULT.LOGTIME_LABELS_COLOR,
       grid: true,
+      colSpan: 1,
     },
     {
       feature: "logtime",
@@ -206,6 +231,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.DISABLE_ANIMATIONS,
       grid: true,
+      colSpan: 1,
     },
   ],
   clusters: [
@@ -217,6 +243,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.CLUSTERS_SHOW_MARKERS,
       grid: true,
+      colSpan: 1,
     },
     {
       feature: "clusters",
@@ -230,6 +257,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
         value: c.id,
       })),
       grid: true,
+      colSpan: 1,
     },
   ],
   profile: [
@@ -250,6 +278,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.PROFILE_USE_CUSTOM_COLOR,
       grid: true,
+      colSpan: 1,
     },
     {
       feature: "profile",
@@ -259,6 +288,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.PROFILE_SLOTS_REDIRECTION,
       grid: true,
+      colSpan: 1,
     },
     {
       feature: "profile",

@@ -279,7 +279,9 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
 
   return until(
     (async () => {
-      const value = def.key ? ((await getConfig(def.key)) ?? def.defaultValue ?? "") : (def.defaultValue ?? "");
+      const value = def.key
+        ? ((await getConfig(def.key)) ?? def.defaultValue ?? "")
+        : (def.defaultValue ?? "");
 
       switch (def.kind) {
         case "toggle":
@@ -423,16 +425,24 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
 
 function renderSetting(def: HubSettingDef, enabled: boolean) {
   if (def.kind === "divider") {
-    return html`<div class="divider font-bold my-6 col-span-full opacity-70">
+    return html`<div class="divider font-bold my-2 col-span-full opacity-70">
       ${def.label}
     </div>`;
   }
 
+  const COLSPAN_CLASSES = ["col-span-1", "col-span-2", "col-span-3"] as const;
   const isFullWidth =
     def.fullWidth ?? (def.kind === "url" || def.kind === "shortcuts");
-  const gridClass = def.grid === true ? "" : "col-span-full";
+  const gridClass =
+    def.colSpan != null
+      ? (COLSPAN_CLASSES[def.colSpan - 1] ?? "col-span-full")
+      : "col-span-full";
 
-  return html`<div class="card bg-base-200 shadow-sm p-3 sm:p-4 ${gridClass}">
+  return html`<div
+    class="card bg-base-200 shadow-sm p-3 sm:p-4 ${gridClass} ${enabled
+      ? ""
+      : "opacity-40 grayscale"}"
+  >
     <div
       class="flex ${isFullWidth
         ? "flex-col"
@@ -498,12 +508,22 @@ const moonIconSvg = html`<svg
   />
 </svg>`;
 
-function renderTabsContent(active: FeatureId[]) {
+const GRID_COLS_CLASSES = ["", "", "md:grid-cols-2", "md:grid-cols-3"] as const;
+
+function renderTabsContent(active: FeatureId[], disabledDeps: Set<string>) {
   return FEATURE_DEFS.map((f, idx) => {
     const enabled = active.includes(f.id);
     const settings = (HUB_SETTING_DEFS[f.id] || []).map((def) =>
-      renderSetting(def, enabled),
+      renderSetting(
+        def,
+        f.id === "about" ||
+          (enabled && !(def.key && disabledDeps.has(def.key))),
+      ),
     );
+    const gridColsClass =
+      "cols" in f && f.cols != null
+        ? (GRID_COLS_CLASSES[f.cols] ?? "md:grid-cols-3")
+        : "md:grid-cols-3";
 
     return html`<label class="tab flex items-center gap-2">
         <input type="radio" name="hub_tabs" ?checked="${idx === 0}" />
@@ -517,8 +537,7 @@ function renderTabsContent(active: FeatureId[]) {
         class="tab-content bg-base-100 border-base-300 p-0 overflow-y-auto"
       >
         <div
-          class="flex flex-col ${enabled ||
-           f.id === "about"
+          class="flex flex-col ${enabled || f.id === "about"
             ? ""
             : "opacity-40 grayscale"}"
           data-feature-panel="${f.id}"
@@ -556,7 +575,7 @@ function renderTabsContent(active: FeatureId[]) {
           <div
             class="${f.id === "about"
               ? "p-6 w-full"
-              : "grid grid-cols-1 md:grid-cols-2 gap-4 p-6"}"
+              : `grid grid-cols-1 ${gridColsClass} gap-4 p-6`}"
           >
             ${settings}
           </div>
@@ -626,7 +645,23 @@ async function createModal(active: FeatureId[]): Promise<void> {
   const shadow = wrapper.shadowRoot || wrapper.attachShadow({ mode: "open" });
 
   const currentTheme = await getInitialTheme();
-  const tabsContent = renderTabsContent(active);
+
+  const depParentKeys = new Set<string>();
+  for (const defs of Object.values(HUB_SETTING_DEFS)) {
+    for (const def of defs) {
+      if (def.dependsOn) depParentKeys.add(def.dependsOn);
+    }
+  }
+  const depValues = await chrome.storage.local.get([...depParentKeys]);
+  const disabledDeps = new Set<string>();
+  for (const defs of Object.values(HUB_SETTING_DEFS)) {
+    for (const def of defs) {
+      if (def.dependsOn && def.key && !depValues[def.dependsOn])
+        disabledDeps.add(def.key);
+    }
+  }
+
+  const tabsContent = renderTabsContent(active, disabledDeps);
   const lastSync = (await chrome.storage.local.get("LAST_CLOUD_SYNC"))
     .LAST_CLOUD_SYNC;
   const isConnected = !!(await getConfig("CLOUD_TOKEN"));
@@ -770,6 +805,34 @@ async function createModal(active: FeatureId[]): Promise<void> {
     btn.addEventListener("click", async () => {
       await resetFeatureSettings(shadow, btn.dataset.resetFeature);
     });
+  });
+
+  const logtimePanel = shadow.querySelector<HTMLElement>(
+    '[data-feature-panel="logtime"]',
+  );
+  logtimePanel?.addEventListener("change", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.dataset.settingKey !== "LOGTIME_SHOW_TACOS") return;
+    const on = (target as HTMLInputElement).checked;
+    const depKeys: string[] = [];
+    for (const defs of Object.values(HUB_SETTING_DEFS)) {
+      for (const def of defs) {
+        if (def.dependsOn === "LOGTIME_SHOW_TACOS" && def.key)
+          depKeys.push(def.key);
+      }
+    }
+    for (const key of depKeys) {
+      const el = logtimePanel.querySelector<HTMLElement>(
+        `[data-setting-key="${key}"]`,
+      );
+      if (!el) continue;
+      const card = el.closest<HTMLElement>(".card");
+      if (card) {
+        card.classList.toggle("opacity-40", !on);
+        card.classList.toggle("grayscale", !on);
+      }
+      (el as any).disabled = !on;
+    }
   });
 }
 

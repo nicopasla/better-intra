@@ -4,7 +4,6 @@ import {
   findLogtimeMount,
   hideOldLogtime,
   setupScrollHandlers,
-  setupStyles,
 } from "./dom.ts";
 import {
   renderContainer,
@@ -12,6 +11,7 @@ import {
   renderMonthCard,
 } from "./render.ts";
 import { getLastSeenFormatted, limit } from "./utils.ts";
+import { getEffectiveTheme } from "../profile/theme-manager.ts";
 
 const getConfigs = async () => ({
   goal_hours: await getConfig("LOGTIME_GOAL_HOURS"),
@@ -32,7 +32,8 @@ export type LogtimeConfig = Awaited<ReturnType<typeof getConfigs>>;
 
 let isLoaded = false;
 let CONFIG: LogtimeConfig;
-let lastStats: Record<string, string> | null = null;
+export let lastStats: Record<string, string> | null = null;
+let currentTheme = "light";
 
 function renderLogtime(stats: Record<string, string>): void {
   if (!stats) return;
@@ -57,40 +58,32 @@ function renderLogtime(stats: Record<string, string>): void {
   const lastSeenValue = getLastSeenFormatted(stats, CONFIG.show_days_mode);
   const header = renderHeaderContent(lastSeenValue, byMonth, CONFIG);
 
-  const container = document.createElement("div");
-  render(renderContainer(header, monthCards), container);
-
-  const tryMount = (): boolean => {
+  let shadowHost = document.getElementById("logtime-shadow-wrapper");
+  if (!shadowHost) {
+    shadowHost = document.createElement("div");
+    shadowHost.id = "logtime-shadow-wrapper";
     const mount = findLogtimeMount();
-    const existing = document.querySelector(".lt-box-container");
-    if (!mount) return false;
-    if (existing) existing.remove();
-    hideOldLogtime();
-    const containerBox = container.firstElementChild as HTMLElement;
-    mount.prepend(containerBox);
-    const scrollWrapper = containerBox.querySelector(
-      ".log-slider-fixed",
-    ) as HTMLElement;
-    if (scrollWrapper) {
-      setupScrollHandlers(scrollWrapper);
-      const scrollToLatest = () => {
-        scrollWrapper.scrollLeft =
-          scrollWrapper.scrollWidth - scrollWrapper.clientWidth;
-      };
-      requestAnimationFrame(() => {
-        requestAnimationFrame(scrollToLatest);
-      });
-      window.addEventListener("load", scrollToLatest);
-      setTimeout(scrollToLatest, 100);
-    }
-    return true;
-  };
+    if (mount) mount.prepend(shadowHost);
+    shadowHost.attachShadow({ mode: "open" });
+  }
+  hideOldLogtime();
 
-  if (!tryMount()) {
-    const observer = new MutationObserver((_, o) => {
-      if (tryMount()) o.disconnect();
+  render(renderContainer(header, monthCards, currentTheme, CONFIG), shadowHost.shadowRoot!);
+
+  const scrollWrapper = shadowHost.shadowRoot!.querySelector(
+    ".log-slider-fixed",
+  ) as HTMLElement;
+  if (scrollWrapper) {
+    setupScrollHandlers(scrollWrapper);
+    const scrollToLatest = () => {
+      scrollWrapper.scrollLeft =
+        scrollWrapper.scrollWidth - scrollWrapper.clientWidth;
+    };
+    requestAnimationFrame(() => {
+      requestAnimationFrame(scrollToLatest);
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener("load", scrollToLatest);
+    setTimeout(scrollToLatest, 100);
   }
 }
 
@@ -131,11 +124,8 @@ export function applyPublicLogtimeSettings(logtime: {
   CONFIG.rate =
     logtime.emojiRate !== undefined ? Number(logtime.emojiRate) : CONFIG.rate;
 
-  setupStyles(CONFIG);
-
   if (lastStats) {
     renderLogtime(lastStats);
-  } else {
   }
 }
 
@@ -147,7 +137,7 @@ export async function initLogtime() {
   installFetchHook();
 
   CONFIG = await getConfigs();
-  setupStyles(CONFIG);
+  currentTheme = await getEffectiveTheme();
 
   if (isProfileV3TargetPage()) {
     isLoaded = true;

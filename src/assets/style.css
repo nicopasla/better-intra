@@ -8,6 +8,7 @@
     "#cluster-shadow-host",
     "#shortcuts-shadow-wrapper",
     "#friends-shadow-wrapper",
+    "#logtime-shadow-wrapper",
     "#popup-root";
   themes: "light", "dark";
   include: [ 'button', 'toggle', 'input', 'select', 'radio', 'label',

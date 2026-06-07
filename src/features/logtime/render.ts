@@ -2,12 +2,14 @@ import { html } from "lit-html";
 import {
   AVG_ONLY_ACTIVE_DAYS,
   CELL_RADIUS,
-  COLORS,
   MAX_INTENSITY_SECS,
   PAST_MONTHS_OPACITY,
+  INTRA_FONT,
 } from "./constants";
 import { fmtHours, hexToRgba } from "./utils";
 import { LogtimeConfig } from "./logtime";
+import CSS from "../../assets/style.css?inline";
+import LOGTIME_CSS from "./logtime.css?inline";
 
 function renderDayCell(
   day: number,
@@ -20,21 +22,15 @@ function renderDayCell(
   const bgColor =
     secs > 0 ? hexToRgba(config.calendar_color, alpha) : "var(--muted)";
 
-  const textColor = secs > MAX_INTENSITY_SECS / 2 ? "#fff" : "var(--muted-foreground)";
+  const textColor =
+    secs > MAX_INTENSITY_SECS / 2 ? "#fff" : "var(--muted-foreground)";
 
   return html`<div
-    class="day-cell ${dKey === todayStr ? "today-highlight" : ""}"
-    style="
-      aspect-ratio: 1/1;
-      border-radius: ${CELL_RADIUS};
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      background: ${bgColor};
-      color: ${textColor};
-    "
+    class="day-cell aspect-square flex items-center justify-center text-[11px] font-bold ${dKey ===
+    todayStr
+      ? "today-highlight"
+      : ""}"
+    style="border-radius: ${CELL_RADIUS}; background: ${bgColor}; color: ${textColor};"
   >
     ${String(day)}
     <div class="day-tooltip">${secs > 0 ? fmtHours(secs) : "0h"}</div>
@@ -57,9 +53,9 @@ function renderCalendarGrid(
   const headerRow = ["M", "T", "W", "T", "F", "S", "S", "Total"].map(
     (day, idx) =>
       html`<div
-        style="font-size: 11px; font-weight: 800; text-align: center; color: ${COLORS.TEXT_LIGHT}; ${idx ===
-        7
-          ? `border-left: 1px solid #f1f5f9; color: ${config.labels_color};`
+        class="text-[11px] font-extrabold text-center"
+        style="color: var(--muted-foreground); ${idx === 7
+          ? `border-left: 1px solid var(--color-base-300); color: ${config.labels_color};`
           : ""}"
       >
         ${day}
@@ -100,7 +96,8 @@ function renderCalendarGrid(
   }
 
   return html`<div
-    style="display: grid; grid-template-columns: repeat(7, 1fr) 58px; gap: 8px 5px;"
+    class="grid gap-x-1.25 gap-y-2"
+    style="grid-template-columns: repeat(7, 1fr) 58px;"
   >
     ${headerRow} ${emptyCells} ${dayRows}
   </div>`;
@@ -130,15 +127,6 @@ export function renderMonthCard(
   const isGoalMet = goalPercent >= 100;
   const isPast = !isCurrent;
   const fillClass = isGoalMet ? "liquid-fill-full" : "liquid-fill";
-  const badgeClass = isGoalMet ? "badge-rainbow" : "";
-
-  const badgeStyles = !badgeClass.includes("badge-rainbow")
-    ? `background: ${
-        isGoalMet ? "#27ae60" : "rgba(39, 174, 96, 0.1)"
-      }; color: ${isGoalMet ? "white" : "#27ae60"}; border: 1px solid ${
-        isGoalMet ? "transparent" : "rgba(39, 174, 96, 0.2)"
-      };`
-    : "";
 
   const monthEarnings = (total / 3600) * config.rate;
   const isMonthCapped =
@@ -153,31 +141,33 @@ export function renderMonthCard(
     class="month-card ${isCurrent ? "current-month" : ""}"
     style="${!isCurrent ? `opacity: ${PAST_MONTHS_OPACITY};` : ""}"
   >
-    <div
-      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"
-    >
+    <div class="flex justify-between items-center mb-3">
+      <span class="text-2xl font-bold text-base-content">${monthName}</span>
       <span
-        style="font-size: 22px; font-weight: 700; color: ${COLORS.TEXT_DARK};"
-        >${monthName}</span
-      >
-      <span
-        class="inline-flex items-center justify-center rounded-full transition-all ${badgeClass}"
-        style="height: 30px; padding: 0 10px; font-size: 16px; font-weight: 800; white-space: nowrap; ${badgeStyles}"
+        class="badge badge-lg font-bold transition-all duration-200 ${isGoalMet
+          ? "badge-rainbow"
+          : "badge-success"}"
       >
         ${fmtHours(total)}${config.show_goal ? ` / ${config.goal_hours}h` : ""}
       </span>
     </div>
 
     <div
-      style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: ${config.labels_color}; margin-bottom: 10px;"
+      class="flex justify-between items-center text-sm"
+      style="color: ${config.labels_color}; margin-bottom: 10px;"
     >
       <div
         class="day-cell"
-        style="background: transparent; width: auto; height: auto; padding: 0; cursor: help;"
+        style="background: transparent; width: auto; height: auto; padding: 0; cursor: help; border: none;"
       >
-        ${config.show_goal ? html`<b>${goalPercent}% </b>` : ""}
+        ${config.show_goal ? html`<b>${goalPercent}%</b>` : ""}
+        ${config.show_goal && config.show_tacos
+          ? html`<span class="mx-1.5 text-base-content/30 text-lg leading-none"
+              >•</span
+            >`
+          : ""}
         ${config.show_tacos
-          ? html` ${monthTacos}${isMonthCapped ? "+" : ""} ${config.emoji}`
+          ? html`${monthTacos}${isMonthCapped ? "+" : ""} ${config.emoji}`
           : ""}
         ${config.show_goal
           ? html`<div class="day-tooltip">
@@ -192,7 +182,8 @@ export function renderMonthCard(
 
     ${config.show_goal
       ? html`<div
-          class="w-full bg-zinc-200 dark:bg-zinc-800 h-2 rounded-full overflow-hidden"
+          class="w-full h-2 rounded-full overflow-hidden mb-3"
+          style="background: var(--color-base-300);"
         >
           <div
             class="h-full transition-all duration-500 ${fillClass} ${isPast
@@ -211,7 +202,6 @@ export function renderHeaderContent(
   monthsData: Record<string, Record<string, number>>,
   config: LogtimeConfig,
 ) {
-  // Sum all monthly earnings (capped if enabled)
   let totalCappedEarnings = 0;
 
   for (const data of Object.values(monthsData)) {
@@ -225,24 +215,19 @@ export function renderHeaderContent(
 
   const totalTacos = Math.floor(totalCappedEarnings / config.divisor);
 
-  return html`<div
-    class="flex items-center justify-between p-4"
-    style="padding-bottom: 20px;"
-  >
+  return html`<div class="flex items-center justify-between pb-3">
     <div
-      class="font-bold text-black dark:text-white uppercase text-sm tracking-tight flex items-center w-full"
-      style="display: inline-flex;"
+      class="font-bold uppercase text-sm tracking-tight flex items-center w-full"
     >
-      <div class="w-1.5 h-4 bg-legacy-main rounded-full mr-2"></div>
       Logtime
       ${config.show_tacos
-        ? html`<div class="taco-bank ml-2">
-            <span class="taco-icon">${totalTacos} ${config.emoji}</span>
-          </div>`
+        ? html`<span class="badge badge-lg font-bold ml-2 badge-outline"
+            >${totalTacos} ${config.emoji}</span
+          >`
         : ""}
       ${lastSeenValue !== "N/A"
         ? html`<span
-            class="ml-auto bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full text-[10px] font-bold normal-case border border-green-500/30"
+            class="ml-auto badge badge-success font-bold tracking-tight"
             >Active ${lastSeenValue}</span
           >`
         : ""}
@@ -253,13 +238,37 @@ export function renderHeaderContent(
 export function renderContainer(
   header: ReturnType<typeof html>,
   monthCards: ReturnType<typeof html>[],
+  theme: string,
+  config: LogtimeConfig,
 ) {
-  return html`<div
-    class="bg-white dark:bg-zinc-900 overflow-hidden md:drop-shadow-md md:rounded-lg p-0 mb-4 transition-all lt-box-container"
-  >
-    ${header}
-    <div class="log-slider-fixed">
-      <div class="grid-centering-container">${monthCards}</div>
-    </div>
-  </div>`;
+  const disableAnimCss = config.disable_animations
+    ? `.lt-box-container *, .lt-box-container *::after { animation: none !important; transition: none !important; }
+       .liquid-fill::after { display: none !important; }
+       .liquid-fill { border-radius: 0 4px 4px 0; }`
+    : "";
+
+  return html`<style>
+      ${CSS}
+      ${LOGTIME_CSS}
+      :host {
+        --intra-font: ${INTRA_FONT};
+        --border-color: ${config.labels_color};
+        --calendar-color: ${config.calendar_color};
+        --muted: color-mix(in srgb, var(--color-base-300) 70%, transparent);
+        --muted-foreground: var(--color-base-content);
+        display: block;
+        width: 100%;
+      }
+      ${disableAnimCss}
+    </style>
+    <div data-theme="${theme}">
+      <div
+        class="md:h-96 overflow-y-hidden md:drop-shadow-md md:rounded-lg pt-4 px-6 pb-6 transition-all lt-box-container"
+      >
+        ${header}
+        <div class="log-slider-fixed">
+          <div class="grid-centering-container">${monthCards}</div>
+        </div>
+      </div>
+    </div>`;
 }

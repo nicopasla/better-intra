@@ -146,7 +146,7 @@ export function renderMonthCard(
       <span
         class="badge badge-lg font-bold transition-all duration-200 ${isGoalMet
           ? "badge-rainbow"
-          : "badge-success"}"
+          : "badge-outline badge-success"}"
       >
         ${fmtHours(total)}${config.show_goal ? ` / ${config.goal_hours}h` : ""}
       </span>
@@ -221,7 +221,7 @@ export function renderHeaderContent(
     >
       Logtime
       ${config.show_tacos
-        ? html`<span class="badge badge-lg font-bold ml-2 badge-outline"
+        ? html`<span class="badge badge-dash badge-success badge-lg font-bold ml-2"
             >${totalTacos} ${config.emoji}</span
           >`
         : ""}

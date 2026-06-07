@@ -64,6 +64,7 @@ Quick-access links shown as colourful buttons on your profile page.
 * Up to **8 links**, each with a name, URL, custom colour, and optional emoji.
 * Buttons show the site's icon automatically if you don't set an emoji.
 * Text colour (black or white) is chosen automatically for readability.
+* **Drag to reorder** — drag the preview buttons in the settings panel to rearrange your links.
 * Set them up in the settings panel.
 
 ---

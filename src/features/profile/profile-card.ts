@@ -1,13 +1,7 @@
 import { getConfig } from "../../config.ts";
 
-/**
- * The CSS class to apply to the main profile card for custom styling.
- */
 const PROFILE_CARD_CLASS = "ft-profile-card";
 
-/**
- * Injects the CSS for the custom profile card styling.
- */
 function injectProfileCardStyles() {
   const STYLE_ID = "ft-profile-card-styles";
   if (document.getElementById(STYLE_ID)) return;
@@ -15,7 +9,7 @@ function injectProfileCardStyles() {
   const style = document.createElement("style");
   style.id = STYLE_ID;
   style.textContent = `
-    /* --- Keyframes for Liquid Fill --- */
+  /* --- Keyframes for Liquid Fill --- */
     @keyframes ft-wave-move {
       0% {
         transform: translate(-50%, -50%) rotate(0deg);
@@ -106,13 +100,11 @@ function injectProfileCardStyles() {
       color: #a0aec0;
     }
 
-    /* Apply user color to the percentage text */
     .ft-profile-card .font-bold.justify-between > div:first-child {
       color: var(--user-color, #a0aec0);
       font-weight: 700;
     }
 
-    /* Cursus dropdown button */
     .ft-profile-card button[role="combobox"] {
       font-size: 0.8rem;
       padding: 2px 4px !important;
@@ -145,14 +137,10 @@ function injectProfileCardStyles() {
     .ft-profile-card .border-t-neutral-600 span {
       color: #e2e8f0;
     }
-  `;
+`;
   document.head.appendChild(style);
 }
 
-/**
- * Finds the main profile card element on the page.
- * @returns The HTMLElement of the profile card, or null if not found.
- */
 function findProfileCard(): HTMLElement | null {
   const loginElement =
     document.querySelector<HTMLElement>('p[class="text-sm"]');
@@ -163,10 +151,6 @@ function findProfileCard(): HTMLElement | null {
   return (card as HTMLElement) || null;
 }
 
-/**
- * Applies a theme object to the profile card by setting CSS variables.
- * @param theme The theme object, which should contain a profileColor.
- */
 export function applyThemeToProfileCard(theme: { profileColor?: string }) {
   const profileCard = findProfileCard();
   if (!profileCard || !theme?.profileColor) return;
@@ -180,17 +164,19 @@ export function applyThemeToProfileCard(theme: { profileColor?: string }) {
 
 export async function initProfileCardStyling() {
   injectProfileCardStyles();
+
   const profileCard = findProfileCard();
-
-  if (!profileCard || profileCard.classList.contains(PROFILE_CARD_CLASS)) {
-    return;
+  if (profileCard && !profileCard.classList.contains(PROFILE_CARD_CLASS)) {
+    profileCard.classList.add(PROFILE_CARD_CLASS);
   }
-  profileCard.classList.add(PROFILE_CARD_CLASS);
 
-  // Set the color for the progress bar and other elements from the central config
+  const pathParts = location.pathname.split("/").filter(Boolean);
+  const isOtherUser = pathParts[0] === "users" && !!pathParts[1];
+  if (isOtherUser) return;
+
   const useCustomColor = await getConfig("PROFILE_USE_CUSTOM_COLOR");
   if (useCustomColor) {
-    const calendarColor = await getConfig("LOGTIME_CALENDAR_COLOR");
-    applyThemeToProfileCard({ profileColor: calendarColor });
+    const color = await getConfig("LOGTIME_CALENDAR_COLOR");
+    applyThemeToProfileCard({ profileColor: color });
   }
 }

@@ -33,7 +33,7 @@ function injectProfileCardStyles() {
 
     /* --- Profile Picture --- */
     .ft-profile-card .bg-cover.rounded-full {
-      border-color: var(--user-color, #52ff52) !important;
+      border-color: var(--user-color, #00babc) !important;
     }
 
     /* --- User Name --- */
@@ -69,7 +69,7 @@ function injectProfileCardStyles() {
 
     /* Progress bar fill - now the liquid fill */
     .ft-profile-card div[role="progressbar"] > div {
-      background-color: var(--user-color, #52ff52) !important;
+      background-color: var(--user-color, #00babc) !important;
       position: relative !important;
       transition: width 1s ease-in-out !important;
     }
@@ -82,7 +82,7 @@ function injectProfileCardStyles() {
       left: 100%;
       width: 40px;
       height: 40px;
-      background: var(--user-color, #52ff52);
+      background: var(--user-color, #00babc);
       border-radius: 38%;
       animation: ft-wave-move 3s linear infinite;
       display: block;
@@ -101,7 +101,7 @@ function injectProfileCardStyles() {
     }
 
     .ft-profile-card .font-bold.justify-between > div:first-child {
-      color: var(--user-color, #a0aec0);
+      color: var(--user-color, #fff);
       font-weight: 700;
     }
 

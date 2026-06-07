@@ -117,6 +117,7 @@ export function renderShortcutsSettings(
   onDeleteRow: (index: number) => void,
   onInput: () => void,
   onRefreshPreview: () => void,
+  onMoveRow: (from: number, to: number) => void,
 ): ReturnType<typeof html> {
   const maxLinks = 8;
   const isFull = links.length >= maxLinks;
@@ -154,7 +155,9 @@ export function renderShortcutsSettings(
       <div
         class="preview-section p-4 rounded-xl border border-base-300 bg-base-200/10"
       >
-        <div class="flex justify-center">${renderShortcutsDisplay(links)}</div>
+        <div class="flex justify-center">
+          ${renderShortcutsDisplay(links, onMoveRow)}
+        </div>
       </div>
     </div>
   `;
@@ -214,62 +217,132 @@ export function extractLinksFromForm(root: HTMLElement): ShortcutLink[] {
   return links;
 }
 
+function renderLinkContent(
+  link: ShortcutLink,
+  contrast: string,
+  hasEmoji: boolean,
+): ReturnType<typeof html> {
+  return html`
+    <div
+      class="flex items-center justify-center bg-white/20 p-1 rounded-lg transition-transform hover:rotate-6 w-10 h-10"
+    >
+      ${hasEmoji
+        ? html`<span class="text-2xl">${link.emoji}</span>`
+        : html`
+            <img
+              src="${getFaviconUrl(link.url || "https://example.com")}"
+              class="w-8 h-8 object-contain"
+              alt=""
+              loading="lazy"
+              referrerpolicy="no-referrer"
+              @error="${(e: Event) => {
+                const img = e.target as HTMLImageElement;
+                try {
+                  const parsedUrl = new URL(link.url);
+                  if (!img.hasAttribute("data-fallback-tried")) {
+                    img.setAttribute("data-fallback-tried", "true");
+                    img.src = `https://icons.duckduckgo.com/ip3/${parsedUrl.hostname}.ico`;
+                    return;
+                  }
+                } catch {}
+                img.onerror = null;
+                img.src = GLOBE;
+              }}"
+            />
+          `}
+    </div>
+    <span class="text-sm"> ${link.name || "Empty"} </span>
+  `;
+}
+
 export function renderShortcutsDisplay(
   links: ShortcutLink[],
+  onMoveRow?: (from: number, to: number) => void,
 ): ReturnType<typeof html> {
-  const activeLinks = links.filter((l) => l.url && l.name);
+  const isDragMode = !!onMoveRow;
+  const displayLinks = isDragMode
+    ? links
+    : links.filter((l) => l.url && l.name);
 
-  if (activeLinks.length === 0) return html``;
+  if (displayLinks.length === 0) return html``;
 
   return html`
     <div
       class="flex flex-wrap gap-3 p-0 m-0 items-center"
       id="shortcuts-display"
     >
-      ${activeLinks.map((link) => {
+      ${displayLinks.map((link, idx) => {
         const contrast = getContrastColor(link.color);
-        const hasEmoji = link.emoji && link.emoji.trim().length > 0;
+        const hasEmoji = !!(link.emoji && link.emoji.trim().length > 0);
+        const isValid = link.url && link.name;
 
-        return html`
-          <a
-            href="${link.url}"
+        if (isDragMode) {
+          const dimmed = !isValid;
+
+          return html`<a
+            href="${isValid ? link.url : "#"}"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn btn-lg h-auto min-h-12 px-4 py-2 rounded-2xl border-none font-bold uppercase tracking-wider shadow-lg hover:shadow-lg no-underline inline-flex items-center gap-3"
+            class="btn btn-lg h-auto min-h-12 px-4 py-2 rounded-2xl border-none font-bold uppercase tracking-wider shadow-lg hover:shadow-lg no-underline inline-flex items-center gap-3 ${dimmed
+              ? "opacity-40 grayscale"
+              : ""}"
             style="background-color: ${link.color}; color: ${contrast};"
+            draggable="${isValid}"
+            @dragstart="${(e: DragEvent) => {
+              if (!isValid) {
+                e.preventDefault();
+                return;
+              }
+              e.dataTransfer?.setData("text/plain", String(idx));
+              (e.currentTarget as HTMLElement).classList.add("opacity-30");
+            }}"
+            @dragover="${(e: DragEvent) => {
+              e.preventDefault();
+              (e.currentTarget as HTMLElement).classList.add(
+                "ring-2",
+                "ring-primary",
+              );
+            }}"
+            @dragleave="${(e: DragEvent) => {
+              (e.currentTarget as HTMLElement).classList.remove(
+                "ring-2",
+                "ring-primary",
+              );
+            }}"
+            @drop="${(e: DragEvent) => {
+              e.preventDefault();
+              (e.currentTarget as HTMLElement).classList.remove(
+                "ring-2",
+                "ring-primary",
+              );
+              const fromIdx = parseInt(
+                e.dataTransfer?.getData("text/plain") || "-1",
+              );
+              if (fromIdx !== -1 && fromIdx !== idx) {
+                onMoveRow!(fromIdx, idx);
+              }
+            }}"
+            @dragend="${(e: DragEvent) => {
+              (e.currentTarget as HTMLElement).classList.remove(
+                "opacity-30",
+                "ring-2",
+                "ring-primary",
+              );
+            }}"
           >
-            <div
-              class="flex items-center justify-center bg-white/20 p-1 rounded-lg transition-transform hover:rotate-6 w-10 h-10"
-            >
-              ${hasEmoji
-                ? html`<span class="text-2xl">${link.emoji}</span>`
-                : html`
-                    <img
-                      src="${getFaviconUrl(link.url)}"
-                      class="w-8 h-8 object-contain"
-                      alt=""
-                      loading="lazy"
-                      referrerpolicy="no-referrer"
-                      @error="${(e: Event) => {
-                        const img = e.target as HTMLImageElement;
-                        try {
-                          const parsedUrl = new URL(link.url);
-                          if (!img.hasAttribute("data-fallback-tried")) {
-                            img.setAttribute("data-fallback-tried", "true");
-                            img.src = `https://icons.duckduckgo.com/ip3/${parsedUrl.hostname}.ico`;
-                            return;
-                          }
-                        } catch {}
-                        img.onerror = null;
-                        img.src = GLOBE;
-                      }}"
-                    />
-                  `}
-            </div>
+            ${renderLinkContent(link, contrast, hasEmoji)}
+          </a>`;
+        }
 
-            <span class="text-sm"> ${link.name} </span>
-          </a>
-        `;
+        return html`<a
+          href="${link.url}"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-lg h-auto min-h-12 px-4 py-2 rounded-2xl border-none font-bold uppercase tracking-wider shadow-lg hover:shadow-lg no-underline inline-flex items-center gap-3"
+          style="background-color: ${link.color}; color: ${contrast};"
+        >
+          ${renderLinkContent(link, contrast, hasEmoji)}
+        </a>`;
       })}
     </div>
   `;
@@ -304,6 +377,7 @@ async function initShortcutsSettings(container: HTMLElement) {
           await save();
         },
         () => update(),
+        () => {},
       ),
       container,
     );

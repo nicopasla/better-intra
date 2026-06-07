@@ -48,6 +48,7 @@ export async function openHubModal(active: FeatureId[]) {
 function renderSettingControl(def: HubSettingDef, enabled: boolean) {
   if (def.kind === "shortcuts" && def.key === "SHORTCUTS_LINKS") {
     const container = document.createElement("div");
+    container.setAttribute("data-shortcuts-panel", "true");
     let links: ShortcutLink[] = [];
 
     const save = async () => {
@@ -63,7 +64,10 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
           links,
           () => {
             if (links.length < 8) {
-              links = [...links, { name: "", url: "", color: "#7dd3fc" }];
+              links = [
+                ...links,
+                { name: "", url: "", color: "#7dd3fc", emoji: "" },
+              ];
               update();
             }
           },
@@ -76,6 +80,13 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
           },
           () => save(),
           () => update(),
+          (from, to) => {
+            const newLinks = [...links];
+            const [moved] = newLinks.splice(from, 1);
+            newLinks.splice(to, 0, moved);
+            links = newLinks;
+            setTimeout(() => update(), 0);
+          },
         ),
         container,
       );

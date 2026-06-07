@@ -5,26 +5,33 @@ let cachedGrid: HTMLElement | null = null;
 
 function getCards(): HTMLElement[] {
   const currentElements = document.querySelectorAll<HTMLElement>(
-    ".dash-main > div, .lt-box-container",
+    "#logtime-shadow-wrapper, .bg-white.md\\:h-96, .lt-box-container",
   );
   const validCards: HTMLElement[] = [];
   const seen = new Set<HTMLElement>();
 
+  const hasShadowHost =
+    document.getElementById("logtime-shadow-wrapper") !== null;
+
   currentElements.forEach((el) => {
-    if (el.classList.contains("dash-main") || seen.has(el)) return;
+    if (seen.has(el)) return;
 
     const title = getCardTitle(el);
     const validTitles = [
       "LOGTIME",
       "AGENDA",
       "PENDING EVALUATIONS",
+      "LAST ACHIEVEMENTS",
       "PROJECTS",
     ];
 
-    if (
-      el.classList.contains("lt-box-container") ||
-      validTitles.includes(title)
-    ) {
+    if (validTitles.includes(title)) {
+      if (
+        title === "LOGTIME" &&
+        el.id !== "logtime-shadow-wrapper" &&
+        hasShadowHost
+      )
+        return;
       seen.add(el);
       validCards.push(el);
     }
@@ -39,6 +46,7 @@ function getCards(): HTMLElement[] {
     cachedGrid =
       document.querySelector(".dash-main") ||
       validCards[0]?.parentElement ||
+      document.querySelector<HTMLElement>("main div[class*='grid']") ||
       null;
   }
 
@@ -46,6 +54,7 @@ function getCards(): HTMLElement[] {
 }
 
 function getCardTitle(card: HTMLElement): string {
+  if (card.id === "logtime-shadow-wrapper") return "LOGTIME";
   const titleEl = card.querySelector("[class*='uppercase']");
   if (titleEl?.textContent) return titleEl.textContent.trim().toUpperCase();
 
@@ -54,6 +63,7 @@ function getCardTitle(card: HTMLElement): string {
     "LOGTIME",
     "AGENDA",
     "PENDING EVALUATIONS",
+    "LAST ACHIEVEMENTS",
     "PROJECTS",
   ]) {
     if (text.includes(token)) return token;
@@ -61,16 +71,19 @@ function getCardTitle(card: HTMLElement): string {
   return "";
 }
 
-function reorderCards(grid: HTMLElement, customOrder: string[]): boolean {
-  const liveChildren = Array.from(grid.children) as HTMLElement[];
-  if (!liveChildren.length) return false;
+function reorderCards(
+  grid: HTMLElement,
+  customOrder: string[],
+  cards: HTMLElement[],
+): boolean {
+  if (!cards.length) return false;
 
   const normalizedOrder = customOrder.map((name) => {
     const clean = name.trim().toUpperCase();
     return clean.startsWith("-") ? clean.substring(1) : clean;
   });
 
-  const sortedChildren = [...liveChildren].sort((a, b) => {
+  const sortedCards = [...cards].sort((a, b) => {
     const posA = normalizedOrder.findIndex((name) =>
       getCardTitle(a).includes(name),
     );
@@ -80,26 +93,20 @@ function reorderCards(grid: HTMLElement, customOrder: string[]): boolean {
     return (posA === -1 ? Infinity : posA) - (posB === -1 ? Infinity : posB);
   });
 
-  const hasMoved = sortedChildren.some(
-    (child, idx) => grid.children[idx] !== child,
-  );
-  if (hasMoved) sortedChildren.forEach((child) => grid.appendChild(child));
+  const hasMoved = sortedCards.some((child, idx) => cards[idx] !== child);
+  if (hasMoved) sortedCards.forEach((child) => grid.appendChild(child));
 
   return hasMoved;
 }
 
 export async function optimizeLayout() {
   const cardOrder = (await getConfig("PROFILE_CARD_ORDER")) as string[] | null;
-
   const hideCardByText = (searchText: string, shouldHide: boolean) => {
     const cleanSearch = searchText.toUpperCase().trim();
 
     if (cleanSearch === "LOGTIME") {
-      document
-        .querySelectorAll<HTMLElement>(".lt-box-container")
-        .forEach((c) => {
-          c.style.display = shouldHide ? "none" : "";
-        });
+      const host = document.getElementById("logtime-shadow-wrapper");
+      if (host) host.style.display = shouldHide ? "none" : "";
     }
 
     document
@@ -125,7 +132,7 @@ export async function optimizeLayout() {
   if (!cards.length) return;
 
   if (cachedGrid && cardOrder && cardOrder.length > 0) {
-    if (reorderCards(cachedGrid, cardOrder)) cachedCards = null;
+    if (reorderCards(cachedGrid, cardOrder, cards)) cachedCards = null;
   }
 }
 
@@ -141,23 +148,29 @@ export async function initLayoutManager() {
   window.addEventListener("resize", () => void optimizeLayout());
 
   let isUpdating = false;
-  const observer = new MutationObserver(() => {
-    if (isUpdating) return;
-    isUpdating = true;
+  let observer: MutationObserver | null = null;
 
-    requestAnimationFrame(() => {
-      optimizeLayout().finally(() => {
-        isUpdating = false;
+  const setupObserver = (parent: HTMLElement) => {
+    if (observer) observer.disconnect();
+    observer = new MutationObserver(() => {
+      if (isUpdating) return;
+      isUpdating = true;
+      requestAnimationFrame(() => {
+        optimizeLayout().finally(() => {
+          isUpdating = false;
+        });
       });
     });
-  });
+    observer.observe(parent, { childList: true, subtree: false });
+  };
 
-  const targetNode = document.querySelector(".dash-main") || document.body;
-
-  observer.observe(targetNode, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ["class", "style"],
-  });
+  const poll = () => {
+    const cards = getCards();
+    if (cards.length && cachedGrid) {
+      setupObserver(cachedGrid);
+    } else {
+      requestAnimationFrame(poll);
+    }
+  };
+  requestAnimationFrame(poll);
 }

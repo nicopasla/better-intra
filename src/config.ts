@@ -54,6 +54,8 @@ export interface BetterIntraConfig {
 
   // Shortcuts Feature Settings
   SHORTCUTS_LINKS: { name: string; url: string }[];
+  SHORTCUTS_HIDE_IMPORTANT_LINKS: boolean;
+  SHORTCUTS_ALIGNMENT: "left" | "center" | "right";
 
   FRIENDS_LIST: string[];
   FRIENDS_SORT_MODE: "online" | "name" | "level" | "wallet";
@@ -108,6 +110,8 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
 
   BETTER_INTRA_THEME: "dark",
   SHORTCUTS_LINKS: [],
+  SHORTCUTS_HIDE_IMPORTANT_LINKS: false,
+  SHORTCUTS_ALIGNMENT: "left",
 
   FRIENDS_LIST: [],
   FRIENDS_SORT_MODE: "level",

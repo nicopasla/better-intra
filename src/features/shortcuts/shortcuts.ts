@@ -30,24 +30,53 @@ export async function injectShortcutsDisplay() {
   );
   if (!banner) return;
 
+  const [hideImportantLinks, alignment, links] = await Promise.all([
+    getConfig("SHORTCUTS_HIDE_IMPORTANT_LINKS"),
+    getConfig("SHORTCUTS_ALIGNMENT"),
+    getStoredLinks(),
+  ]);
+
+  const displayLinks = links.filter((l) => l.url && l.name);
+
   const infoBlock = banner.querySelector(
     ".flex.flex-col.text-sm.w-full.gap-1",
   ) as HTMLElement;
-  if (infoBlock) {
-    infoBlock.style.width = "50%";
-    infoBlock.classList.remove("w-full");
+
+  if (hideImportantLinks) {
+    const icon = banner.querySelector(
+      "svg.hidden.lg\\:block",
+    ) as HTMLElement | null;
+    if (icon) icon.style.display = "none";
+    if (infoBlock) infoBlock.style.display = "none";
+  } else {
+    if (infoBlock) {
+      infoBlock.style.width = "50%";
+      infoBlock.classList.remove("w-full");
+    }
   }
 
-  const links = await getStoredLinks();
+  if (displayLinks.length === 0) {
+    if (!hideImportantLinks && infoBlock) {
+      infoBlock.style.width = "";
+      infoBlock.classList.add("w-full");
+    }
+    return;
+  }
 
   const wrapper = document.createElement("div");
   wrapper.id = CONTAINER_ID;
+  const justifyMap: Record<string, string> = {
+    left: "flex-start",
+    center: "center",
+    right: "flex-end",
+  };
   wrapper.style.cssText = `
     display: flex;
     flex-direction: row;
     align-items: center;
+    justify-content: ${hideImportantLinks ? justifyMap[alignment] || "flex-start" : "flex-start"};
     gap: 16px;
-    width: 50%;
+    width: ${hideImportantLinks ? "100%" : "50%"};
     margin-right: 20px;
     box-sizing: border-box;
   `;
@@ -67,7 +96,7 @@ export async function injectShortcutsDisplay() {
             flex-shrink: 0;
           }
         </style>
-        <div class="separator"></div>
+        ${hideImportantLinks ? "" : html`<div class="separator"></div>`}
         ${renderShortcutsDisplay(links)}
       `,
       shadowRoot,
@@ -84,7 +113,7 @@ export function setupShortcutsObserver() {
       if (!document.getElementById(CONTAINER_ID)) {
         injectShortcutsDisplay();
       }
-    }, 300);
+    }, 100);
   });
 
   observer.observe(document.body, { childList: true, subtree: true });

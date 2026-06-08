@@ -48,7 +48,7 @@ function renderFilterSelectBar(
 ): ReturnType<typeof html> {
   return html`
     <select
-      class="select select-info select-sm rounded-none tracking-wide text-xs bg-base-100 text-base-content min-w-40"
+      class="select select-sm rounded-none tracking-wide text-xs bg-base-100 text-base-content min-w-40"
       @change="${(e: Event) =>
         onEventChange((e.target as HTMLSelectElement).value)}"
     >
@@ -100,6 +100,8 @@ export async function injectEventsSelect() {
   shadowHost.style.setProperty("display", "inline-flex", "important");
 
   const shadowRoot = shadowHost.attachShadow({ mode: "open" });
+  const isDark = document.documentElement.classList.contains("dark");
+  const primaryColor = isDark ? "hsl(199 89% 48%)" : "#00babc";
   const style = document.createElement("style");
   style.textContent = `
     ${CSS}
@@ -110,8 +112,8 @@ export async function injectEventsSelect() {
     
     select {
       background-color: var(--base-100) !important;
-      color: var(--base-content) !important;
-      border-color: var(--base-content) !important;
+      color: ${primaryColor} !important;
+      border-color: ${primaryColor} !important;
     }
   `;
   shadowRoot.appendChild(style);

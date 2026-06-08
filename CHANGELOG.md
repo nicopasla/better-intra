@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-06-08
+
+### Features 🎉
+
+- feat: updated events filtering ([2beeefe](https://github.com/nicopasla/better-intra/commit/2beeefe))
+- feat: option to hide the 'Important links' ([64654cf](https://github.com/nicopasla/better-intra/commit/64654cf))
+
+### Bug fixes 🐛
+
+- fix: removed FRIENDS_DATA_CACHE from being push to the  KV ([53cbabb](https://github.com/nicopasla/better-intra/commit/53cbabb))
+- fix: updated description of the friends feature ([aa9cd3d](https://github.com/nicopasla/better-intra/commit/aa9cd3d))
+- fix: emoji limit in logtime was fixed to only one emoji ([bd88626](https://github.com/nicopasla/better-intra/commit/bd88626))
+- fix: updated color for the select event button ([66d2cf8](https://github.com/nicopasla/better-intra/commit/66d2cf8))
+- fix: added some top/bottom padding to the shortcuts ([0de5ca7](https://github.com/nicopasla/better-intra/commit/0de5ca7))
+- fix: hide shortcuts seperator when there 0 shortcuts ([989154b](https://github.com/nicopasla/better-intra/commit/989154b))
+- fix: changed formating of last active timestamp ([1a747ae](https://github.com/nicopasla/better-intra/commit/1a747ae))
+- fix: added back colored links ([db21be7](https://github.com/nicopasla/better-intra/commit/db21be7))
+
+### Maintenance 🧹
+
+- chore: update subproject commit reference in better-intra-worker ([456139b](https://github.com/nicopasla/better-intra/commit/456139b))
+- chore: improve clusters buttons layout ([1a7a89c](https://github.com/nicopasla/better-intra/commit/1a7a89c))
+- chore: formatting ([f39d57f](https://github.com/nicopasla/better-intra/commit/f39d57f))
+
 ## [1.1.1] - 2026-06-08
 
 ### Features 🎉
@@ -355,7 +379,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.1.1...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/nicopasla/better-intra/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/nicopasla/better-intra/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/nicopasla/better-intra/compare/v1.0.9...v1.1.0
 [1.0.9]: https://github.com/nicopasla/better-intra/compare/v1.0.8...v1.0.9

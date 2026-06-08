@@ -151,14 +151,16 @@ export function renderShortcutsSettings(
         </button>
       </div>
 
-      <div class="divider my-1"></div>
-      <div
-        class="preview-section p-4 rounded-xl border border-base-300 bg-base-200/10"
-      >
-        <div class="flex justify-center">
-          ${renderShortcutsDisplay(links, onMoveRow)}
+      ${links.length > 0 ? html`
+        <div class="divider my-1"></div>
+        <div
+          class="preview-section p-4 rounded-xl border border-base-300 bg-base-200/10"
+        >
+          <div class="flex justify-center">
+            ${renderShortcutsDisplay(links, onMoveRow)}
+          </div>
         </div>
-      </div>
+      ` : ''}
     </div>
   `;
 }
@@ -370,6 +372,9 @@ async function initShortcutsSettings(container: HTMLElement) {
         },
         async (idx) => {
           links = links.filter((_, i) => i !== idx);
+          if (links.length === 0) {
+            links = [{ name: "", url: "", color: "#7dd3fc", emoji: "" }];
+          }
           await save();
           update();
         },

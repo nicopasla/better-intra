@@ -78,6 +78,7 @@ export async function injectShortcutsDisplay() {
     gap: 16px;
     width: ${hideImportantLinks ? "100%" : "50%"};
     margin-right: 20px;
+    padding: 8px 0;
     box-sizing: border-box;
   `;
 

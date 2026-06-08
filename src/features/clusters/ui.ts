@@ -33,14 +33,13 @@ export function renderClusterPicker(
         <div class="tooltip-content">
           <div class="text-lg whitespace-nowrap">Choose a default cluster</div>
         </div>
-
         <div
           class="flex items-center gap-3 cursor-pointer select-none py-1"
           @click="${openSelectDropdown}"
         >
           <select
             id="cluster-select"
-            class="select select-lg select-ghost text-primary font-black uppercase min-w-32 text-xl focus:bg-transparent px-2"
+            class="select select-lg font-black uppercase min-w-40 text-xl px-2"
             @change="${(e: Event) =>
               onClusterChange((e.target as HTMLSelectElement).value)}"
             @click="${(e: Event) => e.stopPropagation()}"
@@ -58,16 +57,14 @@ export function renderClusterPicker(
           </select>
         </div>
       </div>
-
       <div class="h-8 w-px bg-base-content/20"></div>
-
       <button
         class="btn btn-lg px-8 text-base font-bold uppercase tracking-wider ${showMarkers
           ? "btn-primary"
-          : "btn-outline opacity-70"}"
+          : "btn-ghost"}"
         @click="${onMarkerToggle}"
       >
-        markers
+        Show markers
       </button>
     </div>
   `;
@@ -80,6 +77,9 @@ export function createShadowUI(
   shadowHost: HTMLElement;
   reRender: (currentId: string, showMarkers: boolean) => void;
 } {
+  const isDark = document.documentElement.classList.contains("dark");
+  const theme = isDark ? "dark" : "light";
+
   const shadowHost = document.createElement("div");
   shadowHost.id = "cluster-shadow-host";
   Object.assign(shadowHost.style, {
@@ -113,7 +113,7 @@ export function createShadowUI(
 
   const wrapper = document.createElement("div");
   wrapper.id = "cluster-li-container";
-  wrapper.setAttribute("data-theme", "light");
+  wrapper.setAttribute("data-theme", theme);
   shadowRoot.appendChild(wrapper);
 
   const reRender = (currentId: string, showMarkers: boolean) => {

@@ -274,7 +274,7 @@ html.dark .hover\:bg-zinc-300:hover {
 }
 
 html.dark .text-legacy-main {
-  color: hsl(var(--foreground)) !important;
+  color: hsl(var(--primary)) !important;
 }
 
 html.dark .border-legacy-main {

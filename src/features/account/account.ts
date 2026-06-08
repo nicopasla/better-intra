@@ -47,7 +47,9 @@ export async function loginWith42(onSuccess?: () => void): Promise<void> {
   }
 
   const WORKER_ORIGIN = new URL(WORKER_URL).origin;
-  const isExtension = window.location.protocol === "chrome-extension:" || window.location.protocol === "moz-extension:";
+  const isExtension =
+    window.location.protocol === "chrome-extension:" ||
+    window.location.protocol === "moz-extension:";
 
   const messageListener = async (event: MessageEvent) => {
     if (event.origin !== WORKER_ORIGIN) return;
@@ -81,7 +83,7 @@ export async function loginWith42(onSuccess?: () => void): Promise<void> {
       if (!popup.closed) return;
       clearInterval(pollInterval);
       window.removeEventListener("message", messageListener);
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise((r) => setTimeout(r, 300));
       const savedLogin = await getCloudLogin();
       const savedToken = await getConfig("CLOUD_TOKEN");
       if (savedLogin && savedToken) {
@@ -137,18 +139,17 @@ export async function syncToCloud(): Promise<boolean> {
 
   try {
     const settings: Partial<BetterIntraConfig> = {};
-    const allKeys = Object.keys(
-      await chrome.storage.local.get(null),
-    ) as ConfigKey[];
+    const allKeys = Object.keys(await chrome.storage.local.get(null));
 
-    // Collect all settings except for the cloud-specific ones
+    // Collect all settings except for the cloud-specific and cache-only ones
     for (const key of allKeys) {
       if (
         key !== "CLOUD_TOKEN" &&
         key !== "CLOUD_LOGIN" &&
-        key !== "LAST_CLOUD_SYNC"
+        key !== "LAST_CLOUD_SYNC" &&
+        key !== "FRIENDS_DATA_CACHE"
       ) {
-        (settings as any)[key] = await getConfig(key);
+        (settings as any)[key] = await getConfig(key as ConfigKey);
       }
     }
 
@@ -291,7 +292,11 @@ export async function logoutCloud(): Promise<boolean> {
     }
   }
 
-  await chrome.storage.local.remove(["CLOUD_TOKEN", "CLOUD_LOGIN", "CLOUD_AUTH_FAILED"]);
+  await chrome.storage.local.remove([
+    "CLOUD_TOKEN",
+    "CLOUD_LOGIN",
+    "CLOUD_AUTH_FAILED",
+  ]);
   return true;
 }
 
@@ -315,7 +320,11 @@ export async function wipeAllCloudData(): Promise<boolean> {
     );
 
     if (response.ok) {
-      await chrome.storage.local.remove(["CLOUD_TOKEN", "CLOUD_LOGIN", "CLOUD_AUTH_FAILED"]);
+      await chrome.storage.local.remove([
+        "CLOUD_TOKEN",
+        "CLOUD_LOGIN",
+        "CLOUD_AUTH_FAILED",
+      ]);
       return true;
     }
     return false;

@@ -449,11 +449,13 @@ function renderWidget(state: WidgetState) {
               ? html`<div
                 class="flex flex-col items-center gap-4 py-12 px-6 text-center"
               >
-                <span class="text-lg font-bold opacity-60"
-                  >Cloud sync required</span
+                <span
+                  class="w-16 h-16 opacity-40 mb-2 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
+                  >${unsafeHTML(FRIENDS_SVG)}</span
                 >
-                <p class="text-sm opacity-50">
-                  Connect your account to use friends.
+                <p class="opacity-50 max-w-[22rem]">
+                  See who's online, track levels, wallets, and correction points
+                  for your 42 friends at a glance.
                 </p>
                 <button
                   type="button"

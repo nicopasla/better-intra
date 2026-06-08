@@ -11,7 +11,10 @@
   },
   "event_types": {
     "exam": ["exam"],
-    "pedago": ["exam", "challenge"],
-    "social": ["association", "conference", "workshop"]
+    "conference": ["conference", "talk", "lecture", "conférence"],
+    "workshop": ["workshop", "atelier", "hands-on"],
+    "hackathon": ["hackathon", "hack"],
+    "event": ["event", "association", "party", "social", "gathering", "soirée"],
+    "meet_up": ["meetup", "meet-up", "networking"]
   }
 }

@@ -423,7 +423,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             type="text"
             class="input input-accent w-30 text-center text-xl"
             placeholder="${def.placeholder || "🐝"}"
-            maxlength="2"
+            maxlength="6"
             .value="${String(value || "")}"
             data-setting-key="${def.key}"
             ?disabled="${!enabled}"

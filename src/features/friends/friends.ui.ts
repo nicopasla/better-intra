@@ -155,14 +155,19 @@ function renderFriendRow(
         >
       </div>
       ${!friend.isOnline && friend.lastOnlineTimestamp
-        ? html`<div class="text-xs opacity-60 font-medium" title="Last seen online">
+        ? html`<div
+            class="text-xs opacity-60 font-medium"
+            title="Last seen online"
+          >
             ${formatTimeAgo(friend.lastOnlineTimestamp)}
           </div>`
         : ""}
     </div>
 
     <!-- Delete button (far right) -->
-    <div class="opacity-0 group-hover:opacity-70 hover:opacity-100! transition-opacity shrink-0">
+    <div
+      class="opacity-0 group-hover:opacity-70 hover:opacity-100! transition-opacity shrink-0"
+    >
       <button
         class="btn btn-ghost btn-sm btn-circle text-error"
         title="Remove friend"
@@ -366,12 +371,14 @@ function renderWidget(state: WidgetState) {
       <!-- FAB -->
       <div class="friends-fab">
         <div class="indicator">
-          ${onlineCount > 0
-            ? html`<span
-                class="indicator-item badge badge-success badge-sm font-bold min-w-6 px-1.5"
-                >${onlineCount}</span
-              >`
-            : ""}
+          ${
+            onlineCount > 0
+              ? html`<span
+                  class="indicator-item badge badge-success badge-sm font-bold min-w-6 px-1.5"
+                  >${onlineCount}</span
+                >`
+              : ""
+          }
           <button
             type="button"
             class="btn btn-circle btn-lg btn-primary shadow-xl"
@@ -391,9 +398,9 @@ function renderWidget(state: WidgetState) {
 
       <!-- Dropdown -->
       <div
-        class="friends-dropdown card card-border bg-base-100 shadow-xl ${state.open
-          ? ""
-          : "closed"}"
+        class="friends-dropdown card card-border bg-base-100 shadow-xl ${
+          state.open ? "" : "closed"
+        }"
       >
         <!-- Header -->
         <div
@@ -401,35 +408,44 @@ function renderWidget(state: WidgetState) {
         >
           <div class="flex items-center gap-2.5">
             <span class="font-bold text-lg text-base-content">Friends</span>
-            ${state.friends.length > 0
-              ? html`<span class="badge badge-primary badge-md font-bold"
-                  >${state.friends.length}</span
-                >`
-              : ""}
-            ${onlineCount > 0
-              ? html`<span class="badge badge-success badge-md font-bold"
-                  >${onlineCount} online</span
-                >`
-              : ""}
+            ${
+              state.friends.length > 0
+                ? html`<span class="badge badge-primary badge-md font-bold"
+                    >${state.friends.length}</span
+                  >`
+                : ""
+            }
+            ${
+              onlineCount > 0
+                ? html`<span class="badge badge-success badge-md font-bold"
+                    >${onlineCount} online</span
+                  >`
+                : ""
+            }
           </div>
           <div class="flex items-center gap-2">
-            ${state.friends.length > 0
-              ? renderSortSelect(state.sortBy, state.onSortChange)
-              : ""}
+            ${
+              state.friends.length > 0
+                ? renderSortSelect(state.sortBy, state.onSortChange)
+                : ""
+            }
             <div
               class="tooltip tooltip-left"
-              data-tip="${state.lastFetch
-                ? `Updated ${formatTimeAgo(state.lastFetch)}`
-                : "Not yet updated"}"
+              data-tip="${
+                state.lastFetch
+                  ? `Updated ${formatTimeAgo(state.lastFetch)}`
+                  : "Not yet updated"
+              }"
             >
               <button
                 type="button"
-                class="btn btn-sm btn-square opacity-50 hover:opacity-100 ${state.loading
-                  ? "loading"
-                  : ""} ${state.lastFetch &&
-                Date.now() - state.lastFetch < 60000
-                  ? "btn-outline btn-success"
-                  : "btn-ghost"}"
+                class="btn btn-sm btn-square opacity-50 hover:opacity-100 ${
+                  state.loading ? "loading" : ""
+                } ${
+                  state.lastFetch && Date.now() - state.lastFetch < 60000
+                    ? "btn-outline btn-success"
+                    : "btn-ghost"
+                }"
                 @click="${state.onRefresh}"
               >
                 <div class="swap ${state.loading ? "swap-active" : ""}">
@@ -445,101 +461,106 @@ function renderWidget(state: WidgetState) {
 
         <!-- Friend list -->
         <div class="friends-list">
-          ${state.notConnected
+          ${
+            state.notConnected
               ? html`<div
-                class="flex flex-col items-center gap-4 py-12 px-6 text-center"
-              >
-                <span
-                  class="w-16 h-16 opacity-40 mb-2 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
-                  >${unsafeHTML(FRIENDS_SVG)}</span
+                  class="flex flex-col items-center gap-4 py-12 px-6 text-center"
                 >
-                <p class="opacity-50 max-w-[22rem]">
-                  See who's online, track levels, wallets, and correction points
-                  for your 42 friends at a glance.
-                </p>
-                <button
-                  type="button"
-                  class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] flex items-center justify-center gap-3 mt-2"
-                  style="height:3rem; min-width:15rem; font-size:1rem;"
-                  @click="${state.onConnect}"
-                >
-                  <span class="font-bold tracking-wide">Connect with</span>
                   <span
-                    class="size-8 flex items-center justify-center [&_polygon]:fill-current"
+                    class="w-16 h-16 opacity-40 mb-2 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
+                    >${unsafeHTML(FRIENDS_SVG)}</span
                   >
-                    ${unsafeHTML(FORTY_TWO_SVG)}
-                  </span>
-                </button>
-              </div>`
-            : state.needsReconnect
-              ? html`<div
-                  class="flex flex-col items-center gap-3 py-12 px-6 text-center"
-                >
-                  <span class="text-lg font-bold opacity-60"
-                    >Session expired</span
-                  >
-                  <p class="text-sm opacity-50">Please reconnect.</p>
+                  <p class="opacity-50 max-w-88">
+                    See who's online, track levels, wallets, and correction
+                    points for your 42 friends at a glance.
+                  </p>
                   <button
                     type="button"
-                    class="btn btn-primary btn-sm font-bold mt-2"
+                    class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] flex items-center justify-center gap-3 mt-2"
+                    style="height:3rem; min-width:15rem; font-size:1rem;"
                     @click="${state.onConnect}"
                   >
-                    Reconnect
+                    <span class="font-bold tracking-wide">Connect with</span>
+                    <span
+                      class="size-8 flex items-center justify-center [&_polygon]:fill-current"
+                    >
+                      ${unsafeHTML(FORTY_TWO_SVG)}
+                    </span>
                   </button>
                 </div>`
-              : state.loading && state.friends.length === 0
-                ? html`<div class="flex justify-center py-12">
-                    <span class="loading loading-spinner loading-md"></span>
+              : state.needsReconnect
+                ? html`<div
+                    class="flex flex-col items-center gap-3 py-12 px-6 text-center"
+                  >
+                    <span class="text-lg font-bold opacity-60"
+                      >Session expired</span
+                    >
+                    <p class="text-sm opacity-50">Please reconnect.</p>
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-sm font-bold mt-2"
+                      @click="${state.onConnect}"
+                    >
+                      Reconnect
+                    </button>
                   </div>`
-                : state.friends.length === 0
-                  ? renderEmpty()
-                  : html`<ul class="list">
-                      ${sorted.map(
-                        (f, i) =>
-                          html`<li class="list-row group">
-                            ${renderFriendRow(f, state.onRemove, i === 0)}
-                          </li>`,
-                      )}
-                    </ul>`}
+                : state.loading && state.friends.length === 0
+                  ? html`<div class="flex justify-center py-12">
+                      <span class="loading loading-spinner loading-md"></span>
+                    </div>`
+                  : state.friends.length === 0
+                    ? renderEmpty()
+                    : html`<ul class="list">
+                        ${sorted.map(
+                          (f, i) =>
+                            html`<li class="list-row group">
+                              ${renderFriendRow(f, state.onRemove, i === 0)}
+                            </li>`,
+                        )}
+                      </ul>`
+          }
         </div>
 
         <!-- Add friend footer (only when connected) -->
-        ${!state.notConnected && !state.needsReconnect
-          ? html`<div
-              class="px-5 py-4 border-t border-base-300 bg-base-200/30 shrink-0"
-            >
-              <div class="join w-full">
-                <input
-                  type="text"
-                  class="input input-bordered input-sm join-item flex-1"
-                  placeholder="Add friend by login..."
-                  .value="${state.addInput}"
-                  @input="${(e: Event) =>
-                    state.onInputChange((e.target as HTMLInputElement).value)}"
-                  @keydown="${(e: KeyboardEvent) => {
-                    if (e.key === "Enter") state.onAdd();
-                  }}"
-                  ?disabled="${state.addLoading}"
-                />
-                <button
-                  type="button"
-                  class="btn btn-sm btn-primary join-item font-bold ${state
-                    .addLoading
-                    ? "loading"
-                    : ""}"
-                  @click="${state.onAdd}"
-                  ?disabled="${state.addLoading || !state.addInput.trim()}"
-                >
-                  ${state.addLoading ? "" : "＋ Add"}
-                </button>
-              </div>
-              ${state.addError
-                ? html`<p class="text-error text-sm mt-1.5 px-0.5">
-                    ${state.addError}
-                  </p>`
-                : ""}
-            </div>`
-          : ""}
+        ${
+          !state.notConnected && !state.needsReconnect
+            ? html`<div
+                class="px-5 py-4 border-t border-base-300 bg-base-200/30 shrink-0"
+              >
+                <div class="join w-full">
+                  <input
+                    type="text"
+                    class="input input-bordered input-sm join-item flex-1"
+                    placeholder="Add friend by login..."
+                    .value="${state.addInput}"
+                    @input="${(e: Event) =>
+                      state.onInputChange(
+                        (e.target as HTMLInputElement).value,
+                      )}"
+                    @keydown="${(e: KeyboardEvent) => {
+                      if (e.key === "Enter") state.onAdd();
+                    }}"
+                    ?disabled="${state.addLoading}"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-primary join-item font-bold ${state.addLoading
+                      ? "loading"
+                      : ""}"
+                    @click="${state.onAdd}"
+                    ?disabled="${state.addLoading || !state.addInput.trim()}"
+                  >
+                    ${state.addLoading ? "" : "Add"}
+                  </button>
+                </div>
+                ${state.addError
+                  ? html`<p class="text-error text-sm mt-1.5 px-0.5">
+                      ${state.addError}
+                    </p>`
+                  : ""}
+              </div>`
+            : ""
+        }
       </div>
     </div>
   `;
@@ -603,7 +624,8 @@ export async function injectFriendsWidget() {
     },
     onRemove: async (login: string) => {
       if (!_state) return;
-      const name = _state.friends.find((f) => f.login === login)?.displayName || login;
+      const name =
+        _state.friends.find((f) => f.login === login)?.displayName || login;
       if (!confirm(`Remove ${name} from your friends list?`)) return;
       await removeFriend(login);
       _state.friends = _state.friends.filter((f) => f.login !== login);

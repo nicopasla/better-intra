@@ -114,7 +114,7 @@ export function setupShortcutsObserver() {
       if (!document.getElementById(CONTAINER_ID)) {
         injectShortcutsDisplay();
       }
-    }, 100);
+    }, 300);
   });
 
   observer.observe(document.body, { childList: true, subtree: true });

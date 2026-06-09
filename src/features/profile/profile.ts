@@ -1,4 +1,4 @@
-import { updateEventFilters, injectEventsSelect } from "./events.ts";
+import { updateEventFilters, injectEventsSelect } from "./events/events.ts";
 import { findSlotsButton } from "./shortcuts.ts";
 import { injectCustomStyles, updateVisuals } from "./visuals.ts";
 import { handleProfileRedirect } from "./highlight.ts";
@@ -6,13 +6,17 @@ import { initLayoutManager } from "./layout.ts";
 import { initMilestones } from "./milestones.ts";
 import { initProfileCardStyling } from "./profile-card.ts";
 import { injectFriendsWidget } from "../friends/friends.ui.ts";
+import { initMarks } from "./marks.ts";
 
 const waitForBody = () =>
   document.body
     ? Promise.resolve()
     : new Promise<void>((r) => {
         const id = setInterval(() => {
-          if (document.body) { clearInterval(id); r(); }
+          if (document.body) {
+            clearInterval(id);
+            r();
+          }
         }, 10);
       });
 
@@ -31,6 +35,7 @@ export async function initProfile() {
       if (location.pathname === "/" || location.pathname.startsWith("/users")) {
         await initLayoutManager();
         await initProfileCardStyling();
+        await initMarks();
         await findSlotsButton();
         await injectEventsSelect();
         await updateEventFilters();

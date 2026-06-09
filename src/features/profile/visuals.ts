@@ -68,7 +68,12 @@ export const injectCustomStyles = () => {
       display: flex; align-items: flex-start; justify-content: center;
       pointer-events: auto; padding-top: 12vh;       
     }
-    div.rounded-full.w-52.h-52,
+    div.rounded-full.w-52.h-52 {
+      will-change: background-image, transform;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      opacity: 0 !important;
+    }
     div.border-neutral-600.bg-ft-gray\\/50,
     .w-full.xl\\:h-72.bg-center.bg-cover.bg-ft-black {
       will-change: background-image, transform;
@@ -90,8 +95,23 @@ export const injectCustomStyles = () => {
   document.head.appendChild(style);
 };
 
+function preloadImage(url: string): Promise<void> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => resolve();
+    img.src = url;
+  });
+}
+
 export const applyImgs = async (urls: any) => {
   if (!urls) return;
+
+  const preloads: Promise<void>[] = [];
+  if (urls.avatar) preloads.push(preloadImage(urls.avatar));
+  if (urls.banner) preloads.push(preloadImage(urls.banner));
+  if (urls.background) preloads.push(preloadImage(urls.background));
+  await Promise.all(preloads);
 
   const avatar = document.querySelector(
     "div.rounded-full.w-52.h-52",
@@ -132,7 +152,7 @@ export const applyImgs = async (urls: any) => {
       `url("${urls.avatar}")`,
       "important",
     );
-    avatar.style.opacity = "1";
+    avatar.style.setProperty("opacity", "1", "important");
   }
 
   if (banner && urls.banner) {
@@ -187,10 +207,6 @@ export const updateVisuals = async () => {
     "div.rounded-full.w-52.h-52",
   ) as HTMLElement;
 
-  if (avatarEl && !showingOriginalAvatar && !visualCache) {
-    avatarEl.style.opacity = "1";
-  }
-
   let myLogin = await getCloudLogin();
   if (!myLogin) myLogin = "me";
 
@@ -205,7 +221,7 @@ export const updateVisuals = async () => {
     isFetching = false;
     lastAppliedUser = null;
     lastAppliedKey = null;
-    if (avatarEl) avatarEl.style.opacity = "1";
+    if (avatarEl) avatarEl.style.setProperty("opacity", "1", "important");
   }
 
   if (!avatarEl) return;
@@ -249,7 +265,7 @@ export const updateVisuals = async () => {
       };
 
       if (!visualCache.avatar) {
-        avatarEl.style.opacity = "1";
+        avatarEl.style.setProperty("opacity", "1", "important");
       } else {
         await applyImgs(visualCache);
         lastAppliedUser = targetLogin;
@@ -302,7 +318,7 @@ export const updateVisuals = async () => {
           });
         }
       } else {
-        avatarEl.style.opacity = "1";
+        avatarEl.style.setProperty("opacity", "1", "important");
       }
     }
   }

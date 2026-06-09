@@ -282,6 +282,16 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
+      key: "PROFILE_SHOW_MARKS",
+      label: "Show past marks",
+      desc: "Adds a list of completed project marks in the Projects card.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.PROFILE_SHOW_MARKS,
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "profile",
       key: "PROFILE_SLOTS_REDIRECTION",
       label: "Slots button redirection",
       desc: "Redirects the 'Manage slots' button to the proper Slots webpage.",

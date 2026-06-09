@@ -98,11 +98,6 @@ function installFetchHook() {
   document.addEventListener("42_LOGTIME_DATA", (event: any) => {
     if (event.detail) renderLogtime(event.detail);
   });
-
-  const script = document.createElement("script");
-  script.src = chrome.runtime.getURL("hook.js");
-  (document.head || document.documentElement).appendChild(script);
-  script.remove();
 }
 
 export function applyPublicLogtimeSettings(logtime: {

@@ -1,7 +1,7 @@
 import { html, render } from "lit-html";
-import { getConfig } from "../../config.ts";
-import { HUB_SETTING_DEFS } from "../hub/hubSettings.data.ts";
-import CSS from "../../assets/style.css?inline";
+import { getConfig } from "../../../config.ts";
+import { HUB_SETTING_DEFS } from "../../hub/hubSettings.data.ts";
+import CSS from "../../../assets/style.css?inline";
 import eventData from "./events.belgium.json";
 
 export async function updateEventFilters() {

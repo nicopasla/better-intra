@@ -1,4 +1,4 @@
-import { getConfig } from "../../config.ts";
+import { getConfig } from "../../../config.ts";
 import themev3 from "./theme-v3.css?inline";
 import themev2 from "./theme-v2.css?inline";
 import themeLightV3 from "./theme-light-v3.css?inline";

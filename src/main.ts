@@ -4,9 +4,11 @@ import { initProfile } from "./features/profile/profile.ts";
 import { initHubSettings } from "./features/hub/hubSettings.ts";
 import { initShortcuts } from "./features/shortcuts/shortcuts.ts";
 import { getConfig } from "./config.ts";
-import { initThemeManager } from "./features/profile/theme-manager.ts";
+import { initThemeManager } from "./features/profile/theme/theme-manager.ts";
+import { injectIntrapyHook } from "./features/profile/marks.ts";
 
 initThemeManager();
+injectIntrapyHook();
 
 /**
  * A map that links feature ID strings to their initialization functions.

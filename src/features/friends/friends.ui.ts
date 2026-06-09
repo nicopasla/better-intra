@@ -18,7 +18,7 @@ import {
   syncToCloud,
 } from "../account/account.ts";
 import { getConfig } from "../../config.ts";
-import { getEffectiveTheme } from "../profile/theme-manager.ts";
+import { getEffectiveTheme } from "../profile/theme/theme-manager.ts";
 import { CLUSTERS } from "../clusters/clusters.data.ts";
 import FRIENDS_SVG from "../../assets/svg/friends.svg?raw";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";

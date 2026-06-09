@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-06-09
+
+### Features 🎉
+
+- feat: added marks finished projects inside the projects card ([2f40b23](https://github.com/nicopasla/better-intra/commit/2f40b23))
+
+### Bug fixes 🐛
+
+- fix: revert timeout for shortcuts ([a0a80ce](https://github.com/nicopasla/better-intra/commit/a0a80ce))
+
+### Maintenance 🧹
+
+- chore: proper organization of some features ([6a2107c](https://github.com/nicopasla/better-intra/commit/6a2107c))
+
 ## [1.1.2] - 2026-06-08
 
 ### Features 🎉
@@ -379,7 +393,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.1.2...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.1.3...HEAD
+[1.1.3]: https://github.com/nicopasla/better-intra/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/nicopasla/better-intra/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/nicopasla/better-intra/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/nicopasla/better-intra/compare/v1.0.9...v1.1.0

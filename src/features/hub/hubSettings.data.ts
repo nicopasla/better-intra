@@ -3,6 +3,7 @@ import CLUSTERS from "../../assets/svg/grip-vertical.svg?raw";
 import USER from "../../assets/svg/user.svg?raw";
 import SHORTCUT from "../../assets/svg/shortcut.svg?raw";
 import ABOUT from "../../assets/svg/about.svg?raw";
+import SPARKLES from "../../assets/svg/sparkles.svg?raw";
 import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
 import { CLUSTERS as CLUSTER_OPTIONS } from "../clusters/clusters.data.ts";
 
@@ -49,6 +50,12 @@ export const FEATURE_DEFS = [
     name: "About",
     icon: ABOUT,
     desc: "Information about Better Intra and its technical stack.",
+  },
+  {
+    id: "pack-opening",
+    name: "Pack Opening",
+    icon: SPARKLES,
+    desc: "Open virtual Pokémon TCG packs and collect cards.",
   },
 ] as const;
 
@@ -364,6 +371,15 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       dependsOn: "SHORTCUTS_HIDE_IMPORTANT_LINKS",
       grid: true,
       colSpan: 2,
+    },
+  ],
+  "pack-opening": [
+    {
+      feature: "pack-opening",
+      label: "How to use",
+      desc: "Click the ⚡ button at the bottom-right of the page to open a pack.",
+      kind: "text",
+      fullWidth: true,
     },
   ],
   about: [

@@ -60,6 +60,8 @@ export interface BetterIntraConfig {
 
   FRIENDS_LIST: string[];
   FRIENDS_SORT_MODE: "online" | "name" | "level" | "wallet";
+
+  PACK_COLLECTION: Record<string, string[]>;
 }
 
 /**
@@ -68,7 +70,7 @@ export interface BetterIntraConfig {
  * It must implement the BetterIntraConfig interface to ensure all keys have a default.
  */
 export const CONFIG_DEFAULT: BetterIntraConfig = {
-  ACTIVE_SCRIPTS: ["logtime", "clusters", "profile", "shortcuts", "account"],
+  ACTIVE_SCRIPTS: ["logtime", "clusters", "profile", "shortcuts", "account", "pack-opening"],
   CLOUD_SYNC_ENABLED: false,
   LAST_CLOUD_SYNC: null,
   CLOUD_TOKEN: "",
@@ -117,6 +119,8 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
 
   FRIENDS_LIST: [],
   FRIENDS_SORT_MODE: "level",
+
+  PACK_COLLECTION: {},
 };
 
 /**

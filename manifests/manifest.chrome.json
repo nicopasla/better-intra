@@ -20,7 +20,10 @@
     "128": "icons/icon-128.png"
   },
   "incognito": "not_allowed",
-  "host_permissions": ["https://better-intra-worker.nicopasla.workers.dev/"],
+  "host_permissions": [
+    "https://better-intra-worker.nicopasla.workers.dev/",
+    "https://api.tcgdex.net/*"
+  ],
   "content_scripts": [
     {
       "matches": ["https://*.intra.42.fr/*"],

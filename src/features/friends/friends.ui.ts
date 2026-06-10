@@ -357,9 +357,20 @@ function renderWidget(state: WidgetState) {
         z-index: 9999;
       }
 
+      .friends-fab .btn-circle {
+        width: clamp(48px, 6vw, 72px) !important;
+        height: clamp(48px, 6vw, 72px) !important;
+        min-width: unset !important;
+      }
+
+      .friends-fab .swap-off svg {
+        width: clamp(22px, 3vw, 34px);
+        height: clamp(22px, 3vw, 34px);
+      }
+
       .friends-dropdown {
         position: fixed;
-        bottom: 88px;
+        bottom: calc(clamp(48px, 6vw, 72px) + 32px);
         right: 24px;
         z-index: 9998;
         width: 440px;

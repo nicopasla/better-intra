@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [1.1.4] - 2026-06-10
+
+### Features 🎉
+
+- feat: new option to hide the friends feature ([c576da0](https://github.com/nicopasla/better-intra/commit/c576da0))
+- feat: add medals to top levels friends ([c94c519](https://github.com/nicopasla/better-intra/commit/c94c519))
+- feat: make the friends button bigger ([620e43c](https://github.com/nicopasla/better-intra/commit/620e43c))
+- feat: added add friend button ([013a6b1](https://github.com/nicopasla/better-intra/commit/013a6b1))
+- feat: bigger marks section and grid for ongoing projects ([3438b4c](https://github.com/nicopasla/better-intra/commit/3438b4c))
+
+### Bug fixes 🐛
+
+- fix: fixed dropdown filter style ([025260a](https://github.com/nicopasla/better-intra/commit/025260a))
+- fix: updateUI was blocked by the friends fetch await ([ea06799](https://github.com/nicopasla/better-intra/commit/ea06799))
+
 ## [1.1.3] - 2026-06-09
 
 ### Features 🎉
@@ -393,7 +408,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.1.3...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.1.4...HEAD
+[1.1.4]: https://github.com/nicopasla/better-intra/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/nicopasla/better-intra/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/nicopasla/better-intra/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/nicopasla/better-intra/compare/v1.1.0...v1.1.1

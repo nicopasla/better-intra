@@ -302,6 +302,16 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
+      key: "SHOW_FRIENDS_WIDGET",
+      label: "Show friends widget",
+      desc: "Hides the friends button and widget entirely from the profile page.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.SHOW_FRIENDS_WIDGET,
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "profile",
       key: "PROFILE_CAMPUS_FILTER",
       label: "Campus Display Mode",
       desc: "Choose which campus events to display on your profile.",

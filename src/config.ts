@@ -60,6 +60,7 @@ export interface BetterIntraConfig {
 
   FRIENDS_LIST: string[];
   FRIENDS_SORT_MODE: "online" | "name" | "level" | "wallet";
+  SHOW_FRIENDS_WIDGET: boolean;
 }
 
 /**
@@ -117,6 +118,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
 
   FRIENDS_LIST: [],
   FRIENDS_SORT_MODE: "level",
+  SHOW_FRIENDS_WIDGET: true,
 };
 
 /**

@@ -611,6 +611,9 @@ function renderWidgetUI() {
 export async function injectFriendsWidget() {
   if (_host) return;
 
+  const show = await getConfig("SHOW_FRIENDS_WIDGET");
+  if (!show) return;
+
   _host = document.createElement("div");
   _host.id = HOST_ID;
   document.body.appendChild(_host);

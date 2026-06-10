@@ -1,9 +1,13 @@
 import { addFriend, removeFriend, isFriend } from "./friends.ts";
 import { getCloudLogin, syncToCloud } from "../account/account.ts";
+import { getConfig } from "../../config.ts";
 
 let injected = false;
 
 export async function injectFriendButton() {
+  const show = await getConfig("SHOW_FRIENDS_WIDGET");
+  if (!show) return;
+
   const pathParts = location.pathname.split("/").filter((p) => p);
   if (pathParts[0] !== "users" || !pathParts[1]) {
     document.getElementById("ft-friend-btn")?.remove();

@@ -3,7 +3,6 @@ import { initClusters } from "./features/clusters/clusters.ts";
 import { initProfile } from "./features/profile/profile.ts";
 import { initHubSettings } from "./features/hub/hubSettings.ts";
 import { initShortcuts } from "./features/shortcuts/shortcuts.ts";
-import { initPackOpening } from "./features/pack-opening/pack-opening.ts";
 import { getConfig } from "./config.ts";
 import { initThemeManager } from "./features/profile/theme/theme-manager.ts";
 
@@ -50,7 +49,6 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
   logtime: initLogtime,
   clusters: initClusters,
   shortcuts: initShortcuts,
-  "pack-opening": initPackOpening,
 };
 
 (async function runBetterIntra() {

@@ -6,6 +6,7 @@ import { initLayoutManager } from "./layout.ts";
 import { initMilestones } from "./milestones.ts";
 import { initProfileCardStyling } from "./profile-card.ts";
 import { injectFriendsWidget } from "../friends/friends.ui.ts";
+import { injectFriendButton } from "../friends/profile-button.ts";
 import { initMarks } from "./marks.ts";
 
 const waitForBody = () =>
@@ -42,6 +43,7 @@ export async function initProfile() {
         await handleProfileRedirect();
         await initMilestones();
         injectFriendsWidget();
+        injectFriendButton();
       }
     } finally {
       isUpdating = false;

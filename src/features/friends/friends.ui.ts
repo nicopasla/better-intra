@@ -29,7 +29,7 @@ function levelFraction(level: number): number {
   return level % 1;
 }
 
-function renderLevelBar(level: number, color = "#00babc", highlight?: boolean) {
+function renderLevelBar(level: number, color = "#00babc") {
   const pct = Math.round(levelFraction(level) * 100);
   const whole = Math.floor(level);
   return html`
@@ -39,10 +39,8 @@ function renderLevelBar(level: number, color = "#00babc", highlight?: boolean) {
       >
       <div class="flex-1 h-3 rounded-full bg-base-300 overflow-hidden relative">
         <div
-          class="h-full rounded-full transition-all duration-500 ${highlight
-            ? "badge-rainbow"
-            : ""}"
-          style="width:${pct}%; ${highlight ? "" : `background:${color};`}"
+          class="h-full rounded-full transition-all duration-500"
+          style="width:${pct}%; background:${color};"
         ></div>
         <span
           class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-base-content/70 mix-blend-difference leading-none"
@@ -59,8 +57,13 @@ function renderLevelBar(level: number, color = "#00babc", highlight?: boolean) {
 function renderFriendRow(
   friend: FriendData,
   onRemove: (login: string) => void,
-  highlight = false,
+  rank = -1,
 ) {
+  const medalColors = ["#FFD700", "#C0C0C0", "#CD7F32"];
+  const medalBorder =
+    rank >= 0 && rank < 3
+      ? `border: 3px solid ${medalColors[rank]}; box-shadow: 0 0 10px ${medalColors[rank]};`
+      : "";
   return html`
     <!-- Avatar column -->
     <div class="shrink-0">
@@ -73,7 +76,7 @@ function renderFriendRow(
       >
         ${friend.avatar
           ? html`<div class="avatar ${friend.isOnline ? "avatar-online" : ""}">
-              <div class="w-14 h-14 rounded-full">
+              <div class="w-14 h-14 rounded-full" style="${medalBorder}">
                 <img
                   src="${friend.avatar}"
                   alt="${friend.login}"
@@ -100,7 +103,7 @@ function renderFriendRow(
                 ? "avatar-online"
                 : ""}"
             >
-              <div class="w-14 h-14 rounded-full">
+              <div class="w-14 h-14 rounded-full" style="${medalBorder}">
                 <span class="text-base font-bold"
                   >${friend.login[0].toUpperCase()}</span
                 >
@@ -155,9 +158,7 @@ function renderFriendRow(
         : ""}
 
       <!-- Bigger level bar -->
-      <div class="mb-1">
-        ${renderLevelBar(friend.level, undefined, highlight)}
-      </div>
+      <div class="mb-1">${renderLevelBar(friend.level)}</div>
     </a>
 
     <!-- Stats column (right-aligned) -->
@@ -543,7 +544,11 @@ function renderWidget(state: WidgetState) {
                         ${sorted.map(
                           (f, i) =>
                             html`<li class="list-row group">
-                              ${renderFriendRow(f, state.onRemove, i === 0)}
+                              ${renderFriendRow(
+                                f,
+                                state.onRemove,
+                                state.sortBy === "level" ? i : -1,
+                              )}
                             </li>`,
                         )}
                       </ul>`

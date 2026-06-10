@@ -290,11 +290,10 @@ function renderSortSelect(current: SortMode, onChange: (m: SortMode) => void) {
   const modes: SortMode[] = ["online", "name", "level", "wallet", "correction"];
   return html`
     <select
-      class="select select-bordered select-sm min-w-32 font-bold tracking-wide"
+      class="select select-bordered select-sm min-w-44 font-bold tracking-wide"
       @change="${(e: Event) =>
         onChange((e.target as HTMLSelectElement).value as SortMode)}"
       title="Sort by"
-      style="padding-right: 2rem; background-position: right 0.35rem center;"
     >
       ${modes.map(
         (m) => html`

@@ -41,7 +41,7 @@ export async function initProfile() {
         await updateEventFilters();
         await handleProfileRedirect();
         await initMilestones();
-        await injectFriendsWidget();
+        injectFriendsWidget();
       }
     } finally {
       isUpdating = false;

@@ -46,9 +46,9 @@ setTimeout(() => {
  * new features cleaner.
  */
 const featureInitializers: { [key: string]: () => Promise<void> } = {
+  profile: initProfile,
   logtime: initLogtime,
   clusters: initClusters,
-  profile: initProfile,
   shortcuts: initShortcuts,
   "pack-opening": initPackOpening,
 };

@@ -95,23 +95,28 @@ export const injectCustomStyles = () => {
   document.head.appendChild(style);
 };
 
-function preloadImage(url: string): Promise<void> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve();
-    img.onerror = () => resolve();
-    img.src = url;
-  });
+function preloadImage(url: string, timeout = 10000): Promise<boolean> {
+  return Promise.race([
+    new Promise<boolean>((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = url;
+    }),
+    new Promise<boolean>((resolve) =>
+      setTimeout(() => resolve(false), timeout),
+    ),
+  ]);
 }
 
 export const applyImgs = async (urls: any) => {
   if (!urls) return;
 
-  const preloads: Promise<void>[] = [];
-  if (urls.avatar) preloads.push(preloadImage(urls.avatar));
-  if (urls.banner) preloads.push(preloadImage(urls.banner));
-  if (urls.background) preloads.push(preloadImage(urls.background));
-  await Promise.all(preloads);
+  const [avatarLoaded, bannerLoaded, bgLoaded] = await Promise.all([
+    urls.avatar ? preloadImage(urls.avatar) : Promise.resolve(true),
+    urls.banner ? preloadImage(urls.banner) : Promise.resolve(true),
+    urls.background ? preloadImage(urls.background) : Promise.resolve(true),
+  ]);
 
   const avatar = document.querySelector(
     "div.rounded-full.w-52.h-52",
@@ -147,15 +152,17 @@ export const applyImgs = async (urls: any) => {
   }
 
   if (avatar && urls.avatar && !showingOriginalAvatar) {
-    avatar.style.setProperty(
-      "background-image",
-      `url("${urls.avatar}")`,
-      "important",
-    );
+    if (avatarLoaded) {
+      avatar.style.setProperty(
+        "background-image",
+        `url("${urls.avatar}")`,
+        "important",
+      );
+    }
     avatar.style.setProperty("opacity", "1", "important");
   }
 
-  if (banner && urls.banner) {
+  if (banner && urls.banner && bannerLoaded) {
     banner.style.setProperty(
       "background-image",
       `url("${urls.banner}")`,
@@ -172,7 +179,7 @@ export const applyImgs = async (urls: any) => {
     banner.classList.add(`banner-mode-${bannerMode}`);
   }
 
-  if (background && urls.background) {
+  if (background && urls.background && bgLoaded) {
     background.style.setProperty(
       "background-image",
       `url("${urls.background}")`,

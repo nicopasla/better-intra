@@ -74,7 +74,25 @@ function renderFriendRow(
         ${friend.avatar
           ? html`<div class="avatar ${friend.isOnline ? "avatar-online" : ""}">
               <div class="w-14 h-14 rounded-full">
-                <img src="${friend.avatar}" alt="${friend.login}" />
+                <img
+                  src="${friend.avatar}"
+                  alt="${friend.login}"
+                  loading="lazy"
+                  @error="${(e: Event) => {
+                    const img = e.target as HTMLImageElement;
+                    if (img.dataset.fallback) return;
+                    img.dataset.fallback = "true";
+                    const container = img.closest(".avatar");
+                    if (!container) return;
+                    const wrapper =
+                      container.querySelector<HTMLElement>(".w-14");
+                    if (!wrapper) return;
+                    wrapper.innerHTML = `<span class="text-base font-bold">${friend.login[0].toUpperCase()}</span>`;
+                    container.classList.add("avatar-placeholder");
+                    container.classList.remove("avatar-online");
+                    img.remove();
+                  }}"
+                />
               </div>
             </div>`
           : html`<div

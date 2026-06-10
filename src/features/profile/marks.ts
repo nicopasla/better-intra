@@ -110,14 +110,24 @@ function injectMarks(marks: MarkedProject[]) {
   if (nativeUl) {
     const nativeContainer = nativeUl.closest(".h-full");
     if (nativeContainer instanceof HTMLElement) {
-      nativeContainer.style.maxHeight = "120px";
+      nativeContainer.style.paddingTop = "8px";
+      nativeContainer.style.maxHeight = "96px";
       nativeContainer.style.overflowY = "auto";
+    }
+    if (nativeUl instanceof HTMLElement) {
+      nativeUl.style.display = "grid";
+      nativeUl.style.gridAutoFlow = "column";
+      nativeUl.style.gridTemplateRows = "repeat(2, auto)";
+      nativeUl.style.gridTemplateColumns = "repeat(3, 1fr)";
+      nativeUl.style.alignContent = "center";
+      nativeUl.style.columnGap = "8px";
+      nativeUl.style.rowGap = "0";
     }
   }
 
   const container = document.createElement("div");
   container.id = INJECTED_ID;
-  container.style.cssText = `border-top: 1px solid rgba(128,128,128,0.2); margin-top: 0.25rem; padding-top: 0.25rem; flex: 1; min-height: 0; overflow-y: auto; font-family: ${INTRA_FONT};`;
+  container.style.cssText = `border-top: 1px solid rgba(128,128,128,0.2); margin-top: 0.25rem; padding: 0.25rem 8px 0 0; flex: 1; min-height: 0; overflow-y: auto; font-family: ${INTRA_FONT};`;
 
   const list = document.createElement("div");
   list.className = "flex flex-col";

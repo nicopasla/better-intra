@@ -111,6 +111,7 @@ jobs:
           channel: unlisted
           apiKey: ${{ secrets.AMO_SIGN_KEY }}
           apiSecret: ${{ secrets.AMO_SIGN_SECRET }}
+          timeout: 900000
 
       - name: Rename signed artifact
         run: mv "${{ steps.web-ext-sign.outputs.target }}" better-intra.xpi

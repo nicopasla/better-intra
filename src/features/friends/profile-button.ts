@@ -1,3 +1,4 @@
+import { html, render } from "lit-html";
 import { addFriend, removeFriend, isFriend } from "./friends.ts";
 import { getCloudLogin, syncToCloud } from "../account/account.ts";
 import { getConfig } from "../../config.ts";
@@ -44,9 +45,10 @@ export async function injectFriendButton() {
   btn.id = "ft-friend-btn";
   btn.dataset.login = targetLogin;
   btn.title = already ? `Remove ${targetLogin}` : `Add ${targetLogin}`;
-  btn.innerHTML = already
-    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+  const checkIcon = html`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const plusIcon = html`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+  const xIcon = html`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>`;
+  render(already ? checkIcon : plusIcon, btn);
   btn.style.cssText = `
     font-size: 0.8rem;
     font-weight: 700;
@@ -67,8 +69,7 @@ export async function injectFriendButton() {
 
   btn.onmouseenter = () => {
     if (already) {
-      btn.innerHTML =
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>';
+      render(xIcon, btn);
       btn.title = `Remove ${targetLogin}`;
       btn.style.borderColor = "#ef4444";
       btn.style.color = "#ef4444";
@@ -77,8 +78,7 @@ export async function injectFriendButton() {
   };
   btn.onmouseleave = () => {
     if (already) {
-      btn.innerHTML =
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+      render(checkIcon, btn);
       btn.style.borderColor = "#16a34a";
       btn.style.color = "#16a34a";
       btn.style.background = "rgba(22,163,74,0.2)";
@@ -88,7 +88,7 @@ export async function injectFriendButton() {
   btn.onclick = async (e) => {
     e.stopPropagation();
     btn.disabled = true;
-    btn.innerHTML = "…";
+    render(html`…`, btn);
     try {
       if (already) {
         await removeFriend(targetLogin);
@@ -101,9 +101,7 @@ export async function injectFriendButton() {
       injectFriendButton();
     } catch {
       btn.disabled = false;
-      btn.innerHTML = already
-        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+      render(already ? checkIcon : plusIcon, btn);
     }
   };
 

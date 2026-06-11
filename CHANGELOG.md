@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [1.1.5] - 2026-06-11
+
+### Bug fixes 🐛
+
+- fix: fix overflow of the select button ([4ba94cc](https://github.com/nicopasla/better-intra/commit/4ba94cc))
+- fix: remove inner.html ([499db39](https://github.com/nicopasla/better-intra/commit/499db39))
+
+### Maintenance 🧹
+
+- chore: change back action to v2 ([0728e3a](https://github.com/nicopasla/better-intra/commit/0728e3a))
+- chore: specified timeout for action ([47883d0](https://github.com/nicopasla/better-intra/commit/47883d0))
+
 ## [1.1.4] - 2026-06-10
 
 ### Features 🎉
@@ -408,7 +420,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.1.4...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.1.5...HEAD
+[1.1.5]: https://github.com/nicopasla/better-intra/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/nicopasla/better-intra/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/nicopasla/better-intra/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/nicopasla/better-intra/compare/v1.1.1...v1.1.2

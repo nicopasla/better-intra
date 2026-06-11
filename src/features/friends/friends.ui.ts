@@ -90,7 +90,12 @@ function renderFriendRow(
                     const wrapper =
                       container.querySelector<HTMLElement>(".w-14");
                     if (!wrapper) return;
-                    wrapper.innerHTML = `<span class="text-base font-bold">${friend.login[0].toUpperCase()}</span>`;
+                    render(
+                      html`<span class="text-base font-bold"
+                        >${friend.login[0].toUpperCase()}</span
+                      >`,
+                      wrapper,
+                    );
                     container.classList.add("avatar-placeholder");
                     container.classList.remove("avatar-online");
                     img.remove();

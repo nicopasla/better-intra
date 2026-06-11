@@ -1,3 +1,4 @@
+import { html, render } from "lit-html";
 import { getConfig } from "../../config.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
@@ -199,10 +200,43 @@ function injectMarks(marks: MarkedProject[]) {
       const iconWrap = document.createElement("div");
       if (project.is_validated) {
         iconWrap.className = "text-green-500";
-        iconWrap.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        render(
+          html`<svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-check"
+          >
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>`,
+          iconWrap,
+        );
       } else {
         iconWrap.className = "text-red-500";
-        iconWrap.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+        render(
+          html`<svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-x"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>`,
+          iconWrap,
+        );
       }
       right.appendChild(iconWrap);
 
@@ -245,10 +279,43 @@ function injectMarks(marks: MarkedProject[]) {
         const tIcon = document.createElement("div");
         if (team.is_validated) {
           tIcon.className = "text-green-500";
-          tIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+          render(
+            html`<svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-check"
+            >
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>`,
+            tIcon,
+          );
         } else {
           tIcon.className = "text-red-500";
-          tIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>`;
+          render(
+            html`<svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-x"
+            >
+              <line x1="18" x2="6" y1="6" y2="18" />
+              <line x1="6" x2="18" y1="6" y2="18" />
+            </svg>`,
+            tIcon,
+          );
         }
         tRight.appendChild(tIcon);
         tRight.append(String(team.final_mark));
@@ -298,10 +365,43 @@ function injectMarks(marks: MarkedProject[]) {
       const iconWrap = document.createElement("div");
       if (project.is_validated) {
         iconWrap.className = "text-green-500";
-        iconWrap.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        render(
+          html`<svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-check"
+          >
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>`,
+          iconWrap,
+        );
       } else {
         iconWrap.className = "text-red-500";
-        iconWrap.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+        render(
+          html`<svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-x"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>`,
+          iconWrap,
+        );
       }
       right.appendChild(iconWrap);
 

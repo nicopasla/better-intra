@@ -290,7 +290,7 @@ function renderSortSelect(current: SortMode, onChange: (m: SortMode) => void) {
   const modes: SortMode[] = ["online", "name", "level", "wallet", "correction"];
   return html`
     <select
-      class="select select-bordered select-sm min-w-44 font-bold tracking-wide"
+      class="select select-bordered select-sm min-w-36 font-bold tracking-wide"
       @change="${(e: Event) =>
         onChange((e.target as HTMLSelectElement).value as SortMode)}"
       title="Sort by"
@@ -373,7 +373,7 @@ function renderWidget(state: WidgetState) {
         bottom: calc(clamp(48px, 6vw, 72px) + 32px);
         right: 24px;
         z-index: 9998;
-        width: 440px;
+        width: 480px;
         max-height: 640px;
         display: flex;
         flex-direction: column;

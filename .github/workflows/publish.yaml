@@ -28,7 +28,7 @@ jobs:
 
       - name: web-ext build (Firefox)
         id: web-ext-build-ff
-        uses: kewisch/action-web-ext@v2
+        uses: kewisch/action-web-ext@main
         with:
           cmd: build
           source: dist-firefox
@@ -39,7 +39,7 @@ jobs:
 
       - name: web-ext build (Chrome)
         id: web-ext-build-chrome
-        uses: kewisch/action-web-ext@v2
+        uses: kewisch/action-web-ext@main
         with:
           cmd: build
           source: dist-chrome
@@ -78,7 +78,7 @@ jobs:
 
       - name: web-ext build (Firefox)
         id: web-ext-build-ff
-        uses: kewisch/action-web-ext@v2
+        uses: kewisch/action-web-ext@main
         with:
           cmd: build
           source: dist-firefox
@@ -89,7 +89,7 @@ jobs:
 
       - name: web-ext build (Chrome)
         id: web-ext-build-chrome
-        uses: kewisch/action-web-ext@v2
+        uses: kewisch/action-web-ext@main
         with:
           cmd: build
           source: dist-chrome
@@ -103,7 +103,7 @@ jobs:
 
       - name: web-ext sign (Firefox)
         id: web-ext-sign
-        uses: kewisch/action-web-ext@v2
+        uses: kewisch/action-web-ext@main
         with:
           cmd: sign
           source: ${{ steps.web-ext-build-ff.outputs.target }}

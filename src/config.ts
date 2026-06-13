@@ -61,6 +61,7 @@ export interface BetterIntraConfig {
   FRIENDS_LIST: string[];
   FRIENDS_SORT_MODE: "online" | "name" | "level" | "wallet";
   SHOW_FRIENDS_WIDGET: boolean;
+  FRIENDS_DATA_CACHE: { data: unknown[]; timestamp: number } | null;
 
   EVALUATIONS_NOTIFY_AS_EVALUATOR: boolean;
   EVALUATIONS_NOTIFY_AS_EVALUATED: boolean;
@@ -75,7 +76,7 @@ export interface BetterIntraConfig {
  * It must implement the BetterIntraConfig interface to ensure all keys have a default.
  */
 export const CONFIG_DEFAULT: BetterIntraConfig = {
-  ACTIVE_SCRIPTS: ["logtime", "clusters", "profile", "shortcuts", "account", "evaluations"],
+  ACTIVE_SCRIPTS: ["logtime", "clusters", "profile", "shortcuts"],
   CLOUD_SYNC_ENABLED: false,
   LAST_CLOUD_SYNC: null,
   CLOUD_TOKEN: "",
@@ -125,6 +126,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   FRIENDS_LIST: [],
   FRIENDS_SORT_MODE: "level",
   SHOW_FRIENDS_WIDGET: true,
+  FRIENDS_DATA_CACHE: null,
 
   EVALUATIONS_NOTIFY_AS_EVALUATOR: true,
   EVALUATIONS_NOTIFY_AS_EVALUATED: true,

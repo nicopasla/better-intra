@@ -282,52 +282,56 @@ export const updateVisuals = async () => {
       }
     } else {
       isFetching = true;
-      const cloudUrls = await fetchUserVisuals(targetLogin);
+      try {
+        const cloudUrls = await fetchUserVisuals(targetLogin);
 
-      if (
-        cloudUrls &&
-        (cloudUrls.avatar || cloudUrls.banner || cloudUrls.background)
-      ) {
-        visualCache = cloudUrls;
-        await applyImgs(visualCache);
-        lastAppliedUser = targetLogin;
-        lastAppliedKey = getVisualKey(visualCache);
+        if (
+          cloudUrls &&
+          (cloudUrls.avatar || cloudUrls.banner || cloudUrls.background)
+        ) {
+          visualCache = cloudUrls;
+          await applyImgs(visualCache);
+          lastAppliedUser = targetLogin;
+          lastAppliedKey = getVisualKey(visualCache);
 
-        if (!avatarEl.dataset.toggleListener) {
-          avatarEl.dataset.toggleListener = "true";
-          avatarEl.style.cursor = "pointer";
-          avatarEl.title = "Click to view original avatar";
+          if (!avatarEl.dataset.toggleListener) {
+            avatarEl.dataset.toggleListener = "true";
+            avatarEl.style.cursor = "pointer";
+            avatarEl.title = "Click to view original avatar";
 
-          avatarEl.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const currentAvatar = document.querySelector(
-              "div.rounded-full.w-52.h-52",
-            ) as HTMLElement;
-            if (!currentAvatar) return;
+            avatarEl.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const currentAvatar = document.querySelector(
+                "div.rounded-full.w-52.h-52",
+              ) as HTMLElement;
+              if (!currentAvatar) return;
 
-            if (showingOriginalAvatar) {
-              showingOriginalAvatar = false;
-              if (visualCache?.avatar) {
-                currentAvatar.style.setProperty(
-                  "background-image",
-                  `url("${visualCache.avatar}")`,
-                  "important",
-                );
+              if (showingOriginalAvatar) {
+                showingOriginalAvatar = false;
+                if (visualCache?.avatar) {
+                  currentAvatar.style.setProperty(
+                    "background-image",
+                    `url("${visualCache.avatar}")`,
+                    "important",
+                  );
+                }
+              } else {
+                showingOriginalAvatar = true;
+                if (originalAvatarUrl) {
+                  currentAvatar.style.setProperty(
+                    "background-image",
+                    `url("${originalAvatarUrl}")`,
+                    "important",
+                  );
+                }
               }
-            } else {
-              showingOriginalAvatar = true;
-              if (originalAvatarUrl) {
-                currentAvatar.style.setProperty(
-                  "background-image",
-                  `url("${originalAvatarUrl}")`,
-                  "important",
-                );
-              }
-            }
-          });
+            });
+          }
+        } else {
+          avatarEl.style.setProperty("opacity", "1", "important");
         }
-      } else {
-        avatarEl.style.setProperty("opacity", "1", "important");
+      } finally {
+        isFetching = false;
       }
     }
   }

@@ -82,7 +82,7 @@ function renderLogtime(stats: Record<string, string>): void {
     requestAnimationFrame(() => {
       requestAnimationFrame(scrollToLatest);
     });
-    window.addEventListener("load", scrollToLatest);
+    window.addEventListener("load", scrollToLatest, { once: true });
     setTimeout(scrollToLatest, 100);
   }
 }

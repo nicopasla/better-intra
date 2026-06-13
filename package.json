@@ -13,16 +13,21 @@
     "watch:chrome": "concurrently \"cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome vite build --watch\" \"cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome vite build --config vite.popup.config.ts --watch\" \"cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome vite build --config vite.background.config.ts --watch\"",
     "web-ext:firefox": "web-ext run --keep-profile-changes --source-dir dist-firefox --start-url https://profile-v3.intra.42.fr",
     "web-ext:chrome": "web-ext run -t chromium --source-dir dist-chrome --start-url https://profile-v3.intra.42.fr",
-    "web-ext:brave": "web-ext run -t chromium --chromium-binary \"C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe\" --source-dir dist-chrome --start-url https://profile-v3.intra.42.fr"
+    "web-ext:brave": "web-ext run -t chromium --chromium-binary \"C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe\" --source-dir dist-chrome --start-url https://profile-v3.intra.42.fr",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.42",
+    "@vitest/ui": "^4.1.8",
     "concurrently": "^10.0.0",
     "cross-env": "^10.1.0",
     "daisyui": "^5.5.20",
+    "jsdom": "^29.1.1",
     "sharp": "^0.34.5",
     "typescript": "~6.0.3",
     "vite": "^8.0.14",
+    "vitest": "^4.1.8",
     "web-ext": "^10.3.0"
   },
   "dependencies": {

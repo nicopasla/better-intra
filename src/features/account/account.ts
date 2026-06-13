@@ -1,5 +1,8 @@
 import { BetterIntraConfig, getConfig, CLOUD_SYNC_KEYS } from "../../config.ts";
 import type { VisualUrls } from "../profile/visuals.ts";
+import { hashLogin } from "../../utils/crypto.ts";
+
+export { hashLogin };
 
 const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
 
@@ -13,18 +16,6 @@ async function handleAuthResponse(response: Response): Promise<boolean> {
 
 export async function clearAuthFailed(): Promise<void> {
   await chrome.storage.local.remove("CLOUD_AUTH_FAILED");
-}
-
-/**
- * Hashes a login string using SHA-256 for secure, anonymized identification.
- * @param login The user's 42 login.
- * @returns A promise that resolves to the hex-encoded SHA-256 hash.
- */
-export async function hashLogin(login: string): Promise<string> {
-  const msgBuffer = new TextEncoder().encode(login.toLowerCase().trim());
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /**

@@ -1,3 +1,5 @@
+﻿import { hashLogin } from "./utils/crypto";
+
 const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -170,11 +172,4 @@ function formatTime(iso: string): string {
   const hours = d.getHours().toString().padStart(2, "0");
   const minutes = d.getMinutes().toString().padStart(2, "0");
   return `${hours}:${minutes}`;
-}
-
-async function hashLogin(login: string): Promise<string> {
-  const msgBuffer = new TextEncoder().encode(login.toLowerCase().trim());
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }

@@ -36,6 +36,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch {
+      console.warn("Poll evaluations: fetch failed");
       return;
     }
 
@@ -45,6 +46,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     try {
       data = await res.json();
     } catch {
+      console.warn("Poll evaluations: JSON parse failed");
       return;
     }
 
@@ -109,7 +111,7 @@ async function syncRegistration() {
   try {
     await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
   } catch {
-    // ignore
+    console.warn("syncRegistration: fetch failed");
   }
 }
 
@@ -123,28 +125,28 @@ async function syncDiscord() {
   const enabled = store.DISCORD_ENABLED === true;
   const discordId = String(store.DISCORD_ID || "").trim();
 
-  if (enabled && discordId) {
-    const url = `${WORKER_URL}/api/v1/private/discord/link?login=${encodeURIComponent(hashedLogin)}`;
-    try {
-      await fetch(url, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ discordId }),
-      });
-    } catch {
-      // ignore
+    if (enabled && discordId) {
+      const url = `${WORKER_URL}/api/v1/private/discord/link?login=${encodeURIComponent(hashedLogin)}`;
+      try {
+        await fetch(url, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ discordId }),
+        });
+      } catch {
+        console.warn("syncDiscord: link fetch failed");
+      }
+    } else {
+      const url = `${WORKER_URL}/api/v1/private/discord/unlink?login=${encodeURIComponent(hashedLogin)}`;
+      try {
+        await fetch(url, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch {
+        console.warn("syncDiscord: unlink fetch failed");
+      }
     }
-  } else {
-    const url = `${WORKER_URL}/api/v1/private/discord/unlink?login=${encodeURIComponent(hashedLogin)}`;
-    try {
-      await fetch(url, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    } catch {
-      // ignore
-    }
-  }
 }
 
 function createAlarm() {

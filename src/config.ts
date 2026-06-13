@@ -157,23 +157,14 @@ export type ConfigKey = keyof BetterIntraConfig;
 export const getConfig = async <T extends ConfigKey>(
   key: T,
 ): Promise<BetterIntraConfig[T]> => {
-  // Attempt to get the value from browser storage.
   const res = await chrome.storage.local.get(key);
-
-  // If a value exists in storage, use it; otherwise, fall back to the default.
   let value = res && res[key] !== undefined ? res[key] : CONFIG_DEFAULT[key];
 
-  // For convenience, automatically try to parse string values that look like JSON.
-  if (typeof value === "string") {
-    try {
-      if (value.startsWith("[") || value.startsWith("{")) {
-        value = JSON.parse(value);
-      }
-    } catch {
-      // If parsing fails, it's not valid JSON, so we just use the original string.
-    }
+  // Some legacy callers serialize arrays/objects as JSON strings (e.g. hub settings).
+  // Parse those back so consumers get the declared type.
+  if (typeof value === "string" && (value.startsWith("[") || value.startsWith("{"))) {
+    try { value = JSON.parse(value); } catch { /* keep string */ }
   }
 
-  // Return the final value, asserting its type to match the function's generic promise.
   return value as BetterIntraConfig[T];
 };

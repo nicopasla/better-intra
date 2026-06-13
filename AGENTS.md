@@ -92,6 +92,10 @@ Worker cron (`*/5 * * * *`) fetches 42 API `/v2/me/scale_teams` for each user, d
 - **Release drafter** — on push/PR to `main`; auto-categorizes commits into draft release.
 - **Publish** — triggers on GitHub Release publish; builds Firefox (`.xpi`) and Chrome (`.zip`); signs Firefox via AMO for full releases.
 
+## DOs and DON'Ts
+
+- **NEVER use `innerHTML`** — lit-html is always available. Use `render(unsafeHTML(...), container)` from `lit-html` and `lit-html/directives/unsafe-html.js` instead.
+
 ## No linter; Prettier for formatting
 
 Prettier is used for formatting (editor-level; no committed config). No ESLint or similar configured.

@@ -91,17 +91,19 @@ function startCountdown(container: HTMLElement, endIso: string, color: string): 
     countEl.textContent = formatCountdown(endIso);
   }, 1000);
 
-  (window as any)[`__ft_freeze_interval_${INJECTED_ID}`] = intervalId;
+  container.dataset.ftFreezeInterval = String(intervalId);
 }
 
 export async function initFreezeCard() {
   const pathParts = location.pathname.split("/").filter(Boolean);
   if (pathParts[0] !== "users" || !pathParts[1]) return;
 
-  if (document.getElementById(INJECTED_ID)) return;
-
-  const oldIntervalId = (window as any)[`__ft_freeze_interval_${INJECTED_ID}`];
-  if (oldIntervalId) clearInterval(oldIntervalId);
+  const existingCard = document.getElementById(INJECTED_ID);
+  if (existingCard) {
+    const oldInterval = Number((existingCard as HTMLElement).dataset.ftFreezeInterval);
+    if (oldInterval) clearInterval(oldInterval);
+    return;
+  }
 
   const targetLogin = pathParts[1];
 

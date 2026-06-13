@@ -159,6 +159,8 @@ export const applyImgs = async (urls: any) => {
         "important",
       );
     }
+  }
+  if (avatar && !showingOriginalAvatar) {
     avatar.style.setProperty("opacity", "1", "important");
   }
 
@@ -271,7 +273,7 @@ export const updateVisuals = async () => {
         backgroundMode: await getConfig("PROFILE_BACKGROUND_MODE"),
       };
 
-      if (!visualCache.avatar) {
+      if (!visualCache.avatar && !visualCache.banner && !visualCache.background) {
         avatarEl.style.setProperty("opacity", "1", "important");
       } else {
         await applyImgs(visualCache);

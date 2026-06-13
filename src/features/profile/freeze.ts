@@ -9,23 +9,33 @@ let cachedToken: string | null = null;
 function waitForToken(timeout = 15000): Promise<string | null> {
   if (cachedToken) return Promise.resolve(cachedToken);
 
-  const stored = sessionStorage.getItem("ft_intrapy_token");
-  if (stored) {
-    cachedToken = stored;
-    return Promise.resolve(stored);
-  }
-
   return new Promise((resolve) => {
+    let resolved = false;
+    let timer: ReturnType<typeof setTimeout>;
+
     const handler = (e: CustomEvent) => {
+      if (resolved) return;
+      resolved = true;
       cachedToken = e.detail;
       cleanup();
       resolve(cachedToken);
     };
     const cleanup = () => {
       document.removeEventListener("42_INTRAPY_TOKEN", handler as EventListener);
+      clearTimeout(timer);
     };
     document.addEventListener("42_INTRAPY_TOKEN", handler as EventListener);
-    setTimeout(() => {
+
+    const stored = sessionStorage.getItem("ft_intrapy_token");
+    if (stored) {
+      resolved = true;
+      cachedToken = stored;
+      cleanup();
+      resolve(stored);
+      return;
+    }
+
+    timer = setTimeout(() => {
       cleanup();
       resolve(null);
     }, timeout);

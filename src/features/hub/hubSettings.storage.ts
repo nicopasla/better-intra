@@ -32,7 +32,7 @@ export async function getActiveFeatures(): Promise<FeatureId[]> {
   const raw = await getConfig(STORAGE_KEY);
   const active = normalizeActive(raw);
 
-  await chrome.storage.local.set({ [STORAGE_KEY]: JSON.stringify(active) });
+  await chrome.storage.local.set({ [STORAGE_KEY]: active });
 
   return active;
 }

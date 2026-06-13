@@ -111,8 +111,19 @@ export async function initClusters() {
       findAndAttach();
       injectUI(shadowHost);
       refreshMarkersSoon();
+      if (observedSvgRoot && document.getElementById("ft-cluster-ui")) {
+        clearInterval(pollTimer);
+      }
     }, 500);
-    addEventListener("pagehide", () => clearInterval(pollTimer), { once: true });
+    addEventListener(
+      "pagehide",
+      () => {
+        clearInterval(pollTimer);
+        if (bodyObserver) bodyObserver.disconnect();
+        if (svgObserver) svgObserver.disconnect();
+      },
+      { once: true },
+    );
 
   }
 

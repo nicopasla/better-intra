@@ -93,5 +93,6 @@ export async function initHubSettings(): Promise<FeatureId[]> {
   mountGearButton();
   const hubInterval = setInterval(mountGearButton, 500);
   setTimeout(() => clearInterval(hubInterval), 10000);
+  addEventListener("pagehide", () => clearInterval(hubInterval), { once: true });
   return active;
 }

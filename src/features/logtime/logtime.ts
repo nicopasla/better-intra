@@ -36,7 +36,7 @@ export let lastStats: Record<string, string> | null = null;
 let currentTheme = "light";
 
 function renderLogtime(stats: Record<string, string>): void {
-  if (!stats) return;
+  if (!stats || !CONFIG) return;
   lastStats = stats;
 
   const byMonth: Record<string, Record<string, number>> = {};
@@ -95,8 +95,9 @@ function isProfileV3TargetPage() {
 }
 
 function installFetchHook() {
-  document.addEventListener("42_LOGTIME_DATA", (event: any) => {
-    if (event.detail) renderLogtime(event.detail);
+  document.addEventListener("42_LOGTIME_DATA", (event: Event) => {
+    const detail = (event as CustomEvent<Record<string, string>>).detail;
+    if (detail) renderLogtime(detail);
   });
 }
 
@@ -129,10 +130,10 @@ export async function initLogtime() {
   if ("scrollRestoration" in history) {
     history.scrollRestoration = "manual";
   }
-  installFetchHook();
 
   CONFIG = await getConfigs();
   currentTheme = await getEffectiveTheme();
+  installFetchHook();
 
   if (isProfileV3TargetPage()) {
     isLoaded = true;

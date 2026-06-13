@@ -4,11 +4,7 @@ import FREEZE_SVG from "../../assets/svg/freeze.svg?raw";
 
 const INJECTED_ID = "ft-freeze-card";
 
-let cachedToken: string | null = null;
-
 function waitForToken(timeout = 15000): Promise<string | null> {
-  if (cachedToken) return Promise.resolve(cachedToken);
-
   return new Promise((resolve) => {
     let resolved = false;
     let timer: ReturnType<typeof setTimeout>;
@@ -16,9 +12,8 @@ function waitForToken(timeout = 15000): Promise<string | null> {
     const handler = (e: CustomEvent) => {
       if (resolved) return;
       resolved = true;
-      cachedToken = e.detail;
       cleanup();
-      resolve(cachedToken);
+      resolve(e.detail);
     };
     const cleanup = () => {
       document.removeEventListener("42_INTRAPY_TOKEN", handler as EventListener);
@@ -29,7 +24,6 @@ function waitForToken(timeout = 15000): Promise<string | null> {
     const stored = sessionStorage.getItem("ft_intrapy_token");
     if (stored) {
       resolved = true;
-      cachedToken = stored;
       cleanup();
       resolve(stored);
       return;

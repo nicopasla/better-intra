@@ -21,12 +21,9 @@ interface MarkedProject {
 
 const INJECTED_ID = "ft-marks-injected";
 
-let cachedToken: string | null = null;
 let marksCache: MarkedProject[] | null = null;
 
 function waitForToken(timeout = 15000): Promise<string | null> {
-  if (cachedToken) return Promise.resolve(cachedToken);
-
   return new Promise((resolve) => {
     let resolved = false;
     let timer: ReturnType<typeof setTimeout>;
@@ -34,9 +31,8 @@ function waitForToken(timeout = 15000): Promise<string | null> {
     const handler = (e: CustomEvent) => {
       if (resolved) return;
       resolved = true;
-      cachedToken = e.detail;
       cleanup();
-      resolve(cachedToken);
+      resolve(e.detail);
     };
     const cleanup = () => {
       document.removeEventListener(
@@ -50,7 +46,6 @@ function waitForToken(timeout = 15000): Promise<string | null> {
     const stored = sessionStorage.getItem("ft_intrapy_token");
     if (stored) {
       resolved = true;
-      cachedToken = stored;
       cleanup();
       resolve(stored);
       return;

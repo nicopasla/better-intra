@@ -4,6 +4,7 @@ import { injectCustomStyles, updateVisuals } from "./visuals.ts";
 import { handleProfileRedirect } from "./highlight.ts";
 import { initLayoutManager } from "./layout.ts";
 import { initMilestones } from "./milestones.ts";
+import { initFreezeCard } from "./freeze.ts";
 import { initProfileCardStyling } from "./profile-card.ts";
 import { injectFriendsWidget } from "../friends/friends.ui.ts";
 import { injectFriendButton } from "../friends/profile-button.ts";
@@ -42,6 +43,7 @@ export async function initProfile() {
         await updateEventFilters();
         await handleProfileRedirect();
         await initMilestones();
+        await initFreezeCard();
         injectFriendsWidget();
         injectFriendButton();
       }

@@ -17,9 +17,6 @@ export async function injectFriendButton() {
   }
 
   const targetLogin = pathParts[1];
-  const loginEl = document.querySelector<HTMLElement>('p[class="text-sm"]');
-  if (!loginEl || loginEl.textContent?.trim() !== targetLogin) return;
-
   const myLogin = await getCloudLogin();
   if (!myLogin || targetLogin === myLogin) {
     document.getElementById("ft-friend-btn")?.remove();

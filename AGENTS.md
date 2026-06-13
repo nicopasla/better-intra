@@ -96,6 +96,8 @@ Worker cron (`*/5 * * * *`) fetches 42 API `/v2/me/scale_teams` for each user, d
 
 - **NEVER use `innerHTML`** — lit-html is always available. Use `render(unsafeHTML(...), container)` from `lit-html` and `lit-html/directives/unsafe-html.js` instead.
 
+## NEVER deploy the worker without explicit user consent
+
 ## No linter; Prettier for formatting
 
 Prettier is used for formatting (editor-level; no committed config). No ESLint or similar configured.

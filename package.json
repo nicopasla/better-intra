@@ -12,7 +12,7 @@
     "watch:firefox": "concurrently \"cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build --watch\" \"cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build --config vite.popup.config.ts --watch\" \"cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build --config vite.background.config.ts --watch\"",
     "watch:chrome": "concurrently \"cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome vite build --watch\" \"cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome vite build --config vite.popup.config.ts --watch\" \"cross-env TARGET=chrome BUILD_OUT_DIR=dist-chrome vite build --config vite.background.config.ts --watch\"",
     "web-ext:firefox": "web-ext run --keep-profile-changes --source-dir dist-firefox --start-url https://profile-v3.intra.42.fr",
-    "web-ext:chrome": "web-ext run -t chromium --source-dir dist --start-url https://profile-v3.intra.42.fr",
+    "web-ext:chrome": "web-ext run -t chromium --source-dir dist-chrome --start-url https://profile-v3.intra.42.fr",
     "web-ext:brave": "web-ext run -t chromium --chromium-binary \"C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe\" --source-dir dist-chrome --start-url https://profile-v3.intra.42.fr"
   },
   "devDependencies": {

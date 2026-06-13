@@ -1,4 +1,5 @@
 import { BetterIntraConfig, ConfigKey, getConfig } from "../../config.ts";
+import type { VisualUrls } from "../profile/visuals.ts";
 
 const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
 
@@ -219,23 +220,23 @@ export async function syncMyVisuals(visuals: {
  * @param login The target user's 42 login.
  * @returns A promise that resolves to the user's visual settings, or null on failure.
  */
-export async function fetchUserVisuals(login: string) {
+export async function fetchUserVisuals(login: string): Promise<VisualUrls | null> {
   try {
     const hashedTarget = await hashLogin(login);
     const response = await fetch(
       `${WORKER_URL}/api/v1/public/visuals?login=${encodeURIComponent(hashedTarget)}`,
     );
     if (!response.ok) return null;
-    const data = (await response.json()) as any;
+    const data = (await response.json()) as Record<string, unknown>;
 
     return {
-      avatar: data.avatar || "",
-      banner: data.banner || "",
-      bannerMode: data.bannerMode || "fill",
-      background: data.background || "",
-      backgroundMode: data.backgroundMode || "fill",
-      theme: data.theme || null,
-      logtime: data.logtime || null,
+      avatar: String(data.avatar || ""),
+      banner: String(data.banner || ""),
+      bannerMode: String(data.bannerMode || "fill"),
+      background: String(data.background || ""),
+      backgroundMode: String(data.backgroundMode || "fill"),
+      theme: (data.theme as { profileColor?: string }) || null,
+      logtime: (data.logtime as Record<string, unknown>) || null,
     };
   } catch (error) {
     console.error(error);

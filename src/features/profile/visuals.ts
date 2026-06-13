@@ -4,8 +4,24 @@ import { createSettingsModal } from "./profile.modal.ts";
 import { applyThemeToProfileCard } from "./profile-card.ts";
 import { applyPublicLogtimeSettings, initLogtime } from "../logtime/logtime.ts";
 
+export interface VisualUrls {
+  avatar: string;
+  banner: string;
+  bannerMode: string;
+  background: string;
+  backgroundMode: string;
+  theme?: { profileColor?: string } | null;
+  logtime?: {
+    calendarColor?: string;
+    labelsColor?: string;
+    emoji?: string;
+    emojiDivisor?: string | number;
+    emojiRate?: string | number;
+  } | null;
+}
+
 let isFetching = false;
-let visualCache: any = null;
+let visualCache: VisualUrls | null = null;
 let lastUser: string | null = null;
 let showingOriginalAvatar = false;
 let originalAvatarUrl: string | null = null;
@@ -13,15 +29,15 @@ let originalAvatarUrl: string | null = null;
 let lastAppliedUser: string | null = null;
 let lastAppliedKey: string | null = null;
 
-const getVisualKey = (urls: any) =>
+const getVisualKey = (urls: VisualUrls) =>
   JSON.stringify({
-    avatar: urls?.avatar || "",
-    banner: urls?.banner || "",
-    bannerMode: urls?.bannerMode || "",
-    background: urls?.background || "",
-    backgroundMode: urls?.backgroundMode || "",
-    theme: urls?.theme || null,
-    logtime: urls?.logtime || null,
+    avatar: urls.avatar || "",
+    banner: urls.banner || "",
+    bannerMode: urls.bannerMode || "",
+    background: urls.background || "",
+    backgroundMode: urls.backgroundMode || "",
+    theme: urls.theme || null,
+    logtime: urls.logtime || null,
   });
 
 const hasBackground = (el: HTMLElement | null, url?: string) => {
@@ -35,7 +51,7 @@ const hasBackground = (el: HTMLElement | null, url?: string) => {
   return (inlineMatch?.[2] === url) || (computedMatch?.[2] === url);
 };
 
-const needsReapply = (urls: any) => {
+const needsReapply = (urls: VisualUrls) => {
   const avatar = document.querySelector(
     "div.rounded-full.w-52.h-52",
   ) as HTMLElement | null;
@@ -112,7 +128,7 @@ function preloadImage(url: string, timeout = 10000): Promise<boolean> {
   ]);
 }
 
-export const applyImgs = async (urls: any) => {
+export const applyImgs = async (urls: VisualUrls | null) => {
   if (!urls) return;
 
   const [avatarLoaded, bannerLoaded, bgLoaded] = await Promise.all([
@@ -271,9 +287,9 @@ export const updateVisuals = async () => {
       visualCache = {
         avatar: await getConfig("PROFILE_IMAGE_URL"),
         banner: await getConfig("PROFILE_BANNER_URL"),
-        bannerMode: await getConfig("PROFILE_BANNER_MODE"),
+        bannerMode: (await getConfig("PROFILE_BANNER_MODE")) || "fill",
         background: await getConfig("PROFILE_BACKGROUND_URL"),
-        backgroundMode: await getConfig("PROFILE_BACKGROUND_MODE"),
+        backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
       };
 
       if (!visualCache.avatar && !visualCache.banner && !visualCache.background) {

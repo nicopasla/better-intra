@@ -2,7 +2,7 @@ import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { getConfig } from "../../config.ts";
 import { syncMyVisuals } from "../account/account.ts";
-import { applyImgs, injectCustomStyles } from "./visuals.ts";
+import { applyImgs, injectCustomStyles, VisualUrls } from "./visuals.ts";
 import CSS from "../../assets/style.css?inline";
 
 function handleLivePreview(e: Event) {
@@ -161,7 +161,7 @@ function renderPanelContent(
 }
 
 export const createSettingsModal = async (
-  onSaveCallback: (updatedVisuals: any) => void,
+  onSaveCallback: (updatedVisuals: VisualUrls) => void,
 ) => {
   if (document.getElementById("profile-modal-host")) return;
 

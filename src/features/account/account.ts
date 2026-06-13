@@ -1,4 +1,4 @@
-import { BetterIntraConfig, ConfigKey, getConfig } from "../../config.ts";
+import { BetterIntraConfig, getConfig, CLOUD_SYNC_KEYS } from "../../config.ts";
 import type { VisualUrls } from "../profile/visuals.ts";
 
 const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
@@ -140,18 +140,9 @@ export async function syncToCloud(): Promise<boolean> {
 
   try {
     const settings: Partial<BetterIntraConfig> = {};
-    const allKeys = Object.keys(await chrome.storage.local.get(null));
 
-    // Collect all settings except for the cloud-specific and cache-only ones
-    for (const key of allKeys) {
-      if (
-        key !== "CLOUD_TOKEN" &&
-        key !== "CLOUD_LOGIN" &&
-        key !== "LAST_CLOUD_SYNC" &&
-        key !== "FRIENDS_DATA_CACHE"
-      ) {
-        (settings as any)[key] = await getConfig(key as ConfigKey);
-      }
+    for (const key of CLOUD_SYNC_KEYS) {
+      (settings as Record<string, unknown>)[key] = await getConfig(key);
     }
 
     const hashedLogin = await hashLogin(login);
@@ -343,10 +334,11 @@ export async function applyCloudSettings(
   cloudData: Partial<BetterIntraConfig>,
 ): Promise<void> {
   const dataToSave: Partial<BetterIntraConfig> = {};
-  const validKeys = Object.keys(cloudData) as ConfigKey[];
 
-  for (const key of validKeys) {
-    (dataToSave as any)[key] = cloudData[key];
+  for (const key of CLOUD_SYNC_KEYS) {
+    if (key in cloudData) {
+      (dataToSave as Record<string, unknown>)[key] = (cloudData as Record<string, unknown>)[key];
+    }
   }
 
   if (Object.keys(dataToSave).length > 0) {

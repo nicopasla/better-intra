@@ -110,6 +110,12 @@ function injectProfileCardStyles() {
       border-radius: 4px;
     }
 
+    html.dark [role="option"]:hover,
+    html.dark [role="option"]:focus,
+    html.dark [role="option"][data-highlighted] {
+      background-color: hsl(var(--muted)) !important;
+    }
+
     /* --- Bottom Stats Bar (Wallets, Rank, Score) --- */
     .ft-profile-card .border-t-neutral-600 {
       background-color: rgba(0,0,0,0.25) !important;

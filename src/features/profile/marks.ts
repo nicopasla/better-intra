@@ -145,7 +145,8 @@ function injectMarks(marks: MarkedProject[]) {
 
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "w-full";
+      btn.className = "w-full text-xs";
+      btn.style.fontWeight = "400";
 
       const row = document.createElement("div");
       row.className =

@@ -60,6 +60,7 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
       CLOUD_TOKEN: oauthToken,
       CLOUD_LOGIN: oauthLogin,
     });
+    history.replaceState(null, "", window.location.pathname);
     window.close();
     return;
   }
@@ -73,10 +74,8 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
     if (target) {
       try {
         // Hub settings are always initialized for the settings page.
-        await initHubSettings();
-
-        // Get the list of scripts the user has enabled.
-        const activeScripts = await getConfig("ACTIVE_SCRIPTS");
+        // initHubSettings returns the active feature list.
+        const activeScripts = await initHubSettings();
 
         // Loop through the user's active scripts and initialize them if they exist in our map.
         for (const scriptId of activeScripts) {

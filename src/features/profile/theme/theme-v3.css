@@ -295,6 +295,67 @@ html.dark .hover\:bg-zinc-300 a.text-legacy-main:hover {
 }
 
 /* ============================================================================
+   DIALOG: Evaluation points
+   ============================================================================ */
+
+html.dark div[role="alertdialog"],
+html.dark div.alert-dialog-content {
+  background-color: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark .alert-dialog-overlay {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .alert-dialog-title {
+  color: hsl(var(--foreground)) !important;
+}
+
+html.dark div[role="alertdialog"] legend,
+html.dark div[role="alertdialog"] fieldset,
+html.dark div[role="alertdialog"] p {
+  color: hsl(var(--foreground)) !important;
+}
+
+html.dark div[role="alertdialog"] label.rounded-full.bg-legacy-main {
+  background-color: hsl(var(--primary)) !important;
+  border: 2px solid hsl(var(--primary)) !important;
+  color: #fff !important;
+}
+
+html.dark div[role="alertdialog"] label.rounded-full.bg-legacy-main.selected,
+html.dark div[role="alertdialog"] label.rounded-full.bg-legacy-main[data-selected="true"] {
+  outline: 2px solid #fff !important;
+  outline-offset: 2px !important;
+}
+
+html.dark div[role="alertdialog"] button.button.bg-gray-400 {
+  color: hsl(var(--foreground)) !important;
+}
+
+html.dark div[role="alertdialog"] button.button.bg-gray-400:hover {
+  filter: brightness(1.15) !important;
+}
+
+html.dark div[role="alertdialog"] button.button.bg-black {
+  background-color: hsl(var(--primary)) !important;
+  color: #fff !important;
+  border: 1px solid hsl(var(--primary)) !important;
+}
+
+html.dark div[role="alertdialog"] button.button.bg-black:hover {
+  filter: brightness(1.1) !important;
+}
+
+html.dark div[role="alertdialog"] button.button.bg-black:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  filter: none !important;
+}
+
+/* ============================================================================
    SVG & SIDEBAR NAV
   ============================================================================ */
 

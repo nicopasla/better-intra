@@ -80,8 +80,13 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
 
         // Loop through the user's active scripts and initialize them if they exist in our map.
         for (const scriptId of activeScripts) {
-          if (featureInitializers[scriptId]) {
-            await featureInitializers[scriptId]();
+          const init = featureInitializers[scriptId];
+          if (init) {
+            try {
+              await init();
+            } catch (e) {
+              console.error(`Feature "${scriptId}" failed to initialize:`, e);
+            }
           }
         }
       } catch (error) {

@@ -48,9 +48,13 @@ async function fetchCursusData(login: string, token: string): Promise<any[]> {
       `https://intrapy.intra.42.fr/api/v1/users/${login}/cursus`,
       { headers: { Authorization: token } },
     );
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.warn("fetchCursusData: non-ok response", res.status);
+      return [];
+    }
     return await res.json();
-  } catch {
+  } catch (e) {
+    console.warn("fetchCursusData: network error", e);
     return [];
   }
 }

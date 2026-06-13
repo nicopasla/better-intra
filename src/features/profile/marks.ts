@@ -21,7 +21,6 @@ interface MarkedProject {
 
 const INJECTED_ID = "ft-marks-injected";
 
-let initialized = false;
 let cachedToken: string | null = null;
 let marksCache: MarkedProject[] | null = null;
 
@@ -450,9 +449,6 @@ function getLoginFromPage(): string | null {
 }
 
 export async function initMarks() {
-  if (initialized) return;
-  initialized = true;
-
   const showMarks = await getConfig("PROFILE_SHOW_MARKS");
   if (!showMarks) return;
 

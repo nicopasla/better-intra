@@ -27,9 +27,12 @@ const getVisualKey = (urls: any) =>
 const hasBackground = (el: HTMLElement | null, url?: string) => {
   if (!url) return true;
   if (!el) return false;
+  const urlRe = /url\((["']?)(.*?)\1\)/;
   const inline = el.style.backgroundImage || "";
   const computed = window.getComputedStyle(el).backgroundImage || "";
-  return inline.includes(url) || computed.includes(url);
+  const inlineMatch = inline.match(urlRe);
+  const computedMatch = computed.match(urlRe);
+  return (inlineMatch?.[2] === url) || (computedMatch?.[2] === url);
 };
 
 const needsReapply = (urls: any) => {
@@ -282,10 +285,11 @@ export const updateVisuals = async () => {
       }
     } else {
       isFetching = true;
+      const fetchForLogin = targetLogin;
       try {
         const cloudUrls = await fetchUserVisuals(targetLogin);
 
-        if (
+        if (fetchForLogin !== lastUser) return;        if (
           cloudUrls &&
           (cloudUrls.avatar || cloudUrls.banner || cloudUrls.background)
         ) {

@@ -417,6 +417,57 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             </label>
           </div>`;
 
+        case "action":
+          return html`<button
+            type="button"
+            class="btn btn-accent btn-sm"
+            ?disabled="${!enabled}"
+            @click="${async (e: Event) => {
+              const store = await chrome.storage.local.get(["CLOUD_TOKEN", "CLOUD_LOGIN", "DISCORD_ID"]);
+              const token = String(store.CLOUD_TOKEN || "");
+              const login = String(store.CLOUD_LOGIN || "");
+              const discordId = String(store.DISCORD_ID || "");
+              if (!token || !login || !discordId) return;
+
+              const btn = e.target as HTMLButtonElement;
+              const orig = btn.innerText;
+              btn.innerText = "Sending...";
+              btn.disabled = true;
+
+              try {
+                const res = await fetch(
+                  "https://better-intra-worker.nicopasla.workers.dev/api/v1/private/discord/test",
+                  {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ login, discordId }),
+                  },
+                );
+                if (res.ok) {
+                  btn.innerText = "✓ Sent!";
+                } else {
+                  const err = await res.text();
+                  btn.innerText = `✗ ${err.slice(0, 40)}`;
+                  btn.classList.add("btn-error");
+                }
+              } catch {
+                btn.innerText = "✗ Network error";
+                btn.classList.add("btn-error");
+              }
+              setTimeout(() => { btn.innerText = orig; btn.disabled = false; btn.classList.remove("btn-error"); }, 4000);
+            }}"
+          >${def.label}</button>`;
+
+        case "text":
+          return html`<input
+            type="text"
+            class="input input-accent w-60"
+            placeholder="${def.placeholder || ""}"
+            .value="${String(value || "")}"
+            data-setting-key="${def.key}"
+            ?disabled="${!enabled}"
+          />`;
+
         case "emoji":
         default:
           return html`<input

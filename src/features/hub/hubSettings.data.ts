@@ -3,6 +3,7 @@ import CLUSTERS from "../../assets/svg/grip-vertical.svg?raw";
 import USER from "../../assets/svg/user.svg?raw";
 import SHORTCUT from "../../assets/svg/shortcut.svg?raw";
 import ABOUT from "../../assets/svg/about.svg?raw";
+import SLOT from "../../assets/svg/slot.svg?raw";
 import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
 import { CLUSTERS as CLUSTER_OPTIONS } from "../clusters/clusters.data.ts";
 
@@ -45,6 +46,13 @@ export const FEATURE_DEFS = [
     cols: 3,
   },
   {
+    id: "evaluations",
+    name: "Evaluations",
+    icon: SLOT,
+    desc: "Notifies you when an evaluation is about to begin.",
+    cols: 2,
+  },
+  {
     id: "about",
     name: "About",
     icon: ABOUT,
@@ -69,7 +77,8 @@ export type SettingKind =
   | "shortcuts"
   | "emoji"
   | "about"
-  | "card-order";
+  | "card-order"
+  | "action";
 
 export { INTRA_FONT } from "../logtime/constants.ts";
 
@@ -375,6 +384,59 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       grid: true,
       colSpan: 2,
     },
+  ],
+  evaluations: [
+    {
+      feature: "evaluations",
+      key: "EVALUATIONS_NOTIFY_AS_EVALUATOR",
+      label: "Notify as evaluator",
+      desc: "Notifies you when you need to correct someone's project.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.EVALUATIONS_NOTIFY_AS_EVALUATOR,
+    },
+    {
+      feature: "evaluations",
+      key: "EVALUATIONS_NOTIFY_AS_EVALUATED",
+      label: "Notify as evaluated",
+      desc: "Notifies you when someone evaluates your project.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.EVALUATIONS_NOTIFY_AS_EVALUATED,
+    },
+    {
+      feature: "evaluations",
+      key: "EVALUATIONS_NOTIFY_REVEAL",
+      label: "15 min reminder",
+      desc: "Notifies you when evaluator/evaluated names are revealed.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.EVALUATIONS_NOTIFY_REVEAL,
+    },
+    // Discord disabled until bot is properly deployed
+    // { feature: "evaluations", label: "Discord", kind: "divider" },
+    // {
+    //   feature: "evaluations",
+    //   key: "DISCORD_ENABLED",
+    //   label: "Discord notifications",
+    //   desc: "Sends evaluation notifications to your Discord DMs via bot.",
+    //   kind: "toggle",
+    //   defaultValue: CONFIG_DEFAULT.DISCORD_ENABLED,
+    // },
+    // {
+    //   feature: "evaluations",
+    //   key: "DISCORD_ID",
+    //   label: "Discord User ID",
+    //   desc: "Your discord user id",
+    //   kind: "text",
+    //   placeholder: "123456789012345678",
+    //   defaultValue: CONFIG_DEFAULT.DISCORD_ID,
+    //   dependsOn: "DISCORD_ENABLED",
+    // },
+    // {
+    //   feature: "evaluations",
+    //   label: "Test Discord",
+    //   desc: "Send a test notification to your Discord DMs.",
+    //   kind: "action",
+    //   dependsOn: "DISCORD_ENABLED",
+    // },
   ],
   about: [
     {

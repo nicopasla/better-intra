@@ -38,7 +38,7 @@ function injectProfileCardStyles() {
 
     /* --- User Name --- */
     .ft-profile-card h2.text-2xl {
-      text-shadow: 0 1px 5px rgba(0,0,0,0.5), 0 0 8px var(--user-color-translucent, rgba(255,255,255,0.5));
+      text-shadow: 0 1px 5px rgba(0,0,0,0.5);
     }
 
     /* Level & Progress Bar Section */
@@ -55,7 +55,6 @@ function injectProfileCardStyles() {
       line-height: 1 !important;
       height: auto !important;
       color: var(--user-color, #fff);
-      text-shadow: 0 0 8px var(--user-color-translucent, rgba(255,255,255,0.5));
     }
 
     /* Progress bar container - now the liquid container */
@@ -109,12 +108,6 @@ function injectProfileCardStyles() {
       font-size: 0.8rem;
       padding: 2px 4px !important;
       border-radius: 4px;
-      background-color: rgba(0,0,0,0.2);
-      border: 1px solid rgba(255,255,255,0.1) !important;
-    }
-    .ft-profile-card button[role="combobox"]:hover {
-      background-color: rgba(0,0,0,0.4);
-      border-color: var(--user-color-translucent) !important;
     }
 
     /* --- Bottom Stats Bar (Wallets, Rank, Score) --- */
@@ -125,9 +118,7 @@ function injectProfileCardStyles() {
       padding: 0.5rem 1rem !important;
     }
 
-    .ft-profile-card .border-t-neutral-600 > div {
-      text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-    }
+
 
     .ft-profile-card .border-t-neutral-600 b {
       color: #a0aec0;

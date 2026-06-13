@@ -109,7 +109,7 @@ function findProjectsCard(): HTMLElement | null {
   return null;
 }
 
-function renderStatusIcon(container: HTMLElement, isValidated: boolean): void {
+export function renderStatusIcon(container: HTMLElement, isValidated: boolean): void {
   container.className = isValidated ? "text-green-500" : "text-red-500";
   render(
     isValidated
@@ -124,7 +124,7 @@ function renderStatusIcon(container: HTMLElement, isValidated: boolean): void {
   );
 }
 
-function createChevronElement(): SVGElement {
+export function createChevronElement(): SVGElement {
   const chevron = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   chevron.setAttribute("width", "18");
   chevron.setAttribute("height", "18");
@@ -142,7 +142,7 @@ function createChevronElement(): SVGElement {
   return chevron;
 }
 
-function createProjectLink(project: MarkedProject): HTMLAnchorElement {
+export function createProjectLink(project: MarkedProject): HTMLAnchorElement {
   const link = document.createElement("a");
   link.href = `https://projects.intra.42.fr/projects/${project.project_slug}/projects_users/${project.projects_user_id}`;
   link.target = "_blank";
@@ -154,7 +154,7 @@ function createProjectLink(project: MarkedProject): HTMLAnchorElement {
   return link;
 }
 
-function createTeamRow(project: MarkedProject, team: MarkedProject["teams"][0]): HTMLElement {
+export function createTeamRow(project: MarkedProject, team: MarkedProject["teams"][0]): HTMLElement {
   const row = document.createElement("div");
   row.className = "flex flex-row justify-between text-gray-400 hover:text-black hover:bg-gray-300 py-1 px-2";
 

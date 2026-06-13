@@ -3,7 +3,7 @@ import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { getConfig } from "../../config.ts";
 import { syncMyVisuals } from "../account/account.ts";
 import { applyImgs, injectCustomStyles, VisualUrls } from "./visuals.ts";
-import CSS from "../../assets/style.css?inline";
+import { sharedCSS } from "../../assets/shared-styles.ts";
 
 function handleLivePreview(e: Event) {
   const root = (e.target as HTMLElement).getRootNode() as ShadowRoot;
@@ -108,7 +108,7 @@ function renderPanelContent(
   return html`
     <style>
       :host { display: block; width: 100%; height: 100%; }
-      ${unsafeHTML(CSS)}
+      ${unsafeHTML(sharedCSS)}
     </style>
     <div
       data-theme="${currentTheme}"

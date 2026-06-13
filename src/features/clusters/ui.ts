@@ -1,6 +1,6 @@
 import { html, render } from "lit-html";
 import { CLUSTERS } from "./clusters.data.ts";
-import CSS from "../../assets/style.css?inline";
+import { sharedCSS } from "../../assets/shared-styles.ts";
 
 export function renderClusterPicker(
   currentId: string,
@@ -97,7 +97,7 @@ export function createShadowUI(
 
   const style = document.createElement("style");
   style.textContent = `
-    ${CSS}
+    ${sharedCSS}
     :host { display: inline-flex !important; align-items: center !important; }
     .tooltip { position: relative; display: inline-block; }
     .tooltip .tooltip-content {

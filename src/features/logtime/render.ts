@@ -8,7 +8,7 @@ import {
 } from "./constants";
 import { fmtHours, hexToRgba, safeLabelsColor } from "./utils";
 import { LogtimeConfig } from "./logtime";
-import CSS from "../../assets/style.css?inline";
+import { sharedCSS } from "../../assets/shared-styles.ts";
 import LOGTIME_CSS from "./logtime.css?inline";
 
 function renderDayCell(
@@ -250,7 +250,7 @@ export function renderContainer(
   const adjustedLabelsColor = safeLabelsColor(config.labels_color, theme);
 
   return html`<style>
-      ${CSS}
+      ${sharedCSS}
       ${LOGTIME_CSS}
       :host {
         --intra-font: ${INTRA_FONT};

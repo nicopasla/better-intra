@@ -18,7 +18,7 @@ import {
   type ShortcutLink,
 } from "../shortcuts/shortcuts.ui.ts";
 import { syncToCloud } from "../account/account.ts";
-import HUB_CSS from "../../assets/style.css?inline";
+import { sharedCSS } from "../../assets/shared-styles.ts";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
 import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
 import { renderAboutPanel } from "./hub.about.ts";
@@ -751,7 +751,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
       h3 {
         font-family: ${INTRA_FONT} !important;
       }
-      ${unsafeHTML(HUB_CSS)} .tab-content {
+      ${unsafeHTML(sharedCSS)} .tab-content {
         height: 100%;
         overflow-y: auto;
       }

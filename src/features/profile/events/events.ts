@@ -1,7 +1,7 @@
 import { html, render } from "lit-html";
 import { getConfig } from "../../../config.ts";
 import { HUB_SETTING_DEFS } from "../../hub/hubSettings.data.ts";
-import CSS from "../../../assets/style.css?inline";
+import { sharedCSS } from "../../../assets/shared-styles.ts";
 import eventData from "./events.belgium.json";
 
 export async function updateEventFilters() {
@@ -104,7 +104,7 @@ export async function injectEventsSelect() {
   const primaryColor = isDark ? "hsl(199 89% 48%)" : "#00babc";
   const style = document.createElement("style");
   style.textContent = `
-    ${CSS}
+    ${sharedCSS}
     :host {
       --base-100: var(--color-base-100);
       --base-content: var(--color-base-content);

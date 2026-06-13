@@ -1,6 +1,6 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
-import CSS from "../../assets/style.css?inline";
+import { sharedCSS } from "../../assets/shared-styles.ts";
 import {
   FriendData,
   addFriend,
@@ -321,7 +321,7 @@ function renderWidget(state: WidgetState) {
 
   return html`
     <style>
-      ${CSS} :host {
+      ${sharedCSS} :host {
         display: block;
       }
 

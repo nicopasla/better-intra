@@ -13,7 +13,6 @@ export async function initClusters() {
   let CONFIG: Config;
   let refreshQueued = false;
   let svgObserver: MutationObserver | null = null;
-  let bodyObserver: MutationObserver | null = null;
   let observedSvgRoot: SVGSVGElement | null = null;
 
   function refreshMarkersSoon() {
@@ -83,12 +82,6 @@ export async function initClusters() {
       }
     };
 
-    bodyObserver = new MutationObserver(() => {
-      findAndAttach();
-      injectUI(shadowHost);
-    });
-    bodyObserver.observe(document.body, { childList: true, subtree: true });
-
     findAndAttach();
     injectUI(shadowHost);
 
@@ -119,7 +112,6 @@ export async function initClusters() {
       "pagehide",
       () => {
         clearInterval(pollTimer);
-        if (bodyObserver) bodyObserver.disconnect();
         if (svgObserver) svgObserver.disconnect();
       },
       { once: true },

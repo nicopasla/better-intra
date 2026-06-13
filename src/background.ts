@@ -17,7 +17,10 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       "EVALUATIONS_NOTIFY_REVEAL",
     ]);
 
-    const activeScripts: string[] = parseJson(String(store.ACTIVE_SCRIPTS || "[]"), []);
+    const raw = store.ACTIVE_SCRIPTS;
+    const activeScripts: string[] = Array.isArray(raw)
+      ? raw
+      : parseJson(String(raw || "[]"), []);
     if (!activeScripts.includes("evaluations")) return;
 
     const token = String(store.CLOUD_TOKEN || "");
@@ -91,7 +94,10 @@ chrome.storage.onChanged.addListener((changes) => {
 
 async function syncRegistration() {
   const store = await chrome.storage.local.get(["ACTIVE_SCRIPTS", "CLOUD_TOKEN", "CLOUD_LOGIN"]);
-  const activeScripts: string[] = parseJson(String(store.ACTIVE_SCRIPTS || "[]"), []);
+  const raw = store.ACTIVE_SCRIPTS;
+  const activeScripts: string[] = Array.isArray(raw)
+    ? raw
+    : parseJson(String(raw || "[]"), []);
   const token = String(store.CLOUD_TOKEN || "");
   const cloudLogin = String(store.CLOUD_LOGIN || "");
   if (!token || !cloudLogin) return;

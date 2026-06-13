@@ -29,6 +29,13 @@ export async function initProfile() {
   await waitForBody();
 
   let isUpdating = false;
+  let needsRerun = false;
+
+  const scheduleUpdate = () => {
+    needsRerun = false;
+    requestAnimationFrame(() => updateUI());
+  };
+
   const updateUI = async () => {
     if (isUpdating) return;
     isUpdating = true;
@@ -49,21 +56,17 @@ export async function initProfile() {
       }
     } finally {
       isUpdating = false;
+      if (needsRerun) scheduleUpdate();
     }
   };
 
-  let pending = false;
   const observer = new MutationObserver(() => {
-    if (pending) return;
-    pending = true;
-    requestAnimationFrame(() => {
-      pending = false;
-      updateUI();
-    });
+    needsRerun = true;
+    if (!isUpdating) scheduleUpdate();
   });
   observer.observe(document.body, {
     childList: true,
     subtree: true,
   });
-  void updateUI();
+  scheduleUpdate();
 }

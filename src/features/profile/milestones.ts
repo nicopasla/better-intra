@@ -16,6 +16,7 @@ function enhanceMilestones() {
     let angle = 0;
 
     function animate() {
+      if (!milestone.isConnected) return;
       angle = (angle + 1.2) % 360;
       milestone.style.setProperty("--angle", `${angle}deg`);
       requestAnimationFrame(animate);

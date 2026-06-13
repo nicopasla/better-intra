@@ -306,7 +306,9 @@ export const updateVisuals = async () => {
       try {
         const cloudUrls = await fetchUserVisuals(targetLogin);
 
-        if (fetchForLogin !== lastUser) return;        if (
+        if (fetchForLogin !== lastUser) return;
+
+        if (
           cloudUrls &&
           (cloudUrls.avatar || cloudUrls.banner || cloudUrls.background)
         ) {

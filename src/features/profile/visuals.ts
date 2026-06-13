@@ -3,6 +3,7 @@ import { getCloudLogin, fetchUserVisuals } from "../account/account.ts";
 import { createSettingsModal } from "./profile.modal.ts";
 import { applyThemeToProfileCard } from "./profile-card.ts";
 import { applyPublicLogtimeSettings, initLogtime } from "../logtime/logtime.ts";
+import { AVATAR_SELECTOR, BANNER_SELECTOR, BACKGROUND_SELECTOR } from "./selectors.ts";
 
 export interface VisualUrls {
   avatar: string;
@@ -53,13 +54,13 @@ const hasBackground = (el: HTMLElement | null, url?: string) => {
 
 const needsReapply = (urls: VisualUrls) => {
   const avatar = document.querySelector(
-    "div.rounded-full.w-52.h-52",
+    AVATAR_SELECTOR,
   ) as HTMLElement | null;
   const banner = document.querySelector(
-    "div.border-neutral-600.bg-ft-gray\\/50",
+    BANNER_SELECTOR,
   ) as HTMLElement | null;
   const background = document.querySelector(
-    ".w-full.xl\\:h-72.bg-center.bg-cover.bg-ft-black",
+    BACKGROUND_SELECTOR,
   ) as HTMLElement | null;
 
   if (
@@ -87,14 +88,14 @@ export const injectCustomStyles = () => {
       display: flex; align-items: flex-start; justify-content: center;
       pointer-events: auto; padding-top: 12vh;       
     }
-    div.rounded-full.w-52.h-52 {
+    ${AVATAR_SELECTOR} {
       will-change: background-image, transform;
       transform: translate3d(0, 0, 0);
       backface-visibility: hidden;
       opacity: 0 !important;
     }
-    div.border-neutral-600.bg-ft-gray\\/50,
-    .w-full.xl\\:h-72.bg-center.bg-cover.bg-ft-black {
+    ${BANNER_SELECTOR},
+    ${BACKGROUND_SELECTOR} {
       will-change: background-image, transform;
       transform: translate3d(0, 0, 0);
       backface-visibility: hidden;
@@ -138,13 +139,13 @@ export const applyImgs = async (urls: VisualUrls | null) => {
   ]);
 
   const avatar = document.querySelector(
-    "div.rounded-full.w-52.h-52",
+    AVATAR_SELECTOR,
   ) as HTMLElement;
   const banner = document.querySelector(
-    "div.border-neutral-600.bg-ft-gray\\/50",
+    BANNER_SELECTOR,
   ) as HTMLElement;
   const background = document.querySelector(
-    ".w-full.xl\\:h-72.bg-center.bg-cover.bg-ft-black",
+    BACKGROUND_SELECTOR,
   ) as HTMLElement;
 
   if (avatar && !originalAvatarUrl) {
@@ -232,7 +233,7 @@ export const updateVisuals = async () => {
   injectCustomStyles();
 
   const avatarEl = document.querySelector(
-    "div.rounded-full.w-52.h-52",
+    AVATAR_SELECTOR,
   ) as HTMLElement;
 
   let myLogin = await getCloudLogin();
@@ -322,7 +323,7 @@ export const updateVisuals = async () => {
             avatarEl.addEventListener("click", (e) => {
               e.stopPropagation();
               const currentAvatar = document.querySelector(
-                "div.rounded-full.w-52.h-52",
+                AVATAR_SELECTOR,
               ) as HTMLElement;
               if (!currentAvatar) return;
 

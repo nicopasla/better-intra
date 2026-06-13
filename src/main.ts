@@ -5,6 +5,7 @@ import { initHubSettings } from "./features/hub/hubSettings.ts";
 import { initShortcuts } from "./features/shortcuts/shortcuts.ts";
 import { getConfig } from "./config.ts";
 import { initThemeManager } from "./features/profile/theme/theme-manager.ts";
+import { AVATAR_SELECTOR } from "./features/profile/selectors.ts";
 
 initThemeManager();
 
@@ -21,8 +22,8 @@ initThemeManager();
       for (const node of m.addedNodes) {
         if (!(node instanceof HTMLElement)) continue;
         let target: HTMLElement | null = null;
-        if (node.matches?.("div.rounded-full.w-52.h-52")) target = node;
-        else target = node.querySelector?.("div.rounded-full.w-52.h-52");
+        if (node.matches?.(AVATAR_SELECTOR)) target = node;
+        else target = node.querySelector?.(AVATAR_SELECTOR);
         if (target) {
           target.style.setProperty("opacity", "0", "important");
           obs.disconnect();
@@ -35,7 +36,7 @@ initThemeManager();
 }
 
 setTimeout(() => {
-  const el = document.querySelector<HTMLElement>("div.rounded-full.w-52.h-52");
+  const el = document.querySelector<HTMLElement>(AVATAR_SELECTOR);
   if (el) el.style.setProperty("opacity", "1", "important");
 }, 5000);
 
@@ -68,7 +69,7 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
   const waitForIntra = async () => {
     const target =
       document.getElementById("root") ||
-      document.querySelector("div.rounded-full.w-52.h-52") ||
+      document.querySelector(AVATAR_SELECTOR) ||
       document.querySelector("body");
 
     if (target) {

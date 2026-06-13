@@ -24,7 +24,7 @@
   },
   "incognito": "not_allowed",
   "host_permissions": [
-    "https://better-intra-worker.nicopasla.workers.dev/"
+    "https://better-intra-worker.nicopasla.workers.dev/*"
   ],
   "content_scripts": [
     {

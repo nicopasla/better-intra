@@ -30,6 +30,7 @@
       border-bottom: 1px solid #30363d;
       padding-bottom: 0.75rem;
       margin-bottom: 2rem;
+      align-items: center;
     }
     nav a { color: #8b949e; text-decoration: none; font-weight: 500; }
     nav a.active, nav a:hover { color: #f0f6fc; }
@@ -38,7 +39,7 @@
     h3 { font-size: 1.25em; margin-top: 1.5em; }
     a { color: #58a6ff; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    img { max-width: 100%; }
+    img { max-width: 100%; cursor: pointer; }
     code {
       background: #30363d;
       padding: 0.2em 0.4em;
@@ -77,8 +78,20 @@
       <a href="{{ '/' | relative_url }}" {% if page.url == '/' %}class="active"{% endif %}>Home</a>
       <a href="{{ '/PRIVACY' | relative_url }}" {% if page.url contains 'PRIVACY' %}class="active"{% endif %}>Privacy</a>
       <a href="{{ '/DEVELOPMENT' | relative_url }}" {% if page.url contains 'DEVELOPMENT' %}class="active"{% endif %}>Development</a>
+      <a href="https://github.com/nicopasla/better-intra" target="_blank" style="margin-left:auto">Repo →</a>
     </nav>
     {{ content }}
+    <script>
+      document.querySelectorAll("img").forEach(function (img) {
+        if (!img.closest("a")) {
+          var a = document.createElement("a");
+          a.href = img.src;
+          a.target = "_blank";
+          img.parentNode.insertBefore(a, img);
+          a.appendChild(img);
+        }
+      });
+    </script>
   </div>
 </body>
 </html>

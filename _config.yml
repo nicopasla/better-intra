@@ -6,6 +6,7 @@ plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
   - jekyll-default-layout
+  - jekyll-github-metadata
 relative_links:
   enabled: true
   collections: true

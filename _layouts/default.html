@@ -13,7 +13,7 @@
       font-size: 16px;
       line-height: 1.6;
       margin: 0;
-      padding: 2rem 1rem;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
     }
@@ -23,6 +23,25 @@
       background: #161b22;
       border-radius: 8px;
       padding: 3rem;
+      margin: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .content { flex: 1; }
+    .site-header {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .site-title { font-size: 2.2rem; font-weight: 700; color: #f0f6fc; }
+    .site-version {
+      font-size: 1rem;
+      color: #58a6ff;
+      background: #1b2535;
+      padding: 0.15em 0.6em;
+      border-radius: 4px;
+      font-weight: 500;
     }
     nav {
       display: flex;
@@ -68,32 +87,52 @@
     li { margin: 0.25em 0; }
     footer {
       margin-top: 3rem;
-      padding-top: 1rem;
+      padding: 1.5rem 0 0 0;
       border-top: 1px solid #30363d;
       display: flex;
-      gap: 1.5rem;
-      font-size: 0.85rem;
-      color: #8b949e;
+      gap: 2rem;
+      align-items: center;
+      font-size: 0.95rem;
     }
     footer a { color: #8b949e; text-decoration: none; }
     footer a:hover { color: #f0f6fc; }
+    .footer-right { margin-left: auto; color: #8b949e; }
     @media (max-width: 767px) {
-      body { padding: 0.5rem; }
-      .container { padding: 1.5rem; }
+      .container { margin: 0.5rem; padding: 1.5rem; }
+      footer { flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+      .footer-right { margin-left: 0; }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    {% if page.url == '/' %}
+    <div class="site-header">
+      <span class="site-title">Better Intra</span>
+      {% if site.github.latest_release %}
+      <span class="site-version">{{ site.github.latest_release.tag_name }}</span>
+      {% endif %}
+    </div>
+    {% endif %}
     <nav>
       <a href="{{ '/' | relative_url }}" {% if page.url == '/' %}class="active"{% endif %}>Home</a>
       <a href="{{ '/PRIVACY' | relative_url }}" {% if page.url contains 'PRIVACY' %}class="active"{% endif %}>Privacy</a>
       <a href="{{ '/DEVELOPMENT' | relative_url }}" {% if page.url contains 'DEVELOPMENT' %}class="active"{% endif %}>Development</a>
-      <a href="https://github.com/nicopasla/better-intra" target="_blank" style="margin-left:auto">Repo →</a>
+      {% if site.github.releases_url %}
+      <a href="{{ site.github.releases_url }}">Releases</a>
+      {% endif %}
+      <a href="{{ site.github.repository_url }}" target="_blank" style="margin-left:auto">Repo &rarr;</a>
     </nav>
-    {{ content }}
+    <div class="content">
+      {{ content }}
+    </div>
+    {% if page.url == '/' %}
+    <style>.content h1:first-of-type { display: none; }</style>
+    {% endif %}
     <script>
       document.querySelectorAll("img").forEach(function (img) {
+        img.loading = "lazy";
+        img.decoding = "async";
         if (!img.closest("a")) {
           var a = document.createElement("a");
           a.href = img.src;
@@ -104,9 +143,12 @@
       });
     </script>
     <footer>
-      <a href="https://github.com/nicopasla/better-intra">GitHub</a>
-      <a href="https://github.com/nicopasla/better-intra/issues">Issues</a>
-      <span style="margin-left:auto">MIT License</span>
+      <a href="{{ site.github.repository_url }}">GitHub</a>
+      <a href="{{ site.github.issues_url }}">Issues</a>
+      {% if site.github.latest_release %}
+      <a href="{{ site.github.latest_release.html_url }}">{{ site.github.latest_release.tag_name }}</a>
+      {% endif %}
+      <span class="footer-right">MIT License</span>
     </footer>
   </div>
 </body>

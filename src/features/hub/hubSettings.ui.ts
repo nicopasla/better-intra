@@ -1,7 +1,7 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { until } from "lit-html/directives/until.js";
-import { getConfig, type ConfigKey } from "../../config.ts";
+import { getConfig, CONFIG_DEFAULT, type ConfigKey } from "../../config.ts";
 import {
   FEATURE_DEFS,
   HUB_INFO,
@@ -423,7 +423,11 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             class="btn btn-accent btn-sm"
             ?disabled="${!enabled}"
             @click="${async (e: Event) => {
-              const store = await chrome.storage.local.get(["CLOUD_TOKEN", "CLOUD_LOGIN", "DISCORD_ID"]);
+              const store = await chrome.storage.local.get([
+                "CLOUD_TOKEN",
+                "CLOUD_LOGIN",
+                "DISCORD_ID",
+              ]);
               const token = String(store.CLOUD_TOKEN || "");
               const login = String(store.CLOUD_LOGIN || "");
               const discordId = String(store.DISCORD_ID || "");
@@ -439,7 +443,10 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                   "https://better-intra-worker.nicopasla.workers.dev/api/v1/private/discord/test",
                   {
                     method: "POST",
-                    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                      "Content-Type": "application/json",
+                    },
                     body: JSON.stringify({ login, discordId }),
                   },
                 );
@@ -454,9 +461,15 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                 btn.innerText = "✗ Network error";
                 btn.classList.add("btn-error");
               }
-              setTimeout(() => { btn.innerText = orig; btn.disabled = false; btn.classList.remove("btn-error"); }, 4000);
+              setTimeout(() => {
+                btn.innerText = orig;
+                btn.disabled = false;
+                btn.classList.remove("btn-error");
+              }, 4000);
             }}"
-          >${def.label}</button>`;
+          >
+            ${def.label}
+          </button>`;
 
         case "text":
           return html`<input
@@ -718,8 +731,11 @@ async function createModal(active: FeatureId[]): Promise<void> {
   const disabledDeps = new Set<string>();
   for (const defs of Object.values(HUB_SETTING_DEFS)) {
     for (const def of defs) {
-      if (def.dependsOn && def.key && !depValues[def.dependsOn])
-        disabledDeps.add(def.key);
+      if (def.dependsOn && def.key) {
+        const parentVal =
+          depValues[def.dependsOn] ?? CONFIG_DEFAULT[def.dependsOn];
+        if (!parentVal) disabledDeps.add(def.key);
+      }
     }
   }
 
@@ -869,22 +885,26 @@ async function createModal(active: FeatureId[]): Promise<void> {
     });
   });
 
-  const logtimePanel = shadow.querySelector<HTMLElement>(
-    '[data-feature-panel="logtime"]',
-  );
-  logtimePanel?.addEventListener("change", (e) => {
+  shadow.addEventListener("change", (e) => {
     const target = e.target as HTMLElement;
-    if (target.dataset.settingKey !== "LOGTIME_SHOW_TACOS") return;
-    const on = (target as HTMLInputElement).checked;
+    const parentKey = target.dataset.settingKey;
+    if (!parentKey) return;
+
     const depKeys: string[] = [];
     for (const defs of Object.values(HUB_SETTING_DEFS)) {
       for (const def of defs) {
-        if (def.dependsOn === "LOGTIME_SHOW_TACOS" && def.key)
-          depKeys.push(def.key);
+        if (def.dependsOn === parentKey && def.key) depKeys.push(def.key);
       }
     }
+    if (depKeys.length === 0) return;
+
+    const on =
+      target instanceof HTMLInputElement && target.type === "checkbox"
+        ? target.checked
+        : true;
+
     for (const key of depKeys) {
-      const el = logtimePanel.querySelector<HTMLElement>(
+      const el = shadow.querySelector<HTMLElement>(
         `[data-setting-key="${key}"]`,
       );
       if (!el) continue;

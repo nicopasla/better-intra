@@ -54,7 +54,7 @@ daisyUI is scoped to shadow DOM roots (see `style.css` `root:` config). Only the
 
 ## Testing
 
-There are no test scripts. No test framework is configured.
+Tests use Vitest with `jsdom` environment and global API. Run `npm test` (single pass) or `npm run test:watch` (watch mode). Test files: `tests/config.test.ts`, `tests/marks.test.ts`, `tests/visuals.test.ts`, `tests/friends.test.ts`. Setup: `tests/setup.ts`. Config: `vitest.config.ts`.
 
 ## Extension mechanics
 

@@ -106,11 +106,17 @@ export async function injectShortcutsDisplay() {
 }
 
 export function setupShortcutsObserver() {
+  if (!document.body) {
+    setTimeout(setupShortcutsObserver, 100);
+    return;
+  }
+
   let timer: ReturnType<typeof setTimeout> | undefined;
 
   const observer = new MutationObserver(() => {
-    if (timer) clearTimeout(timer);
+    if (timer) return;
     timer = setTimeout(() => {
+      timer = undefined;
       if (!document.getElementById(CONTAINER_ID)) {
         injectShortcutsDisplay();
       }
@@ -125,6 +131,6 @@ export function setupShortcutsObserver() {
 }
 
 export async function initShortcuts() {
-  await injectShortcutsDisplay();
   setupShortcutsObserver();
+  await injectShortcutsDisplay();
 }

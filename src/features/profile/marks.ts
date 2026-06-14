@@ -83,13 +83,7 @@ async function fetchMarks(
     });
     if (!res.ok) return [];
     const data = (await res.json()) as MarkedProject[];
-    return data
-      .filter((p) => p.final_mark !== null)
-      .sort(
-        (a, b) =>
-          new Date(b.last_event_date).getTime() -
-          new Date(a.last_event_date).getTime(),
-      );
+    return data.filter((p) => p.final_mark !== null);
   } catch {
     return [];
   }
@@ -104,17 +98,42 @@ function findProjectsCard(): HTMLElement | null {
   return null;
 }
 
-export function renderStatusIcon(container: HTMLElement, isValidated: boolean): void {
+export function renderStatusIcon(
+  container: HTMLElement,
+  isValidated: boolean,
+): void {
   container.className = isValidated ? "text-green-500" : "text-red-500";
   render(
     isValidated
-      ? html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>`
-      : html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x">
-            <path d="M18 6 6 18" />
-            <path d="m6 6 12 12" />
-          </svg>`,
+      ? html`<svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-check"
+        >
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>`
+      : html`<svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-x"
+        >
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" />
+        </svg>`,
     container,
   );
 }
@@ -131,7 +150,10 @@ export function createChevronElement(): SVGElement {
   chevron.setAttribute("stroke-linejoin", "round");
   chevron.classList.add("lucide", "lucide-chevron-down");
   chevron.style.transition = "transform 0.2s";
-  const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+  const polyline = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "polyline",
+  );
   polyline.setAttribute("points", "6 9 12 15 18 9");
   chevron.appendChild(polyline);
   return chevron;
@@ -143,15 +165,20 @@ export function createProjectLink(project: MarkedProject): HTMLAnchorElement {
   link.target = "_blank";
   link.rel = "noreferrer";
   link.className = "text-legacy-main hover:underline text-xs";
-  link.textContent = project.teams.length > 1
-    ? `${project.project_name} #${project.occurrence}`
-    : project.project_name;
+  link.textContent =
+    project.teams.length > 1
+      ? `${project.project_name} #${project.occurrence}`
+      : project.project_name;
   return link;
 }
 
-export function createTeamRow(project: MarkedProject, team: MarkedProject["teams"][0]): HTMLElement {
+export function createTeamRow(
+  project: MarkedProject,
+  team: MarkedProject["teams"][0],
+): HTMLElement {
   const row = document.createElement("div");
-  row.className = "flex flex-row justify-between text-gray-400 hover:text-black hover:bg-gray-300 py-1 px-2";
+  row.className =
+    "flex flex-row justify-between text-gray-400 hover:text-black hover:bg-gray-300 py-1 px-2";
 
   const left = document.createElement("div");
   left.className = "flex flex-row gap-1 items-center";
@@ -223,7 +250,8 @@ function injectMarks(marks: MarkedProject[]) {
       btn.style.fontWeight = "400";
 
       const row = document.createElement("div");
-      row.className = "flex flex-row justify-between hover:bg-gray-300 py-1 px-2";
+      row.className =
+        "flex flex-row justify-between hover:bg-gray-300 py-1 px-2";
 
       const left = document.createElement("div");
       left.className = "flex flex-row gap-1 items-center";
@@ -253,7 +281,9 @@ function injectMarks(marks: MarkedProject[]) {
       panel.style.padding = "0 12px";
       panel.style.borderTop = "1px solid rgba(128,128,128,0.1)";
 
-      const sortedTeams = [...project.teams].sort((a, b) => b.occurrence - a.occurrence);
+      const sortedTeams = [...project.teams].sort(
+        (a, b) => b.occurrence - a.occurrence,
+      );
       for (const team of sortedTeams) {
         panel.appendChild(createTeamRow(project, team));
       }
@@ -261,16 +291,18 @@ function injectMarks(marks: MarkedProject[]) {
       wrapper.appendChild(panel);
 
       const chevron = left.querySelector(".lucide-chevron-down") as HTMLElement;
-      btn.addEventListener("click", () => {
+      btn.onclick = (e) => {
+        e.preventDefault();
         expanded = !expanded;
         panel.style.display = expanded ? "block" : "none";
         if (chevron) chevron.style.transform = expanded ? "rotate(180deg)" : "";
-      });
+      };
 
       list.appendChild(wrapper);
     } else {
       const item = document.createElement("div");
-      item.className = "flex flex-row justify-between hover:bg-gray-300 py-1 px-2";
+      item.className =
+        "flex flex-row justify-between hover:bg-gray-300 py-1 px-2";
 
       const left = document.createElement("div");
       left.className = "flex flex-row gap-1 items-center";
@@ -319,6 +351,8 @@ function getLoginFromPage(): string | null {
 }
 
 export async function initMarks() {
+  if (document.getElementById(INJECTED_ID)) return;
+
   const showMarks = await getConfig("PROFILE_SHOW_MARKS");
   if (!showMarks) return;
 
@@ -337,7 +371,13 @@ export async function initMarks() {
   if (!marksCache) {
     marksCache = await fetchMarks(myLogin, token);
   }
-  const marks = marksCache;
+  const sortOrder = await getConfig("PROFILE_MARKS_SORT_ORDER");
+  const marks = [...marksCache].sort((a, b) => {
+    const diff =
+      new Date(a.last_event_date).getTime() -
+      new Date(b.last_event_date).getTime();
+    return sortOrder === "oldest_first" ? diff : -diff;
+  });
   if (marks.length === 0) return;
 
   const tryInject = () => {

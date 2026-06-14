@@ -301,6 +301,21 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
+      key: "PROFILE_MARKS_SORT_ORDER",
+      label: "Marks sort order",
+      desc: "Sort completed projects by date.",
+      kind: "select",
+      defaultValue: CONFIG_DEFAULT.PROFILE_MARKS_SORT_ORDER,
+      options: [
+        { label: "Newest first", value: "newest_first" },
+        { label: "Oldest first", value: "oldest_first" },
+      ],
+      grid: true,
+      colSpan: 1,
+      dependsOn: "PROFILE_SHOW_MARKS",
+    },
+    {
+      feature: "profile",
       key: "PROFILE_SLOTS_REDIRECTION",
       label: "Slots button redirection",
       desc: "Redirects the 'Manage slots' button to the proper Slots webpage.",

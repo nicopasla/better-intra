@@ -1,7 +1,7 @@
 {
   "name": "better-intra",
   "private": true,
-  "version": "1.1.5",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev:firefox": "concurrently \"npm run watch:firefox\" \"npm run web-ext:firefox\"",

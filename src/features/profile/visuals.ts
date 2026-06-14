@@ -41,6 +41,50 @@ const getVisualKey = (urls: VisualUrls) =>
     logtime: urls.logtime || null,
   });
 
+const CACHE_PREFIX = "visuals_cache_";
+const pendingRevalidations = new Set<string>();
+
+const getCachedVisuals = async (
+  login: string,
+): Promise<VisualUrls | null> => {
+  const result = (await chrome.storage.local.get(
+    `${CACHE_PREFIX}${login}`,
+  )) as Record<string, VisualUrls>;
+  return result[`${CACHE_PREFIX}${login}`] || null;
+};
+
+const setCachedVisuals = (login: string, urls: VisualUrls) => {
+  chrome.storage.local.set({ [`${CACHE_PREFIX}${login}`]: urls });
+};
+
+const revalidateVisuals = async (login: string, cached: VisualUrls) => {
+  if (pendingRevalidations.has(login)) return;
+  pendingRevalidations.add(login);
+  try {
+    const fresh = await fetchUserVisuals(login);
+    if (!fresh || login !== lastUser) return;
+    const freshKey = getVisualKey(fresh);
+    const cachedKey = getVisualKey(cached);
+    if (freshKey === cachedKey) {
+      setCachedVisuals(login, fresh);
+      return;
+    }
+    visualCache = fresh;
+    setCachedVisuals(login, fresh);
+    if (
+      lastAppliedUser === login &&
+      lastAppliedKey === freshKey &&
+      !needsReapply(fresh)
+    )
+      return;
+    applyImgs(fresh);
+    lastAppliedUser = login;
+    lastAppliedKey = freshKey;
+  } finally {
+    pendingRevalidations.delete(login);
+  }
+};
+
 const hasBackground = (el: HTMLElement | null, url?: string) => {
   if (!url) return true;
   if (!el) return false;
@@ -115,38 +159,34 @@ export const injectCustomStyles = () => {
   document.head.appendChild(style);
 };
 
-function preloadImage(url: string, timeout = 10000): Promise<boolean> {
-  return Promise.race([
-    new Promise<boolean>((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(true);
-      img.onerror = () => resolve(false);
-      img.src = url;
-    }),
-    new Promise<boolean>((resolve) =>
-      setTimeout(() => resolve(false), timeout),
-    ),
-  ]);
-}
+const setStyleForSelector = (
+  id: string,
+  selector: string,
+  cssText: string,
+) => {
+  let style = document.getElementById(id);
+  if (!style) {
+    style = document.createElement("style");
+    style.id = id;
+    document.head.appendChild(style);
+  }
+  style.textContent = selector ? `${selector} { ${cssText} }` : "";
+};
 
-export const applyImgs = async (urls: VisualUrls | null) => {
+const modeCss: Record<string, string> = {
+  fill: "background-size: cover !important; background-repeat: no-repeat !important; background-position: center !important;",
+  fit: "background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important;",
+  stretch: "background-size: 100% 100% !important; background-repeat: no-repeat !important; background-position: center !important;",
+  center: "background-size: auto !important; background-repeat: no-repeat !important; background-position: center !important;",
+  tile: "background-size: auto !important; background-repeat: repeat !important; background-position: top left !important;",
+};
+
+export const applyImgs = (urls: VisualUrls | null) => {
   if (!urls) return;
-
-  const [avatarLoaded, bannerLoaded, bgLoaded] = await Promise.all([
-    urls.avatar ? preloadImage(urls.avatar) : Promise.resolve(true),
-    urls.banner ? preloadImage(urls.banner) : Promise.resolve(true),
-    urls.background ? preloadImage(urls.background) : Promise.resolve(true),
-  ]);
 
   const avatar = document.querySelector(
     AVATAR_SELECTOR,
-  ) as HTMLElement;
-  const banner = document.querySelector(
-    BANNER_SELECTOR,
-  ) as HTMLElement;
-  const background = document.querySelector(
-    BACKGROUND_SELECTOR,
-  ) as HTMLElement;
+  ) as HTMLElement | null;
 
   if (avatar && !originalAvatarUrl) {
     const inlineStyle = avatar.style.backgroundImage;
@@ -172,50 +212,32 @@ export const applyImgs = async (urls: VisualUrls | null) => {
   }
 
   if (avatar && urls.avatar && !showingOriginalAvatar) {
-    if (avatarLoaded) {
-      avatar.style.setProperty(
-        "background-image",
-        `url("${urls.avatar}")`,
-        "important",
-      );
-    }
+    avatar.style.setProperty(
+      "background-image",
+      `url("${urls.avatar}")`,
+      "important",
+    );
   }
   if (avatar && !showingOriginalAvatar) {
     avatar.style.setProperty("opacity", "1", "important");
   }
 
-  if (banner && urls.banner && bannerLoaded) {
-    banner.style.setProperty(
-      "background-image",
-      `url("${urls.banner}")`,
-      "important",
-    );
-    banner.classList.remove(
-      "banner-mode-fill",
-      "banner-mode-fit",
-      "banner-mode-stretch",
-      "banner-mode-center",
-      "banner-mode-tile",
-    );
+  if (urls.banner) {
     const bannerMode = urls.bannerMode || "fill";
-    banner.classList.add(`banner-mode-${bannerMode}`);
+    setStyleForSelector(
+      "ft-banner-style",
+      BANNER_SELECTOR,
+      `background-image: url("${urls.banner}") !important; ${modeCss[bannerMode] || modeCss.fill}`,
+    );
   }
 
-  if (background && urls.background && bgLoaded) {
-    background.style.setProperty(
-      "background-image",
-      `url("${urls.background}")`,
-      "important",
-    );
-    background.classList.remove(
-      "bg-mode-fill",
-      "bg-mode-fit",
-      "bg-mode-stretch",
-      "bg-mode-center",
-      "bg-mode-tile",
-    );
+  if (urls.background) {
     const bgMode = urls.backgroundMode || "fill";
-    background.classList.add(`bg-mode-${bgMode}`);
+    setStyleForSelector(
+      "ft-bg-style",
+      BACKGROUND_SELECTOR,
+      `background-image: url("${urls.background}") !important; ${modeCss[bgMode] || modeCss.fill}`,
+    );
   }
 
   if (urls.theme) {
@@ -223,9 +245,42 @@ export const applyImgs = async (urls: VisualUrls | null) => {
   }
 
   if (urls.logtime) {
-    await initLogtime();
-    applyPublicLogtimeSettings(urls.logtime);
+    const logtime = urls.logtime;
+    initLogtime().then(() => applyPublicLogtimeSettings(logtime));
   }
+};
+
+const attachToggleListener = (avatarEl: HTMLElement) => {
+  if (avatarEl.dataset.toggleListener) return;
+  avatarEl.dataset.toggleListener = "true";
+  avatarEl.style.cursor = "pointer";
+  avatarEl.title = "Click to view original avatar";
+  avatarEl.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const currentAvatar = document.querySelector(
+      AVATAR_SELECTOR,
+    ) as HTMLElement;
+    if (!currentAvatar) return;
+    if (showingOriginalAvatar) {
+      showingOriginalAvatar = false;
+      if (visualCache?.avatar) {
+        currentAvatar.style.setProperty(
+          "background-image",
+          `url("${visualCache.avatar}")`,
+          "important",
+        );
+      }
+    } else {
+      showingOriginalAvatar = true;
+      if (originalAvatarUrl) {
+        currentAvatar.style.setProperty(
+          "background-image",
+          `url("${originalAvatarUrl}")`,
+          "important",
+        );
+      }
+    }
+  });
 };
 
 export const updateVisuals = async () => {
@@ -263,6 +318,7 @@ export const updateVisuals = async () => {
         e.stopPropagation();
         createSettingsModal((updatedVisuals) => {
           visualCache = updatedVisuals;
+          setCachedVisuals(targetLogin, updatedVisuals);
           applyImgs(visualCache);
           lastAppliedUser = targetLogin;
           lastAppliedKey = getVisualKey(visualCache);
@@ -277,7 +333,7 @@ export const updateVisuals = async () => {
     if (lastAppliedUser === targetLogin && lastAppliedKey === key && !reapply)
       return;
 
-    await applyImgs(visualCache);
+    applyImgs(visualCache);
     lastAppliedUser = targetLogin;
     lastAppliedKey = key;
     return;
@@ -296,65 +352,43 @@ export const updateVisuals = async () => {
       if (!visualCache.avatar && !visualCache.banner && !visualCache.background) {
         avatarEl.style.setProperty("opacity", "1", "important");
       } else {
-        await applyImgs(visualCache);
+        applyImgs(visualCache);
         lastAppliedUser = targetLogin;
         lastAppliedKey = getVisualKey(visualCache);
       }
     } else {
-      isFetching = true;
-      const fetchForLogin = targetLogin;
-      try {
-        const cloudUrls = await fetchUserVisuals(targetLogin);
+      const cached = await getCachedVisuals(targetLogin);
+      if (cached && (cached.avatar || cached.banner || cached.background)) {
+        visualCache = cached;
+        applyImgs(visualCache);
+        lastAppliedUser = targetLogin;
+        lastAppliedKey = getVisualKey(visualCache);
+        attachToggleListener(avatarEl);
+        revalidateVisuals(targetLogin, cached);
+      } else {
+        isFetching = true;
+        const fetchForLogin = targetLogin;
+        try {
+          const cloudUrls = await fetchUserVisuals(targetLogin);
 
-        if (fetchForLogin !== lastUser) return;
+          if (fetchForLogin !== lastUser) return;
 
-        if (
-          cloudUrls &&
-          (cloudUrls.avatar || cloudUrls.banner || cloudUrls.background)
-        ) {
-          visualCache = cloudUrls;
-          await applyImgs(visualCache);
-          lastAppliedUser = targetLogin;
-          lastAppliedKey = getVisualKey(visualCache);
-
-          if (!avatarEl.dataset.toggleListener) {
-            avatarEl.dataset.toggleListener = "true";
-            avatarEl.style.cursor = "pointer";
-            avatarEl.title = "Click to view original avatar";
-
-            avatarEl.addEventListener("click", (e) => {
-              e.stopPropagation();
-              const currentAvatar = document.querySelector(
-                AVATAR_SELECTOR,
-              ) as HTMLElement;
-              if (!currentAvatar) return;
-
-              if (showingOriginalAvatar) {
-                showingOriginalAvatar = false;
-                if (visualCache?.avatar) {
-                  currentAvatar.style.setProperty(
-                    "background-image",
-                    `url("${visualCache.avatar}")`,
-                    "important",
-                  );
-                }
-              } else {
-                showingOriginalAvatar = true;
-                if (originalAvatarUrl) {
-                  currentAvatar.style.setProperty(
-                    "background-image",
-                    `url("${originalAvatarUrl}")`,
-                    "important",
-                  );
-                }
-              }
-            });
+          if (
+            cloudUrls &&
+            (cloudUrls.avatar || cloudUrls.banner || cloudUrls.background)
+          ) {
+            visualCache = cloudUrls;
+            setCachedVisuals(targetLogin, cloudUrls);
+            applyImgs(visualCache);
+            lastAppliedUser = targetLogin;
+            lastAppliedKey = getVisualKey(visualCache);
+            attachToggleListener(avatarEl);
+          } else {
+            avatarEl.style.setProperty("opacity", "1", "important");
           }
-        } else {
-          avatarEl.style.setProperty("opacity", "1", "important");
+        } finally {
+          isFetching = false;
         }
-      } finally {
-        isFetching = false;
       }
     }
   }

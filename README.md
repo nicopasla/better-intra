@@ -47,12 +47,15 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 ### 👤 Profile
 
 * **Custom visuals** — set your own avatar, banner, and background images. **Click your avatar** on your profile page to open the customisation panel. See a live preview as you type the image URL.
-* **Visuals sync** — your custom images are visible to other Better Intra users when they view your profile. Click any custom avatar to see the original one.
+* **Visuals sync** — your custom images are visible to other Better Intra users when they view your profile. Click any custom avatar to see the original one. ☁️
+* **Instant profile visuals** — custom avatars, banners, and backgrounds are cached locally. After the first visit they appear instantly on any profile. Changes refresh silently in the background.
 * **Dashboard cards** — reorder your profile cards (Logtime, Agenda, Evaluations, Projects, Achievements) by dragging them. Hide cards you don't need.
 * **Profile card** — animated level bar with a wave effect, coloured to match your preference.
 * **Event filtering** — filter your agenda by campus and event type (e.g. exams, pedagogy, social).
 * **Slots redirection** — the "Manage slots" button takes you to the correct slots page.
 * **Achievement milestones** — completed achievements get a subtle animated glow.
+* **Completed projects (marks)** — the Projects card lists all your graded projects with dates and scores. Multi-attempt projects expand to show each attempt. Sort by newest or oldest first.
+* **Freeze alerts** — a freeze card appears on profiles of frozen students.
 * **Clickable seat label** — click someone's seat on their profile to open the cluster map with their seat highlighted and pulsating.
 
 ---
@@ -65,7 +68,27 @@ Quick-access links shown as colourful buttons on your profile page.
 * Buttons show the site's icon automatically if you don't set an emoji.
 * Text colour (black or white) is chosen automatically for readability.
 * **Drag to reorder** — drag the preview buttons in the settings panel to rearrange your links.
+* **Hide important links** — optionally hide the default Intra navigation links to give shortcuts the full width.
 * Set them up in the settings panel.
+
+---
+
+### 🔔 Evaluations ☁️
+
+Desktop notifications when your evaluations change state.
+
+* **State tracking** — notifies you when an evaluation is booked, revealed, or about to start.
+* **Background service** — checks for updates even when no intra pages are open.
+* **15‑minute reminder** — get a notification 15 minutes before slot reveals.
+* **Discord DMs** (optional) — receive notifications in your Discord DMs through the Better Intra bot.
+* Configure from the Evaluations tab in the Settings Hub.
+
+---
+
+### 🎨 Theme
+
+* **Dark / Light / System** — choose your preferred theme for the extension UI. Follows your system setting automatically when set to "System".
+* Set from the Settings Hub or the extension popup.
 
 ---
 
@@ -81,7 +104,7 @@ Quick-access links shown as colourful buttons on your profile page.
 
 ---
 
-### 👥 Friends
+### 👥 Friends ☁️
 
 A friends panel accessible from a button in the bottom-right corner of the page.
 
@@ -89,8 +112,8 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 * See each friend's **avatar, level bar, wallet, correction points, and online status**.
 * Click a friend's **location badge** to open the cluster map with their seat highlighted.
 * Sort by: online status, name, level, wallet, or evaluation points.
+* **Medal borders** — the top 3 friends (by chosen sort order) get gold, silver, and bronze borders.
 * The button shows a badge with the **number of friends currently online**.
-* **Requires cloud sync** — you must be logged in with your 42 account.
 * Data refreshes every 30 seconds; tap the refresh button to force an update.
 
 ---
@@ -99,7 +122,7 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 
 * All extension settings in one place.
 * Click the **gear icon** on the intra sidebar to open it.
-* Tabs: Logtime, Clusters, Profile, Shortcuts, About.
+* Tabs: Logtime, Clusters, Profile, Shortcuts, Evaluations, About.
 * Turn features on/off individually, or reset a feature's settings to default.
 
 

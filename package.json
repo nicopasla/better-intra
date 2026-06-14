@@ -18,20 +18,20 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@types/chrome": "^0.1.42",
+    "@types/chrome": "^0.1.43",
     "@vitest/ui": "^4.1.8",
-    "concurrently": "^10.0.0",
+    "concurrently": "^10.0.3",
     "cross-env": "^10.1.0",
-    "daisyui": "^5.5.20",
+    "daisyui": "^5.5.23",
     "jsdom": "^29.1.1",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.1",
     "typescript": "~6.0.3",
-    "vite": "^8.0.14",
+    "vite": "^8.0.16",
     "vitest": "^4.1.8",
-    "web-ext": "^10.3.0"
+    "web-ext": "^10.4.0"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.3.0",
+    "@tailwindcss/vite": "^4.3.1",
     "lit-html": "^3.3.3"
   }
 }

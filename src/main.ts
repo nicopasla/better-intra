@@ -3,7 +3,6 @@ import { initClusters } from "./features/clusters/clusters.ts";
 import { initProfile } from "./features/profile/profile.ts";
 import { initHubSettings } from "./features/hub/hubSettings.ts";
 import { initShortcuts } from "./features/shortcuts/shortcuts.ts";
-import { getConfig } from "./config.ts";
 import { initThemeManager } from "./features/profile/theme/theme-manager.ts";
 import { AVATAR_SELECTOR } from "./features/profile/selectors.ts";
 

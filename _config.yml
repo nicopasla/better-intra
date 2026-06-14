@@ -1,0 +1,11 @@
+theme: jekyll-theme-midnight
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
+include:
+  - README.md
+  - PRIVACY.md
+  - DEVELOPMENT.md
+  - CHROME_LISTING.md

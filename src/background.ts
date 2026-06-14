@@ -63,14 +63,17 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       const time = formatTime(notif.beginAt);
 
       if (notif.type === "booked") {
-        const project = notif.projectName || (notif.role === "evaluator" ? "a project" : "your project");
+        const project =
+          notif.projectName ||
+          (notif.role === "evaluator" ? "a project" : "your project");
         chrome.notifications.create({
           type: "basic",
           iconUrl: "icons/icon-128.png",
           title: "Evaluation booked",
-          message: notif.role === "evaluator"
-            ? `Evaluation for ${project} at ${time}`
-            : `${project} will be evaluated at ${time}`,
+          message:
+            notif.role === "evaluator"
+              ? `Evaluation for ${project} at ${time}`
+              : `${project} will be evaluated at ${time}`,
         });
       } else if (notif.type === "revealed" && notifyReveal) {
         const project = notif.projectName || "your project";
@@ -78,9 +81,10 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
           type: "basic",
           iconUrl: "icons/icon-128.png",
           title: "Evaluation",
-          message: notif.role === "evaluator"
-            ? `You're correcting ${notif.logins} for ${project} at ${time}`
-            : `${notif.login} is about to evaluate ${project} at ${time}`,
+          message:
+            notif.role === "evaluator"
+              ? `You're correcting ${notif.logins} for ${project} at ${time}`
+              : `${notif.login} is about to evaluate ${project} at ${time}`,
         });
       }
     }
@@ -89,7 +93,10 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
 chrome.storage.onChanged.addListener((changes) => {
   if ("ACTIVE_SCRIPTS" in changes) {
-    syncRegistration();
+    const { oldValue, newValue } = changes.ACTIVE_SCRIPTS;
+    if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+      syncRegistration();
+    }
   }
   if ("DISCORD_ENABLED" in changes || "DISCORD_ID" in changes) {
     syncDiscord();
@@ -97,7 +104,11 @@ chrome.storage.onChanged.addListener((changes) => {
 });
 
 async function syncRegistration() {
-  const store = await chrome.storage.local.get(["ACTIVE_SCRIPTS", "CLOUD_TOKEN", "CLOUD_LOGIN"]);
+  const store = await chrome.storage.local.get([
+    "ACTIVE_SCRIPTS",
+    "CLOUD_TOKEN",
+    "CLOUD_LOGIN",
+  ]);
   const raw = store.ACTIVE_SCRIPTS;
   const activeScripts: string[] = Array.isArray(raw)
     ? raw
@@ -107,7 +118,9 @@ async function syncRegistration() {
   if (!token || !cloudLogin) return;
 
   const hashedLogin = await hashLogin(cloudLogin);
-  const action = activeScripts.includes("evaluations") ? "register" : "unregister";
+  const action = activeScripts.includes("evaluations")
+    ? "register"
+    : "unregister";
   const url = `${WORKER_URL}/api/v1/private/evaluations?login=${encodeURIComponent(hashedLogin)}&action=${action}`;
 
   try {
@@ -118,7 +131,12 @@ async function syncRegistration() {
 }
 
 async function syncDiscord() {
-  const store = await chrome.storage.local.get(["CLOUD_TOKEN", "CLOUD_LOGIN", "DISCORD_ENABLED", "DISCORD_ID"]);
+  const store = await chrome.storage.local.get([
+    "CLOUD_TOKEN",
+    "CLOUD_LOGIN",
+    "DISCORD_ENABLED",
+    "DISCORD_ID",
+  ]);
   const token = String(store.CLOUD_TOKEN || "");
   const cloudLogin = String(store.CLOUD_LOGIN || "");
   if (!token || !cloudLogin) return;
@@ -127,28 +145,31 @@ async function syncDiscord() {
   const enabled = store.DISCORD_ENABLED === true;
   const discordId = String(store.DISCORD_ID || "").trim();
 
-    if (enabled && discordId) {
-      const url = `${WORKER_URL}/api/v1/private/discord/link?login=${encodeURIComponent(hashedLogin)}`;
-      try {
-        await fetch(url, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ discordId }),
-        });
-      } catch {
-        console.warn("syncDiscord: link fetch failed");
-      }
-    } else {
-      const url = `${WORKER_URL}/api/v1/private/discord/unlink?login=${encodeURIComponent(hashedLogin)}`;
-      try {
-        await fetch(url, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      } catch {
-        console.warn("syncDiscord: unlink fetch failed");
-      }
+  if (enabled && discordId) {
+    const url = `${WORKER_URL}/api/v1/private/discord/link?login=${encodeURIComponent(hashedLogin)}`;
+    try {
+      await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ discordId }),
+      });
+    } catch {
+      console.warn("syncDiscord: link fetch failed");
     }
+  } else {
+    const url = `${WORKER_URL}/api/v1/private/discord/unlink?login=${encodeURIComponent(hashedLogin)}`;
+    try {
+      await fetch(url, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch {
+      console.warn("syncDiscord: unlink fetch failed");
+    }
+  }
 }
 
 function createAlarm() {
@@ -164,7 +185,11 @@ function createAlarm() {
 }
 
 function parseJson<T>(raw: string, fallback: T): T {
-  try { return JSON.parse(raw); } catch { return fallback; }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
 }
 
 function formatTime(iso: string): string {

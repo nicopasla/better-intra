@@ -181,19 +181,22 @@ export function createTeamRow(
     "flex flex-row justify-between text-gray-400 hover:text-black hover:bg-gray-300 py-1 px-2";
 
   const left = document.createElement("div");
-  left.className = "flex flex-row gap-1 items-center";
+  left.className = "flex flex-row gap-1 items-center flex-1";
   const label = document.createElement("span");
   label.className = "text-xs";
   label.textContent = `${project.project_name} #${team.occurrence}`;
   left.appendChild(label);
   const date = document.createElement("span");
   date.className = "text-xs opacity-60";
+  date.style.cssText =
+    "margin-left: auto; min-width: 170px; text-align: right; flex-shrink: 0; margin-right: 12px;";
   date.textContent = formatDate(team.last_event_date);
   left.appendChild(date);
   row.appendChild(left);
 
   const right = document.createElement("p");
   right.className = "text-xs flex flex-row items-center gap-1";
+  right.style.minWidth = "52px";
   const icon = document.createElement("div");
   renderStatusIcon(icon, team.is_validated);
   right.appendChild(icon);
@@ -254,17 +257,20 @@ function injectMarks(marks: MarkedProject[]) {
         "flex flex-row justify-between hover:bg-gray-300 py-1 px-2";
 
       const left = document.createElement("div");
-      left.className = "flex flex-row gap-1 items-center";
+      left.className = "flex flex-row gap-1 items-center flex-1";
       left.appendChild(createProjectLink(project));
+      left.appendChild(createChevronElement());
       const time = document.createElement("span");
       time.className = "text-xs opacity-60";
+      time.style.cssText =
+        "margin-left: auto; min-width: 170px; text-align: right; flex-shrink: 0; margin-right: 12px;";
       time.textContent = formatDate(project.last_event_date);
       left.appendChild(time);
-      left.appendChild(createChevronElement());
       row.appendChild(left);
 
       const right = document.createElement("div");
       right.className = "text-xs flex flex-row items-center";
+      right.style.minWidth = "52px";
       const iconWrap = document.createElement("div");
       renderStatusIcon(iconWrap, project.is_validated);
       right.appendChild(iconWrap);
@@ -278,7 +284,7 @@ function injectMarks(marks: MarkedProject[]) {
       const panel = document.createElement("div");
       panel.id = uid;
       panel.style.display = "none";
-      panel.style.padding = "0 12px";
+      panel.style.padding = "0 0 0 12px";
       panel.style.borderTop = "1px solid rgba(128,128,128,0.1)";
 
       const sortedTeams = [...project.teams].sort(
@@ -292,6 +298,11 @@ function injectMarks(marks: MarkedProject[]) {
 
       const chevron = left.querySelector(".lucide-chevron-down") as HTMLElement;
       btn.onclick = (e) => {
+        if (
+          e.target instanceof HTMLAnchorElement ||
+          (e.target as HTMLElement).closest("a")
+        )
+          return;
         e.preventDefault();
         expanded = !expanded;
         panel.style.display = expanded ? "block" : "none";
@@ -305,16 +316,19 @@ function injectMarks(marks: MarkedProject[]) {
         "flex flex-row justify-between hover:bg-gray-300 py-1 px-2";
 
       const left = document.createElement("div");
-      left.className = "flex flex-row gap-1 items-center";
+      left.className = "flex flex-row gap-1 items-center flex-1";
       left.appendChild(createProjectLink(project));
       const time = document.createElement("span");
       time.className = "text-xs opacity-60";
+      time.style.cssText =
+        "margin-left: auto; min-width: 170px; text-align: right; flex-shrink: 0; margin-right: 12px;";
       time.textContent = formatDate(project.last_event_date);
       left.appendChild(time);
       item.appendChild(left);
 
       const right = document.createElement("div");
       right.className = "text-xs flex flex-row items-center";
+      right.style.minWidth = "52px";
       const iconWrap = document.createElement("div");
       renderStatusIcon(iconWrap, project.is_validated);
       right.appendChild(iconWrap);

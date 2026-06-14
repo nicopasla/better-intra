@@ -27,22 +27,23 @@ Output goes to `dist-firefox/` or `dist-chrome/`.
 
 ## Build pipeline
 
-Always `tsc` (type-check only, `noEmit`) → `vite build` (content script) → `vite build --config vite.popup.config.ts` (popup).
+Always `tsc` (type-check only, `noEmit`) → `vite build` (content script) → `vite build --config vite.popup.config.ts` (popup) → `vite build --config vite.background.config.ts` (background service worker).
 
 ```bash
-cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build && cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build --config vite.popup.config.ts
+cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build && cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build --config vite.popup.config.ts && cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build --config vite.background.config.ts
 ```
 
-- `content.js` is bundled as IIFE. `popup.js` is bundled separately.
+- `content.js` is bundled as IIFE. `popup.js` is bundled separately. `background.js` is bundled as IIFE.
 - `manifest.json` is generated from `manifests/manifest.{chrome,firefox}.json` with version from `package.json`.
 - Icons are copied from `public/icons/` on build. To regenerate: `node scripts/generate-icons.js` (requires `sharp`).
 
 ## Project structure
 
 - `src/main.ts` — content script entrypoint. Feature init via `featureInitializers` map.
+- `src/background.ts` — background service worker for evaluations notifications.
 - `src/popup/popup.ts` — popup entrypoint (account/cloud sync UI).
-- `src/features/` — self-contained features (logtime, clusters, profile, shortcuts, account, friends, hub).
-- `src/config.ts` — single source of truth for all `chrome.storage` keys.
+- `src/features/` — self-contained features: `logtime/`, `clusters/`, `profile/` (visuals, marks, freeze, milestones, layout, theme), `shortcuts/`, `account/`, `friends/`, `hub/`.
+- `src/config.ts` — single source of truth for all `chrome.storage` keys; typed `BetterIntraConfig` interface + defaults.
 - `manifests/` — per-browser manifest templates.
 - `better-intra-worker/` — separate Cloudflare Worker (wrangler) for cloud sync. Has its own `package.json`.
 
@@ -57,12 +58,47 @@ cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && cross-env TARGET=fire
 
 ## Worker
 
+The Cloudflare Worker (`better-intra-worker/`) handles cloud settings sync, friend data, and evaluation notifications. It has its own `package.json`.
+
+### Commands
+
 ```bash
 cd better-intra-worker
 npm install
 npm run dev       # wrangler dev
 npm run deploy    # wrangler deploy --remote
 ```
+
+### KV namespaces
+
+- **`BETTER_INTRA_KV`** — user data (session tokens, settings, encrypted 42 token, project map, friend IDs cache, online cache).
+- **`EVAL_KV`** — evaluation state keys (`EVAL_{hash}_{id}_role`), pending notifications (`PENDING_{hash}`), enabled users list, Discord-linked users list.
+
+### Secrets
+
+```bash
+npx wrangler secret put DISCORD_BOT_TOKEN
+```
+
+### Evaluations architecture
+
+Worker cron (`*/5 * * * *`) fetches 42 API `/v2/me/scale_teams` for each user, detects state changes (`null → booked → revealed`), sends Discord DMs, and stores pending notifications in `EVAL_KV`. The extension's background service worker polls `/evaluations?action=pending` every 5 minutes and shows Chrome notifications from the pending list.
+
+## Testing
+
+Tests use [Vitest](https://vitest.dev/) with `jsdom` environment. Test files are in `tests/`.
+
+```bash
+npm test           # vitest run (single pass)
+npm run test:watch # vitest (watch mode)
+```
+
+Test files: `config.test.ts`, `marks.test.ts`, `visuals.test.ts`, `friends.test.ts`. Global setup is in `tests/setup.ts`.
+
+## Coding conventions
+
+- **No `innerHTML`** — use `lit-html` (`render`, `unsafeHTML`) for all DOM templating.
+- Features register in the `featureInitializers` map in `src/main.ts`.
 
 ## CI
 

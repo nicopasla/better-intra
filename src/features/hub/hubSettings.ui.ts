@@ -559,7 +559,7 @@ function renderDiscordPanel() {
                   </div>
                   <input
                     type="checkbox"
-                    class="toggle toggle-success shrink-0"
+                    class="toggle toggle-lg toggle-accent"
                     .checked="${discordEnabled}"
                     @change="${(e: Event) => {
                       chrome.storage.local.set({
@@ -571,9 +571,13 @@ function renderDiscordPanel() {
                 </div>
               </div>
               <div
-                class="card bg-base-300/50 p-3 sm:p-4 flex flex-col gap-3"
+                class="card bg-base-300/50 p-3 sm:p-4 flex flex-col gap-3 justify-center"
               >
-                ${discordId
+                ${!enabled
+                  ? html`<span class="text-sm opacity-50"
+                      >Turn on notifications to connect</span
+                    >`
+                  : discordId
                   ? html`
                       <div
                         class="flex items-center justify-between gap-3 flex-wrap"

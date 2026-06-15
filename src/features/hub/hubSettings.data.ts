@@ -51,6 +51,7 @@ export const FEATURE_DEFS = [
     icon: SLOT,
     desc: "Notifies you when an evaluation is about to begin.",
     cols: 2,
+    requiresCloud: true,
   },
   {
     id: "about",
@@ -96,6 +97,7 @@ export type HubSettingDef = {
   colSpan?: number;
   fullWidth?: boolean;
   dependsOn?: ConfigKey;
+  requiresCloud?: boolean;
   min?: number;
   max?: number;
   step?: number;
@@ -299,6 +301,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       defaultValue: CONFIG_DEFAULT.PROFILE_SHOW_MARKS,
       grid: true,
       colSpan: 1,
+      requiresCloud: true,
     },
     {
       feature: "profile",
@@ -314,6 +317,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       grid: true,
       colSpan: 1,
       dependsOn: "PROFILE_SHOW_MARKS",
+      requiresCloud: true,
     },
     {
       feature: "profile",
@@ -410,6 +414,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.EVALUATIONS_NOTIFY_AS_EVALUATOR,
       colSpan: 1,
+      requiresCloud: true,
     },
     {
       feature: "evaluations",
@@ -419,6 +424,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.EVALUATIONS_NOTIFY_REVEAL,
       colSpan: 1,
+      requiresCloud: true,
     },
     { feature: "evaluations", label: "Discord", kind: "divider" },
     {
@@ -427,6 +433,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       desc: "Notifications and account connection.",
       kind: "discord-panel",
       fullWidth: true,
+      requiresCloud: true,
     },
   ],
   about: [

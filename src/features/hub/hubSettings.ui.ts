@@ -19,10 +19,12 @@ import {
   type ShortcutLink,
 } from "../shortcuts/shortcuts.ui.ts";
 import { syncToCloud } from "../account/account.ts";
+import { loginWith42 } from "../account/account.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
 import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
 import DISCORD_SVG from "../../assets/svg/discord.svg?raw";
+import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 import { renderAboutPanel } from "./hub.about.ts";
 
 export async function openHubModal(active: FeatureId[]) {
@@ -290,7 +292,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
     return container;
   }
 
-  if (def.kind === "discord-panel") return renderDiscordPanel();
+  if (def.kind === "discord-panel") return renderDiscordPanel(enabled);
 
   return until(
     (async () => {
@@ -448,7 +450,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
   );
 }
 
-function renderDiscordPanel() {
+function renderDiscordPanel(panelEnabled: boolean) {
   const renderPanel = (el: Element | undefined) => {
     if (!el) return;
     const container = el as HTMLElement;
@@ -474,7 +476,7 @@ function renderDiscordPanel() {
       const login = String(store.CLOUD_LOGIN || "");
       const discordId = String(store.DISCORD_ID || "");
       const discordUsername = String(store.DISCORD_USERNAME || "");
-      const enabled = !!discordEnabled;
+      const discordOn = !!discordEnabled;
 
       const authUrl =
         token && login
@@ -485,7 +487,7 @@ function renderDiscordPanel() {
 
       render(
         html`
-          <div class="card bg-base-200 shadow-sm p-3 sm:p-4 col-span-full">
+          <div class="card bg-base-200 shadow-sm p-3 sm:p-4 col-span-full ${panelEnabled ? "" : "opacity-40 grayscale"}">
             <div class="flex items-center justify-between gap-3 mb-4">
               <div class="flex items-baseline gap-2">
                 <span class="text-sm">Discord</span>
@@ -497,6 +499,7 @@ function renderDiscordPanel() {
                 ? html`<button
                     type="button"
                     class="btn btn-accent btn-sm"
+                    ?disabled="${!panelEnabled}"
                     @click="${async (e: Event) => {
                       const btn = e.target as HTMLButtonElement;
                       const orig = btn.innerText;
@@ -560,6 +563,7 @@ function renderDiscordPanel() {
                   <input
                     type="checkbox"
                     class="toggle toggle-lg toggle-accent"
+                    ?disabled="${!panelEnabled}"
                     .checked="${discordEnabled}"
                     @change="${(e: Event) => {
                       chrome.storage.local.set({
@@ -573,7 +577,7 @@ function renderDiscordPanel() {
               <div
                 class="card bg-base-300/50 p-3 sm:p-4 flex flex-col gap-3 justify-center"
               >
-                ${!enabled
+                ${!discordOn
                   ? html`<span class="text-sm opacity-50"
                       >Turn on notifications to connect</span
                     >`
@@ -590,6 +594,7 @@ function renderDiscordPanel() {
                         <button
                           type="button"
                           class="btn btn-error btn-xs btn-outline"
+                          ?disabled="${!panelEnabled}"
                           @click="${async (e: Event) => {
                             const btn =
                               e.target as HTMLButtonElement;
@@ -606,13 +611,29 @@ function renderDiscordPanel() {
                       </div>
                     `
                   : !token || !login
-                    ? html`<span class="text-sm opacity-50"
-                        >Connect your 42 account first in the
-                        popup</span
-                      >`
+                    ? html`<button
+                        type="button"
+                        class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
+                        @click="${() => {
+                          loginWith42(() =>
+                            window.location.reload(),
+                          );
+                        }}"
+                      >
+                        <span
+                          class="font-bold tracking-wide"
+                          >Connect with</span
+                        >
+                        <span
+                          class="size-8 flex items-center justify-center [&_path]:fill-current"
+                        >
+                          ${unsafeHTML(FORTY_TWO_SVG)}
+                        </span>
+                      </button>`
                     : html`<button
                         type="button"
                         class="btn bg-[#5865F2] text-white border-none hover:bg-[#4752C4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
+                        ?disabled="${!panelEnabled}"
                         @click="${() => {
                           window.open(authUrl, "_blank");
                         }}"
@@ -746,11 +767,17 @@ const GRID_COLS_CLASSES = ["", "", "md:grid-cols-2", "md:grid-cols-3"] as const;
 function renderTabsContent(active: FeatureId[], disabledDeps: Set<string>) {
   return FEATURE_DEFS.map((f, idx) => {
     const enabled = active.includes(f.id);
+    const cloudDisabled =
+      "requiresCloud" in f &&
+      (f as { requiresCloud?: boolean }).requiresCloud &&
+      disabledDeps.has("__CLOUD__");
     const settings = (HUB_SETTING_DEFS[f.id] || []).map((def) =>
       renderSetting(
         def,
         f.id === "about" ||
-          (enabled && !(def.key && disabledDeps.has(def.key))),
+          (enabled &&
+            !(def.key && disabledDeps.has(def.key)) &&
+            !(def.requiresCloud && disabledDeps.has("__CLOUD__"))),
       ),
     );
     const gridColsClass =
@@ -771,7 +798,9 @@ function renderTabsContent(active: FeatureId[], disabledDeps: Set<string>) {
       >
         <div
           class="flex flex-col ${enabled || f.id === "about"
-            ? ""
+            ? cloudDisabled
+              ? "opacity-40 grayscale"
+              : ""
             : "opacity-40 grayscale"}"
           data-feature-panel="${f.id}"
         >
@@ -798,20 +827,47 @@ function renderTabsContent(active: FeatureId[], disabledDeps: Set<string>) {
                       type="checkbox"
                       class="toggle toggle-xl toggle-primary hub-feature-toggle"
                       data-id="${f.id}"
-                      ?checked="${enabled}"
+                      ?checked="${enabled && !cloudDisabled}"
+                      ?disabled="${cloudDisabled}"
                     />
                   </div>
                 </div>
               `
             : ""}
 
-          <div
-            class="${f.id === "about"
-              ? "p-6 w-full"
-              : `grid grid-cols-1 ${gridColsClass} gap-4 p-6`}"
-          >
-            ${settings}
-          </div>
+          ${cloudDisabled
+            ? html`<div
+                class="flex flex-col items-center justify-center gap-4 py-16 px-6 text-center"
+              >
+                <span
+                  class="size-14 opacity-40 flex items-center justify-center [&_path]:fill-current"
+                  >${unsafeHTML(FORTY_TWO_SVG)}</span
+                >
+                <p class="opacity-50 max-w-72 text-sm">
+                  Connect your 42 account to unlock this feature.
+                </p>
+                <button
+                  type="button"
+                  class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
+                  @click="${() => {
+                    loginWith42(() => window.location.reload());
+                  }}"
+                >
+                  <span class="font-bold tracking-wide">Connect with</span>
+                  <span
+                    class="size-8 flex items-center justify-center [&_path]:fill-current"
+                  >
+                    ${unsafeHTML(FORTY_TWO_SVG)}
+                  </span>
+                </button>
+              </div>`
+            : html`<div
+                class="${f.id === "about"
+                  ? "p-6 w-full"
+                  : `grid grid-cols-1 ${gridColsClass} gap-4 p-6`}"
+              >
+                ${settings}
+              </div>`}
         </div>
       </div>`;
   });
@@ -893,6 +949,15 @@ async function createModal(active: FeatureId[]): Promise<void> {
         const parentVal =
           depValues[def.dependsOn] ?? CONFIG_DEFAULT[def.dependsOn];
         if (!parentVal) disabledDeps.add(def.key);
+      }
+    }
+  }
+  const cloudToken = await getConfig("CLOUD_TOKEN");
+  if (!cloudToken) {
+    disabledDeps.add("__CLOUD__");
+    for (const defs of Object.values(HUB_SETTING_DEFS)) {
+      for (const def of defs) {
+        if (def.requiresCloud && def.key) disabledDeps.add(def.key);
       }
     }
   }

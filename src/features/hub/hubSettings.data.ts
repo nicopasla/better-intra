@@ -78,7 +78,8 @@ export type SettingKind =
   | "emoji"
   | "about"
   | "card-order"
-  | "action";
+  | "action"
+  | "discord-panel";
 
 export { INTRA_FONT } from "../logtime/constants.ts";
 
@@ -408,6 +409,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       desc: "Notifies you when you need to correct someone's project.",
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.EVALUATIONS_NOTIFY_AS_EVALUATOR,
+      colSpan: 1,
     },
     {
       feature: "evaluations",
@@ -416,34 +418,16 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       desc: "Notifies you when corrected names are revealed.",
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.EVALUATIONS_NOTIFY_REVEAL,
+      colSpan: 1,
     },
-    // Discord disabled until bot is properly deployed
-    // { feature: "evaluations", label: "Discord", kind: "divider" },
-    // {
-    //   feature: "evaluations",
-    //   key: "DISCORD_ENABLED",
-    //   label: "Discord notifications",
-    //   desc: "Sends evaluation notifications to your Discord DMs via bot.",
-    //   kind: "toggle",
-    //   defaultValue: CONFIG_DEFAULT.DISCORD_ENABLED,
-    // },
-    // {
-    //   feature: "evaluations",
-    //   key: "DISCORD_ID",
-    //   label: "Discord User ID",
-    //   desc: "Your discord user id",
-    //   kind: "text",
-    //   placeholder: "123456789012345678",
-    //   defaultValue: CONFIG_DEFAULT.DISCORD_ID,
-    //   dependsOn: "DISCORD_ENABLED",
-    // },
-    // {
-    //   feature: "evaluations",
-    //   label: "Test Discord",
-    //   desc: "Send a test notification to your Discord DMs.",
-    //   kind: "action",
-    //   dependsOn: "DISCORD_ENABLED",
-    // },
+    { feature: "evaluations", label: "Discord", kind: "divider" },
+    {
+      feature: "evaluations",
+      label: "Discord",
+      desc: "Notifications and account connection.",
+      kind: "discord-panel",
+      fullWidth: true,
+    },
   ],
   about: [
     {

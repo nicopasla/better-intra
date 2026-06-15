@@ -245,7 +245,14 @@ export async function fetchMySettings(): Promise<Partial<BetterIntraConfig> | nu
     );
     if (!(await handleAuthResponse(response))) return null;
     const data = (await response.json()) as any;
-    return data.settings || null;
+    const settings = data.settings || {};
+    if (data.discordId && !settings.DISCORD_ID) {
+      (settings as Record<string, unknown>).DISCORD_ID = data.discordId;
+    }
+    if (data.discordUsername && !settings.DISCORD_USERNAME) {
+      (settings as Record<string, unknown>).DISCORD_USERNAME = data.discordUsername;
+    }
+    return settings as Partial<BetterIntraConfig>;
   } catch (error) {
     console.error("Fetch settings failed:", error);
     return null;

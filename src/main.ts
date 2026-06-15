@@ -65,6 +65,19 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
     return;
   }
 
+  const discordId = oauthParams.get("discord_id");
+  const discordUsername = oauthParams.get("discord_username");
+  if (discordId) {
+    await chrome.storage.local.set({
+      DISCORD_ID: discordId,
+      DISCORD_ENABLED: true,
+      DISCORD_USERNAME: discordUsername || "",
+    });
+    history.replaceState(null, "", window.location.pathname);
+    window.close();
+    return;
+  }
+
   const waitForIntra = async () => {
     const target =
       document.getElementById("root") ||

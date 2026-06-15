@@ -68,6 +68,7 @@ export interface BetterIntraConfig {
   EVALUATIONS_NOTIFY_REVEAL: boolean;
   DISCORD_ENABLED: boolean;
   DISCORD_ID: string;
+  DISCORD_USERNAME: string;
 }
 
 /**
@@ -133,6 +134,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   EVALUATIONS_NOTIFY_REVEAL: false,
   DISCORD_ENABLED: false,
   DISCORD_ID: "",
+  DISCORD_USERNAME: "",
 };
 
 /**
@@ -180,6 +182,7 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "EVALUATIONS_NOTIFY_REVEAL",
   "DISCORD_ENABLED",
   "DISCORD_ID",
+  "DISCORD_USERNAME",
 ];
 
 /**

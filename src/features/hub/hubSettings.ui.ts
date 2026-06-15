@@ -1,6 +1,7 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { until } from "lit-html/directives/until.js";
+import { ref } from "lit-html/directives/ref.js";
 import { getConfig, CONFIG_DEFAULT, type ConfigKey } from "../../config.ts";
 import {
   FEATURE_DEFS,
@@ -21,6 +22,7 @@ import { syncToCloud } from "../account/account.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
 import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
+import DISCORD_SVG from "../../assets/svg/discord.svg?raw";
 import { renderAboutPanel } from "./hub.about.ts";
 
 export async function openHubModal(active: FeatureId[]) {
@@ -288,6 +290,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
     return container;
   }
 
+  if (def.kind === "discord-panel") return renderDiscordPanel();
+
   return until(
     (async () => {
       const value = def.key
@@ -417,60 +421,6 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             </label>
           </div>`;
 
-        case "action":
-          return html`<button
-            type="button"
-            class="btn btn-accent btn-sm"
-            ?disabled="${!enabled}"
-            @click="${async (e: Event) => {
-              const store = await chrome.storage.local.get([
-                "CLOUD_TOKEN",
-                "CLOUD_LOGIN",
-                "DISCORD_ID",
-              ]);
-              const token = String(store.CLOUD_TOKEN || "");
-              const login = String(store.CLOUD_LOGIN || "");
-              const discordId = String(store.DISCORD_ID || "");
-              if (!token || !login || !discordId) return;
-
-              const btn = e.target as HTMLButtonElement;
-              const orig = btn.innerText;
-              btn.innerText = "Sending...";
-              btn.disabled = true;
-
-              try {
-                const res = await fetch(
-                  "https://better-intra-worker.nicopasla.workers.dev/api/v1/private/discord/test",
-                  {
-                    method: "POST",
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ login, discordId }),
-                  },
-                );
-                if (res.ok) {
-                  btn.innerText = "✓ Sent!";
-                } else {
-                  const err = await res.text();
-                  btn.innerText = `✗ ${err.slice(0, 40)}`;
-                  btn.classList.add("btn-error");
-                }
-              } catch {
-                btn.innerText = "✗ Network error";
-                btn.classList.add("btn-error");
-              }
-              setTimeout(() => {
-                btn.innerText = orig;
-                btn.disabled = false;
-                btn.classList.remove("btn-error");
-              }, 4000);
-            }}"
-          >
-            ${def.label}
-          </button>`;
-
         case "text":
           return html`<input
             type="text"
@@ -498,11 +448,215 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
   );
 }
 
+function renderDiscordPanel() {
+  const renderPanel = (el: Element | undefined) => {
+    if (!el) return;
+    const container = el as HTMLElement;
+
+    const prev = (container as any).__discordPanelListener;
+    if (prev) {
+      chrome.storage.onChanged.removeListener(prev);
+    }
+
+    const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
+
+    const update = async () => {
+      const [store, discordEnabled] = await Promise.all([
+        chrome.storage.local.get([
+          "CLOUD_TOKEN",
+          "CLOUD_LOGIN",
+          "DISCORD_ID",
+          "DISCORD_USERNAME",
+        ]),
+        getConfig("DISCORD_ENABLED"),
+      ]);
+      const token = String(store.CLOUD_TOKEN || "");
+      const login = String(store.CLOUD_LOGIN || "");
+      const discordId = String(store.DISCORD_ID || "");
+      const discordUsername = String(store.DISCORD_USERNAME || "");
+      const enabled = !!discordEnabled;
+
+      const authUrl =
+        token && login
+          ? `${WORKER_URL}/discord/auth?redirect_uri=${encodeURIComponent(
+              window.location.href,
+            )}&token=${encodeURIComponent(token)}&login=${encodeURIComponent(login)}`
+          : "";
+
+      render(
+        html`
+          <div class="card bg-base-200 shadow-sm p-3 sm:p-4 col-span-full">
+            <div class="flex items-center justify-between gap-3 mb-4">
+              <div class="flex items-baseline gap-2">
+                <span class="text-sm">Discord</span>
+                <span class="text-xs opacity-50"
+                  >Notifications and account connection.</span
+                >
+              </div>
+              ${discordId
+                ? html`<button
+                    type="button"
+                    class="btn btn-accent btn-sm"
+                    @click="${async (e: Event) => {
+                      const btn = e.target as HTMLButtonElement;
+                      const orig = btn.innerText;
+                      btn.innerText = "Sending...";
+                      btn.disabled = true;
+                      try {
+                        const res = await fetch(
+                          `${WORKER_URL}/api/v1/private/discord/test`,
+                          {
+                            method: "POST",
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                              "Content-Type":
+                                "application/json",
+                            },
+                            body: JSON.stringify({
+                              login,
+                              discordId,
+                            }),
+                          },
+                        );
+                        if (res.ok) {
+                          btn.innerText = "✓ Sent!";
+                        } else {
+                          const err = await res.text();
+                          btn.innerText = `✗ ${err.slice(
+                            0,
+                            40,
+                          )}`;
+                          btn.classList.add("btn-error");
+                        }
+                      } catch {
+                        btn.innerText = "✗ Network error";
+                        btn.classList.add("btn-error");
+                      }
+                      setTimeout(() => {
+                        btn.innerText = orig;
+                        btn.disabled = false;
+                        btn.classList.remove("btn-error");
+                      }, 4000);
+                    }}"
+                  >
+                    Test Discord
+                  </button>`
+                : ""}
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="card bg-base-300/50 p-3 sm:p-4">
+                <div
+                  class="flex items-start sm:items-center justify-between gap-3"
+                >
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-sm font-medium"
+                      >Discord notifications</span
+                    >
+                    <span class="text-xs opacity-50"
+                      >Sends evaluation notifications to your Discord
+                      DMs via bot.</span
+                    >
+                  </div>
+                  <input
+                    type="checkbox"
+                    class="toggle toggle-success shrink-0"
+                    .checked="${discordEnabled}"
+                    @change="${(e: Event) => {
+                      chrome.storage.local.set({
+                        DISCORD_ENABLED: (e.target as HTMLInputElement)
+                          .checked,
+                      });
+                    }}"
+                  />
+                </div>
+              </div>
+              <div
+                class="card bg-base-300/50 p-3 sm:p-4 flex flex-col gap-3"
+              >
+                ${discordId
+                  ? html`
+                      <div
+                        class="flex items-center justify-between gap-3 flex-wrap"
+                      >
+                        <span
+                          class="text-sm text-success font-medium"
+                          >Connected as @${discordUsername ||
+                          discordId.slice(0, 8)}</span
+                        >
+                        <button
+                          type="button"
+                          class="btn btn-error btn-xs btn-outline"
+                          @click="${async (e: Event) => {
+                            const btn =
+                              e.target as HTMLButtonElement;
+                            btn.disabled = true;
+                            btn.innerText = "Removing...";
+                            await chrome.storage.local.remove([
+                              "DISCORD_ID",
+                              "DISCORD_USERNAME",
+                            ]);
+                          }}"
+                        >
+                          Disconnect
+                        </button>
+                      </div>
+                    `
+                  : !token || !login
+                    ? html`<span class="text-sm opacity-50"
+                        >Connect your 42 account first in the
+                        popup</span
+                      >`
+                    : html`<button
+                        type="button"
+                        class="btn bg-[#5865F2] text-white border-none hover:bg-[#4752C4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
+                        @click="${() => {
+                          window.open(authUrl, "_blank");
+                        }}"
+                      >
+                        <span
+                          class="size-8 flex items-center justify-center [&_path]:fill-current"
+                        >
+                          ${unsafeHTML(DISCORD_SVG)}
+                        </span>
+                        Connect with Discord
+                      </button>`}
+              </div>
+            </div>
+          </div>
+        `,
+        container,
+      );
+    };
+
+    const listener = (
+      changes: Record<string, chrome.storage.StorageChange>,
+    ) => {
+      if (
+        "DISCORD_ID" in changes ||
+        "DISCORD_USERNAME" in changes ||
+        "DISCORD_ENABLED" in changes
+      ) {
+        update();
+      }
+    };
+    chrome.storage.onChanged.addListener(listener);
+    (container as any).__discordPanelListener = listener;
+
+    update();
+  };
+
+  return html`<div ${ref(renderPanel)} class="col-span-full"></div>`;
+}
+
 function renderSetting(def: HubSettingDef, enabled: boolean) {
   if (def.kind === "divider") {
     return html`<div class="divider font-bold my-2 col-span-full opacity-70">
       ${def.label}
     </div>`;
+  }
+
+  if (def.kind === "discord-panel") {
+    return renderSettingControl(def, enabled);
   }
 
   const COLSPAN_CLASSES = ["col-span-1", "col-span-2", "col-span-3"] as const;

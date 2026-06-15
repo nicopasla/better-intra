@@ -411,17 +411,9 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "evaluations",
-      key: "EVALUATIONS_NOTIFY_AS_EVALUATED",
-      label: "Notify as evaluated",
-      desc: "Notifies you when someone evaluates your project.",
-      kind: "toggle",
-      defaultValue: CONFIG_DEFAULT.EVALUATIONS_NOTIFY_AS_EVALUATED,
-    },
-    {
-      feature: "evaluations",
       key: "EVALUATIONS_NOTIFY_REVEAL",
       label: "15 min reminder",
-      desc: "Notifies you when evaluator/evaluated names are revealed.",
+      desc: "Notifies you when corrected names are revealed.",
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.EVALUATIONS_NOTIFY_REVEAL,
     },

@@ -15,7 +15,6 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       "CLOUD_TOKEN",
       "CLOUD_LOGIN",
       "EVALUATIONS_NOTIFY_AS_EVALUATOR",
-      "EVALUATIONS_NOTIFY_AS_EVALUATED",
       "EVALUATIONS_NOTIFY_REVEAL",
     ]);
 
@@ -53,27 +52,20 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     }
 
     const notifyAsEvaluator = store.EVALUATIONS_NOTIFY_AS_EVALUATOR !== false;
-    const notifyAsEvaluated = store.EVALUATIONS_NOTIFY_AS_EVALUATED !== false;
     const notifyReveal = store.EVALUATIONS_NOTIFY_REVEAL !== false;
 
     for (const notif of data.notifications) {
       if (notif.role === "evaluator" && !notifyAsEvaluator) continue;
-      if (notif.role === "evaluated" && !notifyAsEvaluated) continue;
 
       const time = formatTime(notif.beginAt);
 
       if (notif.type === "booked") {
-        const project =
-          notif.projectName ||
-          (notif.role === "evaluator" ? "a project" : "your project");
+        const project = notif.projectName || "a project";
         chrome.notifications.create({
           type: "basic",
           iconUrl: "icons/icon-128.png",
           title: "Evaluation booked",
-          message:
-            notif.role === "evaluator"
-              ? `Evaluation for ${project} at ${time}`
-              : `${project} will be evaluated at ${time}`,
+          message: `Evaluation for ${project} at ${time}`,
         });
       } else if (notif.type === "revealed" && notifyReveal) {
         const project = notif.projectName || "your project";
@@ -81,10 +73,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
           type: "basic",
           iconUrl: "icons/icon-128.png",
           title: "Evaluation",
-          message:
-            notif.role === "evaluator"
-              ? `You're correcting ${notif.logins} for ${project} at ${time}`
-              : `${notif.login} is about to evaluate ${project} at ${time}`,
+          message: `You're correcting ${notif.logins} for ${project} at ${time}`,
         });
       }
     }

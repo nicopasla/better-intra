@@ -292,7 +292,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
     return container;
   }
 
-  if (def.kind === "discord-panel") return renderDiscordPanel(enabled);
+  if (def.kind === "discord-panel") return renderDiscordPanel();
 
   return until(
     (async () => {
@@ -450,7 +450,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
   );
 }
 
-function renderDiscordPanel(panelEnabled: boolean) {
+function renderDiscordPanel() {
   const renderPanel = (el: Element | undefined) => {
     if (!el) return;
     const container = el as HTMLElement;
@@ -463,7 +463,7 @@ function renderDiscordPanel(panelEnabled: boolean) {
     const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
 
     const update = async () => {
-      const [store, discordEnabled] = await Promise.all([
+      const [store, discordEnabled, activeScripts] = await Promise.all([
         chrome.storage.local.get([
           "CLOUD_TOKEN",
           "CLOUD_LOGIN",
@@ -471,12 +471,15 @@ function renderDiscordPanel(panelEnabled: boolean) {
           "DISCORD_USERNAME",
         ]),
         getConfig("DISCORD_ENABLED"),
+        getConfig("ACTIVE_SCRIPTS"),
       ]);
       const token = String(store.CLOUD_TOKEN || "");
       const login = String(store.CLOUD_LOGIN || "");
       const discordId = String(store.DISCORD_ID || "");
       const discordUsername = String(store.DISCORD_USERNAME || "");
       const discordOn = !!discordEnabled;
+      const panelEnabled =
+        (activeScripts as any)?.includes?.("evaluations") ?? false;
 
       const authUrl =
         token && login
@@ -487,7 +490,11 @@ function renderDiscordPanel(panelEnabled: boolean) {
 
       render(
         html`
-          <div class="card bg-base-200 shadow-sm p-3 sm:p-4 col-span-full ${panelEnabled ? "" : "opacity-40 grayscale"}">
+          <div
+            class="card bg-base-200 shadow-sm p-3 sm:p-4 col-span-full ${panelEnabled
+              ? ""
+              : "opacity-40 grayscale"}"
+          >
             <div class="flex items-center justify-between gap-3 mb-4">
               <div class="flex items-baseline gap-2">
                 <span class="text-sm">Discord</span>
@@ -504,7 +511,9 @@ function renderDiscordPanel(panelEnabled: boolean) {
                       ?disabled="${!panelEnabled}"
                       @click="${async (e: Event) => {
                         const btn = e.target as HTMLButtonElement;
-                        const statusEl = btn.parentElement!.querySelector(".status-text") as HTMLElement;
+                        const statusEl = btn.parentElement!.querySelector(
+                          ".status-text",
+                        ) as HTMLElement;
                         statusEl.textContent = "Sending...";
                         btn.disabled = true;
                         try {
@@ -514,8 +523,7 @@ function renderDiscordPanel(panelEnabled: boolean) {
                               method: "POST",
                               headers: {
                                 Authorization: `Bearer ${token}`,
-                                "Content-Type":
-                                  "application/json",
+                                "Content-Type": "application/json",
                               },
                               body: JSON.stringify({
                                 login,
@@ -556,8 +564,8 @@ function renderDiscordPanel(panelEnabled: boolean) {
                       >Discord notifications</span
                     >
                     <span class="text-xs opacity-50"
-                      >Sends evaluation notifications to your Discord
-                      DMs via bot.</span
+                      >Sends evaluation notifications to your Discord DMs via
+                      bot.</span
                     >
                   </div>
                   <input
@@ -567,8 +575,7 @@ function renderDiscordPanel(panelEnabled: boolean) {
                     .checked="${discordEnabled}"
                     @change="${(e: Event) => {
                       chrome.storage.local.set({
-                        DISCORD_ENABLED: (e.target as HTMLInputElement)
-                          .checked,
+                        DISCORD_ENABLED: (e.target as HTMLInputElement).checked,
                       });
                     }}"
                   />
@@ -582,72 +589,67 @@ function renderDiscordPanel(panelEnabled: boolean) {
                       >Turn on notifications to connect</span
                     >`
                   : discordId
-                  ? html`
-                      <div
-                        class="flex items-center justify-between gap-3 flex-wrap"
-                      >
-                        <span
-                          class="text-sm text-success font-medium"
-                          >Connected as @${discordUsername ||
-                          discordId}</span
+                    ? html`
+                        <div
+                          class="flex items-center justify-between gap-3 flex-wrap"
                         >
-                        <button
+                          <span class="text-sm text-success font-medium"
+                            >Connected as @${discordUsername || discordId}</span
+                          >
+                          <button
+                            type="button"
+                            class="btn btn-error btn-xs btn-outline"
+                            ?disabled="${!panelEnabled}"
+                            @click="${async (e: Event) => {
+                              const btn = e.target as HTMLButtonElement;
+                              btn.disabled = true;
+                              btn.innerText = "Removing...";
+                              await chrome.storage.local.remove([
+                                "DISCORD_ID",
+                                "DISCORD_USERNAME",
+                              ]);
+                            }}"
+                          >
+                            Disconnect
+                          </button>
+                        </div>
+                      `
+                    : !token || !login
+                      ? html`<button
                           type="button"
-                          class="btn btn-error btn-xs btn-outline"
-                          ?disabled="${!panelEnabled}"
-                          @click="${async (e: Event) => {
-                            const btn =
-                              e.target as HTMLButtonElement;
-                            btn.disabled = true;
-                            btn.innerText = "Removing...";
-                            await chrome.storage.local.remove([
-                              "DISCORD_ID",
-                              "DISCORD_USERNAME",
-                            ]);
+                          class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
+                          @click="${() => {
+                            loginWith42(() => window.location.reload());
                           }}"
                         >
-                          Disconnect
-                        </button>
-                      </div>
-                    `
-                  : !token || !login
-                    ? html`<button
-                        type="button"
-                        class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
-                        @click="${() => {
-                          loginWith42(() =>
-                            window.location.reload(),
-                          );
-                        }}"
-                      >
-                        <span
-                          class="font-bold tracking-wide"
-                          >Connect with</span
-                        >
-                        <span
-                          class="size-8 flex items-center justify-center [&_path]:fill-current"
-                        >
-                          ${unsafeHTML(FORTY_TWO_SVG)}
-                        </span>
-                      </button>`
-                    : html`<p class="text-xs opacity-50 mb-2">
-                        Connecting will add you to the Better Intra Discord server to enable DMs.
-                      </p>
-                      <button
-                        type="button"
-                        class="btn bg-[#5865F2] text-white border-none hover:bg-[#4752C4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
-                        ?disabled="${!panelEnabled}"
-                        @click="${() => {
-                          window.open(authUrl, "_blank");
-                        }}"
-                      >
-                        <span
-                          class="size-8 flex items-center justify-center [&_path]:fill-current"
-                        >
-                          ${unsafeHTML(DISCORD_SVG)}
-                        </span>
-                        Connect with Discord
-                      </button>`}
+                          <span class="font-bold tracking-wide"
+                            >Connect with</span
+                          >
+                          <span
+                            class="size-8 flex items-center justify-center [&_path]:fill-current"
+                          >
+                            ${unsafeHTML(FORTY_TWO_SVG)}
+                          </span>
+                        </button>`
+                      : html`<p class="text-xs opacity-50 mb-2">
+                            Connecting will add you to the Better Intra Discord
+                            server to enable DMs.
+                          </p>
+                          <button
+                            type="button"
+                            class="btn bg-[#5865F2] text-white border-none hover:bg-[#4752C4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
+                            ?disabled="${!panelEnabled}"
+                            @click="${() => {
+                              window.open(authUrl, "_blank");
+                            }}"
+                          >
+                            <span
+                              class="size-8 flex items-center justify-center [&_path]:fill-current"
+                            >
+                              ${unsafeHTML(DISCORD_SVG)}
+                            </span>
+                            Connect with Discord
+                          </button>`}
               </div>
             </div>
           </div>
@@ -662,7 +664,8 @@ function renderDiscordPanel(panelEnabled: boolean) {
       if (
         "DISCORD_ID" in changes ||
         "DISCORD_USERNAME" in changes ||
-        "DISCORD_ENABLED" in changes
+        "DISCORD_ENABLED" in changes ||
+        "ACTIVE_SCRIPTS" in changes
       ) {
         update();
       }
@@ -837,7 +840,6 @@ function renderTabsContent(active: FeatureId[], disabledDeps: Set<string>) {
                 </div>
               `
             : ""}
-
           ${cloudDisabled
             ? html`<div
                 class="flex flex-col items-center justify-center gap-4 py-16 px-6 text-center"
@@ -1093,15 +1095,31 @@ async function createModal(active: FeatureId[]): Promise<void> {
   });
 
   shadow.querySelectorAll("input.hub-feature-toggle").forEach((toggle: any) => {
-    toggle.addEventListener("change", () => {
+    toggle.addEventListener("change", async () => {
       const id = toggle.dataset.id;
       const isEnabled = toggle.checked;
+
       const panel = shadow.querySelector(`[data-feature-panel="${id}"]`);
       panel?.classList.toggle("opacity-40", !isEnabled);
       panel?.classList.toggle("grayscale", !isEnabled);
       panel
         ?.querySelectorAll("[data-setting-key]")
         .forEach((c: any) => (c.disabled = !isEnabled));
+      panel?.querySelectorAll(".card").forEach((card: any) => {
+        if (isEnabled) {
+          card.classList.remove("opacity-40", "grayscale");
+        } else {
+          card.classList.add("opacity-40", "grayscale");
+        }
+      });
+
+      const currentScripts = await getConfig("ACTIVE_SCRIPTS");
+      const updated = isEnabled
+        ? [...currentScripts, id]
+        : currentScripts.filter((f: string) => f !== id);
+      await chrome.storage.local.set({
+        ACTIVE_SCRIPTS: JSON.stringify(updated),
+      });
     });
   });
 

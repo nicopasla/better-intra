@@ -61,26 +61,29 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
       if (notif.type === "booked") {
         const project = notif.projectName || "a project";
-        chrome.notifications.create({
-          type: "basic",
-          iconUrl: "icons/icon-128.png",
-          title: "Evaluation booked",
-          message: `Evaluation for ${project} at ${time}`,
-        });
+        notify("Evaluation booked", `Evaluation for ${project} at ${time}`);
       } else if (notif.type === "revealed" && notifyReveal) {
         const project = notif.projectName || "your project";
-        chrome.notifications.create({
-          type: "basic",
-          iconUrl: "icons/icon-128.png",
-          title: "Evaluation",
-          message: `You're correcting ${notif.logins} for ${project} at ${time}`,
-        });
+        notify(
+          "Evaluation",
+          `You're correcting ${notif.logins} for ${project} at ${time}`,
+        );
       }
     }
   }
 });
 
 chrome.storage.onChanged.addListener((changes) => {
+  if ("TEST_NOTIFICATIONS" in changes && changes.TEST_NOTIFICATIONS.newValue) {
+    notify("Evaluation booked", "Evaluation for ft_transcendence at 14:52");
+    notify(
+      "Evaluation in 15 min",
+      "You're correcting elmo, kermit for ft_transcendence at 14:52",
+    );
+    chrome.storage.local.remove("TEST_NOTIFICATIONS");
+    return;
+  }
+
   if ("ACTIVE_SCRIPTS" in changes) {
     const { oldValue, newValue } = changes.ACTIVE_SCRIPTS;
     if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
@@ -113,7 +116,22 @@ async function syncRegistration() {
   const url = `${WORKER_URL}/api/v1/private/evaluations?login=${encodeURIComponent(hashedLogin)}&action=${action}`;
 
   try {
-    await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      try {
+        const body = await res.json();
+        if (!body.registered && body.reason === "missing_42_token") {
+          notify(
+            "Evaluations",
+            "Reconnect with 42 to receive evaluation notifications",
+          );
+        }
+      } catch {
+        /* ignore parse errors */
+      }
+    }
   } catch {
     console.warn("syncRegistration: fetch failed");
   }
@@ -186,4 +204,34 @@ function formatTime(iso: string): string {
   const hours = d.getHours().toString().padStart(2, "0");
   const minutes = d.getMinutes().toString().padStart(2, "0");
   return `${hours}:${minutes}`;
+}
+
+function notify(title: string, message: string) {
+  try {
+    chrome.notifications.create(
+      {
+        type: "basic",
+        iconUrl: "icons/icon-128.png",
+        title,
+        message,
+        requireInteraction: true,
+      },
+      () => {},
+    );
+    return;
+  } catch {}
+  try {
+    chrome.notifications.create(
+      { type: "basic", iconUrl: "icons/icon-128.png", title, message },
+      () => {},
+    );
+    return;
+  } catch {}
+  try {
+    new Notification(title, {
+      body: message,
+      icon: "icons/icon-128.png",
+      requireInteraction: true,
+    });
+  } catch {}
 }

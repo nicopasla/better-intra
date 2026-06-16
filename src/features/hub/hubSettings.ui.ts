@@ -690,6 +690,32 @@ function renderSetting(def: HubSettingDef, enabled: boolean) {
     return renderSettingControl(def, enabled);
   }
 
+  if (def.kind === "action") {
+    return html`<div
+      class="card bg-base-200 shadow-sm p-3 sm:p-4 col-span-full ${enabled
+        ? ""
+        : "opacity-40 grayscale"}"
+    >
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex flex-col gap-0.5">
+          <span class="text-sm font-medium">${def.label}</span>
+          ${def.desc
+            ? html`<span class="text-xs opacity-50">${def.desc}</span>`
+            : ""}
+        </div>
+        <button
+          type="button"
+          class="btn btn-accent btn-sm"
+          ?disabled="${!enabled}"
+          @click="${() =>
+            chrome.storage.local.set({ TEST_NOTIFICATIONS: Date.now() })}"
+        >
+          ${def.actionLabel}
+        </button>
+      </div>
+    </div>`;
+  }
+
   const COLSPAN_CLASSES = ["col-span-1", "col-span-2", "col-span-3"] as const;
   const isFullWidth =
     def.fullWidth ?? (def.kind === "url" || def.kind === "shortcuts");

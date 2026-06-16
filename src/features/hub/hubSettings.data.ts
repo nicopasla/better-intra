@@ -102,6 +102,8 @@ export type HubSettingDef = {
   max?: number;
   step?: number;
   placeholder?: string;
+  actionLabel?: string;
+  actionId?: string;
 };
 
 export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
@@ -427,6 +429,16 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       requiresCloud: true,
     },
     { feature: "evaluations", label: "Discord", kind: "divider" },
+    {
+      feature: "evaluations",
+      label: "Test notifications",
+      desc: "Preview how evaluation notifications will appear.",
+      kind: "action",
+      actionLabel: "Send test",
+      actionId: "test-evaluation-notifications",
+      grid: true,
+      requiresCloud: true,
+    },
     {
       feature: "evaluations",
       label: "Discord",

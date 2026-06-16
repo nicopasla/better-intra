@@ -589,7 +589,7 @@ function renderDiscordPanel(panelEnabled: boolean) {
                         <span
                           class="text-sm text-success font-medium"
                           >Connected as @${discordUsername ||
-                          discordId.slice(0, 8)}</span
+                          discordId}</span
                         >
                         <button
                           type="button"

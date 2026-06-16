@@ -630,7 +630,10 @@ function renderDiscordPanel(panelEnabled: boolean) {
                           ${unsafeHTML(FORTY_TWO_SVG)}
                         </span>
                       </button>`
-                    : html`<button
+                    : html`<p class="text-xs opacity-50 mb-2">
+                        Connecting will add you to the Better Intra Discord server to enable DMs.
+                      </p>
+                      <button
                         type="button"
                         class="btn bg-[#5865F2] text-white border-none hover:bg-[#4752C4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
                         ?disabled="${!panelEnabled}"

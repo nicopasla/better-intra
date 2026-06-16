@@ -2,6 +2,94 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-06-16
+
+### Features 🎉
+
+- feat: centralized css import via shared-styles.ts ([3bce0f8](https://github.com/nicopasla/better-intra/commit/3bce0f8))
+- feat: added tests files ([729a437](https://github.com/nicopasla/better-intra/commit/729a437))
+- feat: added dark theme to the evaluations points dialog ([b0c0c13](https://github.com/nicopasla/better-intra/commit/b0c0c13))
+- feat: added freeze info on profile ([16f05f2](https://github.com/nicopasla/better-intra/commit/16f05f2))
+- feat: added evaluations notifications ([c68133e](https://github.com/nicopasla/better-intra/commit/c68133e))
+- feat: add pages docs ([43d37e7](https://github.com/nicopasla/better-intra/commit/43d37e7))
+- feat(marks) change where date is displayed ([3605aa2](https://github.com/nicopasla/better-intra/commit/3605aa2))
+- feat(marks): add sorting setting ([03baa17](https://github.com/nicopasla/better-intra/commit/03baa17))
+- feat(visuals): add cache for images ([c3dfdff](https://github.com/nicopasla/better-intra/commit/c3dfdff))
+- feat(hub): add cloud disabled visuals ([d83fb7b](https://github.com/nicopasla/better-intra/commit/d83fb7b))
+- feat(discord): add connect to discord button with OAuth2 ([42da46e](https://github.com/nicopasla/better-intra/commit/42da46e))
+- feat(evaluations): add browser test notifications ([15d64aa](https://github.com/nicopasla/better-intra/commit/15d64aa))
+
+### Bug fixes 🐛
+
+- fix(background): norme ([7011c92](https://github.com/nicopasla/better-intra/commit/7011c92))
+- fix(visuals): norme ([429deb8](https://github.com/nicopasla/better-intra/commit/429deb8))
+- fix(freeze): remove TS issues ([564225c](https://github.com/nicopasla/better-intra/commit/564225c))
+- fix(config): add DATA_CACHE ([f4e33d2](https://github.com/nicopasla/better-intra/commit/f4e33d2))
+- fix(logtime): add config guard ([d49902b](https://github.com/nicopasla/better-intra/commit/d49902b))
+- fix(visuals): background disappearing ([80b8fc2](https://github.com/nicopasla/better-intra/commit/80b8fc2))
+- fix(freeze, marks): remove cached sessionStorage value ([fc171cd](https://github.com/nicopasla/better-intra/commit/fc171cd))
+- fix(logtime): load listener leak ([fa87dc5](https://github.com/nicopasla/better-intra/commit/fa87dc5))
+- fix(freeze): add console warn ([2c302e5](https://github.com/nicopasla/better-intra/commit/2c302e5))
+- fix(account, config): whitelist instead of blacklist keys ([1a9abe2](https://github.com/nicopasla/better-intra/commit/1a9abe2))
+- fix(clusters): remove redundant bodyObserver ([7e4ed8a](https://github.com/nicopasla/better-intra/commit/7e4ed8a))
+- fix(package): change chrome watch to the proper folder ([f04e435](https://github.com/nicopasla/better-intra/commit/f04e435))
+- fix(manifests): host_permissions with trailing slash ([4c6a323](https://github.com/nicopasla/better-intra/commit/4c6a323))
+- fix(main): strips token from URL ([78cbaab](https://github.com/nicopasla/better-intra/commit/78cbaab))
+- fix(visuals): stale fetch guard with fetchLogin ([8e86014](https://github.com/nicopasla/better-intra/commit/8e86014))
+- fix(background): add console warn for catch blocks ([de69a4c](https://github.com/nicopasla/better-intra/commit/de69a4c))
+- fix(milestone): fix memory leak ([e00d587](https://github.com/nicopasla/better-intra/commit/e00d587))
+- fix(marks): remove permanent initialized flag ([de6b562](https://github.com/nicopasla/better-intra/commit/de6b562))
+- fix(freeze, marks): TOCTOU race with token event ([62b8a9b](https://github.com/nicopasla/better-intra/commit/62b8a9b))
+- fix(clusters, hub): cleanup intervals and observers on pagehide ([50b747e](https://github.com/nicopasla/better-intra/commit/50b747e))
+- fix(main): isolate feature init errors so one failure doesn't block others ([6f757c1](https://github.com/nicopasla/better-intra/commit/6f757c1))
+- fix(config): guard auto-JSON-parse and fix hub storage format ([3fbf06d](https://github.com/nicopasla/better-intra/commit/3fbf06d))
+- fix(visuals): reset isFetching after cloud fetch completes or fails ([478ef16](https://github.com/nicopasla/better-intra/commit/478ef16))
+- fix(background): guard against native array corruption ([4a1fe0f](https://github.com/nicopasla/better-intra/commit/4a1fe0f))
+- fix: avatar loading timeout ([dab89ca](https://github.com/nicopasla/better-intra/commit/dab89ca))
+- fix: hovering in the dropdown menu ([29a854c](https://github.com/nicopasla/better-intra/commit/29a854c))
+- fix: remove glow effect ([8d20135](https://github.com/nicopasla/better-intra/commit/8d20135))
+- fix: add button not appearing on certain profiles ([c992f2a](https://github.com/nicopasla/better-intra/commit/c992f2a))
+- fix: marks font size ([9599bc4](https://github.com/nicopasla/better-intra/commit/9599bc4))
+- fix(hub): fix disabled states for disabled functions ([3e8d106](https://github.com/nicopasla/better-intra/commit/3e8d106))
+- fix(shortcuts): MultationObserver was not firing up ([252b4fd](https://github.com/nicopasla/better-intra/commit/252b4fd))
+- fix: Discord card ui styling ([a8a0aff](https://github.com/nicopasla/better-intra/commit/a8a0aff))
+- fix(logtime): show 'No data' for days with no data ([2198a29](https://github.com/nicopasla/better-intra/commit/2198a29))
+- fix(hub): remove greyout content when enabling function ([51b5a4b](https://github.com/nicopasla/better-intra/commit/51b5a4b))
+- fix(discord): show status on the left of the button ([d9c85fc](https://github.com/nicopasla/better-intra/commit/d9c85fc))
+- fix(discord): remove old config and show full discordId ([82ee9b8](https://github.com/nicopasla/better-intra/commit/82ee9b8))
+- fix(marks): format date correctly ([5185311](https://github.com/nicopasla/better-intra/commit/5185311))
+
+### Maintenance 🧹
+
+- chore(release): update version to 1.2.0 ([d2c85c3](https://github.com/nicopasla/better-intra/commit/d2c85c3))
+- chore: update dependencies ([68642fe](https://github.com/nicopasla/better-intra/commit/68642fe))
+- chore: update subproject commit reference in better-intra-worker ([c44b7e6](https://github.com/nicopasla/better-intra/commit/c44b7e6))
+- chore(crypto): export hashLogin to a new file ([83c221a](https://github.com/nicopasla/better-intra/commit/83c221a))
+- chore(selectors): constants replace 13 inline litterals ([d52b9b4](https://github.com/nicopasla/better-intra/commit/d52b9b4))
+- chore(tests): new tests for marks ([39a3c17](https://github.com/nicopasla/better-intra/commit/39a3c17))
+- chore(tests): setup tests ([8e6dcc7](https://github.com/nicopasla/better-intra/commit/8e6dcc7))
+- chore(marks): refactor to multiple helpers ([6bf8a62](https://github.com/nicopasla/better-intra/commit/6bf8a62))
+- chore: update AGENTS ([527438c](https://github.com/nicopasla/better-intra/commit/527438c), [bff1447](https://github.com/nicopasla/better-intra/commit/bff1447), [7eab396](https://github.com/nicopasla/better-intra/commit/7eab396), [7361c40](https://github.com/nicopasla/better-intra/commit/7361c40))
+- chore: change evaluations default ([a8d338c](https://github.com/nicopasla/better-intra/commit/a8d338c))
+- chore: update README ([528e152](https://github.com/nicopasla/better-intra/commit/528e152), [581f441](https://github.com/nicopasla/better-intra/commit/581f441))
+- chore: update PRIVACY ([9c59593](https://github.com/nicopasla/better-intra/commit/9c59593))
+- chore: update DEVELOPMENT ([9716c80](https://github.com/nicopasla/better-intra/commit/9716c80))
+- chore: add CHROME_LISTING ([949444f](https://github.com/nicopasla/better-intra/commit/949444f))
+- chore: remove old import ([72bfe37](https://github.com/nicopasla/better-intra/commit/72bfe37))
+- chore: remove as_evaluated ([de6c724](https://github.com/nicopasla/better-intra/commit/de6c724))
+- chore: remove dead code ([7b9c487](https://github.com/nicopasla/better-intra/commit/7b9c487))
+- chore(discord): add discord warning for auto-join server ([4a89b74](https://github.com/nicopasla/better-intra/commit/4a89b74))
+
+### Other Changes 🔄
+
+- docs: title and releases tab ([08e31a3](https://github.com/nicopasla/better-intra/commit/08e31a3))
+- docs: footer and more plugins ([1e29742](https://github.com/nicopasla/better-intra/commit/1e29742))
+- docs: add repo link and make images open ([9b78adb](https://github.com/nicopasla/better-intra/commit/9b78adb))
+- docs: update theme ([838fa75](https://github.com/nicopasla/better-intra/commit/838fa75))
+- docs: render github page from root ([d27a629](https://github.com/nicopasla/better-intra/commit/d27a629))
+- docs: switch to Jekyll ([dd41815](https://github.com/nicopasla/better-intra/commit/dd41815))
+- chore: migrate inner html to lit ([91e7240](https://github.com/nicopasla/better-intra/commit/91e7240))
+
 ## [1.1.5] - 2026-06-11
 
 ### Bug fixes 🐛
@@ -420,7 +508,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.1.5...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/nicopasla/better-intra/compare/v1.1.5...v1.2.0
 [1.1.5]: https://github.com/nicopasla/better-intra/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/nicopasla/better-intra/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/nicopasla/better-intra/compare/v1.1.2...v1.1.3

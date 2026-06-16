@@ -15,6 +15,7 @@ function renderDayCell(
   day: number,
   dKey: string,
   secs: number,
+  hasData: boolean,
   todayStr: string,
   config: LogtimeConfig,
 ) {
@@ -33,7 +34,7 @@ function renderDayCell(
     style="border-radius: ${CELL_RADIUS}; background: ${bgColor}; color: ${textColor};"
   >
     ${String(day)}
-    <div class="day-tooltip">${secs > 0 ? fmtHours(secs) : "0h"}</div>
+    <div class="day-tooltip">${hasData ? fmtHours(secs) : "No data"}</div>
   </div>`;
 }
 
@@ -72,10 +73,11 @@ function renderCalendarGrid(
     const dKey = `${year}-${String(mon).padStart(2, "0")}-${String(
       day,
     ).padStart(2, "0")}`;
-    const secs = data[dKey] ?? 0;
+    const hasData = dKey in data;
+    const secs = hasData ? data[dKey] : 0;
     weekSecs += secs;
 
-    dayRows.push(renderDayCell(day, dKey, secs, todayStr, config));
+    dayRows.push(renderDayCell(day, dKey, secs, hasData, todayStr, config));
     cellCount++;
 
     if ((cellCount % 7 === 0 && cellCount > 0) || day === lastDayDate) {
@@ -221,7 +223,8 @@ export function renderHeaderContent(
     >
       Logtime
       ${config.show_tacos
-        ? html`<span class="badge badge-dash badge-success badge-lg font-bold ml-2"
+        ? html`<span
+            class="badge badge-dash badge-success badge-lg font-bold ml-2"
             >${totalTacos} ${config.emoji}</span
           >`
         : ""}

@@ -103,7 +103,6 @@ export type HubSettingDef = {
   step?: number;
   placeholder?: string;
   actionLabel?: string;
-  actionId?: string;
 };
 
 export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
@@ -435,7 +434,6 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       desc: "Preview how evaluation notifications will appear.",
       kind: "action",
       actionLabel: "Send test",
-      actionId: "test-evaluation-notifications",
       grid: true,
       requiresCloud: true,
     },

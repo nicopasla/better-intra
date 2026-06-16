@@ -17,7 +17,6 @@ npm run dev:firefox     # watch + web-ext hot-reload
 - **`src/config.ts`** — single source of truth for all chrome.storage keys; typed `BetterIntraConfig` interface + defaults.
 - **`manifests/manifest.{chrome,firefox}.json`** — per-browser manifests (merged with version from package.json at build time via Vite plugin).
 - **`better-intra-worker/`** — separate Cloudflare Worker (wrangler) for cloud settings sync. Has its own `package.json`.
-- **`42_level_finder.py`** — standalone tool, not part of the extension.
 
 ## Build quirks
 

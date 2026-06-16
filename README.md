@@ -2,12 +2,6 @@
 
 UI and UX improvements for 42 Intra v3: logtime calendar, cluster map tools, custom profiles, shortcuts, friends widget, and more.
 
-## Screenshots
-
-| Logtime | Profile | Shortcuts |
-|---|---|---|
-| ![Logtime](images-store/logtime-dark.png) | ![Profile](images-store/profile.png) | ![Shortcuts](images-store/shortcuts-settings.png) |
-
 ## ⚡ Quick Start
 
 To install this extension, click the buttons below or visit the [Releases](https://github.com/nicopasla/better-intra/releases/latest/) page.
@@ -75,13 +69,15 @@ Quick-access links shown as colourful buttons on your profile page.
 
 ### 🔔 Evaluations ☁️
 
-Desktop notifications when your evaluations change state.
+Browser and Discord notifications when your evaluations change state.
 
-* **State tracking** — notifies you when an evaluation is booked, revealed, or about to start.
-* **Background service** — checks for updates even when no intra pages are open.
-* **15‑minute reminder** — get a notification 15 minutes before slot reveals.
-* **Discord DMs** (optional) — receive notifications in your Discord DMs through the Better Intra bot.
-* Configure from the Evaluations tab in the Settings Hub.
+* **Browser notifications** — popup alerts when an evaluation is booked or when correcteds are revealed 15 minutes before the slot.
+* **Discord DMs** — receive the same alerts in your DMs via the Better Intra bot. Connect your Discord account from the Evaluations hub tab — auto-joins the Better Intra server to enable direct messages.
+* **State tracking** — background service worker polls every 5 minutes, detecting booked → revealed transitions.
+* **Notification preview** — test buttons let you preview both browser and Discord notifications before relying on them.
+* **Configurable** — toggle "Notify as evaluator" and "15 min reminder" independently.
+* **42 OAuth required** — sign in with your 42 account to enable evaluation tracking. A reminder notification appears if you enable evaluations without being signed in.
+* Configure from the **Evaluations** tab in the Settings Hub.
 
 ---
 
@@ -125,6 +121,11 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 * Tabs: Logtime, Clusters, Profile, Shortcuts, Evaluations, About.
 * Turn features on/off individually, or reset a feature's settings to default.
 
+## Screenshots
+
+| Logtime | Profile | Shortcuts |
+|---|---|---|
+| ![Logtime](images-store/logtime-dark.png) | ![Profile](images-store/profile.png) | ![Shortcuts](images-store/shortcuts-settings.png) |
 
 ## Uninstall
 
@@ -141,18 +142,22 @@ This is a personal project. It modifies the appearance of 42 Intra and adds UI i
 * [DaisyUI](https://daisyui.com/) & **Tailwind CSS** (UI components & settings modal)
 * GitHub Actions (CI/CD for automated builds, versioning, and changelogs)
 * Gemini and Copilot Student (Documentation & Optimization)
-* Cloudflare Workers & KV (Serverless backend for cloud settings storage)
+* Cloudflare Workers, KV & D1 (Serverless backend for cloud sync, eval tracking & notifications)
+* [`better-intra-worker/`](./better-intra-worker/) — separate Cloudflare Worker handling cloud sync, evaluation state tracking, project map, and Discord bot
 * 42 API (OAuth2) (Secure user identification and authentication)
+* Discord API (Bot for evaluation notifications)
+* [OpenCode](https://opencode.ai) + DeepSeek V4 Pro (AI coding agent)
 * Font Awesome (SVG icons)
+* 42 logo from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:42_Logo.svg)
 * Intra v2 dark mode from [Improved Intra](https://github.com/FreekBes/improved_intra/tree/main/features/themes)
 
 ## Compatibility
 
-| Browser | Support |           Note            |
-|:-------:|:-------:|:-------------------------:|
+| Browser | Support |    Note     |
+|:-------:|:-------:|:-----------:|
 | Firefox |    ✅    | Main target |
-| Chrome  |    ✅    | Supported   |
-|  Brave  |    ✅    | Supported   |
+| Chrome  |    ✅    |  Supported  |
+|  Brave  |    ✅    |  Supported  |
 
 ## Privacy
 
@@ -163,7 +168,7 @@ See the full [Privacy Policy](./PRIVACY.md).
 - **Friends widget** (optional, requires cloud sync): friend logins are stored locally and also included in your synced settings in KV. The worker additionally caches friend user IDs and online status in KV to reduce 42 API calls.
 - **Logtime data** is read from the intra page directly — it never leaves your browser.
 - **Other users' profiles**: when visiting another user's profile, their public custom visuals (avatar, banner, background) are fetched from the Cloudflare Worker if they use Better Intra. No data is sent to third parties.
-- Permissions requested: `storage` (save settings), `activeTab` (interact with the intra page), and access to the extension's Cloudflare Worker for optional sync features. No analytics, tracking, or advertising.
+- Permissions requested: `storage` (save settings), `notifications` (evaluation alerts), `alarms` (periodic background checks), and access to the extension's Cloudflare Worker for optional sync features. No analytics, tracking, or advertising.
 
 ## Development
 
@@ -171,4 +176,4 @@ See [DEVELOPMENT.md](./DEVELOPMENT.md).
 
 ## License
 
-MIT
+[MIT](./LICENSE)

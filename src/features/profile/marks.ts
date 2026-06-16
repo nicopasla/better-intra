@@ -60,8 +60,18 @@ function waitForToken(timeout = 15000): Promise<string | null> {
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
-  const diff = Date.now() - d.getTime();
-  const days = Math.floor(diff / 86400000);
+  const now = new Date();
+  const todayMidnight = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  ).getTime();
+  const eventMidnight = new Date(
+    d.getFullYear(),
+    d.getMonth(),
+    d.getDate(),
+  ).getTime();
+  const days = Math.floor((todayMidnight - eventMidnight) / 86400000);
   const relative =
     days < 1 ? "today" : days === 1 ? "1 day ago" : `${days} days ago`;
   const real = d.toLocaleDateString("en-US", {

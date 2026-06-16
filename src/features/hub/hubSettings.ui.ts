@@ -496,54 +496,54 @@ function renderDiscordPanel(panelEnabled: boolean) {
                 >
               </div>
               ${discordId
-                ? html`<button
-                    type="button"
-                    class="btn btn-accent btn-sm"
-                    ?disabled="${!panelEnabled}"
-                    @click="${async (e: Event) => {
-                      const btn = e.target as HTMLButtonElement;
-                      const orig = btn.innerText;
-                      btn.innerText = "Sending...";
-                      btn.disabled = true;
-                      try {
-                        const res = await fetch(
-                          `${WORKER_URL}/api/v1/private/discord/test`,
-                          {
-                            method: "POST",
-                            headers: {
-                              Authorization: `Bearer ${token}`,
-                              "Content-Type":
-                                "application/json",
+                ? html`<div class="flex items-center gap-2">
+                    <span class="text-xs status-text"></span>
+                    <button
+                      type="button"
+                      class="btn btn-accent btn-sm"
+                      ?disabled="${!panelEnabled}"
+                      @click="${async (e: Event) => {
+                        const btn = e.target as HTMLButtonElement;
+                        const statusEl = btn.parentElement!.querySelector(".status-text") as HTMLElement;
+                        statusEl.textContent = "Sending...";
+                        btn.disabled = true;
+                        try {
+                          const res = await fetch(
+                            `${WORKER_URL}/api/v1/private/discord/test`,
+                            {
+                              method: "POST",
+                              headers: {
+                                Authorization: `Bearer ${token}`,
+                                "Content-Type":
+                                  "application/json",
+                              },
+                              body: JSON.stringify({
+                                login,
+                                discordId,
+                              }),
                             },
-                            body: JSON.stringify({
-                              login,
-                              discordId,
-                            }),
-                          },
-                        );
-                        if (res.ok) {
-                          btn.innerText = "✓ Sent!";
-                        } else {
-                          const err = await res.text();
-                          btn.innerText = `✗ ${err.slice(
-                            0,
-                            40,
-                          )}`;
-                          btn.classList.add("btn-error");
+                          );
+                          if (res.ok) {
+                            statusEl.textContent = "✓ Sent!";
+                            statusEl.className = "text-xs text-success";
+                          } else {
+                            const err = await res.text();
+                            statusEl.textContent = `✗ ${err.slice(0, 40)}`;
+                            statusEl.className = "text-xs text-error";
+                          }
+                        } catch {
+                          statusEl.textContent = "✗ Network error";
+                          statusEl.className = "text-xs text-error";
                         }
-                      } catch {
-                        btn.innerText = "✗ Network error";
-                        btn.classList.add("btn-error");
-                      }
-                      setTimeout(() => {
-                        btn.innerText = orig;
-                        btn.disabled = false;
-                        btn.classList.remove("btn-error");
-                      }, 4000);
-                    }}"
-                  >
-                    Test Discord
-                  </button>`
+                        setTimeout(() => {
+                          statusEl.textContent = "";
+                          btn.disabled = false;
+                        }, 4000);
+                      }}"
+                    >
+                      Test Discord
+                    </button>
+                  </div>`
                 : ""}
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

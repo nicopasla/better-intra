@@ -1,5 +1,5 @@
 import { updateEventFilters, injectEventsSelect } from "./events/events.ts";
-import { findSlotsButton } from "./shortcuts.ts";
+import { findSlotsButton, redirectDefenseLinks } from "./shortcuts.ts";
 import { injectCustomStyles, updateVisuals } from "./visuals.ts";
 import { handleProfileRedirect } from "./highlight.ts";
 import { initLayoutManager } from "./layout.ts";
@@ -24,9 +24,11 @@ const waitForBody = () =>
 
 export async function initProfile() {
   injectCustomStyles();
-  if (location.origin !== "https://profile-v3.intra.42.fr") return;
-
   await waitForBody();
+  if (location.origin === "https://projects.intra.42.fr") {
+    await redirectDefenseLinks();
+  }
+  if (location.origin !== "https://profile-v3.intra.42.fr") return;
 
   let isUpdating = false;
   let needsRerun = false;

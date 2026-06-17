@@ -14,3 +14,20 @@ export async function findSlotsButton() {
     slotsBtn.dataset.customized = "true";
   }
 }
+
+export async function redirectDefenseLinks() {
+  const slots_redirection = await getConfig("PROFILE_SLOTS_REDIRECTION");
+  if (!slots_redirection) return;
+
+  const links = document.querySelectorAll(
+    'a[href*="/slots?team_id="]',
+  ) as NodeListOf<HTMLAnchorElement>;
+
+  for (const link of links) {
+    if (link.dataset.customized) continue;
+    link.href = "https://slots.42belgium.be/slots";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.dataset.customized = "true";
+  }
+}

@@ -49,6 +49,7 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 * **Slots redirection** — the "Manage slots" button takes you to the correct slots page.
 * **Achievement milestones** — completed achievements get a subtle animated glow.
 * **Completed projects (marks)** — the Projects card lists all your graded projects with dates and scores. Multi-attempt projects expand to show each attempt. Sort by newest or oldest first.
+* **Projects sort** — sort the projects list on any user's profile by name or date, with toggleable ascending/descending order.
 * **Freeze alerts** — a freeze card appears on profiles of frozen students.
 * **Clickable seat label** — click someone's seat on their profile to open the cluster map with their seat highlighted and pulsating.
 

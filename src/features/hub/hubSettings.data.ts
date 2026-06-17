@@ -276,6 +276,11 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
   profile: [
     {
       feature: "profile",
+      label: "Appearance",
+      kind: "divider",
+    },
+    {
+      feature: "profile",
       key: "PROFILE_CARD_ORDER",
       label: "Dashboard Cards Order",
       desc: "Drag and drop the colored cards to prioritize your dashboard sections.",
@@ -292,6 +297,11 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       defaultValue: CONFIG_DEFAULT.PROFILE_USE_CUSTOM_COLOR,
       grid: true,
       colSpan: 1,
+    },
+    {
+      feature: "profile",
+      label: "Projects",
+      kind: "divider",
     },
     {
       feature: "profile",
@@ -332,13 +342,18 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
-      key: "SHOW_FRIENDS_WIDGET",
-      label: "Show friends widget",
-      desc: "Hides the friends button and widget entirely from the profile page.",
+      key: "PROFILE_PROJECTS_SORT",
+      label: "Projects sort",
+      desc: "Adds a sort dropdown to the Marks list on user profiles.",
       kind: "toggle",
-      defaultValue: CONFIG_DEFAULT.SHOW_FRIENDS_WIDGET,
+      defaultValue: CONFIG_DEFAULT.PROFILE_PROJECTS_SORT,
       grid: true,
       colSpan: 1,
+    },
+    {
+      feature: "profile",
+      label: "Events",
+      kind: "divider",
     },
     {
       feature: "profile",
@@ -369,6 +384,21 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
         { label: "Event", value: "event" },
         { label: "Meet up", value: "meet_up" },
       ],
+    },
+    {
+      feature: "profile",
+      label: "Friends",
+      kind: "divider",
+    },
+    {
+      feature: "profile",
+      key: "SHOW_FRIENDS_WIDGET",
+      label: "Show friends widget",
+      desc: "Hides the friends button and widget entirely from the profile page.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.SHOW_FRIENDS_WIDGET,
+      grid: true,
+      colSpan: 1,
     },
   ],
   shortcuts: [

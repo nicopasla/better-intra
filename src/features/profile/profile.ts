@@ -10,6 +10,7 @@ import { initProfileCardStyling } from "./profile-card.ts";
 import { injectFriendsWidget } from "../friends/friends.ui.ts";
 import { injectFriendButton } from "../friends/profile-button.ts";
 import { initMarks } from "./marks.ts";
+import { initProjectsSort } from "./projects-sort.ts";
 
 const waitForBody = () =>
   document.body
@@ -49,6 +50,7 @@ export async function initProfile() {
         await initLayoutManager();
         await initProfileCardStyling();
         await initMarks();
+        await initProjectsSort();
         await findSlotsButton();
         await injectEventsSelect();
         await updateEventFilters();

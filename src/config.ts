@@ -53,6 +53,7 @@ export interface BetterIntraConfig {
   PROFILE_USE_CUSTOM_COLOR: boolean;
   PROFILE_SHOW_MARKS: boolean;
   PROFILE_MARKS_SORT_ORDER: "newest_first" | "oldest_first";
+  PROFILE_PROJECTS_SORT: boolean;
 
   // Shortcuts Feature Settings
   SHORTCUTS_LINKS: { name: string; url: string }[];
@@ -119,6 +120,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   PROFILE_USE_CUSTOM_COLOR: true,
   PROFILE_SHOW_MARKS: true,
   PROFILE_MARKS_SORT_ORDER: "newest_first",
+  PROFILE_PROJECTS_SORT: true,
 
   BETTER_INTRA_THEME: "dark",
   SHORTCUTS_LINKS: [],
@@ -172,6 +174,7 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "PROFILE_USE_CUSTOM_COLOR",
   "PROFILE_SHOW_MARKS",
   "PROFILE_MARKS_SORT_ORDER",
+  "PROFILE_PROJECTS_SORT",
   "SHORTCUTS_LINKS",
   "SHORTCUTS_HIDE_IMPORTANT_LINKS",
   "SHORTCUTS_ALIGNMENT",

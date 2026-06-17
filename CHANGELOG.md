@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-06-17
+
+### Features 🎉
+
+- feat(profile): add projects sort dropdown with toggleable name/date ordering ([8aacf31](https://github.com/nicopasla/better-intra/commit/8aacf31))
+- feat(profile): replace moulinette image on project pages with custom robot icons ([ea554d0](https://github.com/nicopasla/better-intra/commit/ea554d0))
+- feat(profile): redirect per-project defense subscription links to the correct slots page ([2e8b460](https://github.com/nicopasla/better-intra/commit/2e8b460))
+
+### Bug fixes 🐛
+
+- fix(visuals): show other user's theme colors and logtime emojis even when they have no custom images ([3501825](https://github.com/nicopasla/better-intra/commit/3501825))
+
+### Maintenance 🧹
+
+- chore: update CHROME_LISTING ([2320b3b](https://github.com/nicopasla/better-intra/commit/2320b3b))
+- chore: update AGENTS ([a954310](https://github.com/nicopasla/better-intra/commit/a954310))
+
 ## [1.2.0] - 2026-06-16
 
 ### Features 🎉
@@ -508,7 +525,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.2.0...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/nicopasla/better-intra/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/nicopasla/better-intra/compare/v1.1.5...v1.2.0
 [1.1.5]: https://github.com/nicopasla/better-intra/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/nicopasla/better-intra/compare/v1.1.3...v1.1.4

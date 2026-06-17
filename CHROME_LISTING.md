@@ -1,16 +1,31 @@
 # Better Intra
 
-UI and UX improvements for 42 Intra v3.
+Better Intra adds quality-of-life features to the 42 Intra v3 experience.
 
-## Features
+### 📅 Logtime
+Replace the default logtime view with a monthly calendar showing your logged hours at a glance. Each month is a colour-coded grid — darker means more hours per day. Set a monthly goal (default 140h) and see a progress bar with your percentage and remaining hours. Track your daily average, last active date, and optionally use emoji-mode to gamify your hours. Fully customisable colours and animations.
 
-- **Logtime calendar** — monthly calendar with colour-coded hours, weekly totals, goal tracking, daily averages, and custom emoji earnings.
-- **Clusters** — directional seat markers on the cluster map, cluster picker dropdown, and default cluster preference.
-- **Profile visuals** — custom avatar, banner, and background images. Visible to other Better Intra users. Cached for instant loading. ☁️
-- **Completed projects (marks)** — graded projects listed in the Projects card with expandable multi-attempt details. Sortable by date.
-- **Shortcuts** — up to 8 custom quick-link buttons with colours, emojis, and favicons. Drag to reorder.
-- **Friends widget** — see friends' avatars, levels, wallets, correction points, and online status. Top 3 get medal borders. ☁️
-- **Evaluations** — browser and Discord notifications when an evaluation is booked or correcteds are revealed. Test buttons let you preview notifications. Background service worker polls every 5 minutes. Discord connect auto-joins the Better Intra server for direct messages. ☁️
-- **Dark/light theme** — choose your preferred theme or follow your system setting.
-- **Cloud sync** — optional OAuth-based settings sync across devices via Cloudflare Worker. Push/pull with single click.
-- **Settings hub** — all settings in one place, accessible from the intra sidebar gear icon. Features can be toggled on/off individually.
+### 🖥️ Clusters
+See directional arrows on the cluster map showing which way each seat faces (works for Belgium clusters). Switch between clusters with a dropdown, toggle arrows on/off, and set a default cluster that loads automatically.
+
+### 👤 Profile
+Personalise your profile with custom avatar, banner, and background images — click your avatar to open the customisation panel. Reorder or hide dashboard cards (Logtime, Agenda, Evaluations, Projects, Achievements) by dragging them. Animated level bar with a wave effect, coloured to your preference. Filter your agenda by campus and event type. Click any seat label to jump to the cluster map with that seat highlighted.
+
+### 🔗 Shortcuts
+Add up to 8 quick-access links displayed as colourful buttons on your profile. Each link can have a name, URL, custom colour, and optional emoji. Site icons load automatically when no emoji is set. Text colour (black or white) is chosen for readability.
+
+### 👥 Friends
+Access a friends panel from a button in the bottom-right corner. Add friends by login, see their avatar, level bar, wallet, correction points, and online status. Sort by online status, name, level, wallet, or evaluation points. The button badge shows how many friends are online. Requires cloud sync.
+
+### ☁️ Cloud Sync (optional)
+Authenticate with your 42 Intra account via the Cloudflare Worker to sync settings across devices. Push, pull, or enable auto-sync. Synced visuals (avatar, banner, background) become visible to other Better Intra users viewing your profile.
+
+### 🔔 Evaluations ☁️
+Browser and Discord notifications when your evaluations are booked or correcteds are revealed 15 minutes before the slot. Background service worker polls every 5 minutes. Connect your Discord account from the hub — auto-joins the Better Intra server to enable direct messages. Test buttons let you preview both browser and Discord notifications. 42 sign-in required.
+
+### ⚙️ Settings Hub
+All extension settings in one place, accessible from the gear icon on the intra sidebar. Tabs for Logtime, Clusters, Profile, Shortcuts, Evaluations, and About. Turn features on/off or reset settings to default.
+
+---
+
+**Privacy**: All settings are stored locally. Cloud sync is optional and opt-in. No analytics, tracking, or advertising. See the full privacy policy on GitHub.

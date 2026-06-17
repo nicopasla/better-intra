@@ -3,7 +3,11 @@ import { getCloudLogin, fetchUserVisuals } from "../account/account.ts";
 import { createSettingsModal } from "./profile.modal.ts";
 import { applyThemeToProfileCard } from "./profile-card.ts";
 import { applyPublicLogtimeSettings, initLogtime } from "../logtime/logtime.ts";
-import { AVATAR_SELECTOR, BANNER_SELECTOR, BACKGROUND_SELECTOR } from "./selectors.ts";
+import {
+  AVATAR_SELECTOR,
+  BANNER_SELECTOR,
+  BACKGROUND_SELECTOR,
+} from "./selectors.ts";
 
 export interface VisualUrls {
   avatar: string;
@@ -44,9 +48,7 @@ const getVisualKey = (urls: VisualUrls) =>
 const CACHE_PREFIX = "visuals_cache_";
 const pendingRevalidations = new Set<string>();
 
-const getCachedVisuals = async (
-  login: string,
-): Promise<VisualUrls | null> => {
+const getCachedVisuals = async (login: string): Promise<VisualUrls | null> => {
   const result = (await chrome.storage.local.get(
     `${CACHE_PREFIX}${login}`,
   )) as Record<string, VisualUrls>;
@@ -93,16 +95,12 @@ const hasBackground = (el: HTMLElement | null, url?: string) => {
   const computed = window.getComputedStyle(el).backgroundImage || "";
   const inlineMatch = inline.match(urlRe);
   const computedMatch = computed.match(urlRe);
-  return (inlineMatch?.[2] === url) || (computedMatch?.[2] === url);
+  return inlineMatch?.[2] === url || computedMatch?.[2] === url;
 };
 
 const needsReapply = (urls: VisualUrls) => {
-  const avatar = document.querySelector(
-    AVATAR_SELECTOR,
-  ) as HTMLElement | null;
-  const banner = document.querySelector(
-    BANNER_SELECTOR,
-  ) as HTMLElement | null;
+  const avatar = document.querySelector(AVATAR_SELECTOR) as HTMLElement | null;
+  const banner = document.querySelector(BANNER_SELECTOR) as HTMLElement | null;
   const background = document.querySelector(
     BACKGROUND_SELECTOR,
   ) as HTMLElement | null;
@@ -159,11 +157,7 @@ export const injectCustomStyles = () => {
   document.head.appendChild(style);
 };
 
-const setStyleForSelector = (
-  id: string,
-  selector: string,
-  cssText: string,
-) => {
+const setStyleForSelector = (id: string, selector: string, cssText: string) => {
   let style = document.getElementById(id);
   if (!style) {
     style = document.createElement("style");
@@ -176,17 +170,17 @@ const setStyleForSelector = (
 const modeCss: Record<string, string> = {
   fill: "background-size: cover !important; background-repeat: no-repeat !important; background-position: center !important;",
   fit: "background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important;",
-  stretch: "background-size: 100% 100% !important; background-repeat: no-repeat !important; background-position: center !important;",
-  center: "background-size: auto !important; background-repeat: no-repeat !important; background-position: center !important;",
+  stretch:
+    "background-size: 100% 100% !important; background-repeat: no-repeat !important; background-position: center !important;",
+  center:
+    "background-size: auto !important; background-repeat: no-repeat !important; background-position: center !important;",
   tile: "background-size: auto !important; background-repeat: repeat !important; background-position: top left !important;",
 };
 
 export const applyImgs = (urls: VisualUrls | null) => {
   if (!urls) return;
 
-  const avatar = document.querySelector(
-    AVATAR_SELECTOR,
-  ) as HTMLElement | null;
+  const avatar = document.querySelector(AVATAR_SELECTOR) as HTMLElement | null;
 
   if (avatar && !originalAvatarUrl) {
     const inlineStyle = avatar.style.backgroundImage;
@@ -287,9 +281,7 @@ export const updateVisuals = async () => {
   const pathParts = location.pathname.split("/").filter((p) => p);
   injectCustomStyles();
 
-  const avatarEl = document.querySelector(
-    AVATAR_SELECTOR,
-  ) as HTMLElement;
+  const avatarEl = document.querySelector(AVATAR_SELECTOR) as HTMLElement;
 
   let myLogin = await getCloudLogin();
   if (!myLogin) myLogin = "me";
@@ -349,7 +341,11 @@ export const updateVisuals = async () => {
         backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
       };
 
-      if (!visualCache.avatar && !visualCache.banner && !visualCache.background) {
+      if (
+        !visualCache.avatar &&
+        !visualCache.banner &&
+        !visualCache.background
+      ) {
         avatarEl.style.setProperty("opacity", "1", "important");
       } else {
         applyImgs(visualCache);
@@ -358,12 +354,19 @@ export const updateVisuals = async () => {
       }
     } else {
       const cached = await getCachedVisuals(targetLogin);
-      if (cached && (cached.avatar || cached.banner || cached.background)) {
+      if (
+        cached &&
+        (cached.avatar ||
+          cached.banner ||
+          cached.background ||
+          cached.theme ||
+          cached.logtime)
+      ) {
         visualCache = cached;
         applyImgs(visualCache);
         lastAppliedUser = targetLogin;
         lastAppliedKey = getVisualKey(visualCache);
-        attachToggleListener(avatarEl);
+        if (cached.avatar) attachToggleListener(avatarEl);
         revalidateVisuals(targetLogin, cached);
       } else {
         isFetching = true;
@@ -375,14 +378,18 @@ export const updateVisuals = async () => {
 
           if (
             cloudUrls &&
-            (cloudUrls.avatar || cloudUrls.banner || cloudUrls.background)
+            (cloudUrls.avatar ||
+              cloudUrls.banner ||
+              cloudUrls.background ||
+              cloudUrls.theme ||
+              cloudUrls.logtime)
           ) {
             visualCache = cloudUrls;
             setCachedVisuals(targetLogin, cloudUrls);
             applyImgs(visualCache);
             lastAppliedUser = targetLogin;
             lastAppliedKey = getVisualKey(visualCache);
-            attachToggleListener(avatarEl);
+            if (cloudUrls.avatar) attachToggleListener(avatarEl);
           } else {
             avatarEl.style.setProperty("opacity", "1", "important");
           }

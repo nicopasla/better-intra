@@ -1,5 +1,6 @@
 import { updateEventFilters, injectEventsSelect } from "./events/events.ts";
 import { findSlotsButton, redirectDefenseLinks } from "./shortcuts.ts";
+import { replaceMoulinetteImage } from "./moulinette.ts";
 import { injectCustomStyles, updateVisuals } from "./visuals.ts";
 import { handleProfileRedirect } from "./highlight.ts";
 import { initLayoutManager } from "./layout.ts";
@@ -27,6 +28,7 @@ export async function initProfile() {
   await waitForBody();
   if (location.origin === "https://projects.intra.42.fr") {
     await redirectDefenseLinks();
+    replaceMoulinetteImage();
   }
   if (location.origin !== "https://profile-v3.intra.42.fr") return;
 

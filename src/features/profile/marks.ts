@@ -1,7 +1,10 @@
 import { html, render } from "lit-html";
 import { getConfig } from "../../config.ts";
 import { getCloudLogin } from "../account/account.ts";
+import { hashLogin } from "../../utils/crypto.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
+
+const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
 
 interface MarkedProject {
   projects_user_id: number;
@@ -11,6 +14,7 @@ interface MarkedProject {
   last_event_date: string;
   is_validated: boolean;
   occurrence: number;
+  is_outstanding?: number;
   teams: {
     last_event_date: string;
     final_mark: number;
@@ -115,6 +119,55 @@ function waitForCursusId(timeout = 10000): Promise<string> {
   });
 }
 
+let outstandingCache: Record<number, number> | null = null;
+
+async function fetchOutstandingProjects(): Promise<Record<number, number>> {
+  const raw = (await chrome.storage.local.get("OUTSTANDING_CACHE"))[
+    "OUTSTANDING_CACHE"
+  ];
+  if (raw && typeof raw === "string") {
+    const parsed = JSON.parse(raw);
+    if (Date.now() - parsed.fetchedAt < 12 * 60 * 60 * 1000) {
+      outstandingCache = parsed.ids;
+      return parsed.ids;
+    }
+  }
+
+  const cloudLogin = await getCloudLogin();
+  const sessionToken = await getConfig("CLOUD_TOKEN");
+  if (!cloudLogin || !sessionToken) return outstandingCache || {};
+
+  const hashedLogin = await hashLogin(cloudLogin);
+
+  try {
+    const res = await fetch(
+      `${WORKER_URL}/api/v1/private/outstanding?login=${encodeURIComponent(hashedLogin)}`,
+      {
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      },
+    );
+    if (!res.ok) return outstandingCache || {};
+
+    const data = (await res.json()) as { ids: Record<number, number> };
+    const ids: Record<number, number> = {};
+    for (const [key, count] of Object.entries(data.ids || {})) {
+      ids[Number(key)] = count;
+    }
+
+    await chrome.storage.local.set({
+      OUTSTANDING_CACHE: JSON.stringify({
+        ids,
+        fetchedAt: Date.now(),
+      }),
+    });
+
+    outstandingCache = ids;
+    return ids;
+  } catch {
+    return outstandingCache || {};
+  }
+}
+
 async function fetchMarks(
   login: string,
   token: string,
@@ -127,7 +180,15 @@ async function fetchMarks(
     });
     if (!res.ok) return [];
     const data = (await res.json()) as MarkedProject[];
-    return data.filter((p) => p.final_mark !== null);
+    const filtered = data.filter((p) => p.final_mark !== null);
+
+    const outstanding = await fetchOutstandingProjects();
+    for (const p of filtered) {
+      const count = outstanding[p.projects_user_id];
+      if (count) p.is_outstanding = count;
+    }
+
+    return filtered;
   } catch {
     return [];
   }
@@ -316,18 +377,22 @@ function injectMarks(marks: MarkedProject[], hasOngoing: boolean) {
       const left = document.createElement("div");
       left.className = "flex flex-row gap-1 items-center flex-1";
       left.appendChild(createProjectLink(project));
+      if (project.is_outstanding) {
+        const star = document.createElement("span");
+        star.className = "text-xs";
+        star.textContent = "⭐".repeat(project.is_outstanding);
+        left.appendChild(star);
+      }
       left.appendChild(createChevronElement());
-      const time = document.createElement("span");
-      time.className = "text-xs opacity-60";
-      time.style.cssText =
-        "margin-left: auto; min-width: 170px; text-align: right; flex-shrink: 0; margin-right: 12px;";
-      time.textContent = formatDate(project.last_event_date);
-      left.appendChild(time);
       row.appendChild(left);
 
       const right = document.createElement("div");
-      right.className = "text-xs flex flex-row items-center";
+      right.className = "text-xs flex flex-row items-center gap-2";
       right.style.minWidth = "52px";
+      const time = document.createElement("span");
+      time.className = "opacity-50";
+      time.textContent = formatDate(project.last_event_date);
+      right.appendChild(time);
       const iconWrap = document.createElement("div");
       renderStatusIcon(iconWrap, project.is_validated);
       right.appendChild(iconWrap);
@@ -375,17 +440,21 @@ function injectMarks(marks: MarkedProject[], hasOngoing: boolean) {
       const left = document.createElement("div");
       left.className = "flex flex-row gap-1 items-center flex-1";
       left.appendChild(createProjectLink(project));
-      const time = document.createElement("span");
-      time.className = "text-xs opacity-60";
-      time.style.cssText =
-        "margin-left: auto; min-width: 170px; text-align: right; flex-shrink: 0; margin-right: 12px;";
-      time.textContent = formatDate(project.last_event_date);
-      left.appendChild(time);
+      if (project.is_outstanding) {
+        const star = document.createElement("span");
+        star.className = "text-xs";
+        star.textContent = "⭐".repeat(project.is_outstanding);
+        left.appendChild(star);
+      }
       item.appendChild(left);
 
       const right = document.createElement("div");
-      right.className = "text-xs flex flex-row items-center";
+      right.className = "text-xs flex flex-row items-center gap-2";
       right.style.minWidth = "52px";
+      const time = document.createElement("span");
+      time.className = "opacity-50";
+      time.textContent = formatDate(project.last_event_date);
+      right.appendChild(time);
       const iconWrap = document.createElement("div");
       renderStatusIcon(iconWrap, project.is_validated);
       right.appendChild(iconWrap);

@@ -23,8 +23,9 @@ If you enable cloud sync, the following data is transmitted to the extension's C
 - Your **friend logins** — to fetch their online status and location
 - Your **custom profile visuals** (avatar, banner, background URLs) — so other Better Intra users can see them when viewing your profile
 - Your **Discord User ID** (if enabled) — for sending evaluation notifications via DM
+- Your **outstanding project flags** — so the extension can show a star on projects that were marked "Outstanding" during evaluation
 
-Data stored in Cloudflare KV is keyed under a hash of your login and is only accessible to you. The worker retains **invocation logs** for debugging purposes (request timestamps, endpoints, and HTTP status codes). These logs are not used for tracking or analytics.
+All your cloud data is keyed under a hash of your login and is only accessible to you. The worker retains **invocation logs** for debugging purposes (request timestamps, endpoints, and HTTP status codes). These logs are not used for tracking or analytics.
 
 The worker also caches **friend user IDs** and **online status** in separate KV keys to reduce calls to the 42 API. This cache is temporary and only contains 42 user IDs and online status booleans.
 

@@ -45,6 +45,19 @@
     var response = await originalFetch.apply(window, args);
     var url = getUrl(args[0]);
 
+    if (url.indexOf("/projects/") !== -1 && url.indexOf("cursus_id=") !== -1) {
+      var match = url.match(/cursus_id=(\d+)/);
+      if (match) {
+        var cursusId = match[1];
+        try {
+          sessionStorage.setItem("ft_active_cursus_id", cursusId);
+        } catch (e) {}
+        document.dispatchEvent(
+          new CustomEvent("42_CURSUS_ID", { detail: cursusId }),
+        );
+      }
+    }
+
     if (url.indexOf("/locations_stats") !== -1) {
       response
         .clone()
@@ -85,7 +98,9 @@
     if (kc && kc.token) {
       var t = "Bearer " + kc.token;
       intrapyToken = t;
-      try { sessionStorage.setItem("ft_intrapy_token", t); } catch (e) {}
+      try {
+        sessionStorage.setItem("ft_intrapy_token", t);
+      } catch (e) {}
       dispatchToken(t);
     }
   }, 2000);

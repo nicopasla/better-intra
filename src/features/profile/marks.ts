@@ -21,7 +21,10 @@ interface MarkedProject {
 
 const INJECTED_ID = "ft-marks-injected";
 
-let marksCache: MarkedProject[] | null = null;
+let marksCache: Record<string, MarkedProject[]> = {};
+let marksInitialized = false;
+let cachedToken: string | null = null;
+let cachedLogin: string | null = null;
 
 function waitForToken(timeout = 15000): Promise<string | null> {
   return new Promise((resolve) => {
@@ -82,11 +85,42 @@ function formatDate(dateStr: string): string {
   return `${relative} (${real})`;
 }
 
+function waitForCursusId(timeout = 10000): Promise<string> {
+  return new Promise((resolve) => {
+    const stored = sessionStorage.getItem("ft_active_cursus_id");
+    if (stored) {
+      resolve(stored);
+      return;
+    }
+
+    let resolved = false;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const handler = (e: CustomEvent) => {
+      if (resolved) return;
+      resolved = true;
+      cleanup();
+      resolve(e.detail);
+    };
+    const cleanup = () => {
+      document.removeEventListener("42_CURSUS_ID", handler as EventListener);
+      clearTimeout(timer);
+    };
+    document.addEventListener("42_CURSUS_ID", handler as EventListener);
+
+    timer = setTimeout(() => {
+      cleanup();
+      resolve("21");
+    }, timeout);
+  });
+}
+
 async function fetchMarks(
   login: string,
   token: string,
+  cursusId: string,
 ): Promise<MarkedProject[]> {
-  const url = `https://intrapy.intra.42.fr/api/v1/users/${login}/projects/marked?cursus_id=21`;
+  const url = `https://intrapy.intra.42.fr/api/v1/users/${login}/projects/marked?cursus_id=${cursusId}`;
   try {
     const res = await fetch(url, {
       headers: { Authorization: token },
@@ -356,6 +390,48 @@ function injectMarks(marks: MarkedProject[]) {
   flexContainer.appendChild(container);
 }
 
+async function tryInjectMarks(marks: MarkedProject[]) {
+  const sortOrder = await getConfig("PROFILE_MARKS_SORT_ORDER");
+  const sorted = [...marks].sort((a, b) => {
+    const diff =
+      new Date(a.last_event_date).getTime() -
+      new Date(b.last_event_date).getTime();
+    return sortOrder === "oldest_first" ? diff : -diff;
+  });
+  if (sorted.length === 0) return;
+
+  const tryInject = () => {
+    const card = findProjectsCard();
+    if (card) {
+      injectMarks(sorted);
+      return;
+    }
+    let attempts = 0;
+    const poll = () => {
+      if (++attempts > 50) return;
+      const c = findProjectsCard();
+      if (c) {
+        injectMarks(sorted);
+        return;
+      }
+      requestAnimationFrame(poll);
+    };
+    requestAnimationFrame(poll);
+  };
+  tryInject();
+}
+
+async function handleCursusSwitch(cursusId: string) {
+  const login = cachedLogin;
+  const token = cachedToken;
+  if (!login || !token) return;
+
+  if (!marksCache[cursusId]) {
+    marksCache[cursusId] = await fetchMarks(login, token, cursusId);
+  }
+  await tryInjectMarks(marksCache[cursusId]);
+}
+
 function getLoginFromPage(): string | null {
   const link = document.querySelector<HTMLAnchorElement>(
     'a[href^="https://projects.intra.42.fr/"]',
@@ -375,7 +451,7 @@ function getLoginFromPage(): string | null {
 }
 
 export async function initMarks() {
-  if (document.getElementById(INJECTED_ID)) return;
+  if (marksInitialized) return;
 
   const showMarks = await getConfig("PROFILE_SHOW_MARKS");
   if (!showMarks) return;
@@ -392,35 +468,19 @@ export async function initMarks() {
   const token = await waitForToken(30000);
   if (!token) return;
 
-  if (!marksCache) {
-    marksCache = await fetchMarks(myLogin, token);
-  }
-  const sortOrder = await getConfig("PROFILE_MARKS_SORT_ORDER");
-  const marks = [...marksCache].sort((a, b) => {
-    const diff =
-      new Date(a.last_event_date).getTime() -
-      new Date(b.last_event_date).getTime();
-    return sortOrder === "oldest_first" ? diff : -diff;
-  });
-  if (marks.length === 0) return;
+  cachedLogin = myLogin;
+  cachedToken = token;
+  marksInitialized = true;
 
-  const tryInject = () => {
-    const card = findProjectsCard();
-    if (card) {
-      injectMarks(marks);
-      return;
-    }
-    let attempts = 0;
-    const poll = () => {
-      if (++attempts > 50) return;
-      const c = findProjectsCard();
-      if (c) {
-        injectMarks(marks);
-        return;
-      }
-      requestAnimationFrame(poll);
-    };
-    requestAnimationFrame(poll);
-  };
-  tryInject();
+  document.addEventListener("42_CURSUS_ID", ((e: CustomEvent) => {
+    const cursusId =
+      e.detail || sessionStorage.getItem("ft_active_cursus_id") || "21";
+    handleCursusSwitch(cursusId);
+  }) as EventListener);
+
+  const cursusId = await waitForCursusId(10000);
+  if (!marksCache[cursusId]) {
+    marksCache[cursusId] = await fetchMarks(myLogin, token, cursusId);
+  }
+  await tryInjectMarks(marksCache[cursusId]);
 }

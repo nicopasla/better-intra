@@ -250,7 +250,7 @@ export function createTeamRow(
   return row;
 }
 
-function injectMarks(marks: MarkedProject[]) {
+function injectMarks(marks: MarkedProject[], hasOngoing: boolean) {
   const existing = document.getElementById(INJECTED_ID);
   if (existing) existing.remove();
 
@@ -258,9 +258,11 @@ function injectMarks(marks: MarkedProject[]) {
   if (!card) return;
 
   const nativeUl = card.querySelector(".h-full ul");
-  if (nativeUl) {
+
+  if (hasOngoing && nativeUl) {
     const nativeContainer = nativeUl.closest(".h-full");
     if (nativeContainer instanceof HTMLElement) {
+      nativeContainer.style.display = "";
       nativeContainer.style.paddingTop = "8px";
       nativeContainer.style.maxHeight = "96px";
       nativeContainer.style.overflowY = "auto";
@@ -274,14 +276,25 @@ function injectMarks(marks: MarkedProject[]) {
       nativeUl.style.columnGap = "8px";
       nativeUl.style.rowGap = "0";
     }
+  } else if (nativeUl && nativeUl.parentElement) {
+    nativeUl.parentElement.style.display = "none";
   }
 
   const container = document.createElement("div");
   container.id = INJECTED_ID;
-  container.style.cssText = `border-top: 1px solid rgba(128,128,128,0.2); margin-top: 0.25rem; padding: 0.25rem 8px 0 0; flex: 1; min-height: 0; overflow-y: auto; font-family: ${INTRA_FONT};`;
+  container.style.cssText = hasOngoing
+    ? `border-top: 1px solid rgba(128,128,128,0.2); margin-top: 0.25rem; padding: 0.25rem 8px 0 0; flex: 1; min-height: 0; overflow-y: auto; font-family: ${INTRA_FONT};`
+    : `padding: 0.5rem 8px 0.5rem 0; flex: 1; font-family: ${INTRA_FONT};`;
 
   const list = document.createElement("div");
   list.className = "flex flex-col";
+
+  if (!hasOngoing) {
+    const header = document.createElement("div");
+    header.className = "text-xs uppercase font-bold mb-1 opacity-60";
+    header.textContent = "Finished projects";
+    list.appendChild(header);
+  }
 
   for (const project of marks) {
     if (project.teams && project.teams.length > 1) {
@@ -400,25 +413,25 @@ async function tryInjectMarks(marks: MarkedProject[]) {
   });
   if (sorted.length === 0) return;
 
-  const tryInject = () => {
-    const card = findProjectsCard();
-    if (card) {
-      injectMarks(sorted);
+  let attempts = 0;
+  const liWait = 8;
+  const poll = () => {
+    if (++attempts > 50) return;
+    const c = findProjectsCard();
+    if (!c) {
+      requestAnimationFrame(poll);
       return;
     }
-    let attempts = 0;
-    const poll = () => {
-      if (++attempts > 50) return;
-      const c = findProjectsCard();
-      if (c) {
-        injectMarks(sorted);
-        return;
-      }
-      requestAnimationFrame(poll);
-    };
+    const ul = c.querySelector(".h-full ul");
+    const lis = ul?.querySelectorAll("li");
+    const hasOngoing = !!(lis && lis.length > 0);
+    if (!ul || hasOngoing || attempts >= liWait) {
+      injectMarks(sorted, hasOngoing);
+      return;
+    }
     requestAnimationFrame(poll);
   };
-  tryInject();
+  requestAnimationFrame(poll);
 }
 
 async function handleCursusSwitch(cursusId: string) {

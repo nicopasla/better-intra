@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-06-18
+
+### Features 🎉
+
+- feat(marks): show outstanding project stars ([ae4fbdd](https://github.com/nicopasla/better-intra/commit/ae4fbdd))
+- feat(marks): use dynamic cursus ID from profile-v3 dropdown instead of hardcoded 21 ([5e8de90](https://github.com/nicopasla/better-intra/commit/5e8de90))
+
+### Bug fixes 🐛
+
+- fix(marks): only show ongoing projects when there some ([ef8a99f](https://github.com/nicopasla/better-intra/commit/ef8a99f))
+
 ## [1.2.1] - 2026-06-17
 
 ### Features 🎉
@@ -525,7 +536,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.2.1...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/nicopasla/better-intra/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/nicopasla/better-intra/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/nicopasla/better-intra/compare/v1.1.5...v1.2.0
 [1.1.5]: https://github.com/nicopasla/better-intra/compare/v1.1.4...v1.1.5

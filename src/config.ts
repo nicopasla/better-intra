@@ -52,6 +52,8 @@ export interface BetterIntraConfig {
   PROFILE_CARD_ORDER: string[];
   PROFILE_USE_CUSTOM_COLOR: boolean;
   PROFILE_SHOW_MARKS: boolean;
+  PROFILE_SHOW_ROULETTE: boolean;
+  PROFILE_SHOW_ROULETTE_HISTORY: boolean;
   PROFILE_MARKS_SORT_ORDER: "newest_first" | "oldest_first";
   PROFILE_PROJECTS_SORT: boolean;
 
@@ -116,9 +118,12 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
     "LOGTIME",
     "ACHIEVEMENTS",
     "PROJECTS",
+    "THURSDAY ROULETTE",
   ],
   PROFILE_USE_CUSTOM_COLOR: true,
   PROFILE_SHOW_MARKS: true,
+  PROFILE_SHOW_ROULETTE: true,
+  PROFILE_SHOW_ROULETTE_HISTORY: false,
   PROFILE_MARKS_SORT_ORDER: "newest_first",
   PROFILE_PROJECTS_SORT: true,
 
@@ -173,6 +178,8 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "PROFILE_CARD_ORDER",
   "PROFILE_USE_CUSTOM_COLOR",
   "PROFILE_SHOW_MARKS",
+  "PROFILE_SHOW_ROULETTE",
+  "PROFILE_SHOW_ROULETTE_HISTORY",
   "PROFILE_MARKS_SORT_ORDER",
   "PROFILE_PROJECTS_SORT",
   "SHORTCUTS_LINKS",
@@ -211,8 +218,28 @@ export const getConfig = async <T extends ConfigKey>(
 
   // Some legacy callers serialize arrays/objects as JSON strings (e.g. hub settings).
   // Parse those back so consumers get the declared type.
-  if (typeof value === "string" && (value.startsWith("[") || value.startsWith("{"))) {
-    try { value = JSON.parse(value); } catch { /* keep string */ }
+  if (
+    typeof value === "string" &&
+    (value.startsWith("[") || value.startsWith("{"))
+  ) {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      /* keep string */
+    }
+  }
+
+  if (key === "PROFILE_CARD_ORDER" && Array.isArray(value)) {
+    const stored = value as string[];
+    const defaults = CONFIG_DEFAULT.PROFILE_CARD_ORDER;
+    const storedSet = new Set(
+      stored.map((s) => s.replace(/^-/, "").toUpperCase()),
+    );
+    for (const def of defaults) {
+      if (!storedSet.has(def.toUpperCase())) {
+        stored.push(def);
+      }
+    }
   }
 
   return value as BetterIntraConfig[T];

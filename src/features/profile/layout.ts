@@ -23,6 +23,7 @@ function getCards(): HTMLElement[] {
       "PENDING EVALUATIONS",
       "LAST ACHIEVEMENTS",
       "PROJECTS",
+      "THURSDAY ROULETTE",
     ];
 
     if (validTitles.includes(title)) {
@@ -65,6 +66,7 @@ function getCardTitle(card: HTMLElement): string {
     "PENDING EVALUATIONS",
     "LAST ACHIEVEMENTS",
     "PROJECTS",
+    "THURSDAY ROULETTE",
   ]) {
     if (text.includes(token)) return token;
   }

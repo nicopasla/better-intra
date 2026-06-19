@@ -123,6 +123,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
         "bg-warning text-warning-content hover:bg-warning/80 border-warning",
       ACHIEVEMENTS:
         "bg-primary text-primary-content hover:bg-primary/80 border-primary",
+      "THURSDAY ROULETTE":
+        "bg-accent text-accent-content hover:bg-accent/80 border-accent",
     };
 
     const getCardColor = (name: string) => {

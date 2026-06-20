@@ -27,6 +27,7 @@ const INJECTED_ID = "ft-marks-injected";
 
 let marksCache: Record<string, MarkedProject[]> = {};
 let marksInitialized = false;
+let otherProfileRunning = false;
 let cachedToken: string | null = null;
 let cachedLogin: string | null = null;
 
@@ -121,50 +122,80 @@ function waitForCursusId(timeout = 10000): Promise<string> {
 
 let outstandingCache: Record<number, number> | null = null;
 
-async function fetchOutstandingProjects(): Promise<Record<number, number>> {
-  const raw = (await chrome.storage.local.get("OUTSTANDING_CACHE"))[
-    "OUTSTANDING_CACHE"
-  ];
+async function fetchOutstandingProjects(
+  targetLogin?: string,
+  count?: number,
+): Promise<Record<number, number>> {
+  const cacheKey = targetLogin
+    ? `OUTSTANDING_CACHE_${targetLogin}`
+    : "OUTSTANDING_CACHE";
+  console.log("[marks] fetchOutstandingProjects cacheKey:", cacheKey);
+
+  const raw = (await chrome.storage.local.get(cacheKey))[cacheKey];
   if (raw && typeof raw === "string") {
     const parsed = JSON.parse(raw);
-    if (Date.now() - parsed.fetchedAt < 12 * 60 * 60 * 1000) {
-      outstandingCache = parsed.ids;
+    const age = Date.now() - parsed.fetchedAt;
+    console.log("[marks] outstanding cache found, age:", Math.round(age / 1000 / 60), "min");
+    if (age < 12 * 60 * 60 * 1000) {
+      console.log("[marks] outstanding cache HIT, returning", Object.keys(parsed.ids).length, "entries");
+      if (!targetLogin) outstandingCache = parsed.ids;
       return parsed.ids;
     }
+    console.log("[marks] outstanding cache EXPIRED");
   }
 
   const cloudLogin = await getCloudLogin();
+  console.log("[marks] cloudLogin for outstanding auth:", cloudLogin);
+
   const sessionToken = await getConfig("CLOUD_TOKEN");
-  if (!cloudLogin || !sessionToken) return outstandingCache || {};
+  console.log("[marks] sessionToken:", sessionToken ? "present" : "missing");
+
+  if (!cloudLogin || !sessionToken) {
+    console.log("[marks] no cloud auth, returning fallback");
+    return targetLogin ? {} : (outstandingCache || {});
+  }
 
   const hashedLogin = await hashLogin(cloudLogin);
+  console.log("[marks] hashedLogin:", hashedLogin);
 
   try {
-    const res = await fetch(
-      `${WORKER_URL}/api/v1/private/outstanding?login=${encodeURIComponent(hashedLogin)}`,
-      {
-        headers: { Authorization: `Bearer ${sessionToken}` },
-      },
-    );
-    if (!res.ok) return outstandingCache || {};
+    let url = `${WORKER_URL}/api/v1/private/outstanding?login=${encodeURIComponent(hashedLogin)}`;
+    if (targetLogin) {
+      url += `&target=${encodeURIComponent(targetLogin)}`;
+      if (count !== undefined) url += `&count=${count}`;
+    }
+    console.log("[marks] outstanding worker URL:", url);
 
-    const data = (await res.json()) as { ids: Record<number, number> };
-    const ids: Record<number, number> = {};
-    for (const [key, count] of Object.entries(data.ids || {})) {
-      ids[Number(key)] = count;
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${sessionToken}` },
+    });
+    console.log("[marks] outstanding worker response status:", res.status);
+    if (!res.ok) {
+      console.log("[marks] outstanding worker response NOT ok");
+      return targetLogin ? {} : (outstandingCache || {});
     }
 
+    const data = (await res.json()) as { ids: Record<number, number> };
+    console.log("[marks] outstanding worker returned:", JSON.stringify(data));
+    const ids: Record<number, number> = {};
+    for (const [key, c] of Object.entries(data.ids || {})) {
+      ids[Number(key)] = c;
+    }
+    console.log("[marks] outstanding parsed ids:", JSON.stringify(ids));
+
     await chrome.storage.local.set({
-      OUTSTANDING_CACHE: JSON.stringify({
+      [cacheKey]: JSON.stringify({
         ids,
         fetchedAt: Date.now(),
       }),
     });
+    console.log("[marks] outstanding cached to storage key:", cacheKey);
 
-    outstandingCache = ids;
+    if (!targetLogin) outstandingCache = ids;
     return ids;
-  } catch {
-    return outstandingCache || {};
+  } catch (err) {
+    console.log("[marks] outstanding fetch error:", err);
+    return targetLogin ? {} : (outstandingCache || {});
   }
 }
 
@@ -172,34 +203,61 @@ async function fetchMarks(
   login: string,
   token: string,
   cursusId: string,
+  targetLogin?: string,
 ): Promise<MarkedProject[]> {
   const url = `https://intrapy.intra.42.fr/api/v1/users/${login}/projects/marked?cursus_id=${cursusId}`;
+  console.log("[marks] fetchMarks URL:", url);
   try {
     const res = await fetch(url, {
       headers: { Authorization: token },
     });
-    if (!res.ok) return [];
-    const data = (await res.json()) as MarkedProject[];
-    const filtered = data.filter((p) => p.final_mark !== null);
-
-    const outstanding = await fetchOutstandingProjects();
-    for (const p of filtered) {
-      const count = outstanding[p.projects_user_id];
-      if (count) p.is_outstanding = count;
+    console.log("[marks] intrapy response status:", res.status);
+    if (!res.ok) {
+      console.log("[marks] intrapy response NOT ok, returning []");
+      return [];
     }
+    const data = (await res.json()) as MarkedProject[];
+    console.log("[marks] intrapy raw count:", data.length);
+    const filtered = data.filter((p) => p.final_mark !== null);
+    console.log("[marks] intrapy filtered count (final_mark !== null):", filtered.length);
+
+    console.log("[marks] fetching outstanding projects, targetLogin:", targetLogin, "count:", filtered.length);
+    const outstanding = await fetchOutstandingProjects(
+      targetLogin,
+      filtered.length,
+    );
+    const outstandingCount = Object.keys(outstanding).length;
+    console.log("[marks] outstanding response, projects with stars:", outstandingCount);
+
+    let starredCount = 0;
+    for (const p of filtered) {
+      const oc = outstanding[p.projects_user_id];
+      if (oc) {
+        p.is_outstanding = oc;
+        starredCount++;
+      }
+    }
+    console.log("[marks] projects assigned stars:", starredCount);
 
     return filtered;
-  } catch {
+  } catch (err) {
+    console.log("[marks] fetchMarks error:", err);
     return [];
   }
 }
 
-function findProjectsCard(): HTMLElement | null {
+function findCard(title: "PROJECTS" | "MARKS"): HTMLElement | null {
   const cards = document.querySelectorAll<HTMLElement>(".bg-white.md\\:h-96");
+  console.log("[marks] findCard:", title, "found", cards.length, "cards");
   for (const card of cards) {
-    const title = card.querySelector("[class*='uppercase']");
-    if (title?.textContent?.trim().toUpperCase() === "PROJECTS") return card;
+    const titleEl = card.querySelector("[class*='uppercase']");
+    const text = titleEl?.textContent?.trim();
+    if (text?.toUpperCase() === title) {
+      console.log("[marks] findCard:", title, "found");
+      return card;
+    }
   }
+  console.log("[marks] findCard:", title, "NOT found");
   return null;
 }
 
@@ -312,13 +370,19 @@ export function createTeamRow(
 }
 
 function injectMarks(marks: MarkedProject[], hasOngoing: boolean) {
+  console.log("[marks] injectMarks called with", marks.length, "marks, hasOngoing:", hasOngoing);
+
   const existing = document.getElementById(INJECTED_ID);
   if (existing) existing.remove();
 
-  const card = findProjectsCard();
-  if (!card) return;
+  const card = findCard("PROJECTS");
+  if (!card) {
+    console.log("[marks] injectMarks: no projects card found, aborting");
+    return;
+  }
 
   const nativeUl = card.querySelector(".h-full ul");
+  console.log("[marks] injectMarks: nativeUl found:", !!nativeUl);
 
   if (hasOngoing && nativeUl) {
     const nativeContainer = nativeUl.closest(".h-full");
@@ -470,23 +534,35 @@ function injectMarks(marks: MarkedProject[], hasOngoing: boolean) {
 
   const flexContainer = card.querySelector(".flex.flex-col") || card;
   flexContainer.appendChild(container);
+  console.log("[marks] injectMarks: DOM injected successfully");
 }
 
 async function tryInjectMarks(marks: MarkedProject[]) {
+  console.log("[marks] tryInjectMarks called with", marks.length, "marks");
+
   const sortOrder = await getConfig("PROFILE_MARKS_SORT_ORDER");
+  console.log("[marks] marks sort order:", sortOrder);
+
   const sorted = [...marks].sort((a, b) => {
     const diff =
       new Date(a.last_event_date).getTime() -
       new Date(b.last_event_date).getTime();
     return sortOrder === "oldest_first" ? diff : -diff;
   });
-  if (sorted.length === 0) return;
+  if (sorted.length === 0) {
+    console.log("[marks] tryInjectMarks: no marks, returning");
+    return;
+  }
 
+  console.log("[marks] tryInjectMarks: starting poll for projects card...");
   let attempts = 0;
   const liWait = 8;
   const poll = () => {
-    if (++attempts > 50) return;
-    const c = findProjectsCard();
+    if (++attempts > 50) {
+      console.log("[marks] tryInjectMarks: poll timeout after 50 attempts");
+      return;
+    }
+    const c = findCard("PROJECTS");
     if (!c) {
       requestAnimationFrame(poll);
       return;
@@ -494,6 +570,7 @@ async function tryInjectMarks(marks: MarkedProject[]) {
     const ul = c.querySelector(".h-full ul");
     const lis = ul?.querySelectorAll("li");
     const hasOngoing = !!(lis && lis.length > 0);
+    console.log("[marks] tryInjectMarks: poll attempt", attempts, "ul:", !!ul, "lis:", lis?.length ?? 0, "hasOngoing:", hasOngoing);
     if (!ul || hasOngoing || attempts >= liWait) {
       injectMarks(sorted, hasOngoing);
       return;
@@ -520,49 +597,169 @@ function getLoginFromPage(): string | null {
   );
   if (link) {
     const parts = link.pathname.split("/").filter(Boolean);
-    return parts[parts.length - 1] || null;
+    const login = parts[parts.length - 1] || null;
+    console.log("[marks] getLoginFromPage (projects link):", login);
+    return login;
   }
   const profileLink = document.querySelector<HTMLAnchorElement>(
     'a[href^="https://profile.intra.42.fr/users/"]',
   );
   if (profileLink) {
     const parts = profileLink.pathname.split("/").filter(Boolean);
-    return parts[parts.length - 1] || null;
+    const login = parts[parts.length - 1] || null;
+    console.log("[marks] getLoginFromPage (profile link):", login);
+    return login;
   }
+  console.log("[marks] getLoginFromPage: no login found on page");
   return null;
 }
 
+async function enhanceExistingMarks(
+  card: HTMLElement,
+  targetLogin: string,
+): Promise<boolean> {
+  console.log("[marks] enhanceExistingMarks for:", targetLogin);
+
+  let attempts = 0;
+  while (attempts < 30) {
+    const container = card.querySelector<HTMLElement>(".flex.flex-col.gap-2");
+    if (container) {
+      const items = container.querySelectorAll<HTMLElement>(":scope > div");
+      if (items.length > 0) {
+        const entries: { el: HTMLElement; projectsUserId: number }[] = [];
+        for (let i = 0; i < items.length; i++) {
+          const link = items[i].querySelector<HTMLAnchorElement>(
+            "a[href*='projects_users']",
+          );
+          if (!link) continue;
+          const match = link.href.match(/projects_users\/(\d+)/);
+          if (!match) continue;
+          entries.push({ el: items[i], projectsUserId: Number(match[1]) });
+        }
+        console.log(
+          "[marks] enhanceExistingMarks: parsed",
+          entries.length,
+          "entries, IDs:",
+          entries.map((e) => e.projectsUserId),
+        );
+
+        const outstanding = await fetchOutstandingProjects(
+          targetLogin,
+          entries.length,
+        );
+        console.log(
+          "[marks] enhanceExistingMarks: outstanding:",
+          JSON.stringify(outstanding),
+        );
+
+        let starred = 0;
+        for (const entry of entries) {
+          const count = outstanding[entry.projectsUserId];
+          if (!count) continue;
+
+          const flexRow = entry.el.querySelector<HTMLElement>(
+            ".flex.flex-row.justify-between, .flex.flex-row",
+          );
+          if (!flexRow) continue;
+
+          const link = flexRow.querySelector("a");
+          if (!link) continue;
+
+          const star = document.createElement("span");
+          star.className = "text-xs";
+          star.style.marginLeft = "2px";
+          star.textContent = "⭐".repeat(count);
+          link.parentElement?.appendChild(star);
+          starred++;
+        }
+        console.log("[marks] enhanceExistingMarks: added stars to", starred, "entries");
+        return true;
+      }
+    }
+    await new Promise((r) => requestAnimationFrame(r));
+    attempts++;
+  }
+  console.log("[marks] enhanceExistingMarks: timed out");
+  return false;
+}
+
 export async function initMarks() {
-  if (marksInitialized) return;
+  console.log("[marks] initMarks called", {
+    pathname: location.pathname,
+    marksInitialized,
+  });
+
+  if (marksInitialized) {
+    console.log("[marks] already initialized, skipping");
+    return;
+  }
 
   const showMarks = await getConfig("PROFILE_SHOW_MARKS");
+  console.log("[marks] showMarks config:", showMarks);
   if (!showMarks) return;
 
-  if (
-    location.hostname !== "profile-v3.intra.42.fr" ||
-    location.pathname !== "/"
-  )
+  if (location.hostname !== "profile-v3.intra.42.fr") {
+    console.log("[marks] wrong hostname:", location.hostname);
     return;
-
-  const myLogin = (await getCloudLogin()) || getLoginFromPage();
-  if (!myLogin) return;
-
-  const token = await waitForToken(30000);
-  if (!token) return;
-
-  cachedLogin = myLogin;
-  cachedToken = token;
-  marksInitialized = true;
-
-  document.addEventListener("42_CURSUS_ID", ((e: CustomEvent) => {
-    const cursusId =
-      e.detail || sessionStorage.getItem("ft_active_cursus_id") || "21";
-    handleCursusSwitch(cursusId);
-  }) as EventListener);
-
-  const cursusId = await waitForCursusId(10000);
-  if (!marksCache[cursusId]) {
-    marksCache[cursusId] = await fetchMarks(myLogin, token, cursusId);
   }
-  await tryInjectMarks(marksCache[cursusId]);
+
+  const isOwnProfile = location.pathname === "/";
+  console.log("[marks] isOwnProfile:", isOwnProfile);
+
+  if (isOwnProfile) {
+    const pageLogin = getLoginFromPage();
+    const profileLogin = (await getCloudLogin()) || pageLogin;
+    console.log("[marks] own profile, login:", profileLogin);
+    if (!profileLogin) {
+      console.log("[marks] no profileLogin, aborting");
+      return;
+    }
+
+    console.log("[marks] waiting for intrapy token...");
+    const token = await waitForToken(30000);
+    console.log("[marks] intrapy token:", token ? "found" : "NOT FOUND");
+    if (!token) return;
+
+    cachedLogin = profileLogin;
+    cachedToken = token;
+    marksInitialized = true;
+
+    console.log("[marks] setting up cursus listener for own profile");
+    document.addEventListener("42_CURSUS_ID", ((e: CustomEvent) => {
+      const cursusId =
+        e.detail || sessionStorage.getItem("ft_active_cursus_id") || "21";
+      console.log("[marks] 42_CURSUS_ID event:", cursusId);
+      handleCursusSwitch(cursusId);
+    }) as EventListener);
+
+    const cursusId = await waitForCursusId(10000);
+    console.log("[marks] cursusId:", cursusId);
+
+    if (!marksCache[cursusId]) {
+      console.log(`[marks] fetching marks for login=${profileLogin} cursusId=${cursusId}`);
+      marksCache[cursusId] = await fetchMarks(profileLogin, token, cursusId);
+      console.log("[marks] fetched marks count:", marksCache[cursusId].length);
+    } else {
+      console.log("[marks] marksCache hit for cursusId:", cursusId);
+    }
+
+    console.log("[marks] injecting marks into DOM...");
+    await tryInjectMarks(marksCache[cursusId]);
+    console.log("[marks] initMarks own-profile complete");
+  } else {
+    const targetLogin = location.pathname.split("/")[2];
+    if (!targetLogin) return;
+
+    if (otherProfileRunning) return;
+
+    const card = findCard("MARKS");
+    if (!card) return;
+
+    otherProfileRunning = true;
+    const enhanced = await enhanceExistingMarks(card, targetLogin);
+    otherProfileRunning = false;
+    if (!enhanced) return;
+
+    marksInitialized = true;
+  }
 }

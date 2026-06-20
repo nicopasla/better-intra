@@ -3,7 +3,7 @@
   "name": "Better Intra",
   "version": "1.0.8",
   "description": "UI and UX improvements for 42 Intra: logtime calendar, cluster map tools, custom profiles, shortcuts, friends widget, and more.",
-  "permissions": ["storage", "activeTab", "notifications", "alarms"],
+  "permissions": ["storage", "activeTab"],
   "background": {
     "service_worker": "background.js"
   },
@@ -23,9 +23,7 @@
     "128": "icons/icon-128.png"
   },
   "incognito": "not_allowed",
-  "host_permissions": [
-    "https://better-intra-worker.nicopasla.workers.dev/*"
-  ],
+  "host_permissions": ["https://better-intra-worker.nicopasla.workers.dev/*"],
   "content_scripts": [
     {
       "matches": ["https://*.intra.42.fr/*"],

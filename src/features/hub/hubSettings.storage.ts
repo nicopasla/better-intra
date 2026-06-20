@@ -25,7 +25,13 @@ function normalizeActive(raw: unknown): FeatureId[] {
     FEATURE_IDS.has(v as FeatureId),
   );
 
-  return ids.length ? ids : FEATURE_DEFS.map((f) => f.id);
+  if (ids.length === 0) return FEATURE_DEFS.map((f) => f.id);
+
+  if (!ids.includes("evaluations")) {
+    ids.push("evaluations");
+  }
+
+  return ids;
 }
 
 export async function getActiveFeatures(): Promise<FeatureId[]> {

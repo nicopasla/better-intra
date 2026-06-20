@@ -465,7 +465,7 @@ function renderDiscordPanel() {
     const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
 
     const update = async () => {
-      const [store, discordEnabled, activeScripts] = await Promise.all([
+      const [store, discordEnabled] = await Promise.all([
         chrome.storage.local.get([
           "CLOUD_TOKEN",
           "CLOUD_LOGIN",
@@ -473,15 +473,12 @@ function renderDiscordPanel() {
           "DISCORD_USERNAME",
         ]),
         getConfig("DISCORD_ENABLED"),
-        getConfig("ACTIVE_SCRIPTS"),
       ]);
       const token = String(store.CLOUD_TOKEN || "");
       const login = String(store.CLOUD_LOGIN || "");
       const discordId = String(store.DISCORD_ID || "");
       const discordUsername = String(store.DISCORD_USERNAME || "");
       const discordOn = !!discordEnabled;
-      const panelEnabled =
-        (activeScripts as any)?.includes?.("evaluations") ?? false;
 
       const authUrl =
         token && login
@@ -492,25 +489,15 @@ function renderDiscordPanel() {
 
       render(
         html`
-          <div
-            class="card bg-base-200 shadow-sm p-3 sm:p-4 col-span-full ${panelEnabled
-              ? ""
-              : "opacity-40 grayscale"}"
-          >
-            <div class="flex items-center justify-between gap-3 mb-4">
-              <div class="flex items-baseline gap-2">
-                <span class="text-sm">Discord</span>
-                <span class="text-xs opacity-50"
-                  >Notifications and account connection.</span
-                >
-              </div>
+          <div class="card bg-base-200 shadow-sm p-5 sm:p-6 col-span-full">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-base font-medium">Discord</span>
               ${discordId
                 ? html`<div class="flex items-center gap-2">
                     <span class="text-xs status-text"></span>
                     <button
                       type="button"
                       class="btn btn-accent btn-sm"
-                      ?disabled="${!panelEnabled}"
                       @click="${async (e: Event) => {
                         const btn = e.target as HTMLButtonElement;
                         const statusEl = btn.parentElement!.querySelector(
@@ -556,16 +543,20 @@ function renderDiscordPanel() {
                   </div>`
                 : ""}
             </div>
+            <p class="text-sm opacity-60 mt-2 mb-4">
+              Get evaluation reminders via Discord DM — booked and 15-min reveal
+              notifications.
+            </p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="card bg-base-300/50 p-3 sm:p-4">
+              <div class="card bg-base-300/50 p-4 sm:p-5">
                 <div
                   class="flex items-start sm:items-center justify-between gap-3"
                 >
                   <div class="flex flex-col gap-0.5">
-                    <span class="text-sm font-medium"
+                    <span class="text-base font-medium"
                       >Discord notifications</span
                     >
-                    <span class="text-xs opacity-50"
+                    <span class="text-sm opacity-50"
                       >Sends evaluation notifications to your Discord DMs via
                       bot.</span
                     >
@@ -573,7 +564,6 @@ function renderDiscordPanel() {
                   <input
                     type="checkbox"
                     class="toggle toggle-lg toggle-accent"
-                    ?disabled="${!panelEnabled}"
                     .checked="${discordEnabled}"
                     @change="${(e: Event) => {
                       chrome.storage.local.set({
@@ -584,10 +574,10 @@ function renderDiscordPanel() {
                 </div>
               </div>
               <div
-                class="card bg-base-300/50 p-3 sm:p-4 flex flex-col gap-3 justify-center"
+                class="card bg-base-300/50 p-4 sm:p-5 flex flex-col gap-3 justify-center"
               >
                 ${!discordOn
-                  ? html`<span class="text-sm opacity-50"
+                  ? html`<span class="text-base opacity-50"
                       >Turn on notifications to connect</span
                     >`
                   : discordId
@@ -595,13 +585,12 @@ function renderDiscordPanel() {
                         <div
                           class="flex items-center justify-between gap-3 flex-wrap"
                         >
-                          <span class="text-sm text-success font-medium"
-                            >Connected as @${discordUsername || discordId}</span
+                          <span class="badge badge-success badge-lg gap-1"
+                            >@${discordUsername || discordId}</span
                           >
                           <button
                             type="button"
-                            class="btn btn-error btn-xs btn-outline"
-                            ?disabled="${!panelEnabled}"
+                            class="btn btn-error btn-sm btn-outline"
                             @click="${async (e: Event) => {
                               const btn = e.target as HTMLButtonElement;
                               btn.disabled = true;
@@ -640,7 +629,6 @@ function renderDiscordPanel() {
                           <button
                             type="button"
                             class="btn bg-[#5865F2] text-white border-none hover:bg-[#4752C4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
-                            ?disabled="${!panelEnabled}"
                             @click="${() => {
                               window.open(authUrl, "_blank");
                             }}"
@@ -666,8 +654,7 @@ function renderDiscordPanel() {
       if (
         "DISCORD_ID" in changes ||
         "DISCORD_USERNAME" in changes ||
-        "DISCORD_ENABLED" in changes ||
-        "ACTIVE_SCRIPTS" in changes
+        "DISCORD_ENABLED" in changes
       ) {
         update();
       }
@@ -690,32 +677,6 @@ function renderSetting(def: HubSettingDef, enabled: boolean) {
 
   if (def.kind === "discord-panel") {
     return renderSettingControl(def, enabled);
-  }
-
-  if (def.kind === "action") {
-    return html`<div
-      class="card bg-base-200 shadow-sm p-3 sm:p-4 col-span-full ${enabled
-        ? ""
-        : "opacity-40 grayscale"}"
-    >
-      <div class="flex items-center justify-between gap-3">
-        <div class="flex flex-col gap-0.5">
-          <span class="text-sm font-medium">${def.label}</span>
-          ${def.desc
-            ? html`<span class="text-xs opacity-50">${def.desc}</span>`
-            : ""}
-        </div>
-        <button
-          type="button"
-          class="btn btn-accent btn-sm"
-          ?disabled="${!enabled}"
-          @click="${() =>
-            chrome.storage.local.set({ TEST_NOTIFICATIONS: Date.now() })}"
-        >
-          ${def.actionLabel}
-        </button>
-      </div>
-    </div>`;
   }
 
   const COLSPAN_CLASSES = ["col-span-1", "col-span-2", "col-span-3"] as const;
@@ -809,6 +770,7 @@ function renderTabsContent(active: FeatureId[], disabledDeps: Set<string>) {
       renderSetting(
         def,
         f.id === "about" ||
+          f.id === "evaluations" ||
           (enabled &&
             !(def.key && disabledDeps.has(def.key)) &&
             !(def.requiresCloud && disabledDeps.has("__CLOUD__"))),
@@ -831,14 +793,16 @@ function renderTabsContent(active: FeatureId[], disabledDeps: Set<string>) {
         class="tab-content bg-base-100 border-base-300 p-0 overflow-y-auto"
       >
         <div
-          class="flex flex-col ${enabled || f.id === "about"
+          class="flex flex-col ${enabled ||
+          f.id === "about" ||
+          f.id === "evaluations"
             ? cloudDisabled
               ? "opacity-40 grayscale"
               : ""
             : "opacity-40 grayscale"}"
           data-feature-panel="${f.id}"
         >
-          ${f.id !== "about"
+          ${f.id !== "about" && f.id !== "evaluations"
             ? html`
                 <div
                   class="sticky top-0 z-20 flex items-center justify-between bg-base-200 px-6 py-4 border-b border-base-300 shadow-sm"

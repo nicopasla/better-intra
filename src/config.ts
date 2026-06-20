@@ -67,8 +67,6 @@ export interface BetterIntraConfig {
   SHOW_FRIENDS_WIDGET: boolean;
   FRIENDS_DATA_CACHE: { data: unknown[]; timestamp: number } | null;
 
-  EVALUATIONS_NOTIFY_AS_EVALUATOR: boolean;
-  EVALUATIONS_NOTIFY_REVEAL: boolean;
   DISCORD_ENABLED: boolean;
   DISCORD_ID: string;
   DISCORD_USERNAME: string;
@@ -80,7 +78,13 @@ export interface BetterIntraConfig {
  * It must implement the BetterIntraConfig interface to ensure all keys have a default.
  */
 export const CONFIG_DEFAULT: BetterIntraConfig = {
-  ACTIVE_SCRIPTS: ["logtime", "clusters", "profile", "shortcuts"],
+  ACTIVE_SCRIPTS: [
+    "logtime",
+    "clusters",
+    "profile",
+    "shortcuts",
+    "evaluations",
+  ],
   CLOUD_SYNC_ENABLED: false,
   LAST_CLOUD_SYNC: null,
   CLOUD_TOKEN: "",
@@ -123,7 +127,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   PROFILE_USE_CUSTOM_COLOR: true,
   PROFILE_SHOW_MARKS: true,
   PROFILE_SHOW_ROULETTE: true,
-  PROFILE_SHOW_ROULETTE_HISTORY: false,
+  PROFILE_SHOW_ROULETTE_HISTORY: true,
   PROFILE_MARKS_SORT_ORDER: "newest_first",
   PROFILE_PROJECTS_SORT: true,
 
@@ -137,8 +141,6 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   SHOW_FRIENDS_WIDGET: true,
   FRIENDS_DATA_CACHE: null,
 
-  EVALUATIONS_NOTIFY_AS_EVALUATOR: false,
-  EVALUATIONS_NOTIFY_REVEAL: false,
   DISCORD_ENABLED: false,
   DISCORD_ID: "",
   DISCORD_USERNAME: "",
@@ -188,8 +190,6 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "FRIENDS_LIST",
   "FRIENDS_SORT_MODE",
   "SHOW_FRIENDS_WIDGET",
-  "EVALUATIONS_NOTIFY_AS_EVALUATOR",
-  "EVALUATIONS_NOTIFY_REVEAL",
   "DISCORD_ENABLED",
   "DISCORD_ID",
   "DISCORD_USERNAME",

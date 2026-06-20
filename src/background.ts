@@ -5,6 +5,7 @@ const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
 chrome.runtime.onInstalled.addListener(() => {
   syncRegistration();
   syncDiscord();
+  syncDiscordQuiet();
 });
 
 chrome.storage.onChanged.addListener((changes) => {
@@ -16,6 +17,13 @@ chrome.storage.onChanged.addListener((changes) => {
   }
   if ("DISCORD_ENABLED" in changes || "DISCORD_ID" in changes) {
     syncDiscord();
+  }
+  if (
+    "DISCORD_QUIET_ENABLED" in changes ||
+    "DISCORD_QUIET_START" in changes ||
+    "DISCORD_QUIET_END" in changes
+  ) {
+    syncDiscordQuiet();
   }
 });
 
@@ -87,6 +95,39 @@ async function syncDiscord() {
     } catch {
       console.warn("syncDiscord: unlink fetch failed");
     }
+  }
+}
+
+async function syncDiscordQuiet() {
+  const store = await chrome.storage.local.get([
+    "CLOUD_TOKEN",
+    "CLOUD_LOGIN",
+    "DISCORD_QUIET_ENABLED",
+    "DISCORD_QUIET_START",
+    "DISCORD_QUIET_END",
+  ]);
+  const token = String(store.CLOUD_TOKEN || "");
+  const cloudLogin = String(store.CLOUD_LOGIN || "");
+  if (!token || !cloudLogin) return;
+
+  const hashedLogin = await hashLogin(cloudLogin);
+  const url = `${WORKER_URL}/api/v1/private/discord/quiet?login=${encodeURIComponent(hashedLogin)}`;
+
+  try {
+    await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        quietEnabled: store.DISCORD_QUIET_ENABLED === true,
+        quietStart: String(store.DISCORD_QUIET_START || "22:00"),
+        quietEnd: String(store.DISCORD_QUIET_END || "08:00"),
+      }),
+    });
+  } catch {
+    console.warn("syncDiscordQuiet: fetch failed");
   }
 }
 

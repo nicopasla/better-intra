@@ -105,6 +105,11 @@ export type HubSettingDef = {
   actionLabel?: string;
 };
 
+export const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => {
+  const h = i.toString().padStart(2, "0");
+  return { label: `${h}:00`, value: `${h}:00` };
+});
+
 export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
   logtime: [
     {
@@ -472,6 +477,35 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "discord-panel",
       fullWidth: true,
       requiresCloud: true,
+    },
+    {
+      feature: "evaluations",
+      key: "DISCORD_QUIET_ENABLED",
+      label: "Enable quiet hours",
+      desc: "Pause Discord notifications during specified hours.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.DISCORD_QUIET_ENABLED,
+      colSpan: 2,
+    },
+    {
+      feature: "evaluations",
+      key: "DISCORD_QUIET_START",
+      label: "From",
+      kind: "select",
+      defaultValue: CONFIG_DEFAULT.DISCORD_QUIET_START,
+      options: HOUR_OPTIONS,
+      colSpan: 1,
+      dependsOn: "DISCORD_QUIET_ENABLED",
+    },
+    {
+      feature: "evaluations",
+      key: "DISCORD_QUIET_END",
+      label: "To",
+      kind: "select",
+      defaultValue: CONFIG_DEFAULT.DISCORD_QUIET_END,
+      options: HOUR_OPTIONS,
+      colSpan: 1,
+      dependsOn: "DISCORD_QUIET_ENABLED",
     },
   ],
   about: [

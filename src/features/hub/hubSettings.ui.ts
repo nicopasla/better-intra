@@ -668,7 +668,7 @@ function renderDiscordPanel() {
   return html`<div ${ref(renderPanel)} class="col-span-full"></div>`;
 }
 
-function renderSetting(def: HubSettingDef, enabled: boolean) {
+function renderSetting(def: HubSettingDef, enabled: boolean, hidden?: boolean) {
   if (def.kind === "divider") {
     return html`<div class="divider font-bold my-2 col-span-full opacity-70">
       ${def.label}
@@ -688,7 +688,7 @@ function renderSetting(def: HubSettingDef, enabled: boolean) {
       : "col-span-full";
 
   return html`<div
-    class="card bg-base-200 shadow-sm p-3 sm:p-4 ${gridClass} ${enabled
+    class="card bg-base-200 shadow-sm p-3 sm:p-4 ${gridClass} ${hidden ? "hidden" : enabled
       ? ""
       : "opacity-40 grayscale"}"
   >
@@ -759,23 +759,25 @@ const moonIconSvg = html`<svg
 
 const GRID_COLS_CLASSES = ["", "", "md:grid-cols-2", "md:grid-cols-3"] as const;
 
-function renderTabsContent(active: FeatureId[], disabledDeps: Set<string>) {
+function renderTabsContent(active: FeatureId[], disabledDeps: Set<string>, hiddenDeps: Set<string>) {
   return FEATURE_DEFS.map((f, idx) => {
     const enabled = active.includes(f.id);
     const cloudDisabled =
       "requiresCloud" in f &&
       (f as { requiresCloud?: boolean }).requiresCloud &&
       disabledDeps.has("__CLOUD__");
-    const settings = (HUB_SETTING_DEFS[f.id] || []).map((def) =>
-      renderSetting(
+    const settings = (HUB_SETTING_DEFS[f.id] || []).map((def) => {
+      const hidden = !!(def.key && hiddenDeps.has(def.key));
+      return renderSetting(
         def,
         f.id === "about" ||
           f.id === "evaluations" ||
           (enabled &&
             !(def.key && disabledDeps.has(def.key)) &&
             !(def.requiresCloud && disabledDeps.has("__CLOUD__"))),
-      ),
-    );
+        hidden,
+      );
+    });
     const gridColsClass =
       "cols" in f && f.cols != null
         ? (GRID_COLS_CLASSES[f.cols] ?? "md:grid-cols-3")
@@ -940,12 +942,16 @@ async function createModal(active: FeatureId[]): Promise<void> {
   }
   const depValues = await chrome.storage.local.get([...depParentKeys]);
   const disabledDeps = new Set<string>();
+  const hiddenDeps = new Set<string>();
   for (const defs of Object.values(HUB_SETTING_DEFS)) {
     for (const def of defs) {
       if (def.dependsOn && def.key) {
         const parentVal =
           depValues[def.dependsOn] ?? CONFIG_DEFAULT[def.dependsOn];
-        if (!parentVal) disabledDeps.add(def.key);
+        if (!parentVal) {
+          disabledDeps.add(def.key);
+          hiddenDeps.add(def.key);
+        }
       }
     }
   }
@@ -959,7 +965,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
     }
   }
 
-  const tabsContent = renderTabsContent(active, disabledDeps);
+  const tabsContent = renderTabsContent(active, disabledDeps, hiddenDeps);
   const lastSync = (await chrome.storage.local.get("LAST_CLOUD_SYNC"))
     .LAST_CLOUD_SYNC;
   const isConnected = !!(await getConfig("CLOUD_TOKEN"));
@@ -1146,8 +1152,12 @@ async function createModal(active: FeatureId[]): Promise<void> {
       if (!el) continue;
       const card = el.closest<HTMLElement>(".card");
       if (card) {
-        card.classList.toggle("opacity-40", !on);
-        card.classList.toggle("grayscale", !on);
+        card.classList.toggle("hidden", !on);
+        if (on) {
+          card.classList.remove("opacity-40", "grayscale");
+        } else {
+          card.classList.add("opacity-40", "grayscale");
+        }
       }
       (el as any).disabled = !on;
     }

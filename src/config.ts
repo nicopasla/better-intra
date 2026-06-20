@@ -70,6 +70,9 @@ export interface BetterIntraConfig {
   DISCORD_ENABLED: boolean;
   DISCORD_ID: string;
   DISCORD_USERNAME: string;
+  DISCORD_QUIET_ENABLED: boolean;
+  DISCORD_QUIET_START: string;
+  DISCORD_QUIET_END: string;
 }
 
 /**
@@ -144,6 +147,9 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   DISCORD_ENABLED: false,
   DISCORD_ID: "",
   DISCORD_USERNAME: "",
+  DISCORD_QUIET_ENABLED: false,
+  DISCORD_QUIET_START: "22:00",
+  DISCORD_QUIET_END: "08:00",
 };
 
 /**
@@ -193,6 +199,9 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "DISCORD_ENABLED",
   "DISCORD_ID",
   "DISCORD_USERNAME",
+  "DISCORD_QUIET_ENABLED",
+  "DISCORD_QUIET_START",
+  "DISCORD_QUIET_END",
 ];
 
 /**

@@ -21,7 +21,7 @@ Access a friends panel from a button in the bottom-right corner. Add friends by 
 Authenticate with your 42 Intra account via the Cloudflare Worker to sync settings across devices. Push, pull, or enable auto-sync. Synced visuals (avatar, banner, background) become visible to other Better Intra users viewing your profile.
 
 ### 🔔 Evaluations ☁️
-Browser and Discord notifications when your evaluations are booked or correcteds are revealed 15 minutes before the slot. Background service worker polls every 5 minutes. Connect your Discord account from the hub — auto-joins the Better Intra server to enable direct messages. Test buttons let you preview both browser and Discord notifications. 42 sign-in required.
+Discord DM notifications when your evaluations are booked or correcteds are revealed. The Cloudflare Worker runs every 5 minutes and sends DMs directly via the Better Intra bot — no browser polling needed. Connect your Discord account from the hub — auto-joins the Better Intra server to enable direct messages. Quiet hours let you pause notifications during specified hours. 42 sign-in required.
 
 ### ⚙️ Settings Hub
 All extension settings in one place, accessible from the gear icon on the intra sidebar. Tabs for Logtime, Clusters, Profile, Shortcuts, Evaluations, and About. Turn features on/off or reset settings to default.

@@ -15,6 +15,8 @@ To install this extension, click the buttons below or visit the [Releases](https
 
 ## Features
 
+> ☁️ *marked features require cloud sync / 42 sign-in.*
+
 ### 📅 Logtime
 
 Replaces the default logtime view with a monthly calendar showing your logged hours at a glance.
@@ -52,6 +54,8 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 * **Projects sort** — sort the projects list on any user's profile by name or date, with toggleable ascending/descending order.
 * **Freeze alerts** — a freeze card appears on profiles of frozen students.
 * **Clickable seat label** — click someone's seat on their profile to open the cluster map with their seat highlighted and pulsating.
+* **Thursday Roulette** — a dashboard card showing the current profile's roulette win history, total points, and a live countdown to the next Thursday 8:00 draw. Works on any user's profile. ☁️
+* **Moulinette robot icons** — on project corrected pages, the default moulinette image is replaced with a robot icon (normal for passed, broken for failed).
 
 ---
 
@@ -64,20 +68,18 @@ Quick-access links shown as colourful buttons on your profile page.
 * Text colour (black or white) is chosen automatically for readability.
 * **Drag to reorder** — drag the preview buttons in the settings panel to rearrange your links.
 * **Hide important links** — optionally hide the default Intra navigation links to give shortcuts the full width.
+* **Alignment** — when important links are hidden, align your shortcuts left, center, or right.
 * Set them up in the settings panel.
 
 ---
 
 ### 🔔 Evaluations ☁️
 
-Browser and Discord notifications when your evaluations change state.
+Discord DM notifications when your evaluations change state.
 
-* **Browser notifications** — popup alerts when an evaluation is booked or when correcteds are revealed 15 minutes before the slot.
-* **Discord DMs** — receive the same alerts in your DMs via the Better Intra bot. Connect your Discord account from the Evaluations hub tab — auto-joins the Better Intra server to enable direct messages.
-* **State tracking** — background service worker polls every 5 minutes, detecting booked → revealed transitions.
-* **Notification preview** — test buttons let you preview both browser and Discord notifications before relying on them.
-* **Configurable** — toggle "Notify as evaluator" and "15 min reminder" independently.
-* **42 OAuth required** — sign in with your 42 account to enable evaluation tracking. A reminder notification appears if you enable evaluations without being signed in.
+* **Discord DMs** — receive alerts in your DMs via the Better Intra bot when an evaluation is booked or when correcteds are revealed. Connect your Discord account from the Evaluations hub tab — auto-joins **Le Bassin** server to enable direct messages.
+* **Quiet hours** — pause Discord notifications during specified hours (e.g. 22:00 to 08:00) so you're not disturbed at night.
+* **State tracking** — automatically alerts you via Discord DM when an evaluation is booked or when correcteds are revealed.
 * Configure from the **Evaluations** tab in the Settings Hub.
 
 ---
@@ -124,8 +126,8 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 
 ## Screenshots
 
-| Logtime | Profile | Shortcuts |
-|---|---|---|
+| Logtime                                   | Profile                              | Shortcuts                                         |
+|-------------------------------------------|--------------------------------------|---------------------------------------------------|
 | ![Logtime](images-store/logtime-dark.png) | ![Profile](images-store/profile.png) | ![Shortcuts](images-store/shortcuts-settings.png) |
 
 ## Uninstall
@@ -170,7 +172,7 @@ See the full [Privacy Policy](./PRIVACY.md).
 - **Friends widget** (optional, requires cloud sync): friend logins are stored locally and also included in your synced settings in KV. The worker additionally caches friend user IDs and online status in KV to reduce 42 API calls.
 - **Logtime data** is read from the intra page directly — it never leaves your browser.
 - **Other users' profiles**: when visiting another user's profile, their public custom visuals (avatar, banner, background) are fetched from the Cloudflare Worker if they use Better Intra. No data is sent to third parties.
-- Permissions requested: `storage` (save settings), `notifications` (evaluation alerts), `alarms` (periodic background checks), and access to the extension's Cloudflare Worker for optional sync features. No analytics, tracking, or advertising.
+- Permissions requested: `storage` (save settings), `activeTab` (interact with 42 Intra pages), and access to the extension's Cloudflare Worker for optional sync features. No analytics, tracking, or advertising.
 
 ## Development
 

@@ -35,7 +35,7 @@ When you authenticate via 42 OAuth, a temporary session token is stored locally 
 
 ### Evaluations Background Service
 
-The extension includes a background service worker that periodically checks for evaluation state changes (slot bookings, reveals, 15‑minute reminders). The worker communicates with the Cloudflare Worker, which fetches your evaluation data from the 42 API on your behalf. Evaluation states are temporarily stored in Cloudflare KV to track changes and deliver notifications.
+The Cloudflare Worker runs a cron job every 10 minutes to check for evaluation state changes (slot bookings, reveals, 15‑minute reminders) on behalf of enabled users. The worker fetches evaluation data from the 42 API and detects state changes. Discord DMs are sent directly by the worker — the browser extension does not poll for evaluations. Evaluation states and pending notifications are stored in Cloudflare D1.
 
 ### Third-Party Access
 
@@ -54,8 +54,6 @@ The extension includes a background service worker that periodically checks for 
 
 - `storage` — to save and load settings locally
 - `activeTab` — to interact with the 42 Intra page
-- `notifications` — to send evaluation alerts
-- `alarms` — to schedule periodic evaluation checks in the background
 - `https://better-intra-worker.nicopasla.workers.dev/` — to communicate with the extension's Cloudflare Worker for optional cloud features
 
 ## Changes to This Policy

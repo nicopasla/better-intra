@@ -29,13 +29,15 @@ const parseRelativeDate = (text: string | null): number => {
   const lowered = text.trim().toLowerCase();
   const numMatch = lowered.match(/(\d+)/);
   const num = numMatch ? parseInt(numMatch[1]) : 0;
-  if (lowered.includes("second")) return num * 1000;
-  if (lowered.includes("minute")) return num * 60 * 1000;
-  if (lowered.includes("hour")) return num * 3600 * 1000;
-  if (lowered.includes("day")) return num * 86400 * 1000;
-  if (lowered.includes("month")) return num * 30 * 86400 * 1000;
-  if (lowered.includes("year")) return num * 365 * 86400 * 1000;
-  return 0;
+  let duration = 0;
+  if (lowered.includes("second")) duration = num * 1000;
+  else if (lowered.includes("minute")) duration = num * 60 * 1000;
+  else if (lowered.includes("hour")) duration = num * 3600 * 1000;
+  else if (lowered.includes("day")) duration = num * 86400 * 1000;
+  else if (lowered.includes("month")) duration = num * 30 * 86400 * 1000;
+  else if (lowered.includes("year")) duration = num * 365 * 86400 * 1000;
+  else return 0;
+  return Date.now() - duration;
 };
 
 const makeSorter = (
@@ -49,8 +51,14 @@ const makeSorter = (
         : (a, b) => b.name.localeCompare(a.name);
     case "date":
       return asc
-        ? (a, b) => b.dateMs - a.dateMs
-        : (a, b) => a.dateMs - b.dateMs;
+        ? (a, b) =>
+            a.dateMs - b.dateMs ||
+            b.score - a.score ||
+            a.name.localeCompare(b.name)
+        : (a, b) =>
+            b.dateMs - a.dateMs ||
+            b.score - a.score ||
+            a.name.localeCompare(b.name);
   }
 };
 
@@ -94,7 +102,10 @@ const extractItems = (panel: HTMLElement | null): ProjectItem[] => {
       }
     }
 
-    const dateMs = parseRelativeDate(dateStr);
+    const preciseDate = wrapper.getAttribute("data-last-event-date");
+    const dateMs = preciseDate
+      ? new Date(preciseDate).getTime()
+      : parseRelativeDate(dateStr);
 
     items.push({
       wrapper,

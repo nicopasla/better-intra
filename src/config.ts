@@ -56,6 +56,7 @@ export interface BetterIntraConfig {
   PROFILE_SHOW_ROULETTE_HISTORY: boolean;
   PROFILE_MARKS_SORT_ORDER: "newest_first" | "oldest_first";
   PROFILE_PROJECTS_SORT: boolean;
+  PROFILE_MARKS_SHOW_REAL_DATE: boolean;
 
   // Shortcuts Feature Settings
   SHORTCUTS_LINKS: { name: string; url: string }[];
@@ -133,6 +134,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   PROFILE_SHOW_ROULETTE_HISTORY: true,
   PROFILE_MARKS_SORT_ORDER: "newest_first",
   PROFILE_PROJECTS_SORT: true,
+  PROFILE_MARKS_SHOW_REAL_DATE: false,
 
   BETTER_INTRA_THEME: "dark",
   SHORTCUTS_LINKS: [],

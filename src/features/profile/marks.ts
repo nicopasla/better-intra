@@ -90,6 +90,16 @@ function formatDate(dateStr: string): string {
   return `${relative} (${real})`;
 }
 
+function formatTooltipDate(dateStr: string): string {
+  const d = new Date(dateStr + "Z");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yy = String(d.getFullYear() % 100).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${dd}/${mm}/${yy} ${hh}:${min}`;
+}
+
 function waitForCursusId(timeout = 10000): Promise<string> {
   return new Promise((resolve) => {
     const stored = sessionStorage.getItem("ft_active_cursus_id");
@@ -129,73 +139,51 @@ async function fetchOutstandingProjects(
   const cacheKey = targetLogin
     ? `OUTSTANDING_CACHE_${targetLogin}`
     : "OUTSTANDING_CACHE";
-  console.log("[marks] fetchOutstandingProjects cacheKey:", cacheKey);
-
   const raw = (await chrome.storage.local.get(cacheKey))[cacheKey];
   if (raw && typeof raw === "string") {
     const parsed = JSON.parse(raw);
     const age = Date.now() - parsed.fetchedAt;
-    console.log("[marks] outstanding cache found, age:", Math.round(age / 1000 / 60), "min");
     if (age < 12 * 60 * 60 * 1000) {
-      console.log("[marks] outstanding cache HIT, returning", Object.keys(parsed.ids).length, "entries");
       if (!targetLogin) outstandingCache = parsed.ids;
       return parsed.ids;
     }
-    console.log("[marks] outstanding cache EXPIRED");
   }
 
   const cloudLogin = await getCloudLogin();
-  console.log("[marks] cloudLogin for outstanding auth:", cloudLogin);
-
   const sessionToken = await getConfig("CLOUD_TOKEN");
-  console.log("[marks] sessionToken:", sessionToken ? "present" : "missing");
-
   if (!cloudLogin || !sessionToken) {
-    console.log("[marks] no cloud auth, returning fallback");
-    return targetLogin ? {} : (outstandingCache || {});
+    return targetLogin ? {} : outstandingCache || {};
   }
 
   const hashedLogin = await hashLogin(cloudLogin);
-  console.log("[marks] hashedLogin:", hashedLogin);
-
   try {
     let url = `${WORKER_URL}/api/v1/private/outstanding?login=${encodeURIComponent(hashedLogin)}`;
     if (targetLogin) {
       url += `&target=${encodeURIComponent(targetLogin)}`;
       if (count !== undefined) url += `&count=${count}`;
     }
-    console.log("[marks] outstanding worker URL:", url);
-
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${sessionToken}` },
     });
-    console.log("[marks] outstanding worker response status:", res.status);
     if (!res.ok) {
-      console.log("[marks] outstanding worker response NOT ok");
-      return targetLogin ? {} : (outstandingCache || {});
+      return targetLogin ? {} : outstandingCache || {};
     }
 
     const data = (await res.json()) as { ids: Record<number, number> };
-    console.log("[marks] outstanding worker returned:", JSON.stringify(data));
     const ids: Record<number, number> = {};
     for (const [key, c] of Object.entries(data.ids || {})) {
       ids[Number(key)] = c;
     }
-    console.log("[marks] outstanding parsed ids:", JSON.stringify(ids));
-
     await chrome.storage.local.set({
       [cacheKey]: JSON.stringify({
         ids,
         fetchedAt: Date.now(),
       }),
     });
-    console.log("[marks] outstanding cached to storage key:", cacheKey);
-
     if (!targetLogin) outstandingCache = ids;
     return ids;
   } catch (err) {
-    console.log("[marks] outstanding fetch error:", err);
-    return targetLogin ? {} : (outstandingCache || {});
+    return targetLogin ? {} : outstandingCache || {};
   }
 }
 
@@ -206,29 +194,20 @@ async function fetchMarks(
   targetLogin?: string,
 ): Promise<MarkedProject[]> {
   const url = `https://intrapy.intra.42.fr/api/v1/users/${login}/projects/marked?cursus_id=${cursusId}`;
-  console.log("[marks] fetchMarks URL:", url);
   try {
     const res = await fetch(url, {
       headers: { Authorization: token },
     });
-    console.log("[marks] intrapy response status:", res.status);
     if (!res.ok) {
-      console.log("[marks] intrapy response NOT ok, returning []");
       return [];
     }
     const data = (await res.json()) as MarkedProject[];
-    console.log("[marks] intrapy raw count:", data.length);
     const filtered = data.filter((p) => p.final_mark !== null);
-    console.log("[marks] intrapy filtered count (final_mark !== null):", filtered.length);
-
-    console.log("[marks] fetching outstanding projects, targetLogin:", targetLogin, "count:", filtered.length);
     const outstanding = await fetchOutstandingProjects(
       targetLogin,
       filtered.length,
     );
     const outstandingCount = Object.keys(outstanding).length;
-    console.log("[marks] outstanding response, projects with stars:", outstandingCount);
-
     let starredCount = 0;
     for (const p of filtered) {
       const oc = outstanding[p.projects_user_id];
@@ -237,27 +216,21 @@ async function fetchMarks(
         starredCount++;
       }
     }
-    console.log("[marks] projects assigned stars:", starredCount);
-
     return filtered;
   } catch (err) {
-    console.log("[marks] fetchMarks error:", err);
     return [];
   }
 }
 
 function findCard(title: "PROJECTS" | "MARKS"): HTMLElement | null {
   const cards = document.querySelectorAll<HTMLElement>(".bg-white.md\\:h-96");
-  console.log("[marks] findCard:", title, "found", cards.length, "cards");
   for (const card of cards) {
     const titleEl = card.querySelector("[class*='uppercase']");
     const text = titleEl?.textContent?.trim();
     if (text?.toUpperCase() === title) {
-      console.log("[marks] findCard:", title, "found");
       return card;
     }
   }
-  console.log("[marks] findCard:", title, "NOT found");
   return null;
 }
 
@@ -370,20 +343,15 @@ export function createTeamRow(
 }
 
 function injectMarks(marks: MarkedProject[], hasOngoing: boolean) {
-  console.log("[marks] injectMarks called with", marks.length, "marks, hasOngoing:", hasOngoing);
-
   const existing = document.getElementById(INJECTED_ID);
   if (existing) existing.remove();
 
   const card = findCard("PROJECTS");
   if (!card) {
-    console.log("[marks] injectMarks: no projects card found, aborting");
     return;
   }
 
   const nativeUl = card.querySelector(".h-full ul");
-  console.log("[marks] injectMarks: nativeUl found:", !!nativeUl);
-
   if (hasOngoing && nativeUl) {
     const nativeContainer = nativeUl.closest(".h-full");
     if (nativeContainer instanceof HTMLElement) {
@@ -534,15 +502,10 @@ function injectMarks(marks: MarkedProject[], hasOngoing: boolean) {
 
   const flexContainer = card.querySelector(".flex.flex-col") || card;
   flexContainer.appendChild(container);
-  console.log("[marks] injectMarks: DOM injected successfully");
 }
 
 async function tryInjectMarks(marks: MarkedProject[]) {
-  console.log("[marks] tryInjectMarks called with", marks.length, "marks");
-
   const sortOrder = await getConfig("PROFILE_MARKS_SORT_ORDER");
-  console.log("[marks] marks sort order:", sortOrder);
-
   const sorted = [...marks].sort((a, b) => {
     const diff =
       new Date(a.last_event_date).getTime() -
@@ -550,16 +513,13 @@ async function tryInjectMarks(marks: MarkedProject[]) {
     return sortOrder === "oldest_first" ? diff : -diff;
   });
   if (sorted.length === 0) {
-    console.log("[marks] tryInjectMarks: no marks, returning");
     return;
   }
 
-  console.log("[marks] tryInjectMarks: starting poll for projects card...");
   let attempts = 0;
   const liWait = 8;
   const poll = () => {
     if (++attempts > 50) {
-      console.log("[marks] tryInjectMarks: poll timeout after 50 attempts");
       return;
     }
     const c = findCard("PROJECTS");
@@ -570,7 +530,6 @@ async function tryInjectMarks(marks: MarkedProject[]) {
     const ul = c.querySelector(".h-full ul");
     const lis = ul?.querySelectorAll("li");
     const hasOngoing = !!(lis && lis.length > 0);
-    console.log("[marks] tryInjectMarks: poll attempt", attempts, "ul:", !!ul, "lis:", lis?.length ?? 0, "hasOngoing:", hasOngoing);
     if (!ul || hasOngoing || attempts >= liWait) {
       injectMarks(sorted, hasOngoing);
       return;
@@ -598,7 +557,6 @@ function getLoginFromPage(): string | null {
   if (link) {
     const parts = link.pathname.split("/").filter(Boolean);
     const login = parts[parts.length - 1] || null;
-    console.log("[marks] getLoginFromPage (projects link):", login);
     return login;
   }
   const profileLink = document.querySelector<HTMLAnchorElement>(
@@ -607,19 +565,16 @@ function getLoginFromPage(): string | null {
   if (profileLink) {
     const parts = profileLink.pathname.split("/").filter(Boolean);
     const login = parts[parts.length - 1] || null;
-    console.log("[marks] getLoginFromPage (profile link):", login);
     return login;
   }
-  console.log("[marks] getLoginFromPage: no login found on page");
   return null;
 }
 
 async function enhanceExistingMarks(
   card: HTMLElement,
   targetLogin: string,
+  marks?: MarkedProject[],
 ): Promise<boolean> {
-  console.log("[marks] enhanceExistingMarks for:", targetLogin);
-
   let attempts = 0;
   while (attempts < 30) {
     const container = card.querySelector<HTMLElement>(".flex.flex-col.gap-2");
@@ -636,22 +591,10 @@ async function enhanceExistingMarks(
           if (!match) continue;
           entries.push({ el: items[i], projectsUserId: Number(match[1]) });
         }
-        console.log(
-          "[marks] enhanceExistingMarks: parsed",
-          entries.length,
-          "entries, IDs:",
-          entries.map((e) => e.projectsUserId),
-        );
-
         const outstanding = await fetchOutstandingProjects(
           targetLogin,
           entries.length,
         );
-        console.log(
-          "[marks] enhanceExistingMarks: outstanding:",
-          JSON.stringify(outstanding),
-        );
-
         let starred = 0;
         for (const entry of entries) {
           const count = outstanding[entry.projectsUserId];
@@ -672,80 +615,232 @@ async function enhanceExistingMarks(
           link.parentElement?.appendChild(star);
           starred++;
         }
-        console.log("[marks] enhanceExistingMarks: added stars to", starred, "entries");
+
+        if (marks) {
+          const marksById = new Map<number, string>();
+          for (const m of marks) {
+            marksById.set(m.projects_user_id, m.last_event_date);
+          }
+          let annotated = 0;
+          for (const entry of entries) {
+            const project = marks?.find(
+              (m) => m.projects_user_id === entry.projectsUserId,
+            );
+            const ts = marksById.get(entry.projectsUserId);
+            if (ts) {
+              entry.el.setAttribute("data-last-event-date", ts);
+              entry.el.title = formatTooltipDate(ts);
+              annotated++;
+            }
+            if (project && project.teams && project.teams.length > 1) {
+              const teamDates: Record<string, string> = {};
+              for (const team of project.teams) {
+                teamDates[team.occurrence] = team.last_event_date;
+              }
+              entry.el.setAttribute(
+                "data-team-dates",
+                JSON.stringify(teamDates),
+              );
+            }
+          }
+
+          const showRealDate = await getConfig("PROFILE_MARKS_SHOW_REAL_DATE");
+          if (showRealDate) {
+            const RELATIVE_RE =
+              /^\s*(about|over|almost|nearly)?\s*(\d+|a|an)\s+(second|minute|hour|day|month|year)s?\s+ago\s*$/i;
+
+            const replaceDatesInContainer = (container: HTMLElement) => {
+              const walker = document.createTreeWalker(
+                container,
+                NodeFilter.SHOW_TEXT,
+              );
+              const toReplace: { node: Text; ts: string }[] = [];
+              let node: Text | null;
+              while ((node = walker.nextNode() as Text | null)) {
+                const text = node.textContent ?? "";
+                if (!RELATIVE_RE.test(text)) continue;
+                const wrapper = node.parentElement?.closest<HTMLElement>(
+                  "[data-last-event-date]",
+                );
+                if (!wrapper) continue;
+                let ts = wrapper.getAttribute("data-last-event-date");
+                if (!ts) continue;
+                const teamDatesStr = wrapper.getAttribute("data-team-dates");
+                if (teamDatesStr) {
+                  let searchEl: HTMLElement | null = node.parentElement;
+                  while (searchEl && searchEl !== wrapper) {
+                    const occMatch = (searchEl.textContent ?? "").match(
+                      /#(\d+)/,
+                    );
+                    if (occMatch) {
+                      const teamDates = JSON.parse(teamDatesStr) as Record<
+                        string,
+                        string
+                      >;
+                      const teamTs = teamDates[occMatch[1]];
+                      if (teamTs) ts = teamTs;
+                      break;
+                    }
+                    searchEl = searchEl.parentElement;
+                  }
+                }
+                toReplace.push({ node, ts });
+              }
+              for (const { node, ts } of toReplace) {
+                node.textContent = formatTooltipDate(ts);
+              }
+              return toReplace.length;
+            };
+            replaceDatesInContainer(card);
+
+            const dateObserver = new MutationObserver((mutations) => {
+              for (const m of mutations) {
+                if (m.type === "childList") {
+                  for (const node of m.addedNodes) {
+                    if (node instanceof HTMLElement) {
+                      replaceDatesInContainer(node);
+                    }
+                  }
+                } else if (m.type === "attributes") {
+                  if (m.target instanceof HTMLElement) {
+                    replaceDatesInContainer(m.target);
+                  }
+                }
+              }
+            });
+            dateObserver.observe(card, {
+              childList: true,
+              subtree: true,
+              attributes: true,
+              attributeFilter: ["data-state", "hidden"],
+            });
+          }
+        }
+
+        for (const entry of entries) {
+          const row = entry.el.querySelector<HTMLElement>(
+            ".flex.flex-row.justify-between.hover\\:bg-gray-300",
+          );
+          if (row) {
+            row.style.paddingTop = "0.25rem";
+            row.style.paddingBottom = "0.25rem";
+            row.style.paddingLeft = "0.5rem";
+            row.style.paddingRight = "0.5rem";
+          }
+
+          const btn = entry.el.querySelector("button");
+          if (btn) {
+            btn.style.fontWeight = "400";
+            btn.style.fontSize = "inherit";
+            btn.style.fontFamily = "inherit";
+            btn.style.color = "inherit";
+          }
+
+          const leftSide = entry.el.querySelector<HTMLElement>(
+            ".flex.flex-row.gap-1",
+          );
+          if (!leftSide) continue;
+          const link = leftSide.querySelector("a");
+          if (!link) continue;
+          link.style.fontSize = "0.875rem";
+
+          const rightSide = entry.el.querySelector<HTMLElement>(
+            ".text-xs.flex.flex-row.items-center",
+          );
+
+          let dateNode: Node | null = null;
+          for (const child of [...leftSide.childNodes]) {
+            if (child === link) continue;
+            if (child instanceof SVGElement) continue;
+            if (
+              child.nodeType === Node.TEXT_NODE &&
+              child.textContent?.trim()
+            ) {
+              dateNode = child;
+              break;
+            }
+            if (
+              child instanceof HTMLElement &&
+              !child.textContent?.includes("⭐")
+            ) {
+              dateNode = child;
+              break;
+            }
+          }
+
+          if (dateNode && rightSide) {
+            const dateSpan = document.createElement("span");
+            dateSpan.className = "opacity-50 text-sm";
+            dateSpan.style.whiteSpace = "nowrap";
+            dateSpan.textContent = dateNode.textContent?.trim() ?? "";
+            (dateNode as ChildNode).replaceWith(dateSpan);
+            rightSide.prepend(dateSpan);
+            if (!rightSide.style.gap) rightSide.style.gap = "0.25rem";
+          }
+
+          let prevSibling: Node = link;
+          for (const child of [...leftSide.childNodes]) {
+            if (
+              child instanceof HTMLSpanElement &&
+              child.textContent?.includes("⭐")
+            ) {
+              if (child.previousSibling !== prevSibling) {
+                (prevSibling as ChildNode).after(child);
+              }
+              prevSibling = child;
+            }
+          }
+        }
+
         return true;
       }
     }
     await new Promise((r) => requestAnimationFrame(r));
     attempts++;
   }
-  console.log("[marks] enhanceExistingMarks: timed out");
   return false;
 }
 
 export async function initMarks() {
-  console.log("[marks] initMarks called", {
-    pathname: location.pathname,
-    marksInitialized,
-  });
-
   if (marksInitialized) {
-    console.log("[marks] already initialized, skipping");
     return;
   }
 
   const showMarks = await getConfig("PROFILE_SHOW_MARKS");
-  console.log("[marks] showMarks config:", showMarks);
   if (!showMarks) return;
 
   if (location.hostname !== "profile-v3.intra.42.fr") {
-    console.log("[marks] wrong hostname:", location.hostname);
     return;
   }
 
   const isOwnProfile = location.pathname === "/";
-  console.log("[marks] isOwnProfile:", isOwnProfile);
-
   if (isOwnProfile) {
     const pageLogin = getLoginFromPage();
     const profileLogin = (await getCloudLogin()) || pageLogin;
-    console.log("[marks] own profile, login:", profileLogin);
     if (!profileLogin) {
-      console.log("[marks] no profileLogin, aborting");
       return;
     }
 
-    console.log("[marks] waiting for intrapy token...");
     const token = await waitForToken(30000);
-    console.log("[marks] intrapy token:", token ? "found" : "NOT FOUND");
     if (!token) return;
 
     cachedLogin = profileLogin;
     cachedToken = token;
     marksInitialized = true;
 
-    console.log("[marks] setting up cursus listener for own profile");
     document.addEventListener("42_CURSUS_ID", ((e: CustomEvent) => {
       const cursusId =
         e.detail || sessionStorage.getItem("ft_active_cursus_id") || "21";
-      console.log("[marks] 42_CURSUS_ID event:", cursusId);
       handleCursusSwitch(cursusId);
     }) as EventListener);
 
     const cursusId = await waitForCursusId(10000);
-    console.log("[marks] cursusId:", cursusId);
-
     if (!marksCache[cursusId]) {
-      console.log(`[marks] fetching marks for login=${profileLogin} cursusId=${cursusId}`);
       marksCache[cursusId] = await fetchMarks(profileLogin, token, cursusId);
-      console.log("[marks] fetched marks count:", marksCache[cursusId].length);
     } else {
-      console.log("[marks] marksCache hit for cursusId:", cursusId);
     }
 
-    console.log("[marks] injecting marks into DOM...");
     await tryInjectMarks(marksCache[cursusId]);
-    console.log("[marks] initMarks own-profile complete");
   } else {
     const targetLogin = location.pathname.split("/")[2];
     if (!targetLogin) return;
@@ -756,7 +851,17 @@ export async function initMarks() {
     if (!card) return;
 
     otherProfileRunning = true;
-    const enhanced = await enhanceExistingMarks(card, targetLogin);
+    let marksData: MarkedProject[] | undefined;
+    const token = await waitForToken(15000);
+    const cursusId = token ? await waitForCursusId(10000) : null;
+    if (token && cursusId) {
+      const key = `OTHER_${targetLogin}_${cursusId}`;
+      if (!marksCache[key]) {
+        marksCache[key] = await fetchMarks(targetLogin, token, cursusId);
+      }
+      marksData = marksCache[key];
+    }
+    const enhanced = await enhanceExistingMarks(card, targetLogin, marksData);
     otherProfileRunning = false;
     if (!enhanced) return;
 

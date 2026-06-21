@@ -357,6 +357,16 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
+      key: "PROFILE_MARKS_SHOW_REAL_DATE",
+      label: "Enhance marks display",
+      desc: `Replaces relative dates with absolute dates (e.g. "19/06/26 11:13") on other users' profiles.`,
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.PROFILE_MARKS_SHOW_REAL_DATE,
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "profile",
       label: "Thursday Roulette",
       kind: "divider",
     },

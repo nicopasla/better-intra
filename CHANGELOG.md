@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-06-21
+
+### Features 🎉
+
+- feat(marks): precise date sorting, absolute date display, and layout restructure ([ab0916d](https://github.com/nicopasla/better-intra/commit/ab0916d))
+- feat(marks): show outstanding stars on other profiles and cache locally ([9cbf554](https://github.com/nicopasla/better-intra/commit/9cbf554))
+- feat(discord): added quiet hours settings ([a339137](https://github.com/nicopasla/better-intra/commit/a339137))
+- feat(profile): add Thursday Roulette card with live countdown ([8ac56cb](https://github.com/nicopasla/better-intra/commit/8ac56cb))
+
+### Bug fixes 🐛
+
+- fix(evaluations): remove broken browser notifications ([de47a06](https://github.com/nicopasla/better-intra/commit/de47a06))
+
+### Maintenance 🧹
+
+- chore(docs): update README ([b7d3022](https://github.com/nicopasla/better-intra/commit/b7d3022))
+- chore: update subproject commit reference in better-intra-worker ([be265fd](https://github.com/nicopasla/better-intra/commit/be265fd))
+- chore: update subproject commit reference in better-intra-worker ([219e174](https://github.com/nicopasla/better-intra/commit/219e174))
+
 ## [1.2.2] - 2026-06-18
 
 ### Features 🎉
@@ -536,7 +555,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.2.2...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.2.3...HEAD
+[1.2.3]: https://github.com/nicopasla/better-intra/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/nicopasla/better-intra/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/nicopasla/better-intra/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/nicopasla/better-intra/compare/v1.1.5...v1.2.0

@@ -115,7 +115,7 @@ function formatCountdownText(): string {
   const nextMs = nextRouletteTimestamp(now);
   const diff = nextMs - now;
   const seconds = Math.floor((diff % 60000) / 1000);
-  return `-${String(days).padStart(2, "0")}:${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  return `${String(days).padStart(2, "0")}:${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 function buildCountdown(dateLabel: string): {
@@ -178,7 +178,8 @@ function buildCard(entries: RouletteEntry[], showHistory: boolean) {
   cachedEntries = entries;
   cachedShowHistory = showHistory;
 
-  const wins = new Set(entries.map((e) => formatRouletteDate(e.created_at))).size;
+  const wins = new Set(entries.map((e) => formatRouletteDate(e.created_at)))
+    .size;
   const points = entries.reduce((acc, e) => acc + e.sum, 0);
   const { dateLabel } = getNextRoulette();
 
@@ -236,7 +237,8 @@ function buildCard(entries: RouletteEntry[], showHistory: boolean) {
   nextCol.className = "flex flex-col items-center justify-center";
   const nextRow = document.createElement("div");
   nextRow.className = "flex flex-row items-center gap-1.5";
-  nextRow.style.cssText = "background: rgba(245,158,11,0.08); border-radius: 10px; padding: 10px 14px;";
+  nextRow.style.cssText =
+    "background: rgba(245,158,11,0.08); border-radius: 10px; padding: 10px 14px;";
   const { wrap: countdownWrap } = buildCountdown(dateLabel);
   const nextLabel = document.createElement("span");
   nextLabel.className = "text-xs opacity-70 uppercase tracking-wide";

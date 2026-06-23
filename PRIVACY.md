@@ -25,7 +25,7 @@ If you enable cloud sync, the following data is transmitted to the extension's C
 - Your **Discord User ID** (if enabled) — for sending evaluation notifications via DM
 - Your **outstanding project flags** — so the extension can show a star on projects that were marked "Outstanding" during evaluation
 
-All your cloud data is keyed under a hash of your login and is only accessible to you. The worker retains **invocation logs** for debugging purposes (request timestamps, endpoints, and HTTP status codes). These logs are not used for tracking or analytics.
+All your cloud data is keyed under a hash of your login and is only accessible to you. The worker retains **invocation logs** for debugging purposes (request timestamps, endpoints, HTTP status codes, item counts, and state transitions). When relevant, identifiers are truncated to their first 6 characters to prevent full exposure. Discord API error status codes may also appear in logs. These logs are not used for tracking or analytics.
 
 The worker also caches **friend user IDs** and **online status** in separate KV keys to reduce calls to the 42 API. This cache is temporary and only contains 42 user IDs and online status booleans.
 

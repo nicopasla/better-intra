@@ -66,6 +66,7 @@ export interface BetterIntraConfig {
   FRIENDS_LIST: string[];
   FRIENDS_SORT_MODE: "online" | "name" | "level" | "wallet";
   SHOW_FRIENDS_WIDGET: boolean;
+  SHOW_CUSTOM_AVATARS_IN_FRIENDS: boolean;
   FRIENDS_DATA_CACHE: { data: unknown[]; timestamp: number } | null;
 
   DISCORD_ENABLED: boolean;
@@ -144,6 +145,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   FRIENDS_LIST: [],
   FRIENDS_SORT_MODE: "level",
   SHOW_FRIENDS_WIDGET: true,
+  SHOW_CUSTOM_AVATARS_IN_FRIENDS: true,
   FRIENDS_DATA_CACHE: null,
 
   DISCORD_ENABLED: false,
@@ -198,6 +200,7 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "FRIENDS_LIST",
   "FRIENDS_SORT_MODE",
   "SHOW_FRIENDS_WIDGET",
+  "SHOW_CUSTOM_AVATARS_IN_FRIENDS",
   "DISCORD_ENABLED",
   "DISCORD_ID",
   "DISCORD_USERNAME",

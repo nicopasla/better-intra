@@ -7,6 +7,7 @@ export interface FriendData {
   login: string;
   displayName: string;
   avatar: string | null;
+  customAvatar: string | null;
   level: number;
   grade: string | null;
   isOnline: boolean;

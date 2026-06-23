@@ -25,6 +25,8 @@ import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 
 const HOST_ID = "friends-widget-host";
 
+const showingOriginalAvatars = new Map<string, boolean>();
+
 function levelFraction(level: number): number {
   return level % 1;
 }
@@ -58,12 +60,26 @@ function renderFriendRow(
   friend: FriendData,
   onRemove: (login: string) => void,
   rank = -1,
+  showCustomAvatars = true,
 ) {
   const medalColors = ["#FFD700", "#C0C0C0", "#CD7F32"];
   const medalBorder =
     rank >= 0 && rank < 3
       ? `border: 3px solid ${medalColors[rank]}; box-shadow: 0 0 10px ${medalColors[rank]};`
       : "";
+  const hasCustom = !!(
+    showCustomAvatars &&
+    friend.customAvatar &&
+    friend.customAvatar !== friend.avatar
+  );
+  const showingOriginal = showingOriginalAvatars.get(friend.login) ?? false;
+  const currentSrc =
+    hasCustom && !showingOriginal ? friend.customAvatar : friend.avatar;
+  const toggleTitle = hasCustom
+    ? showingOriginal
+      ? "Click to view custom avatar"
+      : "Click to view original avatar"
+    : "";
   return html`
     <!-- Avatar column -->
     <div class="shrink-0">
@@ -74,17 +90,39 @@ function renderFriendRow(
         class="flex flex-col items-center gap-1"
         @click="${(e: Event) => e.stopPropagation()}"
       >
-        ${friend.avatar
+        ${currentSrc
           ? html`<div class="avatar ${friend.isOnline ? "avatar-online" : ""}">
               <div class="w-14 h-14 rounded-full" style="${medalBorder}">
                 <img
-                  src="${friend.avatar}"
+                  src="${currentSrc}"
                   alt="${friend.login}"
                   loading="lazy"
+                  title="${toggleTitle}"
+                  @click="${hasCustom
+                    ? (e: Event) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const img = e.target as HTMLImageElement;
+                        const isOrig =
+                          showingOriginalAvatars.get(friend.login) ?? false;
+                        showingOriginalAvatars.set(friend.login, !isOrig);
+                        img.src = !isOrig
+                          ? friend.avatar!
+                          : friend.customAvatar!;
+                        img.title = !isOrig
+                          ? "Click to view custom avatar"
+                          : "Click to view original avatar";
+                      }
+                    : undefined}"
                   @error="${(e: Event) => {
                     const img = e.target as HTMLImageElement;
-                    if (img.dataset.fallback) return;
-                    img.dataset.fallback = "true";
+                    if (img.dataset.fallback === "letter") return;
+                    if (hasCustom && !img.dataset.fallback && friend.avatar) {
+                      img.dataset.fallback = "42";
+                      img.src = friend.avatar;
+                      return;
+                    }
+                    img.dataset.fallback = "letter";
                     const container = img.closest(".avatar");
                     if (!container) return;
                     const wrapper =
@@ -281,6 +319,7 @@ interface WidgetState {
   onInputChange: (val: string) => void;
   onAdd: () => void;
   onConnect: () => void;
+  showCustomAvatars: boolean;
 }
 
 const SORT_LABELS: Record<SortMode, string> = {
@@ -552,6 +591,7 @@ function renderWidget(state: WidgetState) {
                                 f,
                                 state.onRemove,
                                 state.sortBy === "level" ? i : -1,
+                                state.showCustomAvatars,
                               )}
                             </li>`,
                         )}
@@ -638,6 +678,7 @@ export async function injectFriendsWidget() {
     theme: await getEffectiveTheme(),
     needsReconnect: !!token && authFailed,
     notConnected: !token,
+    showCustomAvatars: await getConfig("SHOW_CUSTOM_AVATARS_IN_FRIENDS"),
     onToggle: () => {
       if (!_state) return;
       _state.open = !_state.open;

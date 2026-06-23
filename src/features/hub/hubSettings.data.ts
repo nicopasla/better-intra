@@ -443,6 +443,17 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       grid: true,
       colSpan: 1,
     },
+    {
+      feature: "profile",
+      key: "SHOW_CUSTOM_AVATARS_IN_FRIENDS",
+      label: "Show custom avatars in friends",
+      desc: "When available, displays friends' custom profile pictures instead of 42-generated avatars.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.SHOW_CUSTOM_AVATARS_IN_FRIENDS,
+      grid: true,
+      colSpan: 1,
+      dependsOn: "SHOW_FRIENDS_WIDGET",
+    },
   ],
   shortcuts: [
     {

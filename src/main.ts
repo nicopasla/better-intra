@@ -5,6 +5,7 @@ import { initHubSettings } from "./features/hub/hubSettings.ts";
 import { initShortcuts } from "./features/shortcuts/shortcuts.ts";
 import { initThemeManager } from "./features/profile/theme/theme-manager.ts";
 import { AVATAR_SELECTOR } from "./features/profile/selectors.ts";
+import { html, render } from "lit-html";
 
 initThemeManager();
 
@@ -50,6 +51,85 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
   clusters: initClusters,
   shortcuts: initShortcuts,
 };
+
+(function v2Warning() {
+  if (window.location.hostname !== "profile.intra.42.fr") return;
+  if (window.location.pathname !== "/") return;
+  if (sessionStorage.getItem("ft-v2-dismissed") === "1") return;
+
+  const dismiss = () => {
+    const el = document.getElementById("ft-v2-warning");
+    if (el) el.remove();
+    sessionStorage.setItem("ft-v2-dismissed", "1");
+  };
+
+  const banner = document.createElement("div");
+  banner.id = "ft-v2-warning";
+
+  render(
+    html`
+      <style>
+        #ft-v2-warning {
+          position: relative;
+          z-index: 999999;
+        }
+        .ft-v2-bnr {
+          background: #ff9800;
+          color: #fff;
+          padding: 10px 20px;
+          text-align: center;
+          font-family:
+            system-ui,
+            -apple-system,
+            sans-serif;
+          font-size: 14px;
+          font-weight: 500;
+          line-height: 1.4;
+          position: relative;
+        }
+        .ft-v2-bnr a {
+          color: #fff;
+          font-weight: 700;
+        }
+        .ft-v2-dismiss {
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 20px;
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: inherit;
+          opacity: 0.6;
+          line-height: 1;
+          padding: 4px 8px;
+        }
+        .ft-v2-dismiss:hover {
+          opacity: 1;
+        }
+      </style>
+      <div class="ft-v2-bnr">
+        Better Intra is designed for the
+        <strong>v3</strong> profile. You are on the old v2.
+        <a href="https://profile.intra.42.fr/v3_early_access">Switch to v3</a>
+        <button class="ft-v2-dismiss" @click="${dismiss}" title="Dismiss">
+          &times;
+        </button>
+      </div>
+    `,
+    banner,
+  );
+
+  const tryInject = () => {
+    if (document.body) {
+      document.body.insertBefore(banner, document.body.firstChild);
+    } else {
+      requestAnimationFrame(tryInject);
+    }
+  };
+  tryInject();
+})();
 
 (async function runBetterIntra() {
   const oauthParams = new URLSearchParams(window.location.search);

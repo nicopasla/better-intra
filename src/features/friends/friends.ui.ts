@@ -21,6 +21,7 @@ import { getConfig } from "../../config.ts";
 import { getEffectiveTheme } from "../profile/theme/theme-manager.ts";
 import { CLUSTERS } from "../clusters/clusters.data.ts";
 import FRIENDS_SVG from "../../assets/svg/friends.svg?raw";
+import WARNING_SVG from "../../assets/svg/triangle-exclamation.svg?raw";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 
 const HOST_ID = "friends-widget-host";
@@ -445,7 +446,7 @@ function renderWidget(state: WidgetState) {
       <div class="friends-fab">
         <div class="indicator">
           ${
-            onlineCount > 0
+            onlineCount > 0 && !state.needsReconnect
               ? html`<span
                   class="indicator-item badge badge-success badge-sm font-bold min-w-6 px-1.5"
                   >${onlineCount}</span
@@ -454,17 +455,32 @@ function renderWidget(state: WidgetState) {
           }
           <button
             type="button"
-            class="btn btn-circle btn-lg btn-primary shadow-xl"
-            @click="${state.onToggle}"
-            title="${state.open ? "Close" : "Friends"}"
+            class="btn btn-circle btn-lg ${state.needsReconnect ? "btn-error" : "btn-primary"} shadow-xl"
+            @click="${state.needsReconnect ? state.onConnect : state.onToggle}"
+            title="${state.needsReconnect ? "Token expired — reconnect" : state.open ? "Close" : "Friends"}"
           >
-            <div class="swap ${state.open ? "swap-active" : ""}">
-              <span class="swap-on text-lg">✕</span>
-              <span
-                class="swap-off flex items-center justify-center w-6 h-6 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
-                >${unsafeHTML(FRIENDS_SVG)}</span
-              >
-            </div>
+            ${
+              state.needsReconnect
+                ? html`<div class="swap">
+                    <span
+                      class="swap-on flex items-center justify-center w-8 h-8 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
+                      >${unsafeHTML(WARNING_SVG)}</span
+                    >
+                    <span
+                      class="swap-off flex items-center justify-center w-8 h-8 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
+                      >${unsafeHTML(WARNING_SVG)}</span
+                    >
+                  </div>`
+                : html`
+                    <div class="swap ${state.open ? "swap-active" : ""}">
+                      <span class="swap-on text-lg">✕</span>
+                      <span
+                        class="swap-off flex items-center justify-center w-6 h-6 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
+                        >${unsafeHTML(FRIENDS_SVG)}</span
+                      >
+                    </div>
+                  `
+            }
           </button>
         </div>
       </div>

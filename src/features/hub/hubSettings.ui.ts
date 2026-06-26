@@ -18,7 +18,7 @@ import {
   renderShortcutsSettings,
   type ShortcutLink,
 } from "../shortcuts/shortcuts.ui.ts";
-import { syncToCloud } from "../account/account.ts";
+import { syncToCloud, clearAuthFailed } from "../account/account.ts";
 import { loginWith42 } from "../account/account.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
@@ -610,7 +610,10 @@ function renderDiscordPanel() {
                           type="button"
                           class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
                           @click="${() => {
-                            loginWith42(() => window.location.reload());
+                            loginWith42(async () => {
+                              await clearAuthFailed();
+                              window.location.reload();
+                            });
                           }}"
                         >
                           <span class="font-bold tracking-wide"
@@ -688,9 +691,11 @@ function renderSetting(def: HubSettingDef, enabled: boolean, hidden?: boolean) {
       : "col-span-full";
 
   return html`<div
-    class="card bg-base-200 shadow-sm p-3 sm:p-4 ${gridClass} ${hidden ? "hidden" : enabled
-      ? ""
-      : "opacity-40 grayscale"}"
+    class="card bg-base-200 shadow-sm p-3 sm:p-4 ${gridClass} ${hidden
+      ? "hidden"
+      : enabled
+        ? ""
+        : "opacity-40 grayscale"}"
   >
     <div
       class="flex ${isFullWidth
@@ -759,7 +764,11 @@ const moonIconSvg = html`<svg
 
 const GRID_COLS_CLASSES = ["", "", "md:grid-cols-2", "md:grid-cols-3"] as const;
 
-function renderTabsContent(active: FeatureId[], disabledDeps: Set<string>, hiddenDeps: Set<string>) {
+function renderTabsContent(
+  active: FeatureId[],
+  disabledDeps: Set<string>,
+  hiddenDeps: Set<string>,
+) {
   return FEATURE_DEFS.map((f, idx) => {
     const enabled = active.includes(f.id);
     const cloudDisabled =
@@ -849,7 +858,10 @@ function renderTabsContent(active: FeatureId[], disabledDeps: Set<string>, hidde
                   type="button"
                   class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
                   @click="${() => {
-                    loginWith42(() => window.location.reload());
+                    loginWith42(async () => {
+                      await clearAuthFailed();
+                      window.location.reload();
+                    });
                   }}"
                 >
                   <span class="font-bold tracking-wide">Connect with</span>
@@ -969,6 +981,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
   const lastSync = (await chrome.storage.local.get("LAST_CLOUD_SYNC"))
     .LAST_CLOUD_SYNC;
   const isConnected = !!(await getConfig("CLOUD_TOKEN"));
+  const authFailed = !!(await getConfig("CLOUD_AUTH_FAILED"));
   const dateString =
     typeof lastSync === "number" || typeof lastSync === "string"
       ? new Date(lastSync).toLocaleTimeString([], {
@@ -1018,6 +1031,29 @@ async function createModal(active: FeatureId[]): Promise<void> {
           ✕
         </button>
       </div>
+
+      ${authFailed
+        ? html`<div
+            class="flex-none alert alert-warning mx-4 mt-3 rounded-xl flex items-center justify-between"
+          >
+            <span class="text-sm font-semibold"
+              >42 token expired - friends, marks, and cloud features
+              stopped</span
+            >
+            <button
+              class="btn btn-warning btn-sm font-bold"
+              @click="${() => {
+                dialog.close();
+                loginWith42(async () => {
+                  await clearAuthFailed();
+                  window.location.reload();
+                });
+              }}"
+            >
+              Reconnect
+            </button>
+          </div>`
+        : ""}
 
       <div
         role="tablist"

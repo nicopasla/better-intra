@@ -44,7 +44,12 @@ export async function loginWith42(onSuccess?: () => void): Promise<void> {
     window.location.protocol === "moz-extension:";
 
   const messageListener = async (event: MessageEvent) => {
-    if (event.origin !== WORKER_ORIGIN) return;
+    if (
+      event.origin !== WORKER_ORIGIN &&
+      event.origin !== "https://profile.intra.42.fr" &&
+      event.origin !== "https://profile-v3.intra.42.fr"
+    )
+      return;
 
     if (event.data && event.data.type === "42_AUTH_SUCCESS") {
       const { token, login } = event.data;

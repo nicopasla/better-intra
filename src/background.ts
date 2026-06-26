@@ -18,12 +18,14 @@ chrome.storage.onChanged.addListener((changes) => {
   if ("DISCORD_ENABLED" in changes || "DISCORD_ID" in changes) {
     syncDiscord();
   }
-  if (
-    "DISCORD_QUIET_ENABLED" in changes ||
+  if ("DISCORD_QUIET_ENABLED" in changes ||
     "DISCORD_QUIET_START" in changes ||
     "DISCORD_QUIET_END" in changes
   ) {
     syncDiscordQuiet();
+  }
+  if ("CLOUD_TOKEN" in changes && changes.CLOUD_TOKEN.newValue) {
+    reloadIntraTabs();
   }
 });
 
@@ -136,5 +138,12 @@ function parseJson<T>(raw: string, fallback: T): T {
     return JSON.parse(raw);
   } catch {
     return fallback;
+  }
+}
+
+async function reloadIntraTabs() {
+  const tabs = await chrome.tabs.query({ url: "https://*.intra.42.fr/*" });
+  for (const tab of tabs) {
+    if (tab.id) chrome.tabs.reload(tab.id);
   }
 }

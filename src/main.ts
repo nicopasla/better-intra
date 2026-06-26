@@ -140,7 +140,12 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
       CLOUD_TOKEN: oauthToken,
       CLOUD_LOGIN: oauthLogin,
     });
+    await chrome.storage.local.remove("CLOUD_AUTH_FAILED");
     history.replaceState(null, "", window.location.pathname);
+    window.opener?.postMessage(
+      { type: "42_AUTH_SUCCESS", token: oauthToken, login: oauthLogin },
+      window.location.origin,
+    );
     window.close();
     return;
   }

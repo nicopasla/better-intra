@@ -18,23 +18,12 @@ function renderAccountTab(
         data-theme="light"
         class="w-full h-full flex flex-col items-center justify-center p-8 gap-4"
       >
-        ${state.needsReconnect
-          ? html`<div
-              class="alert alert-warning shadow-lg rounded-xl mb-2 max-w-sm flex items-center justify-between"
-            >
-              <span class="text-sm font-semibold">Session expired</span>
-              <button
-                class="btn btn-warning btn-sm font-bold"
-                type="button"
-                @click="${handlers.handleLogin42}"
-              >
-                Reconnect
-              </button>
-            </div>`
-          : ""}
         <div class="text-center">
-          <h2 class="text-2xl font-bold">Connect your Account</h2>
-          <p class="opacity-70 mt-1">Sync your settings across devices.</p>
+          ${state.needsReconnect
+            ? html`<h2 class="text-2xl font-bold">Session expired</h2>
+                <p class="opacity-70 mt-1">Reconnect to restore features.</p>`
+            : html`<h2 class="text-2xl font-bold">Connect your Account</h2>
+                <p class="opacity-70 mt-1">Sync your settings across devices.</p>`}
         </div>
         <button
           class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] w-full max-w-sm h-16 text-lg flex items-center justify-center gap-3 transition-colors duration-200 mt-4"

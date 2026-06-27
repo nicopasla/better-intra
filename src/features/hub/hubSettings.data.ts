@@ -395,6 +395,21 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
+      label: "Pending Evaluations",
+      kind: "divider",
+    },
+    {
+      feature: "profile",
+      key: "PROFILE_SHOW_EVALUATIONS",
+      label: "Sort pending evaluations",
+      desc: "Organizes the pending evaluations card into Evaluator and Evaluated sections.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.PROFILE_SHOW_EVALUATIONS,
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "profile",
       label: "Events",
       kind: "divider",
     },

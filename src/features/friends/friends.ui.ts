@@ -779,8 +779,7 @@ export async function injectFriendsWidget() {
       loginWith42(async () => {
         if (_state) _state.needsReconnect = false;
         await clearAuthFailed();
-        const settings = await fetchMySettings();
-        if (settings) await applyCloudSettings(settings);
+        await chrome.storage.local.set({ PENDING_SETTINGS_PULL: true });
         window.location.reload();
       });
     },
@@ -798,4 +797,15 @@ export async function injectFriendsWidget() {
   }
 
   renderWidgetUI();
+
+  const pendingPull = (await chrome.storage.local.get("PENDING_SETTINGS_PULL")).PENDING_SETTINGS_PULL;
+  if (pendingPull) {
+    await chrome.storage.local.remove("PENDING_SETTINGS_PULL");
+    const settings = await fetchMySettings();
+    if (settings) {
+      await applyCloudSettings(settings);
+      window.location.reload();
+      return;
+    }
+  }
 }

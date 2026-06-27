@@ -23,7 +23,7 @@ export async function clearAuthFailed(): Promise<void> {
  * It listens for a message from the popup to receive the session token upon success.
  * @param onSuccess Optional callback to run after a successful login.
  */
-export async function loginWith42(onSuccess?: () => void): Promise<void> {
+export async function loginWith42(onSuccess?: () => void | Promise<void>): Promise<void> {
   const extensionFakeCallback = window.location.href;
   const authUrl = `${WORKER_URL}/login?redirect_uri=${encodeURIComponent(extensionFakeCallback)}`;
 
@@ -64,7 +64,7 @@ export async function loginWith42(onSuccess?: () => void): Promise<void> {
         if (pollInterval) clearInterval(pollInterval);
         popup.close();
         if (onSuccess) {
-          onSuccess();
+          await onSuccess();
         } else {
           window.location.reload();
         }
@@ -84,7 +84,7 @@ export async function loginWith42(onSuccess?: () => void): Promise<void> {
       const savedLogin = await getCloudLogin();
       const savedToken = await getConfig("CLOUD_TOKEN");
       if (savedLogin && savedToken) {
-        if (onSuccess) onSuccess();
+        if (onSuccess) await onSuccess();
         else window.location.reload();
       }
     }, 500);
@@ -259,7 +259,7 @@ export async function fetchMySettings(): Promise<Partial<BetterIntraConfig> | nu
     }
     return settings as Partial<BetterIntraConfig>;
   } catch (error) {
-    console.error("Fetch settings failed:", error);
+    console.error("[fetchMySettings] error:", error);
     return null;
   }
 }
@@ -345,6 +345,6 @@ export async function applyCloudSettings(
   }
 
   if (Object.keys(dataToSave).length > 0) {
-    await chrome.storage.local.set(dataToSave);
+    await chrome.storage.local.set(dataToSave as Record<string, unknown>);
   }
 }

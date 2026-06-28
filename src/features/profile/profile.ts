@@ -9,6 +9,7 @@ import { initFreezeCard } from "./freeze.ts";
 import { initProfileCardStyling } from "./profile-card.ts";
 import { injectFriendsWidget } from "../friends/friends.ui.ts";
 import { injectFriendButton } from "../friends/profile-button.ts";
+import { initAchievements } from "./achievements.ts";
 import { initMarks } from "./marks.ts";
 import { initProjectsSort } from "./projects-sort.ts";
 import { initRoulette } from "./roulette.ts";
@@ -51,6 +52,7 @@ export async function initProfile() {
       if (location.pathname === "/" || location.pathname.startsWith("/users")) {
         await initLayoutManager();
         await initProfileCardStyling();
+        await initAchievements();
         await initMarks();
         await initProjectsSort();
         await initRoulette();
@@ -79,4 +81,8 @@ export async function initProfile() {
     subtree: true,
   });
   scheduleUpdate();
+
+  if (location.pathname !== "/") {
+    setTimeout(() => observer.disconnect(), 1000);
+  }
 }

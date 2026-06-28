@@ -4,6 +4,12 @@ let cachedCards: HTMLElement[] | null = null;
 let cachedGrid: HTMLElement | null = null;
 
 function getCards(): HTMLElement[] {
+  if (!/^\/(\??.*)?$/.test(location.pathname)) {
+    cachedCards = [];
+    cachedGrid = null;
+    return [];
+  }
+
   const currentElements = document.querySelectorAll<HTMLElement>(
     "#logtime-shadow-wrapper, .bg-white.md\\:h-96, .lt-box-container",
   );
@@ -102,6 +108,9 @@ function reorderCards(
 }
 
 export async function optimizeLayout() {
+  if (location.hostname !== "profile-v3.intra.42.fr") return;
+  if (!/^\/(\??.*)?$/.test(location.pathname)) return;
+
   const cardOrder = (await getConfig("PROFILE_CARD_ORDER")) as string[] | null;
   const hideCardByText = (searchText: string, shouldHide: boolean) => {
     const cleanSearch = searchText.toUpperCase().trim();
@@ -139,12 +148,11 @@ export async function optimizeLayout() {
 }
 
 export async function initLayoutManager() {
-  const isProfilePage =
+  const isOwnProfile =
     location.hostname === "profile-v3.intra.42.fr" &&
-    (/^\/(\??.*)?$/.test(location.pathname) ||
-      /^\/users\/[^/]+\/?$/.test(location.pathname));
+    /^\/(\??.*)?$/.test(location.pathname);
 
-  if (!isProfilePage) return;
+  if (!isOwnProfile) return;
 
   void optimizeLayout();
   window.addEventListener("resize", () => void optimizeLayout());

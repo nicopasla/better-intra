@@ -57,6 +57,7 @@ export interface BetterIntraConfig {
   PROFILE_MARKS_SORT_ORDER: "newest_first" | "oldest_first";
   PROFILE_PROJECTS_SORT: boolean;
   PROFILE_MARKS_SHOW_REAL_DATE: boolean;
+  PROFILE_SHOW_ACHIEVEMENTS: boolean;
   PROFILE_SHOW_EVALUATIONS: boolean;
 
   // Shortcuts Feature Settings
@@ -137,6 +138,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   PROFILE_MARKS_SORT_ORDER: "newest_first",
   PROFILE_PROJECTS_SORT: true,
   PROFILE_MARKS_SHOW_REAL_DATE: false,
+  PROFILE_SHOW_ACHIEVEMENTS: true,
   PROFILE_SHOW_EVALUATIONS: false,
 
   BETTER_INTRA_THEME: "dark",

@@ -305,6 +305,21 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
+      label: "Achievements",
+      kind: "divider",
+    },
+    {
+      feature: "profile",
+      key: "PROFILE_SHOW_ACHIEVEMENTS",
+      label: "Show all achievements",
+      desc: "Replaces the native achievements card with a scrollable list of all achievements.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.PROFILE_SHOW_ACHIEVEMENTS,
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "profile",
       label: "Projects",
       kind: "divider",
     },

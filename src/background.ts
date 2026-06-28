@@ -126,6 +126,7 @@ async function syncDiscordQuiet() {
         quietEnabled: store.DISCORD_QUIET_ENABLED === true,
         quietStart: String(store.DISCORD_QUIET_START || "22:00"),
         quietEnd: String(store.DISCORD_QUIET_END || "08:00"),
+        timezoneOffset: new Date().getTimezoneOffset(),
       }),
     });
   } catch {

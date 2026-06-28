@@ -863,8 +863,35 @@ export async function initMarks() {
     }
     const enhanced = await enhanceExistingMarks(card, targetLogin, marksData);
     otherProfileRunning = false;
-    if (!enhanced) return;
+    if (!enhanced) { marksInitialized = true; return; }
 
     marksInitialized = true;
+
+    const sidebar = card.closest(".w-full")?.previousElementSibling as HTMLElement | null;
+    const wrapper = sidebar?.nextElementSibling as HTMLElement | null;
+    if (wrapper) {
+      let enhancing = false;
+      const observer = new MutationObserver(() => {
+        if (enhancing) return;
+        const marksCard = findCard("MARKS");
+        if (!marksCard || !wrapper.contains(marksCard)) return;
+        if (marksCard.querySelector("[data-last-event-date]")) return;
+        enhancing = true;
+        void enhanceExistingMarks(marksCard, targetLogin, marksData).finally(() => {
+          enhancing = false;
+          const container = marksCard.querySelector<HTMLElement>(".flex.flex-col.gap-2");
+          if (container) {
+            const items = [...container.children] as HTMLElement[];
+            items.sort((a, b) => {
+              const da = a.getAttribute("data-last-event-date") || "";
+              const db = b.getAttribute("data-last-event-date") || "";
+              return db.localeCompare(da);
+            });
+            for (const item of items) container.appendChild(item);
+          }
+        });
+      });
+      observer.observe(wrapper, { childList: true, subtree: true });
+    }
   }
 }

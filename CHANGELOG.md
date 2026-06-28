@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+## [1.2.4] - 2026-06-28
+
+### Features 🎉
+
+- feat(discord): 42 API health check when testing ([288121a](https://github.com/nicopasla/better-intra/commit/288121a))
+- feat(profile): custom achievements card ([3dc4f79](https://github.com/nicopasla/better-intra/commit/3dc4f79))
+- feat(profile): add pending evaluations card with sort toggle ([d28c84b](https://github.com/nicopasla/better-intra/commit/d28c84b))
+- feat(account): broken token detection, alerts, and reconnect flow ([8f8a651](https://github.com/nicopasla/better-intra/commit/8f8a651))
+- feat(friends): show broken token warning on friends button ([e721951](https://github.com/nicopasla/better-intra/commit/e721951))
+- feat: show v2 warning banner on old profile homepage ([af3a566](https://github.com/nicopasla/better-intra/commit/af3a566))
+- feat(friends): show custom profile avatars in friends list with click-to-toggle ([515ddda](https://github.com/nicopasla/better-intra/commit/515ddda))
+
+### Bug fixes 🐛
+
+- fix(discord): store discord quiet hours timezone ([ba85705](https://github.com/nicopasla/better-intra/commit/ba85705))
+- fix(layout): restrict card reordering to own profile ([3f6e7ff](https://github.com/nicopasla/better-intra/commit/3f6e7ff))
+- fix(profile): fix achievements card layout ([1052e4d](https://github.com/nicopasla/better-intra/commit/1052e4d))
+- fix(marks): re-apply enhancement on tab switch-back ([1ca171a](https://github.com/nicopasla/better-intra/commit/1ca171a))
+- fix(account): await onSuccess callback and retry settings fetch after reconnect ([b6508cb](https://github.com/nicopasla/better-intra/commit/b6508cb))
+- fix: formattting roulette countdown ([82d17ed](https://github.com/nicopasla/better-intra/commit/82d17ed))
+
+### Maintenance 🧹
+
+- chore(docs): fix changelog link ([46ad5aa](https://github.com/nicopasla/better-intra/commit/46ad5aa))
+- chore(docs): repo to github icon ([11daaf1](https://github.com/nicopasla/better-intra/commit/11daaf1))
+- chore(docs): add changelog ([015068b](https://github.com/nicopasla/better-intra/commit/015068b))
+- chore: add robots.txt ([baec1cb](https://github.com/nicopasla/better-intra/commit/baec1cb))
+- chore: add google search meta tag ([a14ba8c](https://github.com/nicopasla/better-intra/commit/a14ba8c))
+- chore: update PRIVACY ([618fe5f](https://github.com/nicopasla/better-intra/commit/618fe5f))
+
 ## [1.2.3] - 2026-06-21
 
 ### Features 🎉
@@ -555,7 +585,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.2.3...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.2.4...HEAD
+[1.2.4]: https://github.com/nicopasla/better-intra/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/nicopasla/better-intra/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/nicopasla/better-intra/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/nicopasla/better-intra/compare/v1.2.0...v1.2.1

@@ -493,8 +493,11 @@ function renderDiscordPanel() {
             <div class="flex items-center justify-between gap-3">
               <span class="text-base font-medium">Discord</span>
               ${discordId
-                ? html`<div class="flex items-center gap-2">
-                    <span class="text-xs status-text"></span>
+                ? html`<div class="flex flex-col gap-1">
+                    <span
+                      class="text-xs text-error status-text"
+                      style="display:none"
+                    ></span>
                     <button
                       type="button"
                       class="btn btn-accent btn-sm"
@@ -503,6 +506,7 @@ function renderDiscordPanel() {
                         const statusEl = btn.parentElement!.querySelector(
                           ".status-text",
                         ) as HTMLElement;
+                        statusEl.style.display = "block";
                         statusEl.textContent = "Sending...";
                         btn.disabled = true;
                         try {
@@ -521,21 +525,25 @@ function renderDiscordPanel() {
                             },
                           );
                           if (res.ok) {
-                            statusEl.textContent = "✓ Sent!";
-                            statusEl.className = "text-xs text-success";
+                            statusEl.textContent =
+                              "✓ Sent! Discord DM and 42 API are working.";
+                            statusEl.className =
+                              "text-sm text-success status-text";
                           } else {
                             const err = await res.text();
-                            statusEl.textContent = `✗ ${err.slice(0, 40)}`;
-                            statusEl.className = "text-xs text-error";
+                            statusEl.textContent = `✗ ${err}`;
+                            statusEl.className =
+                              "text-sm text-error status-text";
                           }
                         } catch {
-                          statusEl.textContent = "✗ Network error";
-                          statusEl.className = "text-xs text-error";
+                          statusEl.textContent =
+                            "✗ Network error — cannot reach server";
+                          statusEl.className = "text-sm text-error status-text";
                         }
                         setTimeout(() => {
-                          statusEl.textContent = "";
+                          statusEl.style.display = "none";
                           btn.disabled = false;
-                        }, 4000);
+                        }, 6000);
                       }}"
                     >
                       Test Discord
@@ -544,7 +552,7 @@ function renderDiscordPanel() {
                 : ""}
             </div>
             <p class="text-sm opacity-60 mt-2 mb-4">
-              Get evaluation reminders via Discord DM — booked and 15-min reveal
+              Get evaluation reminders via Discord DM - booked and 15-min reveal
               notifications.
             </p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

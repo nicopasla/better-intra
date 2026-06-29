@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [1.2.5] - 2026-06-29
+
+### Features 🎉
+
+- feat(milestones): update design for finished milestones ([d119252](https://github.com/nicopasla/better-intra/commit/d119252))
+- feat(friends): udpate medals ([8417b98](https://github.com/nicopasla/better-intra/commit/8417b98))
+
+### Bug fixes 🐛
+
+- fix(milestones): remove overflow ([ccbf6ca](https://github.com/nicopasla/better-intra/commit/ccbf6ca))
+- fix(marks): fetch new outstanding when count change ([40c0739](https://github.com/nicopasla/better-intra/commit/40c0739))
+- fix(evaluations): add another phrasing ([bc72906](https://github.com/nicopasla/better-intra/commit/bc72906))
+- fix(discord): change how discord is enabled ([7477b17](https://github.com/nicopasla/better-intra/commit/7477b17))
+
 ## [1.2.4] - 2026-06-28
 
 ### Features 🎉
@@ -585,7 +599,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.2.4...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.2.5...HEAD
+[1.2.5]: https://github.com/nicopasla/better-intra/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/nicopasla/better-intra/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/nicopasla/better-intra/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/nicopasla/better-intra/compare/v1.2.1...v1.2.2

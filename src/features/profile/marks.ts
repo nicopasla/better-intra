@@ -143,7 +143,7 @@ async function fetchOutstandingProjects(
   if (raw && typeof raw === "string") {
     const parsed = JSON.parse(raw);
     const age = Date.now() - parsed.fetchedAt;
-    if (age < 12 * 60 * 60 * 1000) {
+    if (age < 12 * 60 * 60 * 1000 && count === parsed.count) {
       if (!targetLogin) outstandingCache = parsed.ids;
       return parsed.ids;
     }
@@ -177,6 +177,7 @@ async function fetchOutstandingProjects(
     await chrome.storage.local.set({
       [cacheKey]: JSON.stringify({
         ids,
+        count,
         fetchedAt: Date.now(),
       }),
     });

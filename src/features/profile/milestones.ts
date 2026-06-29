@@ -4,26 +4,40 @@ export function initMilestones() {
 }
 
 function enhanceMilestones() {
-  const validatedMilestones =
-    document.querySelectorAll<HTMLElement>(".bg-legacy-main[data-state]");
+  const validated = document.querySelectorAll<HTMLElement>(
+    ".bg-legacy-main.h-10[data-state]",
+  );
+  const muted = document.querySelectorAll<HTMLElement>(
+    ".bg-legacy-main-muted.h-10[data-state]",
+  );
 
-  validatedMilestones.forEach((milestone) => {
-    if (milestone.dataset.fireEnhanced) return;
+  if (validated.length === 0 && muted.length === 0) {
+    requestAnimationFrame(enhanceMilestones);
+    return;
+  }
 
-    milestone.dataset.fireEnhanced = "true";
-    milestone.classList.add("fire-milestone");
-
-    let angle = 0;
-
-    function animate() {
-      if (!milestone.isConnected) return;
-      angle = (angle + 1.2) % 360;
-      milestone.style.setProperty("--angle", `${angle}deg`);
-      requestAnimationFrame(animate);
-    }
-
-    animate();
+  validated.forEach((el) => {
+    if (el.dataset.fireBg) return;
+    el.dataset.fireBg = "true";
+    el.classList.add("fire-bg");
   });
+
+  if (muted.length > 0) {
+    const current = muted[0];
+    if (!current.dataset.fireAnimated) {
+      current.dataset.fireAnimated = "true";
+      current.classList.add("fire-animated");
+
+      let angle = 0;
+      function animate() {
+        if (!current.isConnected) return;
+        angle = (angle + 2.4) % 360;
+        current.style.setProperty("--angle", `${angle}deg`);
+        requestAnimationFrame(animate);
+      }
+      animate();
+    }
+  }
 }
 
 function injectMilestoneStyles() {
@@ -31,7 +45,7 @@ function injectMilestoneStyles() {
   const style = document.createElement("style");
   style.id = "fire-milestone-style";
   style.textContent = `
-    .fire-milestone {
+    .fire-bg.h-10 {
       position: relative;
       overflow: hidden;
       isolation: isolate;
@@ -43,17 +57,23 @@ function injectMilestoneStyles() {
           #ff8c00 40%,
           #ff9f1c 100%
         ) !important;
-
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.15),
         inset 0 -8px 18px rgba(0,0,0,0.18);
     }
 
-    .fire-milestone::before {
+    .fire-animated.h-10 {
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+      border-radius: 16px;
+    }
+
+    .fire-animated::before {
       content: "";
       position: absolute;
       inset: 0;
-      padding: 3px;
+      padding: 4px;
       border-radius: inherit;
       background:
         conic-gradient(
@@ -61,7 +81,6 @@ function injectMilestoneStyles() {
           #ff3c00,
           #ff7b00,
           #ffd000,
-          #fff0a0,
           #ff7b00,
           #ff3c00
         );
@@ -70,48 +89,19 @@ function injectMilestoneStyles() {
         linear-gradient(#000 0 0);
       -webkit-mask-composite: xor;
       mask-composite: exclude;
-
       z-index: 3;
       pointer-events: none;
     }
-    .fire-milestone::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
 
-      background:
-        conic-gradient(
-          from var(--angle, 0deg),
-          #ff3c00,
-          #ff7b00,
-          #ffd000,
-          #ff7b00,
-          #ff3c00
-        );
-
-      -webkit-mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-
-      filter:
-        blur(18px)
-        brightness(1.4);
-      opacity: 0.4;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .fire-milestone > * {
+    .fire-animated > * {
       position: relative;
       z-index: 2;
     }
 
-    .bg-legacy-main {
-      border-radius: 16px;
+    div:has(> .bg-red-500.rounded-full.h-3.w-3) {
+      position: relative;
+      z-index: 1;
     }
-`;
+  `;
   document.head.appendChild(style);
 }

@@ -44,7 +44,7 @@ function sortRows(nativeCard: HTMLElement) {
   for (const row of rows) {
     row.style.fontSize = "0.9375rem";
     const text = row.textContent || "";
-    if (text.includes("You will evaluate")) evaluatorRows.push(row);
+    if (text.includes("You will evaluate") || text.includes("You are ready to evaluate")) evaluatorRows.push(row);
     else if (text.includes("You will be evaluated by")) evaluatedRows.push(row);
   }
 

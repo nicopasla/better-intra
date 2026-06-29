@@ -63,11 +63,11 @@ function renderFriendRow(
   rank = -1,
   showCustomAvatars = true,
 ) {
-  const medalColors = ["#FFD700", "#C0C0C0", "#CD7F32"];
-  const medalBorder =
-    rank >= 0 && rank < 3
-      ? `border: 3px solid ${medalColors[rank]}; box-shadow: 0 0 10px ${medalColors[rank]};`
-      : "";
+  const medalClass =
+    rank === 0 ? "medal-glow-gold"
+    : rank === 1 ? "medal-glow-silver"
+    : rank === 2 ? "medal-glow-rainbow"
+    : "";
   const hasCustom = !!(
     showCustomAvatars &&
     friend.customAvatar &&
@@ -93,7 +93,7 @@ function renderFriendRow(
       >
         ${currentSrc
           ? html`<div class="avatar ${friend.isOnline ? "avatar-online" : ""}">
-              <div class="w-14 h-14 rounded-full" style="${medalBorder}">
+              <div class="w-14 h-14 rounded-full ${medalClass}">
                 <img
                   src="${currentSrc}"
                   alt="${friend.login}"
@@ -147,7 +147,7 @@ function renderFriendRow(
                 ? "avatar-online"
                 : ""}"
             >
-              <div class="w-14 h-14 rounded-full" style="${medalBorder}">
+              <div class="w-14 h-14 rounded-full ${medalClass}">
                 <span class="text-base font-bold"
                   >${friend.login[0].toUpperCase()}</span
                 >
@@ -372,6 +372,26 @@ function renderWidget(state: WidgetState) {
         to {
           background-position: 0% 0;
         }
+      }
+
+      .medal-glow-gold,
+      .medal-glow-silver,
+      .medal-glow-rainbow {
+        box-sizing: content-box;
+        border-width: 3px;
+        border-style: solid;
+      }
+      .medal-glow-gold {
+        border-color: #ffd700;
+        box-shadow: 0 0 6px 2px #ffd700;
+      }
+      .medal-glow-silver {
+        border-color: #c0c0c0;
+        box-shadow: 0 0 6px 2px #c0c0c0;
+      }
+      .medal-glow-rainbow {
+        border-color: #ff6a00;
+        box-shadow: 0 0 6px 2px #ff6a00;
       }
 
       .badge-rainbow {

@@ -27,10 +27,6 @@ function normalizeActive(raw: unknown): FeatureId[] {
 
   if (ids.length === 0) return FEATURE_DEFS.map((f) => f.id);
 
-  if (!ids.includes("evaluations")) {
-    ids.push("evaluations");
-  }
-
   return ids;
 }
 

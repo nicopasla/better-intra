@@ -3,7 +3,7 @@ import CLUSTERS from "../../assets/svg/grip-vertical.svg?raw";
 import USER from "../../assets/svg/user.svg?raw";
 import SHORTCUT from "../../assets/svg/shortcut.svg?raw";
 import ABOUT from "../../assets/svg/about.svg?raw";
-import SLOT from "../../assets/svg/slot.svg?raw";
+import DISCORD_SVG from "../../assets/svg/discord.svg?raw";
 import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
 import { CLUSTERS as CLUSTER_OPTIONS } from "../clusters/clusters.data.ts";
 
@@ -46,11 +46,10 @@ export const FEATURE_DEFS = [
     cols: 3,
   },
   {
-    id: "evaluations",
-    name: "Evaluations",
-    icon: SLOT,
-    desc: "Notifies you when an evaluation is about to begin.",
-    cols: 2,
+    id: "discord",
+    name: "Discord",
+    icon: DISCORD_SVG,
+    desc: "Get evaluation reminders via Discord DM.",
     requiresCloud: true,
   },
   {
@@ -520,9 +519,9 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       colSpan: 2,
     },
   ],
-  evaluations: [
+  discord: [
     {
-      feature: "evaluations",
+      feature: "discord",
       label: "Discord",
       desc: "Notifications and account connection.",
       kind: "discord-panel",
@@ -530,16 +529,16 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       requiresCloud: true,
     },
     {
-      feature: "evaluations",
+      feature: "discord",
       key: "DISCORD_QUIET_ENABLED",
       label: "Enable quiet hours",
       desc: "Pause Discord notifications during specified hours.",
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.DISCORD_QUIET_ENABLED,
-      colSpan: 2,
+      colSpan: 1,
     },
     {
-      feature: "evaluations",
+      feature: "discord",
       key: "DISCORD_QUIET_START",
       label: "From",
       kind: "select",
@@ -549,7 +548,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       dependsOn: "DISCORD_QUIET_ENABLED",
     },
     {
-      feature: "evaluations",
+      feature: "discord",
       key: "DISCORD_QUIET_END",
       label: "To",
       kind: "select",

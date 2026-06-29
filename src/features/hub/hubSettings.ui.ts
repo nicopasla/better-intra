@@ -25,6 +25,7 @@ import EYE_SVG from "../../assets/svg/eye.svg?raw";
 import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
 import DISCORD_SVG from "../../assets/svg/discord.svg?raw";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
+import { hashLogin } from "../../utils/crypto";
 import { renderAboutPanel } from "./hub.about.ts";
 
 export async function openHubModal(active: FeatureId[]) {
@@ -490,67 +491,7 @@ function renderDiscordPanel() {
       render(
         html`
           <div class="card bg-base-200 shadow-sm p-5 sm:p-6 col-span-full">
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-base font-medium">Discord</span>
-              ${discordId
-                ? html`<div class="flex flex-col gap-1">
-                    <span
-                      class="text-xs text-error status-text"
-                      style="display:none"
-                    ></span>
-                    <button
-                      type="button"
-                      class="btn btn-accent btn-sm"
-                      @click="${async (e: Event) => {
-                        const btn = e.target as HTMLButtonElement;
-                        const statusEl = btn.parentElement!.querySelector(
-                          ".status-text",
-                        ) as HTMLElement;
-                        statusEl.style.display = "block";
-                        statusEl.textContent = "Sending...";
-                        btn.disabled = true;
-                        try {
-                          const res = await fetch(
-                            `${WORKER_URL}/api/v1/private/discord/test`,
-                            {
-                              method: "POST",
-                              headers: {
-                                Authorization: `Bearer ${token}`,
-                                "Content-Type": "application/json",
-                              },
-                              body: JSON.stringify({
-                                login,
-                                discordId,
-                              }),
-                            },
-                          );
-                          if (res.ok) {
-                            statusEl.textContent =
-                              "✓ Sent! Discord DM and 42 API are working.";
-                            statusEl.className =
-                              "text-sm text-success status-text";
-                          } else {
-                            const err = await res.text();
-                            statusEl.textContent = `✗ ${err}`;
-                            statusEl.className =
-                              "text-sm text-error status-text";
-                          }
-                        } catch {
-                          statusEl.textContent =
-                            "✗ Network error — cannot reach server";
-                          statusEl.className = "text-sm text-error status-text";
-                        }
-                        setTimeout(() => {
-                          statusEl.style.display = "none";
-                          btn.disabled = false;
-                        }, 6000);
-                      }}"
-                    >
-                      Test Discord
-                    </button>
-                  </div>`
-                : ""}
-            </div>
+            <span class="text-base font-medium">Discord</span>
             <p class="text-sm opacity-60 mt-2 mb-4">
               Get evaluation reminders via Discord DM - booked and 15-min reveal
               notifications.
@@ -653,6 +594,95 @@ function renderDiscordPanel() {
                           </button>`}
               </div>
             </div>
+            ${discordId
+              ? html`
+                  <div class="card bg-base-300/50 p-4 sm:p-5 mt-4">
+                    <div
+                      class="flex items-start sm:items-center justify-between gap-3"
+                    >
+                      <div class="flex flex-col gap-0.5">
+                        <span class="text-base font-medium"
+                          >Test notifications</span
+                        >
+                        <span class="text-sm opacity-50"
+                          >Send a test DM to verify your Discord setup is
+                          working. A successful test is required before
+                          evaluation notifications can be enabled.</span
+                        >
+                      </div>
+                      <div class="flex flex-col gap-1">
+                        <span
+                          class="text-xs text-error status-text"
+                          style="display:none"
+                        ></span>
+                        <button
+                          type="button"
+                          class="btn btn-accent btn-sm"
+                          @click="${async (e: Event) => {
+                            const btn = e.target as HTMLButtonElement;
+                            const statusEl =
+                              btn.parentElement!.querySelector(
+                                ".status-text",
+                              ) as HTMLElement;
+                            statusEl.style.display = "block";
+                            statusEl.textContent = "Sending...";
+                            btn.disabled = true;
+                            try {
+                              const res = await fetch(
+                                `${WORKER_URL}/api/v1/private/discord/test`,
+                                {
+                                  method: "POST",
+                                  headers: {
+                                    Authorization: `Bearer ${token}`,
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify({
+                                    login,
+                                    discordId,
+                                  }),
+                                },
+                              );
+                              if (res.ok) {
+                                statusEl.textContent =
+                                  "✓ Sent! Discord DM and 42 API are working.";
+                                statusEl.className =
+                                  "text-sm text-success status-text";
+                                try {
+                                  const hashed = await hashLogin(login);
+                                  await fetch(
+                                    `${WORKER_URL}/api/v1/private/evaluations?login=${encodeURIComponent(hashed)}&action=register`,
+                                    {
+                                      headers: {
+                                        Authorization: `Bearer ${token}`,
+                                      },
+                                    },
+                                  );
+                                } catch {}
+                              } else {
+                                const err = await res.text();
+                                statusEl.textContent = `✗ ${err}`;
+                                statusEl.className =
+                                  "text-sm text-error status-text";
+                              }
+                            } catch {
+                              statusEl.textContent =
+                                "✗ Network error — cannot reach server";
+                              statusEl.className =
+                                "text-sm text-error status-text";
+                            }
+                            setTimeout(() => {
+                              statusEl.style.display = "none";
+                              btn.disabled = false;
+                            }, 6000);
+                          }}"
+                        >
+                          Test Discord
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                `
+              : ""}
           </div>
         `,
         container,
@@ -788,7 +818,7 @@ function renderTabsContent(
       return renderSetting(
         def,
         f.id === "about" ||
-          f.id === "evaluations" ||
+          f.id === "discord" ||
           (enabled &&
             !(def.key && disabledDeps.has(def.key)) &&
             !(def.requiresCloud && disabledDeps.has("__CLOUD__"))),
@@ -814,14 +844,14 @@ function renderTabsContent(
         <div
           class="flex flex-col ${enabled ||
           f.id === "about" ||
-          f.id === "evaluations"
+          f.id === "discord"
             ? cloudDisabled
               ? "opacity-40 grayscale"
               : ""
             : "opacity-40 grayscale"}"
           data-feature-panel="${f.id}"
         >
-          ${f.id !== "about" && f.id !== "evaluations"
+          ${f.id !== "about" && f.id !== "discord"
             ? html`
                 <div
                   class="sticky top-0 z-20 flex items-center justify-between bg-base-200 px-6 py-4 border-b border-base-300 shadow-sm"

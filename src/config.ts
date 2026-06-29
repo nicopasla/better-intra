@@ -90,7 +90,6 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
     "clusters",
     "profile",
     "shortcuts",
-    "evaluations",
   ],
   CLOUD_SYNC_ENABLED: false,
   LAST_CLOUD_SYNC: null,

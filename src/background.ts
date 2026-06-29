@@ -3,22 +3,22 @@
 const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
 
 chrome.runtime.onInstalled.addListener(() => {
-  syncRegistration();
   syncDiscord();
   syncDiscordQuiet();
 });
 
 chrome.storage.onChanged.addListener((changes) => {
-  if ("ACTIVE_SCRIPTS" in changes) {
-    const { oldValue, newValue } = changes.ACTIVE_SCRIPTS;
-    if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
-      syncRegistration();
-    }
-  }
   if ("DISCORD_ENABLED" in changes || "DISCORD_ID" in changes) {
     syncDiscord();
   }
-  if ("DISCORD_QUIET_ENABLED" in changes ||
+  if ("DISCORD_ID" in changes && !changes.DISCORD_ID.newValue) {
+    syncRegistration();
+  }
+  if ("DISCORD_ENABLED" in changes && !changes.DISCORD_ENABLED.newValue) {
+    syncRegistration();
+  }
+  if (
+    "DISCORD_QUIET_ENABLED" in changes ||
     "DISCORD_QUIET_START" in changes ||
     "DISCORD_QUIET_END" in changes
   ) {
@@ -31,23 +31,21 @@ chrome.storage.onChanged.addListener((changes) => {
 
 async function syncRegistration() {
   const store = await chrome.storage.local.get([
-    "ACTIVE_SCRIPTS",
     "CLOUD_TOKEN",
     "CLOUD_LOGIN",
+    "DISCORD_ENABLED",
+    "DISCORD_ID",
   ]);
-  const raw = store.ACTIVE_SCRIPTS;
-  const activeScripts: string[] = Array.isArray(raw)
-    ? raw
-    : parseJson(String(raw || "[]"), []);
   const token = String(store.CLOUD_TOKEN || "");
   const cloudLogin = String(store.CLOUD_LOGIN || "");
   if (!token || !cloudLogin) return;
 
+  const discordEnabled = store.DISCORD_ENABLED === true;
+  const discordId = String(store.DISCORD_ID || "").trim();
+  if (discordEnabled && discordId) return;
+
   const hashedLogin = await hashLogin(cloudLogin);
-  const action = activeScripts.includes("evaluations")
-    ? "register"
-    : "unregister";
-  const url = `${WORKER_URL}/api/v1/private/evaluations?login=${encodeURIComponent(hashedLogin)}&action=${action}`;
+  const url = `${WORKER_URL}/api/v1/private/evaluations?login=${encodeURIComponent(hashedLogin)}&action=unregister`;
 
   try {
     await fetch(url, {
@@ -87,7 +85,7 @@ async function syncDiscord() {
     } catch {
       console.warn("syncDiscord: link fetch failed");
     }
-  } else {
+  } else if (!discordId) {
     const url = `${WORKER_URL}/api/v1/private/discord/unlink?login=${encodeURIComponent(hashedLogin)}`;
     try {
       await fetch(url, {
@@ -131,14 +129,6 @@ async function syncDiscordQuiet() {
     });
   } catch {
     console.warn("syncDiscordQuiet: fetch failed");
-  }
-}
-
-function parseJson<T>(raw: string, fallback: T): T {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return fallback;
   }
 }
 

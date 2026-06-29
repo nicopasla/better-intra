@@ -101,6 +101,16 @@ function injectMilestoneStyles() {
     div:has(> .bg-red-500.rounded-full.h-3.w-3) {
       position: relative;
       z-index: 1;
+      margin-top: -5rem !important;
+    }
+
+    .bg-red-500.rounded-full + .w-\\[2px\\] {
+      height: 75px;
+    }
+
+    .h-\\[59\\%\\].justify-between {
+      justify-content: flex-start;
+      padding-bottom: 0 !important;
     }
   `;
   document.head.appendChild(style);

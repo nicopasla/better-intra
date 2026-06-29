@@ -72,5 +72,6 @@ export default defineConfig({
     __TW_VERSION__: JSON.stringify(pkg.dependencies["@tailwindcss/vite"]),
     __DAISY_VERSION__: JSON.stringify(pkg.devDependencies.daisyui),
     __WEB_EXT_VERSION__: JSON.stringify(pkg.devDependencies["web-ext"]),
+    "import.meta": "{}",
   },
 });

@@ -69,8 +69,8 @@
   bottom: 130%;
   left: 50%;
   transform: translateX(-50%);
-  background: #1e293b;
-  color: #fff;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 4px;

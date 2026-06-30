@@ -377,7 +377,7 @@ function injectMarks(marks: MarkedProject[], hasOngoing: boolean) {
   const container = document.createElement("div");
   container.id = INJECTED_ID;
   container.style.cssText = hasOngoing
-    ? `border-top: 1px solid rgba(128,128,128,0.2); margin-top: 0.25rem; padding: 0.25rem 8px 0 0; flex: 1; min-height: 0; overflow-y: auto; font-family: ${INTRA_FONT};`
+    ? `border-top: 1px solid hsl(var(--border)); margin-top: 0.25rem; padding: 0.25rem 8px 0 0; flex: 1; min-height: 0; overflow-y: auto; font-family: ${INTRA_FONT};`
     : `padding: 0.5rem 8px 0.5rem 0; flex: 1; font-family: ${INTRA_FONT};`;
 
   const list = document.createElement("div");
@@ -440,7 +440,7 @@ function injectMarks(marks: MarkedProject[], hasOngoing: boolean) {
       panel.id = uid;
       panel.style.display = "none";
       panel.style.padding = "0 0 0 12px";
-      panel.style.borderTop = "1px solid rgba(128,128,128,0.1)";
+      panel.style.borderTop = "1px solid hsl(var(--border))";
 
       const sortedTeams = [...project.teams].sort(
         (a, b) => b.occurrence - a.occurrence,

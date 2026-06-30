@@ -192,7 +192,7 @@ export const createSettingsModal = async (
     borderRadius: "1.5rem",
     overflow: "hidden",
     padding: "0",
-    border: "1px solid rgba(128,128,128,0.3)",
+    border: "1px solid hsl(var(--border))",
   });
 
   const content = document.createElement("div");

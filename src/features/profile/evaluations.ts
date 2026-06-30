@@ -56,7 +56,7 @@ function sortRows(nativeCard: HTMLElement) {
   const botWrap = document.createElement("div");
   botWrap.className = "ft-ev-bot";
   botWrap.style.cssText =
-    "flex:1;display:flex;flex-direction:column;border-top:1px solid #e5e7eb;padding:8px 0;margin-top:-1px";
+    "flex:1;display:flex;flex-direction:column;border-top:1px solid hsl(var(--border));padding:8px 0;margin-top:-1px";
   parent.appendChild(botWrap);
 
   for (const row of evaluatorRows) topWrap.appendChild(row);
@@ -65,14 +65,14 @@ function sortRows(nativeCard: HTMLElement) {
   const evLabel = document.createElement("div");
   evLabel.className = "ft-ev-label";
   evLabel.style.cssText =
-    "font-weight:600;font-size:1rem;color:#000;margin:0 0 4px 4px;flex-shrink:0";
+    "font-weight:600;font-size:1rem;color:hsl(var(--foreground));margin:0 0 4px 4px;flex-shrink:0";
   evLabel.textContent = `Evaluator (${evaluatorRows.length})`;
   topWrap.insertBefore(evLabel, topWrap.firstChild);
 
   const edLabel = document.createElement("div");
   edLabel.className = "ft-ev-label";
   edLabel.style.cssText =
-    "font-weight:600;font-size:1rem;color:#000;margin:4px 0 4px 4px;flex-shrink:0";
+    "font-weight:600;font-size:1rem;color:hsl(var(--foreground));margin:4px 0 4px 4px;flex-shrink:0";
   edLabel.textContent = `Evaluated (${evaluatedRows.length})`;
   botWrap.insertBefore(edLabel, botWrap.firstChild);
 

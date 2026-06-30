@@ -24,7 +24,7 @@ function renderDayCell(
     secs > 0 ? hexToRgba(config.calendar_color, alpha) : "var(--muted)";
 
   const textColor =
-    secs > MAX_INTENSITY_SECS / 2 ? "#fff" : "var(--muted-foreground)";
+    secs > MAX_INTENSITY_SECS / 2 ? "var(--primary-foreground)" : "var(--muted-foreground)";
 
   return html`<div
     class="day-cell aspect-square flex items-center justify-center text-[11px] font-bold ${dKey ===

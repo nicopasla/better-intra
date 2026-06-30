@@ -32,7 +32,7 @@ function levelFraction(level: number): number {
   return level % 1;
 }
 
-function renderLevelBar(level: number, color = "#00babc") {
+function renderLevelBar(level: number, color = "var(--color-primary)") {
   const pct = Math.round(levelFraction(level) * 100);
   const whole = Math.floor(level);
   return html`
@@ -166,16 +166,16 @@ function renderFriendRow(
       href="https://profile-v3.intra.42.fr/users/${friend.login}"
       target="_blank"
       rel="noopener noreferrer"
-      class="no-underline"
+      class="no-underline text-base-content"
       @click="${(e: Event) => e.stopPropagation()}"
     >
       <!-- Login + display name + status inline -->
       <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
-        <span class="font-bold text-base text-base-content"
+        <span class="font-bold text-base"
           >${friend.login}</span
         >
         ${friend.displayName && friend.displayName !== friend.login
-          ? html`<span class="text-xs opacity-60 truncate"
+          ? html`<span class="text-xs opacity-70 truncate"
               >${friend.displayName}</span
             >`
           : ""}
@@ -193,10 +193,10 @@ function renderFriendRow(
 
       <!-- Grade + pool -->
       ${friend.grade
-        ? html` <div class="text-sm opacity-50 truncate mb-1.5">
+        ? html` <div class="text-sm opacity-60 truncate mb-1.5">
             ${friend.grade}
             ${friend.poolLabel
-              ? html`<span class="opacity-70">· ${friend.poolLabel}</span>`
+              ? html`<span class="opacity-80">· ${friend.poolLabel}</span>`
               : ""}
           </div>`
         : ""}
@@ -335,7 +335,7 @@ function renderSortSelect(current: SortMode, onChange: (m: SortMode) => void) {
   const modes: SortMode[] = ["online", "name", "level", "wallet", "correction"];
   return html`
     <select
-      class="select select-bordered select-sm min-w-36 font-bold tracking-wide"
+      class="select select-bordered select-sm min-w-36 font-bold tracking-wide text-base-content"
       @change="${(e: Event) =>
         onChange((e.target as HTMLSelectElement).value as SortMode)}"
       title="Sort by"
@@ -619,7 +619,7 @@ function renderWidget(state: WidgetState) {
                     </div>`
                   : state.friends.length === 0
                     ? renderEmpty()
-                    : html`<ul class="list">
+                    : html`<ul class="list text-base-content">
                         ${sorted.map(
                           (f, i) =>
                             html`<li class="list-row group">
@@ -702,6 +702,10 @@ export async function injectFriendsWidget() {
   const token = await getConfig("CLOUD_TOKEN");
   const authFailed = !!(await getConfig("CLOUD_AUTH_FAILED"));
 
+  const effectiveTheme = await getEffectiveTheme();
+  const presetKey = await getConfig("PROFILE_THEME_PRESET");
+  const daisyTheme = effectiveTheme === "light" ? "light" : (presetKey && presetKey !== "dark" ? presetKey : "dark");
+
   _state = {
     open: false,
     loading: false,
@@ -711,7 +715,7 @@ export async function injectFriendsWidget() {
     addLoading: false,
     addError: "",
     lastFetch: null,
-    theme: await getEffectiveTheme(),
+    theme: daisyTheme,
     needsReconnect: !!token && authFailed,
     notConnected: !token,
     showCustomAvatars: await getConfig("SHOW_CUSTOM_AVATARS_IN_FRIENDS"),

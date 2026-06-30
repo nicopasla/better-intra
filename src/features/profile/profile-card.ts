@@ -96,7 +96,7 @@ function injectProfileCardStyles() {
 
     /* --- Cursus Dropdown & Percentage --- */
     .ft-profile-card .font-bold.justify-between {
-      color: #a0aec0;
+      color: hsl(var(--muted-foreground));
     }
 
     .ft-profile-card .font-bold.justify-between > div:first-child {
@@ -127,12 +127,12 @@ function injectProfileCardStyles() {
 
 
     .ft-profile-card .border-t-neutral-600 b {
-      color: #a0aec0;
+      color: hsl(var(--muted-foreground));
       font-weight: 600;
     }
 
     .ft-profile-card .border-t-neutral-600 span {
-      color: #e2e8f0;
+      color: hsl(var(--foreground));
     }
 `;
   document.head.appendChild(style);

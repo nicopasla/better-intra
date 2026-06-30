@@ -10,7 +10,7 @@
     "#friends-shadow-wrapper",
     "#logtime-shadow-wrapper",
     "#popup-root";
-  themes: "light", "dark";
+  themes: "light", "dark", "synthwave", "forest", "halloween", "dracula", "night", "sunset", "luxury", "cyberpunk", "dim", "black", "coffee", "aqua";
   include: [ 'button', 'toggle', 'input', 'select', 'radio', 'label',
     'card', 'tabs', 'modal', 'divider', 'swap', 'fieldset', 'status',
     'tooltip', 'badge', 'collapse', 'ring', 'avatar', 'indicator',

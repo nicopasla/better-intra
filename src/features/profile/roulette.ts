@@ -161,8 +161,8 @@ function buildCard(entries: RouletteEntry[], showHistory: boolean) {
         bottom: 130%;
         left: 50%;
         transform: translateX(-50%);
-        background: #1e293b;
-        color: #fff;
+        background: hsl(var(--card));
+        color: hsl(var(--foreground));
         font-size: 14px;
         padding: 6px 12px;
         border-radius: 4px;
@@ -260,7 +260,7 @@ function buildCard(entries: RouletteEntry[], showHistory: boolean) {
   if (showHistory) {
     const divider = document.createElement("div");
     divider.style.cssText =
-      "border-top: 1px solid rgba(128,128,128,0.15); margin: 8px 0;";
+      "border-top: 1px solid hsl(var(--border)); margin: 8px 0;";
     inner.appendChild(divider);
 
     const scrollWrap = document.createElement("div");

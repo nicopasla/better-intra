@@ -2,6 +2,7 @@ import { html, render } from "lit-html";
 import { getConfig } from "../../../config.ts";
 import { HUB_SETTING_DEFS } from "../../hub/hubSettings.data.ts";
 import { sharedCSS } from "../../../assets/shared-styles.ts";
+import { THEME_PRESETS } from "../theme/theme-manager.ts";
 import eventData from "./events.belgium.json";
 
 export async function updateEventFilters() {
@@ -100,27 +101,34 @@ export async function injectEventsSelect() {
   shadowHost.style.setProperty("display", "inline-flex", "important");
 
   const shadowRoot = shadowHost.attachShadow({ mode: "open" });
-  const isDark = document.documentElement.classList.contains("dark");
-  const primaryColor = isDark ? "hsl(199 89% 48%)" : "#00babc";
+  const effectiveTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+  const presetKey = await getConfig("PROFILE_THEME_PRESET");
+  const daisyTheme = effectiveTheme === "light" ? "light" : (presetKey && presetKey !== "dark" ? presetKey : "dark");
+  const preset = THEME_PRESETS[presetKey] ?? THEME_PRESETS["dark"];
+  const primaryHsl = presetKey === "dark" ? "199 89% 48%" : preset.primary;
+  const base100 = effectiveTheme === "light" ? "hsl(0 0% 100%)" : "hsl(225 17% 14%)";
+  const baseContent = effectiveTheme === "light" ? "hsl(0 0% 10%)" : "hsl(210 20% 98%)";
   const style = document.createElement("style");
   style.textContent = `
     ${sharedCSS}
-    :host {
-      --base-100: var(--color-base-100);
-      --base-content: var(--color-base-content);
-    }
-    
     select {
-      background-color: var(--base-100) !important;
-      color: ${primaryColor} !important;
-      border-color: ${primaryColor} !important;
+      background-color: var(--color-base-100) !important;
+      color: var(--color-primary) !important;
+      border-color: var(--color-primary) !important;
+    }
+    select > option {
+      background-color: var(--color-base-100) !important;
+      color: var(--color-base-content) !important;
     }
   `;
   shadowRoot.appendChild(style);
 
   const wrapper = document.createElement("div");
   wrapper.id = "events-shadow-wrapper";
-  wrapper.setAttribute("data-theme", "light");
+  wrapper.setAttribute("data-theme", daisyTheme);
+  wrapper.style.setProperty("--color-primary", `hsl(${primaryHsl})`, "important");
+  wrapper.style.setProperty("--color-base-100", base100, "important");
+  wrapper.style.setProperty("--color-base-content", baseContent, "important");
   wrapper.style.setProperty("display", "flex", "important");
   wrapper.style.setProperty("flex-direction", "row", "important");
   wrapper.style.setProperty("align-items", "center", "important");

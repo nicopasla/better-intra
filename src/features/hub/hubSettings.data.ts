@@ -79,7 +79,8 @@ export type SettingKind =
   | "about"
   | "card-order"
   | "action"
-  | "discord-panel";
+  | "discord-panel"
+  | "theme-preset";
 
 export { INTRA_FONT } from "../logtime/constants.ts";
 
@@ -91,7 +92,7 @@ export type HubSettingDef = {
   kind: SettingKind;
   nullable?: boolean;
   defaultValue?: unknown;
-  options?: readonly { label: string; value: string }[];
+  options?: readonly { label: string; value: string; color?: string }[];
   grid?: boolean;
   colSpan?: number;
   fullWidth?: boolean;
@@ -282,6 +283,30 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       feature: "profile",
       label: "Appearance",
       kind: "divider",
+    },
+    {
+      feature: "profile",
+      key: "PROFILE_THEME_PRESET",
+      label: "Dark theme accent",
+      desc: "Change the accent color used in dark mode.",
+      kind: "theme-preset",
+      fullWidth: true,
+      defaultValue: CONFIG_DEFAULT.PROFILE_THEME_PRESET,
+      options: [
+        { label: "Dark", value: "dark", color: "199 89% 48%" },
+        { label: "Synthwave", value: "synthwave", color: "327 92% 68%" },
+        { label: "Forest", value: "forest", color: "141 71% 42%" },
+        { label: "Halloween", value: "halloween", color: "34 100% 50%" },
+        { label: "Dracula", value: "dracula", color: "326 100% 74%" },
+        { label: "Night", value: "night", color: "199 93% 60%" },
+        { label: "Sunset", value: "sunset", color: "16 100% 68%" },
+        { label: "Luxury", value: "luxury", color: "0 0% 100%" },
+        { label: "Cyberpunk", value: "cyberpunk", color: "341 100% 70%" },
+        { label: "Dim", value: "dim", color: "108 66% 73%" },
+        { label: "Black", value: "black", color: "0 0% 23%" },
+        { label: "Coffee", value: "coffee", color: "30 66% 58%" },
+        { label: "Aqua", value: "aqua", color: "182 90% 51%" },
+      ],
     },
     {
       feature: "profile",

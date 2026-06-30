@@ -388,6 +388,57 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             )}
           </div>`;
 
+        case "theme-preset":
+          return html`<div class="flex flex-wrap gap-2">
+              <input
+                type="hidden"
+                data-setting-key="${def.key}"
+                .value="${String(value)}"
+              />
+              ${(def.options ?? []).map(
+                (o) => {
+                  const hsl = (o as { color?: string }).color ?? "199 89% 48%";
+                  const selected = String(o.value) === String(value);
+                  const parts = hsl.split(" ");
+                  const lightness = parseInt(parts[2] ?? "50");
+                  const textColor = lightness > 50 ? "hsl(0 0% 10%)" : "hsl(0 0% 100%)";
+                  return html`<button
+                    type="button"
+                    class="btn btn-xs font-bold"
+                    data-preset-value="${o.value}"
+                    data-preset-hsl="${hsl}"
+                    style="background-color: hsl(${hsl}); color: ${textColor}; border: ${selected ? '2px solid #fff' : '2px solid transparent'}; outline: ${selected ? '2px solid hsl(' + hsl + ')' : 'none'}; outline-offset: 1px;"
+                    ?disabled="${!enabled}"
+                    @mousedown="${(e: Event) => e.stopPropagation()}"
+                    @click="${(e: Event) => {
+                      e.stopPropagation();
+                      const btn = e.target as HTMLElement;
+                      const wrapper = btn.parentElement!;
+                      const hidden = wrapper.querySelector('input[type="hidden"]') as HTMLInputElement;
+                      if (hidden) hidden.value = o.value;
+                      const allBtns = wrapper.querySelectorAll('button[data-preset-value]');
+                      allBtns.forEach((b: Element) => {
+                        const bEl = b as HTMLElement;
+                        const bHsl = bEl.dataset.presetHsl ?? hsl;
+                        const bParts = bHsl.split(" ");
+                        const bLight = parseInt(bParts[2] ?? "50");
+                        const bText = bLight > 50 ? "hsl(0 0% 10%)" : "hsl(0 0% 100%)";
+                        bEl.style.color = bText;
+                        bEl.style.border = '2px solid transparent';
+                        bEl.style.outline = 'none';
+                      });
+                      btn.style.color = textColor;
+                      btn.style.border = '2px solid #fff';
+                      btn.style.outline = '2px solid hsl(' + hsl + ')';
+                      const root = btn.getRootNode() as ShadowRoot;
+                      const container = root.querySelector('[data-theme]') as HTMLElement;
+                      if (container) container.setAttribute('data-theme', o.value);
+                    }}"
+                  >${o.label}</button>`;
+                },
+              )}
+            </div>`;
+
         case "url":
           return html`<div class="w-full">
             <label
@@ -1148,15 +1199,33 @@ async function createModal(active: FeatureId[]): Promise<void> {
   const hubContainer = shadow.querySelector("[data-theme]");
   const ghIcon = shadow.querySelector('img[alt="GitHub"]') as HTMLElement;
 
-  themeToggle?.addEventListener("change", async () => {
-    const newTheme = themeToggle.checked ? "dark" : "light";
+  const presetKey = (await getConfig("PROFILE_THEME_PRESET")) || "dark";
+  const validPreset = HUB_SETTING_DEFS.profile
+    .find((s) => s.key === "PROFILE_THEME_PRESET")
+    ?.options?.some((o) => o.value === presetKey)
+    ? presetKey
+    : "dark";
+  const storedTheme = (await getConfig("BETTER_INTRA_THEME")) || "dark";
+  const effective = storedTheme === "system"
+    ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+    : storedTheme;
+  hubContainer?.setAttribute("data-theme", effective === "light" ? "light" : validPreset);
 
-    hubContainer?.setAttribute("data-theme", newTheme);
-    await chrome.storage.local.set({ BETTER_INTRA_THEME: newTheme });
+  themeToggle?.addEventListener("change", async () => {
+    const isDark = themeToggle.checked;
+    const preset = (await getConfig("PROFILE_THEME_PRESET")) || "dark";
+    const validPreset = HUB_SETTING_DEFS.profile
+      .find((s) => s.key === "PROFILE_THEME_PRESET")
+      ?.options?.some((o) => o.value === preset)
+      ? preset
+      : "dark";
+
+    hubContainer?.setAttribute("data-theme", isDark ? validPreset : "light");
+    await chrome.storage.local.set({ BETTER_INTRA_THEME: isDark ? "dark" : "light" });
 
     if (ghIcon) {
       ghIcon.style.filter =
-        newTheme === "light" ? "invert(1) brightness(0)" : "none";
+        isDark ? "none" : "invert(1) brightness(0)";
     }
   });
 

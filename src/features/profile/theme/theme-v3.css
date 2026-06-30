@@ -375,3 +375,35 @@ html.dark .hover\:opacity-100:hover svg path,
 html.dark .hover\:opacity-100:hover svg line {
   stroke: hsl(var(--primary)) !important;
 }
+
+/* ============================================================================
+   MILESTONE / COMMON CORE ETA
+   ============================================================================ */
+
+html.dark .bg-legacy-main {
+  background-color: hsl(var(--primary)) !important;
+}
+
+html.dark .bg-legacy-main-muted {
+  background-color: hsl(var(--muted)) !important;
+}
+
+html.dark .border-b-legacy-main-border {
+  border-bottom-color: hsl(var(--border)) !important;
+}
+
+html.dark .border-\[hsla\(0\,_0\%\,_20\%\,_1\)\] {
+  border-color: hsl(var(--border)) !important;
+}
+
+html.dark .bg-legacy-main .text-white {
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+html.dark .bg-legacy-main-muted .text-white {
+  color: hsl(var(--foreground)) !important;
+}
+
+html.dark .bg-\[rgb\(23\,23\,23\)\] {
+  background-color: hsl(var(--card)) !important;
+}

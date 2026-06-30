@@ -83,6 +83,6 @@ export async function initProfile() {
   scheduleUpdate();
 
   if (location.pathname !== "/") {
-    setTimeout(() => observer.disconnect(), 1000);
+    setTimeout(() => observer.disconnect(), 10000);
   }
 }

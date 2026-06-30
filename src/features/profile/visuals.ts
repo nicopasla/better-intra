@@ -281,7 +281,7 @@ export const updateVisuals = async () => {
   const pathParts = location.pathname.split("/").filter((p) => p);
   injectCustomStyles();
 
-  const avatarEl = document.querySelector(AVATAR_SELECTOR) as HTMLElement;
+  let avatarEl = document.querySelector(AVATAR_SELECTOR) as HTMLElement;
 
   let myLogin = await getCloudLogin();
   if (!myLogin) myLogin = "me";
@@ -300,7 +300,15 @@ export const updateVisuals = async () => {
     if (avatarEl) avatarEl.style.setProperty("opacity", "1", "important");
   }
 
-  if (!avatarEl) return;
+  if (!avatarEl) {
+    let att = 0;
+    while (!avatarEl && att < 30) {
+      await new Promise((r) => requestAnimationFrame(r));
+      avatarEl = document.querySelector(AVATAR_SELECTOR) as HTMLElement;
+      att++;
+    }
+    if (!avatarEl) return;
+  }
 
   if (targetLogin === myLogin) {
     if (!avatarEl.dataset.modalListener) {

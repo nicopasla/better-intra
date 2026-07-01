@@ -329,6 +329,16 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
+      key: "PROFILE_HIDE_COALITION",
+      label: "Hide coalition elements",
+      desc: "Hides the coalition icon, rank, and score fields from the profile card.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.PROFILE_HIDE_COALITION,
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "profile",
       label: "Achievements",
       kind: "divider",
     },

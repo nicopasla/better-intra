@@ -105,6 +105,7 @@ function injectProfileCardStyles() {
     }
 
     .ft-profile-card button[role="combobox"] {
+      background-color: transparent !important;
       font-size: 0.8rem;
       padding: 2px 4px !important;
       border-radius: 4px;

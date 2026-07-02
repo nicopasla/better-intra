@@ -60,7 +60,6 @@ export interface BetterIntraConfig {
   PROFILE_MARKS_SHOW_REAL_DATE: boolean;
   PROFILE_SHOW_ACHIEVEMENTS: boolean;
   PROFILE_SHOW_EVALUATIONS: boolean;
-  PROFILE_HIDE_COALITION: boolean;
 
   // Shortcuts Feature Settings
   SHORTCUTS_LINKS: { name: string; url: string }[];
@@ -142,7 +141,6 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   PROFILE_MARKS_SHOW_REAL_DATE: false,
   PROFILE_SHOW_ACHIEVEMENTS: true,
   PROFILE_SHOW_EVALUATIONS: false,
-  PROFILE_HIDE_COALITION: false,
 
   BETTER_INTRA_THEME: "dark",
   SHORTCUTS_LINKS: [],

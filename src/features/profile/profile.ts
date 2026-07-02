@@ -14,7 +14,6 @@ import { initMarks } from "./marks.ts";
 import { initProjectsSort } from "./projects-sort.ts";
 import { initRoulette } from "./roulette.ts";
 import { initEvaluations } from "./evaluations.ts";
-import { initHideCoalition } from "./coalition.ts";
 
 const waitForBody = () =>
   document.body
@@ -58,7 +57,6 @@ export async function initProfile() {
         await initProjectsSort();
         await initRoulette();
         await initEvaluations();
-        await initHideCoalition();
         await findSlotsButton();
         await injectEventsSelect();
         await updateEventFilters();

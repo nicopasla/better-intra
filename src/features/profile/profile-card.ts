@@ -195,16 +195,6 @@ function injectProfileCardStyles() {
   const style = document.createElement("style");
   style.id = STYLE_ID;
   style.textContent = `
-  /* --- Keyframes for Liquid Fill --- */
-    @keyframes ft-wave-move {
-      0% {
-        transform: translate(-50%, -50%) rotate(0deg);
-      }
-      100% {
-        transform: translate(-50%, -50%) rotate(360deg);
-      }
-    }
-
     /* --- Main Card Container --- */
     .ft-profile-card {
       border: 1px solid var(--user-color-translucent, rgba(255, 255, 255, 0.1)) !important;
@@ -257,27 +247,6 @@ function injectProfileCardStyles() {
       background-color: var(--user-color, #00babc) !important;
       position: relative !important;
       transition: width 1s ease-in-out !important;
-    }
-
-    /* The 'wave' pseudo-element */
-    .ft-profile-card div[role="progressbar"] > div::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 100%;
-      width: 40px;
-      height: 40px;
-      background: var(--user-color, #00babc);
-      border-radius: 38%;
-      animation: ft-wave-move 3s linear infinite;
-      display: block;
-      transform-origin: center;
-      opacity: 1;
-    }
-
-    /* Hide wave if progress is 0 (translateX is -100%) */
-    .ft-profile-card div[role="progressbar"] > div[style*="transform: translateX(-100%)"]::after {
-      display: none;
     }
 
     /* --- Cursus Dropdown & Percentage --- */

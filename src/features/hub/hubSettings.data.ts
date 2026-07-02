@@ -329,6 +329,16 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
+      key: "PROFILE_USE_MODERN_INFO_CARD",
+      label: "Modern info card",
+      desc: "Replace the native stats bar with sleek info badges.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.PROFILE_USE_MODERN_INFO_CARD,
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "profile",
       label: "Achievements",
       kind: "divider",
     },

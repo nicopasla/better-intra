@@ -351,10 +351,14 @@ export async function initProfileCardStyling() {
   if (profileCard && !profileCard.classList.contains(PROFILE_CARD_CLASS)) {
     profileCard.classList.add(PROFILE_CARD_CLASS);
   }
-  profileCard
-    ?.querySelector<HTMLElement>(".border-t-neutral-600")
-    ?.style.setProperty("display", "none", "important");
-  moveStatsBar(profileCard);
+
+  const useModern = await getConfig("PROFILE_USE_MODERN_INFO_CARD");
+  if (useModern) {
+    profileCard
+      ?.querySelector<HTMLElement>(".border-t-neutral-600")
+      ?.style.setProperty("display", "none", "important");
+    moveStatsBar(profileCard);
+  }
 
   const pathParts = location.pathname.split("/").filter(Boolean);
   const isOtherUser = pathParts[0] === "users" && !!pathParts[1];

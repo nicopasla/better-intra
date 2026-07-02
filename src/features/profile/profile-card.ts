@@ -1,46 +1,16 @@
 import { getConfig } from "../../config.ts";
 import { CLUSTERS } from "../clusters/clusters.data.ts";
+import { sharedCSS } from "../../assets/shared-styles.ts";
+import ARROW_SHARE_SVG from "../../assets/svg/arrow_share.svg?raw";
 
 const PROFILE_CARD_CLASS = "ft-profile-card";
+const SHADOW_HOST_ID = "profile-badges-shadow";
 const INFO_CARD_ID = "ft-info-card";
 
-function injectInfoCardStyles() {
-  const STYLE_ID = "ft-info-card-styles";
-  document.getElementById(STYLE_ID)?.remove();
-  const style = document.createElement("style");
-  style.id = STYLE_ID;
-  style.textContent = `
-    #ft-info-card {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-left: -20px;
-      justify-content: center;
-    }
-    #ft-info-card .value {
-      font-size: 1rem;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.9);
-    }
-    #ft-info-card .label {
-      font-size: 1rem;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.55);
-    }
-    #ft-info-card [data-ft-seat] {
-      transition: background-color 0.15s ease, border-color 0.15s ease;
-      cursor: pointer;
-    }
-    #ft-info-card [data-ft-seat]:hover {
-      background-color: rgba(255, 255, 255, 0.1) !important;
-      border-color: rgba(255, 255, 255, 0.2) !important;
-    }
-  `;
-  document.head.appendChild(style);
-}
+let _badgeTheme: string = "dark";
 
 function extractItems(statsBar: HTMLElement) {
-  const items: { label: string; value: string; coalition: boolean }[] = [];
+  const items: { label: string; value: string }[] = [];
   for (const child of statsBar.children) {
     const el = child as HTMLElement;
     const children = Array.from(el.querySelectorAll("b, span, strong"));
@@ -48,37 +18,39 @@ function extractItems(statsBar: HTMLElement) {
     const label = children[0].textContent?.trim() ?? "";
     const value = children[children.length - 1].textContent?.trim() ?? "";
     if (!label || !value) continue;
-    items.push({
-      label,
-      value,
-      coalition: label === "Rank" || label === "Score",
-    });
+    items.push({ label, value });
   }
   return items;
 }
 
 function populateMainBadges(
   container: HTMLElement,
-  items: { label: string; value: string; coalition: boolean }[],
+  items: { label: string; value: string }[],
 ) {
+  const ITEM_COLORS = ["#a855f7", "#3b82f6", "#ef4444", "#f59e0b", "#f97316"];
+
   container
     .querySelectorAll("[data-ft-badge]:not([data-ft-seat])")
     .forEach((b) => b.remove());
 
-  for (const item of items) {
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
     const badge = document.createElement("div");
     badge.setAttribute("data-ft-badge", "");
     badge.className =
-      "border border-ft-gray-border bg-ft-gray/50 rounded-xl flex flex-row items-center justify-between px-3 py-2 gap-4";
-    if (item.coalition) badge.setAttribute("data-ft-coalition", "");
+      "badge badge-lg h-auto flex w-full justify-between gap-4 px-5 py-2 bg-base-200 text-lg";
+
+    badge.style.border = "2px solid transparent";
+    badge.style.borderColor = ITEM_COLORS[i] ?? "#6b7280";
 
     const label = document.createElement("span");
-    label.className = "label";
+    label.className = "label text-base-content/80 text-lg font-medium";
     label.textContent = item.label;
 
     const value = document.createElement("span");
-    value.className = "value";
+    value.className = "value text-base-content text-lg font-semibold";
     value.textContent = item.value;
+    badge.title = `${item.label}: ${item.value}`;
 
     badge.appendChild(label);
     badge.appendChild(value);
@@ -90,8 +62,12 @@ function populateMainBadges(
 }
 
 function injectSeatBadge(profileCard: HTMLElement) {
-  const container = document.getElementById(INFO_CARD_ID);
-  if (!container) return;
+  const shadowHost = document.getElementById(SHADOW_HOST_ID);
+  if (!shadowHost) return;
+  const shadowRoot = shadowHost.shadowRoot;
+  if (!shadowRoot) return;
+  const wrapper = shadowRoot.getElementById(INFO_CARD_ID);
+  if (!wrapper) return;
 
   const seatEl = profileCard.querySelector<HTMLElement>(
     ".absolute.px-2.py-1.border.rounded-full.border-neutral-600.bg-ft-gray.top-2.right-4",
@@ -101,7 +77,7 @@ function injectSeatBadge(profileCard: HTMLElement) {
 
   seatEl.style.setProperty("display", "none", "important");
 
-  const existing = container.querySelector<HTMLElement>("[data-ft-seat]");
+  const existing = wrapper.querySelector<HTMLElement>("[data-ft-seat]");
   if (existing) {
     existing.querySelector(".value")!.textContent = seatText;
     return;
@@ -113,14 +89,14 @@ function injectSeatBadge(profileCard: HTMLElement) {
     const badge = document.createElement("div");
     badge.setAttribute("data-ft-badge", "");
     badge.setAttribute("data-ft-seat", "");
+    badge.setAttribute("data-ft-unavailable", "");
     badge.className =
-      "border border-ft-gray-border bg-ft-gray/50 rounded-xl flex flex-row items-center justify-center px-3 py-2";
-    badge.style.fontSize = "1rem";
-    badge.style.fontWeight = "500";
-    badge.style.color = "rgba(255, 255, 255, 0.55)";
+      "badge badge-lg h-auto flex w-full justify-center px-5 py-2 bg-base-200 text-lg text-base-content/80";
+    badge.style.border = "3px solid transparent";
     badge.style.cursor = "default";
     badge.textContent = "unavailable";
-    container.appendChild(badge);
+    badge.title = "Seat unavailable";
+    wrapper.appendChild(badge);
     return;
   }
 
@@ -128,7 +104,10 @@ function injectSeatBadge(profileCard: HTMLElement) {
   badge.setAttribute("data-ft-badge", "");
   badge.setAttribute("data-ft-seat", "");
   badge.className =
-    "border border-ft-gray-border bg-ft-gray/50 rounded-xl flex flex-row items-center justify-center gap-2 px-3 py-2";
+    "flex items-center justify-between w-full px-5 py-2 bg-base-200 rounded-xl text-lg";
+  badge.style.border = "3px solid transparent";
+  badge.style.color = "inherit";
+  badge.style.fontWeight = "600";
   badge.style.cursor = "pointer";
   badge.title = "View on cluster map";
 
@@ -146,26 +125,61 @@ function injectSeatBadge(profileCard: HTMLElement) {
   }
 
   const value = document.createElement("span");
-  value.className = "value";
+  value.className = "value text-base-content text-lg font-semibold";
   value.textContent = seatText;
-
   badge.appendChild(value);
-  container.appendChild(badge);
+
+  const linkIcon = document.createElement("span");
+  linkIcon.className = "size-3.5 flex items-center justify-center fill-current";
+  linkIcon.insertAdjacentHTML("beforeend", ARROW_SHARE_SVG);
+  badge.appendChild(linkIcon);
+
+  wrapper.appendChild(badge);
 }
 
 function createInfoCard(
-  items: { label: string; value: string; coalition: boolean }[],
+  items: { label: string; value: string }[],
   profileCard: HTMLElement,
 ) {
+  const shadowHost = document.createElement("div");
+  shadowHost.id = SHADOW_HOST_ID;
+
+  const shadowRoot = shadowHost.attachShadow({ mode: "open" });
+
+  const seatStyles = `
+    [data-ft-seat] {
+      border-color: #10b981 !important;
+      box-shadow: 0 0 10px rgba(16,185,129,0.25);
+      transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    [data-ft-seat]:not([data-ft-unavailable]):hover {
+      box-shadow: 0 0 22px 4px rgba(16,185,129,0.35);
+      border-color: #34d399 !important;
+    }
+  `;
+
+  const style = document.createElement("style");
+  style.textContent = `${sharedCSS}\n${seatStyles}`;
+  shadowRoot.appendChild(style);
+
   const wrapper = document.createElement("div");
   wrapper.id = INFO_CARD_ID;
+  wrapper.setAttribute("data-theme", _badgeTheme);
+  wrapper.style.display = "flex";
+  wrapper.style.flexDirection = "column";
+  wrapper.style.gap = "4px";
+  wrapper.style.marginLeft = "-20px";
+  wrapper.style.marginRight = "-20px";
+  wrapper.style.height = "100%";
+  wrapper.style.justifyContent = "space-between";
+
   populateMainBadges(wrapper, items);
-  profileCard.insertAdjacentElement("afterend", wrapper);
-  return wrapper;
+  shadowRoot.appendChild(wrapper);
+  profileCard.insertAdjacentElement("afterend", shadowHost);
 }
 
 function startStatsPolling(profileCard: HTMLElement, attempts: number) {
-  if (document.getElementById(INFO_CARD_ID)) return;
+  if (document.getElementById(SHADOW_HOST_ID)) return;
   const statsBar = profileCard.querySelector<HTMLElement>(
     ".border-t-neutral-600",
   );
@@ -184,7 +198,7 @@ function startStatsPolling(profileCard: HTMLElement, attempts: number) {
 
 function moveStatsBar(profileCard: HTMLElement | null) {
   if (!profileCard) return;
-  if (document.getElementById(INFO_CARD_ID)) return;
+  if (document.getElementById(SHADOW_HOST_ID)) return;
   startStatsPolling(profileCard, 0);
 }
 
@@ -275,6 +289,20 @@ function injectProfileCardStyles() {
   document.head.appendChild(style);
 }
 
+function rgbToHex(color: string): string {
+  const m = color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+  if (!m) return color;
+  const toHex = (n: string) => parseInt(n).toString(16).padStart(2, "0");
+  return `#${toHex(m[1])}${toHex(m[2])}${toHex(m[3])}`;
+}
+
+function extractLevelColor(profileCard: HTMLElement | null): string | null {
+  if (!profileCard) return null;
+  const levelEl = profileCard.querySelector<HTMLElement>("h1.text-4xl");
+  if (!levelEl) return null;
+  return rgbToHex(getComputedStyle(levelEl).color);
+}
+
 function findProfileCard(): HTMLElement | null {
   const loginElement =
     document.querySelector<HTMLElement>('p[class="text-sm"]');
@@ -294,11 +322,30 @@ export function applyThemeToProfileCard(theme: { profileColor?: string }) {
     "--user-color-translucent",
     `${theme.profileColor}33`,
   );
+
+  const shadowHost = document.getElementById(SHADOW_HOST_ID);
+  if (shadowHost) {
+    shadowHost.style.setProperty("--user-color", theme.profileColor);
+    shadowHost.style.setProperty(
+      "--user-color-translucent",
+      `${theme.profileColor}33`,
+    );
+  }
 }
 
 export async function initProfileCardStyling() {
   injectProfileCardStyles();
-  injectInfoCardStyles();
+
+  const effectiveTheme = document.documentElement.classList.contains("dark")
+    ? "dark"
+    : "light";
+  const presetKey = await getConfig("PROFILE_THEME_PRESET");
+  _badgeTheme =
+    effectiveTheme === "light"
+      ? "light"
+      : presetKey && presetKey !== "dark"
+        ? presetKey
+        : "dark";
 
   const profileCard = findProfileCard();
   if (profileCard && !profileCard.classList.contains(PROFILE_CARD_CLASS)) {
@@ -311,11 +358,21 @@ export async function initProfileCardStyling() {
 
   const pathParts = location.pathname.split("/").filter(Boolean);
   const isOtherUser = pathParts[0] === "users" && !!pathParts[1];
-  if (isOtherUser) return;
 
-  const useCustomColor = await getConfig("PROFILE_USE_CUSTOM_COLOR");
-  if (useCustomColor) {
-    const color = await getConfig("LOGTIME_CALENDAR_COLOR");
+  let color: string | null = null;
+
+  if (!isOtherUser) {
+    const useCustomColor = await getConfig("PROFILE_USE_CUSTOM_COLOR");
+    if (useCustomColor) {
+      color = await getConfig("LOGTIME_CALENDAR_COLOR");
+    }
+  }
+
+  if (!color) {
+    color = extractLevelColor(profileCard);
+  }
+
+  if (color) {
     applyThemeToProfileCard({ profileColor: color });
   }
 }

@@ -157,5 +157,7 @@ export async function initFreezeCard() {
   card.appendChild(until);
   card.appendChild(countdownContainer);
 
-  profileCard.insertAdjacentElement("afterend", card);
+  const infoHost = document.getElementById("profile-badges-shadow");
+  const target = infoHost ?? profileCard;
+  target.insertAdjacentElement("afterend", card);
 }

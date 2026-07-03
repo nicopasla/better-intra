@@ -305,6 +305,7 @@ function injectProfileCardStyles() {
     .ft-profile-card .font-bold.justify-between > div:first-child {
       color: var(--user-color, hsl(var(--primary)));
       font-weight: 700;
+      font-size: 1.25rem !important;
     }
 
     .ft-profile-card .font-bold.justify-between > div:last-child {

@@ -37,7 +37,7 @@ function populateMainBadges(
     const badge = document.createElement("div");
     badge.setAttribute("data-ft-badge", "");
     badge.className =
-      "badge badge-lg h-auto flex w-full justify-between gap-4 px-5 py-2 bg-base-200 text-lg";
+      "badge badge-lg h-auto flex w-full justify-between gap-4 px-5 py-1.5 bg-base-200 text-lg";
 
     badge.style.setProperty("border", "3px solid", "important");
     badge.style.setProperty(
@@ -61,7 +61,7 @@ function populateMainBadges(
   }
 
   const seatBadge = container.querySelector<HTMLElement>("[data-ft-seat]");
-  if (seatBadge) container.appendChild(seatBadge);
+  if (seatBadge) container.prepend(seatBadge);
 }
 
 function injectSeatBadge(profileCard: HTMLElement) {
@@ -94,12 +94,12 @@ function injectSeatBadge(profileCard: HTMLElement) {
     badge.setAttribute("data-ft-seat", "");
     badge.setAttribute("data-ft-unavailable", "");
     badge.className =
-      "badge badge-lg h-auto flex w-full justify-center px-5 py-2 bg-base-200 text-lg text-base-content/80";
+      "badge badge-lg h-auto flex w-full justify-center px-5 py-1.5 bg-base-200 text-lg text-base-content/80";
     badge.style.border = "3px solid transparent";
     badge.style.cursor = "default";
     badge.textContent = "unavailable";
     badge.title = "Seat unavailable";
-    wrapper.appendChild(badge);
+    wrapper.prepend(badge);
     return;
   }
 
@@ -107,7 +107,7 @@ function injectSeatBadge(profileCard: HTMLElement) {
   badge.setAttribute("data-ft-badge", "");
   badge.setAttribute("data-ft-seat", "");
   badge.className =
-    "badge badge-lg h-auto flex items-center justify-between w-full px-5 py-2 bg-base-200 text-lg";
+    "badge badge-lg h-auto flex items-center justify-between w-full px-5 py-1.5 bg-base-200 text-lg";
   badge.style.border = "3px solid transparent";
   badge.style.color = "inherit";
   badge.style.fontWeight = "600";
@@ -137,7 +137,7 @@ function injectSeatBadge(profileCard: HTMLElement) {
   linkIcon.insertAdjacentHTML("beforeend", ARROW_SHARE_SVG);
   badge.appendChild(linkIcon);
 
-  wrapper.appendChild(badge);
+  wrapper.prepend(badge);
 }
 
 function pollForUpdatedStats(attempts = 0) {

@@ -55,6 +55,14 @@ function populateMainBadges(
     value.textContent = item.value;
     badge.title = `${item.label}: ${item.value}`;
 
+    if (item.label.includes("₳")) {
+      badge.style.cursor = "pointer";
+      badge.addEventListener("click", (e) => {
+        e.stopPropagation();
+        window.open("https://shop.intra.42.fr/", "_blank");
+      });
+    }
+
     badge.appendChild(label);
     badge.appendChild(value);
     container.appendChild(badge);

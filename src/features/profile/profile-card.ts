@@ -45,11 +45,6 @@ function populateMainBadges(
       "var(--user-color, hsl(var(--primary)))",
       "important",
     );
-    badge.style.setProperty(
-      "background",
-      "hsl(var(--background))",
-      "important",
-    );
 
     const label = document.createElement("span");
     label.className = "label text-base-content/80 text-lg font-medium";

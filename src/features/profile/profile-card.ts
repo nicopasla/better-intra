@@ -8,6 +8,7 @@ const SHADOW_HOST_ID = "profile-badges-shadow";
 const INFO_CARD_ID = "ft-info-card";
 
 let _badgeTheme: string = "dark";
+let _cursusListenerInitialized = false;
 
 function extractItems(statsBar: HTMLElement) {
   const items: { label: string; value: string }[] = [];
@@ -27,8 +28,6 @@ function populateMainBadges(
   container: HTMLElement,
   items: { label: string; value: string }[],
 ) {
-  const ITEM_COLORS = ["#a855f7", "#3b82f6", "#ef4444", "#f59e0b", "#f97316"];
-
   container
     .querySelectorAll("[data-ft-badge]:not([data-ft-seat])")
     .forEach((b) => b.remove());
@@ -40,8 +39,17 @@ function populateMainBadges(
     badge.className =
       "badge badge-lg h-auto flex w-full justify-between gap-4 px-5 py-2 bg-base-200 text-lg";
 
-    badge.style.border = "2px solid transparent";
-    badge.style.borderColor = ITEM_COLORS[i] ?? "#6b7280";
+    badge.style.setProperty("border", "3px solid", "important");
+    badge.style.setProperty(
+      "border-color",
+      "var(--user-color, hsl(var(--primary)))",
+      "important",
+    );
+    badge.style.setProperty(
+      "background",
+      "hsl(var(--background))",
+      "important",
+    );
 
     const label = document.createElement("span");
     label.className = "label text-base-content/80 text-lg font-medium";
@@ -137,6 +145,31 @@ function injectSeatBadge(profileCard: HTMLElement) {
   wrapper.appendChild(badge);
 }
 
+function pollForUpdatedStats(attempts = 0) {
+  const shadowHost = document.getElementById(SHADOW_HOST_ID);
+  if (!shadowHost?.shadowRoot) return;
+  const wrapper = shadowHost.shadowRoot.getElementById(INFO_CARD_ID);
+  if (!wrapper) return;
+  const statsBar = document.querySelector<HTMLElement>(".border-t-neutral-600");
+  if (!statsBar) return;
+  const items = extractItems(statsBar);
+  if (items.length >= 3) {
+    populateMainBadges(wrapper, items);
+    return;
+  }
+  if (attempts < 30) {
+    setTimeout(() => pollForUpdatedStats(attempts + 1), 100);
+  }
+}
+
+function listenForCursusChange() {
+  if (_cursusListenerInitialized) return;
+  _cursusListenerInitialized = true;
+  document.addEventListener("42_CURSUS_ID", (() => {
+    pollForUpdatedStats();
+  }) as EventListener);
+}
+
 function createInfoCard(
   items: { label: string; value: string }[],
   profileCard: HTMLElement,
@@ -147,9 +180,15 @@ function createInfoCard(
   const shadowRoot = shadowHost.attachShadow({ mode: "open" });
 
   const seatStyles = `
-    [data-ft-seat] {
+    [data-ft-seat]:not([data-ft-unavailable]) {
       border-color: #10b981 !important;
       box-shadow: 0 0 10px rgba(16,185,129,0.25);
+    }
+    [data-ft-seat][data-ft-unavailable] {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 10px rgba(239,68,68,0.25);
+    }
+    [data-ft-seat] {
       transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     }
     [data-ft-seat]:not([data-ft-unavailable]):hover {
@@ -244,7 +283,7 @@ function injectProfileCardStyles() {
       font-size: 2.5rem !important;
       line-height: 1 !important;
       height: auto !important;
-      color: var(--user-color, #fff);
+      color: var(--user-color, hsl(var(--primary)));
     }
 
     /* Progress bar container - now the liquid container */
@@ -269,8 +308,12 @@ function injectProfileCardStyles() {
     }
 
     .ft-profile-card .font-bold.justify-between > div:first-child {
-      color: var(--user-color, #fff);
+      color: var(--user-color, hsl(var(--primary)));
       font-weight: 700;
+    }
+
+    .ft-profile-card .font-bold.justify-between > div:last-child {
+      color: var(--user-color, hsl(var(--primary)));
     }
 
     .ft-profile-card button[role="combobox"] {
@@ -278,12 +321,14 @@ function injectProfileCardStyles() {
       font-size: 0.8rem;
       padding: 2px 4px !important;
       border-radius: 4px;
+      color: var(--user-color, hsl(var(--primary)));
     }
 
-    html.dark [role="option"]:hover,
-    html.dark [role="option"]:focus,
-    html.dark [role="option"][data-highlighted] {
-      background-color: hsl(var(--muted)) !important;
+    [role="option"]:hover,
+    [role="option"]:focus,
+    [role="option"][data-highlighted] {
+      background-color: var(--user-color, hsl(var(--primary))) !important;
+      color: #fff !important;
     }
   `;
   document.head.appendChild(style);
@@ -358,6 +403,7 @@ export async function initProfileCardStyling() {
       ?.querySelector<HTMLElement>(".border-t-neutral-600")
       ?.style.setProperty("display", "none", "important");
     moveStatsBar(profileCard);
+    listenForCursusChange();
   }
 
   const pathParts = location.pathname.split("/").filter(Boolean);

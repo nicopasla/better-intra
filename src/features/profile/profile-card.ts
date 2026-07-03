@@ -104,7 +104,7 @@ function injectSeatBadge(profileCard: HTMLElement) {
   badge.setAttribute("data-ft-badge", "");
   badge.setAttribute("data-ft-seat", "");
   badge.className =
-    "flex items-center justify-between w-full px-5 py-2 bg-base-200 rounded-xl text-lg";
+    "badge badge-lg h-auto flex items-center justify-between w-full px-5 py-2 bg-base-200 text-lg";
   badge.style.border = "3px solid transparent";
   badge.style.color = "inherit";
   badge.style.fontWeight = "600";

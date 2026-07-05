@@ -28,7 +28,6 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 * **Last active label** — shows when you were last seen. Choose between a date, "2 days ago", or both.
 * **Emoji mode** — pick an emoji and set how much it's "worth". Track your earnings with a monthly cap.
 * **Custom colours** — pick your own accent colour for the calendar and labels.
-* **Animations** — smooth progress bar animation; can be turned off.
 
 ---
 
@@ -42,20 +41,23 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 
 ### 👤 Profile
 
-* **Custom visuals** — set your own avatar, banner, and background images. **Click your avatar** on your profile page to open the customisation panel. See a live preview as you type the image URL.
+* **Custom visuals** — set your own avatar, banner, and background images with mode options (fill, fit, stretch, center, tile). **Click your avatar** on your profile page to open the customisation panel. See a live preview as you type the image URL.
 * **Visuals sync** — your custom images are visible to other Better Intra users when they view your profile. Click any custom avatar to see the original one. ☁️
 * **Instant profile visuals** — custom avatars, banners, and backgrounds are cached locally. After the first visit they appear instantly on any profile. Changes refresh silently in the background.
 * **Dashboard cards** — reorder your profile cards (Logtime, Agenda, Evaluations, Projects, Achievements) by dragging them. Hide cards you don't need.
-* **Profile card** — animated level bar with a wave effect, coloured to match your preference.
-* **Event filtering** — filter your agenda by campus and event type (e.g. exams, pedagogy, social).
-* **Slots redirection** — the "Manage slots" button takes you to the correct slots page.
+* **Event filtering** — filter your agenda by campus and event type (exam, conference, workshop, hackathon, etc.).
+* **Slots redirection** — the "Manage slots" button and defense links take you to the correct slots page.
+* **Sort evaluation slots** — pending evaluations split into "Evaluator" and "Evaluated" sections for easier browsing.
 * **Achievement milestones** — completed achievements get a subtle animated glow.
+* **Full achievements list** — replaces the native "Last Achievements" card with a scrollable list of all achievements.
 * **Completed projects (marks)** — the Projects card lists all your graded projects with dates and scores. Multi-attempt projects expand to show each attempt. Sort by newest or oldest first. Projects flagged "Outstanding" during evaluation get a ⭐ next to their name — visible on any user's profile. ☁️
 * **Projects sort** — sort the projects list on any user's profile by name or date, with toggleable ascending/descending order.
 * **Freeze alerts** — a freeze card appears on profiles of frozen students.
 * **Clickable seat label** — click someone's seat on their profile to open the cluster map with their seat highlighted and pulsating.
 * **Thursday Roulette** — a dashboard card showing the current profile's roulette win history, total points, and a live countdown to the next Thursday 8:00 draw. Works on any user's profile. ☁️
 * **Moulinette robot icons** — on project corrected pages, the default moulinette image is replaced with a robot icon (normal for passed, broken for failed).
+* **Info card badges** — wallet, level, rank, score, and seat shown as coloured badges below the profile header. Can be hidden in settings.
+* **Wallet shop link** — clicking the wallet badge opens the 42 shop in a new tab.
 
 ---
 
@@ -77,17 +79,17 @@ Quick-access links shown as colourful buttons on your profile page.
 
 Discord DM notifications when your evaluations change state.
 
-* **Discord DMs** — receive alerts in your DMs via the Better Intra bot when an evaluation is booked or when correcteds are revealed. Connect your Discord account from the Evaluations hub tab — auto-joins **Le Bassin** server to enable direct messages.
+* **Discord DMs** — receive alerts in your DMs via the Better Intra bot when an evaluation is booked or when correcteds are revealed. Connect your Discord account from the Discord hub tab — auto-joins **Le Bassin** server to enable direct messages.
 * **Quiet hours** — pause Discord notifications during specified hours (e.g. 22:00 to 08:00) so you're not disturbed at night.
 * **State tracking** — automatically alerts you via Discord DM when an evaluation is booked or when correcteds are revealed.
-* Configure from the **Evaluations** tab in the Settings Hub.
+* Configure from the **Discord** tab in the Settings Hub.
 
 ---
 
 ### 🎨 Theme
 
-* **Dark / Light / System** — choose your preferred theme for the extension UI. Follows your system setting automatically when set to "System".
-* Set from the Settings Hub or the extension popup.
+* **Dark / Light** — choose your preferred theme for the extension UI. Set from the Settings Hub or the extension popup.
+* **Theme presets** — pick from 13 dark themes (synthwave, dracula, cyberpunk, forest, etc.) that recolor profile badges and accents.
 
 ---
 
@@ -96,7 +98,7 @@ Discord DM notifications when your evaluations change state.
 * Authenticate with your 42 Intra account via OAuth through the Cloudflare Worker.
 * **Push** — upload all local settings to the cloud.
 * **Pull** — download and apply settings from the cloud to this device.
-* **Auto-sync** — toggle automatic cloud sync on save.
+
 * **Disconnect / Wipe All Data** — logout or erase all cloud-stored data.
 * **Share visuals** — synced avatar, banner, and background become visible to other Better Intra users viewing your profile.
 * Account panel is in the **extension popup** (click the extension icon).
@@ -121,7 +123,7 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 
 * All extension settings in one place.
 * Click the **gear icon** on the intra sidebar to open it.
-* Tabs: Logtime, Clusters, Profile, Shortcuts, Evaluations, About.
+* Tabs: Logtime, Clusters, Profile, Shortcuts, Discord, About.
 * Turn features on/off individually, or reset a feature's settings to default.
 
 ## Screenshots

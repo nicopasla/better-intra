@@ -2,6 +2,43 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-06
+
+### Features 🎉
+
+- feat(discord): redesign discord ui settings panel ([72172d5](https://github.com/nicopasla/better-intra/commit/72172d5))
+- feat(profile): add option to disable new info card ([419a9bd](https://github.com/nicopasla/better-intra/commit/419a9bd))
+- feat(profile): redesign the bar under the level ([9a70ebd](https://github.com/nicopasla/better-intra/commit/9a70ebd))
+- feat(theme): add 13 themes to customize profile ([70c9cfa](https://github.com/nicopasla/better-intra/commit/70c9cfa))
+- feat(profile): open shop link when clicking money badge ([dfd95da](https://github.com/nicopasla/better-intra/commit/dfd95da))
+
+### Bug fixes 🐛
+
+- fix(profile): remove wave effect ([ff22c2a](https://github.com/nicopasla/better-intra/commit/ff22c2a))
+- fix(logtime): remove wave effect ([0f2c47a](https://github.com/nicopasla/better-intra/commit/0f2c47a))
+- fix(profile): dropdown menu background ([4fbe652](https://github.com/nicopasla/better-intra/commit/4fbe652))
+- fix(visuals): wait for intra to load ([87bac78](https://github.com/nicopasla/better-intra/commit/87bac78))
+- fix(config): add 'correction' option to FRIENDS_SORT_MODE ([10b7604](https://github.com/nicopasla/better-intra/commit/10b7604))
+- fix(profile): increase font size for profile card header percentage ([11f4d3e](https://github.com/nicopasla/better-intra/commit/11f4d3e))
+- fix(profile): update seat badge styling to prevent text overflow ([c32c482](https://github.com/nicopasla/better-intra/commit/c32c482))
+- fix(profile): adjust badge padding and update badge insertion order ([936cb85](https://github.com/nicopasla/better-intra/commit/936cb85))
+- fix(profile): remove redundant background style from badge ([f846c6b](https://github.com/nicopasla/better-intra/commit/f846c6b))
+- fix(profile): enhance seat badge functionality and styling ([519a5b1](https://github.com/nicopasla/better-intra/commit/519a5b1))
+- fix(profile): update seat badge styling ([428019a](https://github.com/nicopasla/better-intra/commit/428019a))
+
+### Maintenance 🧹
+
+- chore(vite): remove warnings ([badcd83](https://github.com/nicopasla/better-intra/commit/badcd83))
+- chore(release): update version to 1.3.0 ([7bd075d](https://github.com/nicopasla/better-intra/commit/7bd075d))
+  
+  
+### Other Changes 🔄
+
+- docs(nav): improve navigation styling for better responsiveness and overflow handling ([f91e4e2](https://github.com/nicopasla/better-intra/commit/f91e4e2))
+- docs(CHROME_LISTING): enhance profile section with theme presets and update cloud sync instructions ([ec98a12](https://github.com/nicopasla/better-intra/commit/ec98a12))
+- docs(README): update profile features and settings sections for clarity and detail ([bd14bdc](https://github.com/nicopasla/better-intra/commit/bd14bdc))
+- docs(privacy): update caching method for friend user IDs and online status ([2c2cedd](https://github.com/nicopasla/better-intra/commit/2c2cedd))
+
 ## [1.2.5] - 2026-06-29
 
 ### Features 🎉
@@ -599,7 +636,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.2.5...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/nicopasla/better-intra/compare/v1.2.5...v1.3.0
 [1.2.5]: https://github.com/nicopasla/better-intra/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/nicopasla/better-intra/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/nicopasla/better-intra/compare/v1.2.2...v1.2.3

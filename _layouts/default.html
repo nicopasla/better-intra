@@ -51,8 +51,12 @@
       padding-bottom: 0.75rem;
       margin-bottom: 2rem;
       align-items: center;
+      overflow-x: auto;
+      flex-shrink: 0;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
     }
-    nav a { color: #8b949e; text-decoration: none; font-weight: 500; }
+    nav a { color: #8b949e; text-decoration: none; font-weight: 500; flex-shrink: 0; }
     nav a.active, nav a:hover { color: #f0f6fc; }
     h1 { border-bottom: 1px solid #30363d; padding-bottom: 0.3em; font-size: 2em; }
     h2 { border-bottom: 1px solid #30363d; padding-bottom: 0.3em; font-size: 1.5em; margin-top: 2em; }

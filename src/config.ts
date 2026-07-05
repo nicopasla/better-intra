@@ -68,7 +68,7 @@ export interface BetterIntraConfig {
   SHORTCUTS_ALIGNMENT: "left" | "center" | "right";
 
   FRIENDS_LIST: string[];
-  FRIENDS_SORT_MODE: "online" | "name" | "level" | "wallet";
+  FRIENDS_SORT_MODE: "online" | "name" | "level" | "wallet" | "correction";
   SHOW_FRIENDS_WIDGET: boolean;
   SHOW_CUSTOM_AVATARS_IN_FRIENDS: boolean;
   FRIENDS_DATA_CACHE: { data: unknown[]; timestamp: number } | null;

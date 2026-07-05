@@ -27,7 +27,7 @@ If you enable cloud sync, the following data is transmitted to the extension's C
 
 All your cloud data is keyed under a hash of your login and is only accessible to you. The worker retains **invocation logs** for debugging purposes (request timestamps, endpoints, HTTP status codes, item counts, and state transitions). When relevant, identifiers are truncated to their first 6 characters to prevent full exposure. Discord API error status codes may also appear in logs. These logs are not used for tracking or analytics.
 
-The worker also caches **friend user IDs** and **online status** in separate KV keys to reduce calls to the 42 API. This cache is temporary and only contains 42 user IDs and online status booleans.
+The worker also caches **friend user IDs** in KV and **online status** in D1 to reduce calls to the 42 API. This cache is temporary and only contains 42 user IDs and online location data.
 
 ### OAuth Authentication
 

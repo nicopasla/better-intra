@@ -160,7 +160,7 @@ function pollForUpdatedStats(attempts = 0) {
   const statsBar = document.querySelector<HTMLElement>(".border-t-neutral-600");
   if (!statsBar) return;
   const items = extractItems(statsBar);
-  if (items.length >= 1) {
+  if (items.length >= 3 || (items.length >= 1 && attempts >= 8)) {
     populateMainBadges(wrapper, items);
     return;
   }
@@ -233,9 +233,10 @@ function startStatsPolling(profileCard: HTMLElement, attempts: number) {
   );
   if (statsBar) {
     const items = extractItems(statsBar);
-    if (items.length >= 1) {
+    if (items.length >= 3 || (items.length >= 1 && attempts >= 5)) {
       createInfoCard(items, profileCard);
       injectSeatBadge(profileCard);
+      if (items.length < 3) pollForUpdatedStats();
       return;
     }
   }

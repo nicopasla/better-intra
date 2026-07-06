@@ -112,8 +112,7 @@ function injectSeatBadge(profileCard: HTMLElement) {
     badge.style.cursor = "default";
     badge.textContent = "unavailable";
     badge.title = "Seat unavailable";
-    if (wrapper.hasAttribute("data-ft-compact"))
-      badge.style.marginBottom = "auto";
+    badge.style.marginBottom = "auto";
     wrapper.prepend(badge);
     return;
   }
@@ -145,7 +144,7 @@ function injectSeatBadge(profileCard: HTMLElement) {
   }
 
   const value = document.createElement("span");
-  value.className = "value text-base-content text-lg font-semibold";
+  value.className = "value text-lg font-semibold";
   value.textContent = seatText;
   badge.appendChild(value);
 
@@ -154,8 +153,7 @@ function injectSeatBadge(profileCard: HTMLElement) {
   linkIcon.insertAdjacentHTML("beforeend", ARROW_SHARE_SVG);
   badge.appendChild(linkIcon);
 
-  if (wrapper.hasAttribute("data-ft-compact"))
-    badge.style.marginBottom = "auto";
+  badge.style.marginBottom = "auto";
   wrapper.prepend(badge);
 }
 
@@ -229,9 +227,7 @@ function createInfoCard(
   wrapper.style.marginLeft = "-20px";
   wrapper.style.marginRight = "-20px";
   wrapper.style.height = "100%";
-  const isCompact = items.length <= 2;
-  wrapper.style.justifyContent = isCompact ? "flex-end" : "space-between";
-  if (isCompact) wrapper.setAttribute("data-ft-compact", "");
+  wrapper.style.justifyContent = "flex-end";
 
   populateMainBadges(wrapper, items);
   shadowRoot.appendChild(wrapper);

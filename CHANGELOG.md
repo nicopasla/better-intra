@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-07-06
+
+### Features 🎉
+
+- feat(profile): add shortcut buttons for quick access to user-related links ([14574e4](https://github.com/nicopasla/better-intra/commit/14574e4))
+- feat(roulette): embed roulette inside PROJECTS card on other profiles ([48d56ac](https://github.com/nicopasla/better-intra/commit/48d56ac))
+
+### Bug fixes 🐛
+
+- fix(profile): refactor profile initialization ([34d59bb](https://github.com/nicopasla/better-intra/commit/34d59bb))
+- fix(profile): streamline seat badge styling and layout adjustments ([093432f](https://github.com/nicopasla/better-intra/commit/093432f))
+- fix(profile): update badge styles for improved theming and consistency ([634fea7](https://github.com/nicopasla/better-intra/commit/634fea7))
+- fix(profile): enhance badge population logic for stats polling ([69897e6](https://github.com/nicopasla/better-intra/commit/69897e6))
+- fix(profile): adjust layout for pisciners with only wallet and evaluations points ([b10d2a4](https://github.com/nicopasla/better-intra/commit/b10d2a4))
+- fix(images): update logtime and profile images ([70db934](https://github.com/nicopasla/better-intra/commit/70db934))
+
+### Maintenance 🧹
+
+- chore(docs): remove outdated image files ([41d35fb](https://github.com/nicopasla/better-intra/commit/41d35fb))
+
 ## [1.3.0] - 2026-07-06
 
 ### Features 🎉
@@ -636,7 +656,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.3.0...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/nicopasla/better-intra/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/nicopasla/better-intra/compare/v1.2.5...v1.3.0
 [1.2.5]: https://github.com/nicopasla/better-intra/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/nicopasla/better-intra/compare/v1.2.3...v1.2.4

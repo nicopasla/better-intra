@@ -1,3 +1,7 @@
+html:not(.dark) {
+  --legacy-main: 180.6, 100%, 36.9%;
+}
+
 html:not(.dark) a.text-legacy-main:hover,
 html:not(.dark) button.text-legacy-main:hover,
 html:not(.dark) .text-legacy-main[role="button"]:hover {

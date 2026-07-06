@@ -44,7 +44,7 @@ function populateMainBadges(
     badge.style.setProperty("border", "3px solid", "important");
     badge.style.setProperty(
       "border-color",
-      "var(--user-color, hsl(var(--primary)))",
+      "var(--user-color, hsl(var(--legacy-main)))",
       "important",
     );
 
@@ -301,7 +301,7 @@ function injectProfileCardStyles() {
       font-size: 2.5rem !important;
       line-height: 1 !important;
       height: auto !important;
-      color: var(--user-color, hsl(var(--primary)));
+      color: var(--user-color, hsl(var(--legacy-main)));
     }
 
     /* Progress bar container - now the liquid container */
@@ -326,13 +326,13 @@ function injectProfileCardStyles() {
     }
 
     .ft-profile-card .font-bold.justify-between > div:first-child {
-      color: var(--user-color, hsl(var(--primary)));
+      color: var(--user-color, hsl(var(--legacy-main)));
       font-weight: 700;
       font-size: 1.25rem !important;
     }
 
     .ft-profile-card .font-bold.justify-between > div:last-child {
-      color: var(--user-color, hsl(var(--primary)));
+      color: var(--user-color, hsl(var(--legacy-main)));
     }
 
     .ft-profile-card button[role="combobox"] {
@@ -340,15 +340,17 @@ function injectProfileCardStyles() {
       font-size: 0.8rem;
       padding: 2px 4px !important;
       border-radius: 4px;
-      color: var(--user-color, hsl(var(--primary)));
+      color: var(--user-color, hsl(var(--legacy-main)));
     }
 
     [role="option"]:hover,
     [role="option"]:focus,
     [role="option"][data-highlighted] {
-      background-color: var(--user-color, hsl(var(--primary))) !important;
+      background-color: var(--user-color, hsl(var(--legacy-main))) !important;
       color: #fff !important;
     }
+
+
   `;
   document.head.appendChild(style);
 }
@@ -375,6 +377,78 @@ function findProfileCard(): HTMLElement | null {
     ".flex.flex-col.lg\\:flex-row",
   )?.parentElement;
   return (card as HTMLElement) || null;
+}
+
+function getProfileLogin(): string {
+  const pathParts = location.pathname.split("/").filter(Boolean);
+  if (pathParts[0] === "users" && pathParts[1]) return pathParts[1];
+  const loginEl = document.querySelector<HTMLElement>('p[class="text-sm"]');
+  return loginEl?.textContent?.trim() || "";
+}
+
+function initShortcutButtons() {
+  const container = document.querySelector<HTMLElement>(
+    ".border.border-ft-gray-border.bg-ft-gray\\/50.rounded-xl.flex.justify-center.items-center.w-full",
+  );
+  if (!container || container.hasAttribute("data-ft-shortcuts")) return;
+
+  const login = getProfileLogin();
+  if (!login) return;
+
+  container.setAttribute("data-ft-shortcuts", "");
+  while (container.firstChild) container.removeChild(container.firstChild);
+
+  const style = document.createElement("style");
+  style.textContent = `
+    [data-ft-shortcuts] a {
+      border: 3px solid var(--user-color, hsl(var(--legacy-main))) !important;
+      border-radius: 0.5rem;
+      color: inherit;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+    }
+    [data-ft-shortcuts] a svg {
+      fill: var(--user-color, hsl(var(--legacy-main))) !important;
+      stroke: var(--user-color, hsl(var(--legacy-main))) !important;
+    }
+  `;
+  container.appendChild(style);
+
+  const makeButton = (href: string, svg: string, label: string) => {
+    const div = document.createElement("div");
+    div.className = "py-3 px-4 hover:text-legacy-main";
+    const a = document.createElement("a");
+    a.href = href;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.insertAdjacentHTML("beforeend", svg);
+    const span = document.createElement("span");
+    span.textContent = label;
+    a.appendChild(span);
+    div.appendChild(a);
+    container.appendChild(div);
+  };
+
+  makeButton(
+    `https://projects.intra.42.fr/projects/graph?login=${login}`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20"><path stroke-linecap="round" stroke-linejoin="round" d="M9.499 10.499a4 4 0 1 0 8 0 4 4 0 1 0-8 0ZM.5 5.499a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0ZM20.5 1.999a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0ZM.5 21.999a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0ZM11.999 21.999a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0ZM3.06 20.938l7.62-7.601M16.333 7.676l4.605-4.616M3.35 6.149l6.472 2.775M20.562 14.028l-3.618-1.495M13.499 20.499v-6M20.5 14.499a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0Z"/></svg>`,
+    "Graph",
+  );
+  makeButton(
+    "https://meta.intra.42.fr/clusters",
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20"><path d="M288 104C288 81.9 270.1 64 248 64L200 64C177.9 64 160 81.9 160 104L160 152C160 174.1 177.9 192 200 192L248 192C270.1 192 288 174.1 288 152L288 104zM288 296C288 273.9 270.1 256 248 256L200 256C177.9 256 160 273.9 160 296L160 344C160 366.1 177.9 384 200 384L248 384C270.1 384 288 366.1 288 344L288 296zM160 488L160 536C160 558.1 177.9 576 200 576L248 576C270.1 576 288 558.1 288 536L288 488C288 465.9 270.1 448 248 448L200 448C177.9 448 160 465.9 160 488zM480 104C480 81.9 462.1 64 440 64L392 64C369.9 64 352 81.9 352 104L352 152C352 174.1 369.9 192 392 192L440 192C462.1 192 480 174.1 480 152L480 104zM352 296L352 344C352 366.1 369.9 384 392 384L440 384C462.1 384 480 366.1 480 344L480 296C480 273.9 462.1 256 440 256L392 256C369.9 256 352 273.9 352 296zM480 488C480 465.9 462.1 448 440 448L392 448C369.9 448 352 465.9 352 488L352 536C352 558.1 369.9 576 392 576L440 576C462.1 576 480 558.1 480 536L480 488z"/></svg>`,
+    "Clusters",
+  );
+  makeButton(
+    "https://profile.intra.42.fr/users/me/edit",
+    `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><circle cx="19" cy="11" r="2"/><path d="M19 8v1"/><path d="M19 13v1"/><path d="m21.6 9.5-.87.5"/><path d="m17.27 12-.87.5"/><path d="m21.6 12.5-.87-.5"/><path d="m17.27 10-.87-.5"/></svg>`,
+    "Settings",
+  );
 }
 
 export function applyThemeToProfileCard(theme: { profileColor?: string }) {
@@ -444,4 +518,6 @@ export async function initProfileCardStyling() {
   if (color) {
     applyThemeToProfileCard({ profileColor: color });
   }
+
+  initShortcutButtons();
 }

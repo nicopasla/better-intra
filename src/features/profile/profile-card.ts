@@ -107,6 +107,8 @@ function injectSeatBadge(profileCard: HTMLElement) {
     badge.style.cursor = "default";
     badge.textContent = "unavailable";
     badge.title = "Seat unavailable";
+    if (wrapper.hasAttribute("data-ft-compact"))
+      badge.style.marginBottom = "auto";
     wrapper.prepend(badge);
     return;
   }
@@ -145,6 +147,8 @@ function injectSeatBadge(profileCard: HTMLElement) {
   linkIcon.insertAdjacentHTML("beforeend", ARROW_SHARE_SVG);
   badge.appendChild(linkIcon);
 
+  if (wrapper.hasAttribute("data-ft-compact"))
+    badge.style.marginBottom = "auto";
   wrapper.prepend(badge);
 }
 
@@ -156,7 +160,7 @@ function pollForUpdatedStats(attempts = 0) {
   const statsBar = document.querySelector<HTMLElement>(".border-t-neutral-600");
   if (!statsBar) return;
   const items = extractItems(statsBar);
-  if (items.length >= 3) {
+  if (items.length >= 1) {
     populateMainBadges(wrapper, items);
     return;
   }
@@ -213,7 +217,9 @@ function createInfoCard(
   wrapper.style.marginLeft = "-20px";
   wrapper.style.marginRight = "-20px";
   wrapper.style.height = "100%";
-  wrapper.style.justifyContent = "space-between";
+  const isCompact = items.length <= 2;
+  wrapper.style.justifyContent = isCompact ? "flex-end" : "space-between";
+  if (isCompact) wrapper.setAttribute("data-ft-compact", "");
 
   populateMainBadges(wrapper, items);
   shadowRoot.appendChild(wrapper);
@@ -227,7 +233,7 @@ function startStatsPolling(profileCard: HTMLElement, attempts: number) {
   );
   if (statsBar) {
     const items = extractItems(statsBar);
-    if (items.length >= 3) {
+    if (items.length >= 1) {
       createInfoCard(items, profileCard);
       injectSeatBadge(profileCard);
       return;

@@ -369,7 +369,7 @@ function extractLevelColor(profileCard: HTMLElement | null): string | null {
   return rgbToHex(getComputedStyle(levelEl).color);
 }
 
-function findProfileCard(): HTMLElement | null {
+export function findProfileCard(): HTMLElement | null {
   const loginElement =
     document.querySelector<HTMLElement>('p[class="text-sm"]');
   if (!loginElement) return null;
@@ -437,7 +437,7 @@ function initShortcutButtons() {
   makeButton(
     `https://projects.intra.42.fr/projects/graph?login=${login}`,
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20"><path stroke-linecap="round" stroke-linejoin="round" d="M9.499 10.499a4 4 0 1 0 8 0 4 4 0 1 0-8 0ZM.5 5.499a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0ZM20.5 1.999a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0ZM.5 21.999a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0ZM11.999 21.999a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0ZM3.06 20.938l7.62-7.601M16.333 7.676l4.605-4.616M3.35 6.149l6.472 2.775M20.562 14.028l-3.618-1.495M13.499 20.499v-6M20.5 14.499a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0Z"/></svg>`,
-    "Graph",
+    "Holy Graph",
   );
   makeButton(
     "https://meta.intra.42.fr/clusters",
@@ -474,6 +474,12 @@ export function applyThemeToProfileCard(theme: { profileColor?: string }) {
 export async function initProfileCardStyling() {
   injectProfileCardStyles();
 
+  let profileCard = findProfileCard();
+  for (let i = 0; i < 10 && !profileCard; i++) {
+    await new Promise((r) => requestAnimationFrame(r));
+    profileCard = findProfileCard();
+  }
+
   const effectiveTheme = document.documentElement.classList.contains("dark")
     ? "dark"
     : "light";
@@ -485,15 +491,16 @@ export async function initProfileCardStyling() {
         ? presetKey
         : "dark";
 
-  const profileCard = findProfileCard();
   if (profileCard && !profileCard.classList.contains(PROFILE_CARD_CLASS)) {
     profileCard.classList.add(PROFILE_CARD_CLASS);
   }
 
+  if (!profileCard) return;
+
   const useModern = await getConfig("PROFILE_USE_MODERN_INFO_CARD");
   if (useModern) {
     profileCard
-      ?.querySelector<HTMLElement>(".border-t-neutral-600")
+      .querySelector<HTMLElement>(".border-t-neutral-600")
       ?.style.setProperty("display", "none", "important");
     moveStatsBar(profileCard);
     listenForCursusChange();

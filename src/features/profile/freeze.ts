@@ -16,7 +16,10 @@ function waitForToken(timeout = 15000): Promise<string | null> {
       resolve(e.detail);
     };
     const cleanup = () => {
-      document.removeEventListener("42_INTRAPY_TOKEN", handler as EventListener);
+      document.removeEventListener(
+        "42_INTRAPY_TOKEN",
+        handler as EventListener,
+      );
       clearTimeout(timer);
     };
     document.addEventListener("42_INTRAPY_TOKEN", handler as EventListener);
@@ -62,8 +65,6 @@ function formatDate(iso: string): string {
   });
 }
 
-
-
 function formatCountdown(iso: string): string {
   const diff = new Date(iso).getTime() - Date.now();
   if (diff <= 0) return "0d 0h 0m 0s";
@@ -74,7 +75,11 @@ function formatCountdown(iso: string): string {
   return `${d}d ${h}h ${m}m ${s}s`;
 }
 
-function startCountdown(container: HTMLElement, endIso: string, color: string): void {
+function startCountdown(
+  container: HTMLElement,
+  endIso: string,
+  color: string,
+): void {
   const countEl = document.createElement("div");
   countEl.style.cssText = `font-size: 1.5rem; font-weight: 700; color: ${color}; font-variant-numeric: tabular-nums;`;
   countEl.textContent = formatCountdown(endIso);
@@ -94,70 +99,87 @@ function startCountdown(container: HTMLElement, endIso: string, color: string): 
   container.dataset.ftFreezeInterval = String(intervalId);
 }
 
+let _running = false;
+
 export async function initFreezeCard() {
-  const pathParts = location.pathname.split("/").filter(Boolean);
-  if (pathParts[0] !== "users" || !pathParts[1]) return;
+  if (_running) return;
+  _running = true;
 
-  const existingCard = document.getElementById(INJECTED_ID);
-  if (existingCard) {
-    const oldInterval = Number((existingCard as HTMLElement).dataset.ftFreezeInterval);
-    if (oldInterval) clearInterval(oldInterval);
-    return;
+  try {
+    const pathParts = location.pathname.split("/").filter(Boolean);
+    if (pathParts[0] !== "users" || !pathParts[1]) return;
+
+    const existingCard = document.getElementById(INJECTED_ID);
+    if (existingCard) {
+      const oldInterval = Number(
+        (existingCard as HTMLElement).dataset.ftFreezeInterval,
+      );
+      if (oldInterval) clearInterval(oldInterval);
+      return;
+    }
+
+    const targetLogin = pathParts[1];
+
+    const token = await waitForToken(20000);
+    if (!token) return;
+
+    const cursusList = await fetchCursusData(targetLogin, token);
+    if (!Array.isArray(cursusList) || cursusList.length === 0) return;
+
+    const frozen = cursusList.find(
+      (c: any) =>
+        c.freeze_until && new Date(c.freeze_until).getTime() > Date.now(),
+    );
+    if (!frozen) return;
+
+    const flexRow = document.querySelector<HTMLElement>(
+      ".flex.flex-col.lg\\:flex-row.gap-6.md\\:gap-8",
+    );
+    if (!flexRow) return;
+
+    const profileCard = flexRow.firstElementChild;
+    if (!profileCard) return;
+
+    const color =
+      getComputedStyle(profileCard).getPropertyValue("--user-color").trim() ||
+      "#00babc";
+
+    const card = document.createElement("div");
+    card.id = INJECTED_ID;
+    card.className =
+      "border border-ft-gray-border bg-ft-gray/50 rounded-xl flex flex-col items-center justify-center gap-2 w-full";
+    card.style.cssText = `min-height: 200px;`;
+
+    const iconWrap = document.createElement("div");
+    iconWrap.style.cssText = `width: 2.5rem; height: 2.5rem; color: #fff; animation: ft-freeze-spin 8s linear infinite;`;
+    if (!document.getElementById("ft-freeze-spin-style")) {
+      const style = document.createElement("style");
+      style.id = "ft-freeze-spin-style";
+      style.textContent = `@keyframes ft-freeze-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
+      document.head.appendChild(style);
+    }
+    render(unsafeHTML(FREEZE_SVG), iconWrap);
+
+    const title = document.createElement("div");
+    title.style.cssText = `font-size: 1.25rem; font-weight: 700; color: ${color};`;
+    title.textContent = "Freeze";
+
+    const until = document.createElement("div");
+    until.style.cssText = `font-size: 1rem; font-weight: 700; opacity: 0.7;`;
+    until.textContent = `Until ${formatDate(frozen.freeze_until)}`;
+
+    const countdownContainer = document.createElement("div");
+    startCountdown(countdownContainer, frozen.freeze_until, color);
+
+    card.appendChild(iconWrap);
+    card.appendChild(title);
+    card.appendChild(until);
+    card.appendChild(countdownContainer);
+
+    const infoHost = document.getElementById("profile-badges-shadow");
+    const target = infoHost ?? profileCard;
+    target.insertAdjacentElement("afterend", card);
+  } finally {
+    if (!document.getElementById(INJECTED_ID)) _running = false;
   }
-
-  const targetLogin = pathParts[1];
-
-  const token = await waitForToken(20000);
-  if (!token) return;
-
-  const cursusList = await fetchCursusData(targetLogin, token);
-  if (!Array.isArray(cursusList) || cursusList.length === 0) return;
-
-  const frozen = cursusList.find(
-    (c: any) => c.freeze_until && new Date(c.freeze_until).getTime() > Date.now(),
-  );
-  if (!frozen) return;
-
-  const flexRow = document.querySelector<HTMLElement>(".flex.flex-col.lg\\:flex-row.gap-6.md\\:gap-8");
-  if (!flexRow) return;
-
-  const profileCard = flexRow.firstElementChild;
-  if (!profileCard) return;
-
-  const color = getComputedStyle(profileCard).getPropertyValue("--user-color").trim() || "#00babc";
-
-  const card = document.createElement("div");
-  card.id = INJECTED_ID;
-  card.className = "border border-ft-gray-border bg-ft-gray/50 rounded-xl flex flex-col items-center justify-center gap-2 w-full";
-  card.style.cssText = `min-height: 200px;`;
-
-  const iconWrap = document.createElement("div");
-  iconWrap.style.cssText = `width: 2.5rem; height: 2.5rem; color: #fff; animation: ft-freeze-spin 8s linear infinite;`;
-  if (!document.getElementById("ft-freeze-spin-style")) {
-    const style = document.createElement("style");
-    style.id = "ft-freeze-spin-style";
-    style.textContent = `@keyframes ft-freeze-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
-    document.head.appendChild(style);
-  }
-  render(unsafeHTML(FREEZE_SVG), iconWrap);
-
-  const title = document.createElement("div");
-  title.style.cssText = `font-size: 1.25rem; font-weight: 700; color: ${color};`;
-  title.textContent = "Freeze";
-
-  const until = document.createElement("div");
-  until.style.cssText = `font-size: 1rem; font-weight: 700; opacity: 0.7;`;
-  until.textContent = `Until ${formatDate(frozen.freeze_until)}`;
-
-  const countdownContainer = document.createElement("div");
-  startCountdown(countdownContainer, frozen.freeze_until, color);
-
-  card.appendChild(iconWrap);
-  card.appendChild(title);
-  card.appendChild(until);
-  card.appendChild(countdownContainer);
-
-  const infoHost = document.getElementById("profile-badges-shadow");
-  const target = infoHost ?? profileCard;
-  target.insertAdjacentElement("afterend", card);
 }

@@ -201,7 +201,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                     enabled && handleDrop(e, currentOrder, idx)}"
                 >
                   ${displayName.toUpperCase().trim() !== "EVALUATIONS" &&
-                  displayName.toUpperCase().trim() !== "PENDING EVALUATIONS"
+                  displayName.toUpperCase().trim() !== "PENDING EVALUATIONS" &&
+                  displayName.toUpperCase().trim() !== "PROJECTS"
                     ? html`
                         <button
                           type="button"

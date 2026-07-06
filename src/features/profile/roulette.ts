@@ -142,66 +142,11 @@ function buildCountdown(dateLabel: string): {
   return { wrap, text };
 }
 
-function buildCard(entries: RouletteEntry[], showHistory: boolean) {
-  const existing = document.getElementById(CARD_ID);
-  if (existing) existing.remove();
-
-  let tooltipStyle = document.getElementById(
-    "ft-roulette-tooltip-style",
-  ) as HTMLStyleElement | null;
-  if (!tooltipStyle) {
-    tooltipStyle = document.createElement("style");
-    tooltipStyle.id = "ft-roulette-tooltip-style";
-    document.head.appendChild(tooltipStyle);
-  }
-  tooltipStyle.textContent = `
-      .ft-roulette-tooltip {
-        display: none;
-        position: absolute;
-        bottom: 130%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: hsl(var(--card));
-        color: hsl(var(--foreground));
-        font-size: 14px;
-        padding: 6px 12px;
-        border-radius: 4px;
-        z-index: 100;
-        white-space: nowrap;
-        pointer-events: none;
-      }
-      .ft-roulette-wrap:hover .ft-roulette-tooltip {
-        display: block;
-      }
-    `;
-
-  cachedEntries = entries;
-  cachedShowHistory = showHistory;
-
-  const wins = new Set(entries.map((e) => formatRouletteDate(e.created_at)))
-    .size;
-  const points = entries.reduce((acc, e) => acc + e.sum, 0);
-  const { dateLabel } = getNextRoulette();
-
-  const card = document.createElement("div");
-  card.id = CARD_ID;
-  card.className = "bg-white rounded-lg shadow-sm";
-  if (showHistory) {
-    card.classList.add("md:h-96");
-    card.style.cssText = "overflow: hidden;";
-  } else {
-    card.style.cssText = "overflow: hidden; max-height: 192px;";
-  }
-
-  const inner = document.createElement("div");
-  inner.className = "flex flex-col w-full h-full";
-  inner.style.padding = "16px";
-
-  const title = document.createElement("div");
-  title.className = "font-bold text-black uppercase text-sm mb-2";
-  title.textContent = "Thursday Roulette";
-  inner.appendChild(title);
-
+function buildCounters(
+  wins: number,
+  points: number,
+  dateLabel: string,
+): HTMLElement {
   const counters = document.createElement("div");
   counters.className = "flex flex-row justify-around items-stretch my-2 gap-3";
 
@@ -248,61 +193,162 @@ function buildCard(entries: RouletteEntry[], showHistory: boolean) {
   nextCol.appendChild(nextRow);
   counters.appendChild(nextCol);
 
-  if (showHistory) {
-    inner.appendChild(counters);
-  } else {
-    const centerWrap = document.createElement("div");
-    centerWrap.className = "flex-1 flex items-center justify-center";
-    centerWrap.appendChild(counters);
-    inner.appendChild(centerWrap);
+  return counters;
+}
+
+function buildHistoryList(entries: RouletteEntry[]): HTMLElement {
+  const scrollWrap = document.createElement("div");
+  scrollWrap.style.cssText = "flex: 1; min-height: 0; overflow-y: auto;";
+
+  const list = document.createElement("div");
+  list.className = "flex flex-col gap-0.5";
+
+  const grouped = new Map<string, number>();
+  for (const entry of entries) {
+    const dateStr = formatRouletteDate(entry.created_at);
+    grouped.set(dateStr, (grouped.get(dateStr) || 0) + entry.sum);
+  }
+  for (const [dateStr, totalSum] of grouped) {
+    const row = document.createElement("div");
+    row.className =
+      "flex flex-row justify-between hover:bg-gray-100 py-0.5 px-2 text-xs";
+    const date = document.createElement("span");
+    date.className = "opacity-50";
+    date.textContent = dateStr;
+    row.appendChild(date);
+    const sum = document.createElement("span");
+    sum.className = "text-sm font-bold text-green-500";
+    sum.textContent = `+${totalSum}`;
+    row.appendChild(sum);
+    list.appendChild(row);
   }
 
-  if (showHistory) {
+  scrollWrap.appendChild(list);
+  return scrollWrap;
+}
+
+function buildCard(
+  entries: RouletteEntry[],
+  showHistory: boolean,
+  isOwnProfile: boolean,
+) {
+  const existing = document.getElementById(CARD_ID);
+  if (existing) existing.remove();
+
+  let tooltipStyle = document.getElementById(
+    "ft-roulette-tooltip-style",
+  ) as HTMLStyleElement | null;
+  if (!tooltipStyle) {
+    tooltipStyle = document.createElement("style");
+    tooltipStyle.id = "ft-roulette-tooltip-style";
+    document.head.appendChild(tooltipStyle);
+  }
+  tooltipStyle.textContent = `
+      .ft-roulette-tooltip { display: none; position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%); background: hsl(var(--card)); color: hsl(var(--foreground)); font-size: 14px; padding: 6px 12px; border-radius: 4px; z-index: 100; white-space: nowrap; pointer-events: none; }
+      .ft-roulette-wrap:hover .ft-roulette-tooltip { display: block; }
+    `;
+
+  cachedEntries = entries;
+  cachedShowHistory = showHistory;
+
+  const wins = new Set(entries.map((e) => formatRouletteDate(e.created_at)))
+    .size;
+  const points = entries.reduce((acc, e) => acc + e.sum, 0);
+  const { dateLabel } = getNextRoulette();
+
+  if (isOwnProfile) {
+    const card = document.createElement("div");
+    card.id = CARD_ID;
+    card.className = "bg-white rounded-lg shadow-sm";
+    if (showHistory) {
+      card.classList.add("md:h-96");
+      card.style.cssText = "overflow: hidden;";
+    } else {
+      card.style.cssText = "overflow: hidden; max-height: 192px;";
+    }
+
+    const inner = document.createElement("div");
+    inner.className = "flex flex-col w-full h-full";
+    inner.style.padding = "16px";
+
+    const title = document.createElement("div");
+    title.className = "font-bold text-black uppercase text-sm mb-2";
+    title.textContent = "Thursday Roulette";
+    inner.appendChild(title);
+
+    const counters = buildCounters(wins, points, dateLabel);
+    if (showHistory) {
+      inner.appendChild(counters);
+    } else {
+      const centerWrap = document.createElement("div");
+      centerWrap.className = "flex-1 flex items-center justify-center";
+      centerWrap.appendChild(counters);
+      inner.appendChild(centerWrap);
+    }
+
+    if (showHistory) {
+      const divider = document.createElement("div");
+      divider.style.cssText =
+        "border-top: 1px solid hsl(var(--border)); margin: 8px 0;";
+      inner.appendChild(divider);
+      inner.appendChild(buildHistoryList(entries));
+    }
+
+    card.appendChild(inner);
+
+    const grid =
+      document.querySelector(".dash-main") ||
+      document.querySelector(".bg-white.md\\:h-96")?.parentElement;
+    if (grid) grid.appendChild(card);
+  } else {
+    const existingInside = document.getElementById("ft-roulette-inside");
+    if (existingInside) existingInside.remove();
+
+    const projectsCard = [
+      ...document.querySelectorAll<HTMLElement>(".bg-white.md\\:h-96"),
+    ].find((c) => (c.textContent || "").toUpperCase().includes("PROJECTS"));
+    if (!projectsCard) return;
+
+    projectsCard.classList.remove("md:h-96");
+    projectsCard.style.display = "flex";
+    projectsCard.style.flexDirection = "column";
+    projectsCard.style.height = "384px";
+    projectsCard.style.overflow = "hidden";
+
+    const contentWrap = document.createElement("div");
+    contentWrap.style.cssText = "flex: 1; overflow: auto; min-height: 0;";
+    while (projectsCard.firstChild) {
+      contentWrap.appendChild(projectsCard.firstChild);
+    }
+    projectsCard.appendChild(contentWrap);
+
     const divider = document.createElement("div");
     divider.style.cssText =
-      "border-top: 1px solid hsl(var(--border)); margin: 8px 0;";
-    inner.appendChild(divider);
+      "border-top: 1px solid hsl(var(--border)); flex-shrink: 0; margin: 8px 0;";
+    projectsCard.appendChild(divider);
 
-    const scrollWrap = document.createElement("div");
-    scrollWrap.style.cssText = "flex: 1; min-height: 0; overflow-y: auto;";
+    const section = document.createElement("div");
+    section.id = "ft-roulette-inside";
+    section.style.cssText = showHistory
+      ? "flex: 1; overflow: auto; min-height: 0; padding: 10px 0;"
+      : "padding: 10px 0;";
 
-    const list = document.createElement("div");
-    list.className = "flex flex-col gap-0.5";
+    const title = document.createElement("div");
+    title.className = "font-bold text-black uppercase text-sm mb-2";
+    title.textContent = "Thursday Roulette";
+    section.appendChild(title);
 
-    const grouped = new Map<string, number>();
-    for (const entry of entries) {
-      const dateStr = formatRouletteDate(entry.created_at);
-      grouped.set(dateStr, (grouped.get(dateStr) || 0) + entry.sum);
-    }
-    for (const [dateStr, totalSum] of grouped) {
-      const row = document.createElement("div");
-      row.className =
-        "flex flex-row justify-between hover:bg-gray-100 py-0.5 px-2 text-xs";
+    section.appendChild(buildCounters(wins, points, dateLabel));
 
-      const date = document.createElement("span");
-      date.className = "opacity-50";
-      date.textContent = dateStr;
-      row.appendChild(date);
-
-      const sum = document.createElement("span");
-      sum.className = "text-sm font-bold text-green-500";
-      sum.textContent = `+${totalSum}`;
-      row.appendChild(sum);
-
-      list.appendChild(row);
+    if (showHistory) {
+      const hDivider = document.createElement("div");
+      hDivider.style.cssText =
+        "border-top: 1px solid hsl(var(--border)); margin: 8px 0;";
+      section.appendChild(hDivider);
+      section.appendChild(buildHistoryList(entries));
     }
 
-    scrollWrap.appendChild(list);
-    inner.appendChild(scrollWrap);
-  }
-  card.appendChild(inner);
-
-  const grid =
-    document.querySelector(".dash-main") ||
-    document.querySelector(".bg-white.md\\:h-96")?.parentElement;
-
-  if (grid) {
-    grid.appendChild(card);
+    projectsCard.appendChild(section);
   }
 
   if (countdownInterval) clearInterval(countdownInterval);
@@ -358,8 +404,9 @@ export async function initRoulette() {
     roulettePolling = false;
     rouletteInitialized = true;
 
+    const isOwnProfile = location.pathname === "/";
     fetchRoulette(targetLogin).then((entries) => {
-      if (entries.length > 0) buildCard(entries, showHistory);
+      if (entries.length > 0) buildCard(entries, showHistory, isOwnProfile);
     });
   };
   requestAnimationFrame(poll);

@@ -37,7 +37,9 @@ function populateMainBadges(
     const badge = document.createElement("div");
     badge.setAttribute("data-ft-badge", "");
     badge.className =
-      "badge badge-lg h-auto flex w-full justify-between gap-4 px-5 py-1.5 bg-base-200 text-lg";
+      "badge badge-lg h-auto flex w-full justify-between gap-4 px-5 py-1.5 text-lg";
+    badge.style.backgroundColor = "var(--ft-card-bg)";
+    badge.style.color = "var(--ft-card-text)";
 
     badge.style.setProperty("border", "3px solid", "important");
     badge.style.setProperty(
@@ -47,11 +49,12 @@ function populateMainBadges(
     );
 
     const label = document.createElement("span");
-    label.className = "label text-base-content/80 text-lg font-medium";
+    label.className = "label text-lg font-medium";
+    label.style.color = "color-mix(in oklab, currentcolor 80%, transparent)";
     label.textContent = item.label;
 
     const value = document.createElement("span");
-    value.className = "value text-base-content text-lg font-semibold";
+    value.className = "value text-lg font-semibold";
     value.textContent = item.value;
     badge.title = `${item.label}: ${item.value}`;
 
@@ -102,7 +105,9 @@ function injectSeatBadge(profileCard: HTMLElement) {
     badge.setAttribute("data-ft-seat", "");
     badge.setAttribute("data-ft-unavailable", "");
     badge.className =
-      "badge badge-lg h-auto flex w-full justify-center px-5 py-1.5 bg-base-200 text-lg text-base-content/80";
+      "badge badge-lg h-auto flex w-full justify-center px-5 py-1.5 text-lg";
+    badge.style.backgroundColor = "var(--ft-card-bg)";
+    badge.style.color = "var(--ft-card-text)";
     badge.style.border = "3px solid transparent";
     badge.style.cursor = "default";
     badge.textContent = "unavailable";
@@ -117,7 +122,9 @@ function injectSeatBadge(profileCard: HTMLElement) {
   badge.setAttribute("data-ft-badge", "");
   badge.setAttribute("data-ft-seat", "");
   badge.className =
-    "badge badge-lg h-auto flex items-center justify-between w-full px-5 py-1.5 bg-base-200 text-lg whitespace-nowrap";
+    "badge badge-lg h-auto flex items-center justify-between w-full px-5 py-1.5 text-lg whitespace-nowrap";
+  badge.style.backgroundColor = "var(--ft-card-bg)";
+  badge.style.color = "var(--ft-card-text)";
   badge.style.border = "3px solid transparent";
   badge.style.color = "inherit";
   badge.style.fontWeight = "600";
@@ -181,8 +188,13 @@ function createInfoCard(
   items: { label: string; value: string }[],
   profileCard: HTMLElement,
 ) {
+  const cardBg = getComputedStyle(profileCard).backgroundColor;
+  const cardText = getComputedStyle(profileCard).color;
   const shadowHost = document.createElement("div");
   shadowHost.id = SHADOW_HOST_ID;
+  if (cardBg && cardBg !== "transparent" && cardBg !== "rgba(0, 0, 0, 0)")
+    shadowHost.style.setProperty("--ft-card-bg", cardBg);
+  if (cardText) shadowHost.style.setProperty("--ft-card-text", cardText);
 
   const shadowRoot = shadowHost.attachShadow({ mode: "open" });
 

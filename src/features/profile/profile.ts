@@ -82,7 +82,11 @@ export async function initProfile() {
   };
 
   const observer = new MutationObserver(() => {
-    needsRerun = true;
+    if (isUpdating) {
+      needsRerun = true;
+    } else {
+      scheduleUpdate();
+    }
   });
   observer.observe(document.body, {
     childList: true,

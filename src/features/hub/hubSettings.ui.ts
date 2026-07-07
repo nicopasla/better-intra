@@ -1,13 +1,11 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { until } from "lit-html/directives/until.js";
-import { ref } from "lit-html/directives/ref.js";
 import { getConfig, CONFIG_DEFAULT, type ConfigKey } from "../../config.ts";
 import {
   FEATURE_DEFS,
   HUB_INFO,
   FeatureId,
-  STORAGE_KEY,
   INTRA_FONT,
   HUB_SETTING_DEFS,
   type HubSettingDef,
@@ -18,14 +16,23 @@ import {
   renderShortcutsSettings,
   type ShortcutLink,
 } from "../shortcuts/shortcuts.ui.ts";
-import { syncToCloud, clearAuthFailed } from "../account/account.ts";
+import { clearAuthFailed } from "../account/account.ts";
 import { loginWith42 } from "../account/account.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
 import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
+import RELOAD_SVG from "../../assets/svg/reload.svg?raw";
+import RESET_SVG from "../../assets/svg/reset.svg?raw";
+import SUN_SVG from "../../assets/svg/sun.svg?raw";
+import MOON_SVG from "../../assets/svg/moon.svg?raw";
+import ICON_SVG from "../../assets/svg/icon.svg?raw";
 import { renderAboutPanel } from "./hub.about.ts";
 import { renderDiscordPanel } from "../discord/discord.ui.ts";
+
+async function saveSetting(key: string, value: unknown): Promise<void> {
+  await chrome.storage.local.set({ [key]: value });
+}
 
 export async function openHubModal(active: FeatureId[]) {
   let dialog = document.getElementById("hub-dialog") as HTMLDialogElement;
@@ -55,11 +62,16 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
     container.setAttribute("data-shortcuts-panel", "true");
     let links: ShortcutLink[] = [];
 
+    let saveTimer: ReturnType<typeof setTimeout> | null = null;
     const save = async () => {
       links = extractLinksFromForm(container);
       await chrome.storage.local.set({
         SHORTCUTS_LINKS: JSON.stringify(links),
       });
+    };
+    const debouncedSave = () => {
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => save(), 300);
     };
 
     const update = () => {
@@ -82,7 +94,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             });
             update();
           },
-          () => save(),
+          () => debouncedSave(),
           () => update(),
           (from, to) => {
             const newLinks = [...links];
@@ -181,6 +193,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                   input.value = JSON.stringify(newOrder);
                   input.dispatchEvent(new Event("input", { bubbles: true }));
                 }
+                saveSetting(def.key!, newOrder);
               };
 
               return html`
@@ -270,10 +283,12 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
 
       draggedIdx = null;
       renderCardOrder(newOrder);
+      saveSetting(def.key!, newOrder);
     };
 
     const resetToDefault = () => {
       renderCardOrder((def.defaultValue as string[]) || []);
+      saveSetting(def.key!, def.defaultValue as string[]);
     };
 
     if (!def.key) return container;
@@ -311,6 +326,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             data-setting-key="${def.key}"
             ?checked="${Boolean(value)}"
             ?disabled="${!enabled}"
+            @change="${(e: Event) =>
+              saveSetting(def.key!, (e.target as HTMLInputElement).checked)}"
           />`;
 
         case "number": {
@@ -329,6 +346,11 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                   .value="${String(value)}"
                   data-setting-key="${def.key}"
                   ?disabled="${!enabled}"
+                  @change="${(e: Event) =>
+                    saveSetting(
+                      def.key!,
+                      (e.target as HTMLInputElement).value,
+                    )}"
                 />
                 <span class="opacity-70">€</span>
               </label>`
@@ -338,6 +360,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                 .value="${String(value)}"
                 data-setting-key="${def.key}"
                 ?disabled="${!enabled}"
+                @change="${(e: Event) =>
+                  saveSetting(def.key!, (e.target as HTMLInputElement).value)}"
               />`;
         }
 
@@ -346,6 +370,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             class="select select-accent w-60"
             data-setting-key="${def.key}"
             ?disabled="${!enabled}"
+            @change="${(e: Event) =>
+              saveSetting(def.key!, (e.target as HTMLSelectElement).value)}"
             @mousedown="${(e: Event) => e.stopPropagation()}"
             @click="${(e: Event) => e.stopPropagation()}"
           >
@@ -367,6 +393,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             .value="${String(value)}"
             data-setting-key="${def.key}"
             ?disabled="${!enabled}"
+            @change="${(e: Event) =>
+              saveSetting(def.key!, (e.target as HTMLInputElement).value)}"
           />`;
 
         case "radio-group":
@@ -383,61 +411,66 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                     ?checked="${o.value === value}"
                     data-setting-key="${def.key}"
                     ?disabled="${!enabled}"
+                    @change="${(e: Event) =>
+                      saveSetting(
+                        def.key!,
+                        (e.target as HTMLInputElement).value,
+                      )}"
                   />
                 </label>`,
             )}
           </div>`;
 
         case "theme-preset":
-          return html`<div class="flex flex-wrap gap-2">
-              <input
-                type="hidden"
-                data-setting-key="${def.key}"
-                .value="${String(value)}"
-              />
-              ${(def.options ?? []).map(
-                (o) => {
-                  const hsl = (o as { color?: string }).color ?? "199 89% 48%";
-                  const selected = String(o.value) === String(value);
-                  const parts = hsl.split(" ");
-                  const lightness = parseInt(parts[2] ?? "50");
-                  const textColor = lightness > 50 ? "hsl(0 0% 10%)" : "hsl(0 0% 100%)";
-                  return html`<button
-                    type="button"
-                    class="btn btn-xs font-bold"
-                    data-preset-value="${o.value}"
-                    data-preset-hsl="${hsl}"
-                    style="background-color: hsl(${hsl}); color: ${textColor}; border: ${selected ? '2px solid #fff' : '2px solid transparent'}; outline: ${selected ? '2px solid hsl(' + hsl + ')' : 'none'}; outline-offset: 1px;"
-                    ?disabled="${!enabled}"
-                    @mousedown="${(e: Event) => e.stopPropagation()}"
-                    @click="${(e: Event) => {
-                      e.stopPropagation();
-                      const btn = e.target as HTMLElement;
-                      const wrapper = btn.parentElement!;
-                      const hidden = wrapper.querySelector('input[type="hidden"]') as HTMLInputElement;
-                      if (hidden) hidden.value = o.value;
-                      const allBtns = wrapper.querySelectorAll('button[data-preset-value]');
-                      allBtns.forEach((b: Element) => {
-                        const bEl = b as HTMLElement;
-                        const bHsl = bEl.dataset.presetHsl ?? hsl;
-                        const bParts = bHsl.split(" ");
-                        const bLight = parseInt(bParts[2] ?? "50");
-                        const bText = bLight > 50 ? "hsl(0 0% 10%)" : "hsl(0 0% 100%)";
-                        bEl.style.color = bText;
-                        bEl.style.border = '2px solid transparent';
-                        bEl.style.outline = 'none';
-                      });
-                      btn.style.color = textColor;
-                      btn.style.border = '2px solid #fff';
-                      btn.style.outline = '2px solid hsl(' + hsl + ')';
-                      const root = btn.getRootNode() as ShadowRoot;
-                      const container = root.querySelector('[data-theme]') as HTMLElement;
-                      if (container) container.setAttribute('data-theme', o.value);
-                    }}"
-                  >${o.label}</button>`;
-                },
-              )}
-            </div>`;
+          return html`<div class="join w-full">
+            ${(def.options ?? []).map((o) => {
+              const hsl = (o as { color?: string }).color ?? "199 89% 48%";
+              const selected = String(o.value) === String(value);
+              const parts = hsl.split(" ");
+              const lightness = parseInt(parts[2] ?? "50");
+              const textColor =
+                lightness > 50 ? "hsl(0 0% 10%)" : "hsl(0 0% 100%)";
+              return html`<input
+                type="radio"
+                name="${def.key}"
+                class="btn btn-sm join-item flex-1"
+                aria-label="${o.label}"
+                value="${o.value}"
+                data-hsl="${hsl}"
+                style="background-color: hsl(${hsl}); color: ${textColor}; border: 2px solid ${selected
+                  ? "#fff"
+                  : "transparent"}; outline: ${selected
+                  ? "2px solid hsl(" + hsl + ")"
+                  : "none"}; outline-offset: 2px;"
+                ?checked="${selected}"
+                @change="${(e: Event) => {
+                  const input = e.target as HTMLInputElement;
+                  if (!input.checked) return;
+                  saveSetting(def.key!, input.value);
+                  const group = input.closest(".join")!;
+                  group
+                    .querySelectorAll(`input[name="${def.key}"]`)
+                    .forEach((r) => {
+                      const el = r as HTMLInputElement;
+                      const h = el.dataset.hsl ?? "199 89% 48%";
+                      el.style.border = el.checked
+                        ? "2px solid #fff"
+                        : "2px solid transparent";
+                      el.style.outline = el.checked
+                        ? `2px solid hsl(${h})`
+                        : "none";
+                      el.style.outlineOffset = el.checked ? "2px" : "";
+                    });
+                  const root = input.getRootNode() as ShadowRoot;
+                  const container = root.querySelector(
+                    "[data-theme]",
+                  ) as HTMLElement;
+                  if (container)
+                    container.setAttribute("data-theme", input.value);
+                }}"
+              />`;
+            })}
+          </div>`;
 
         case "url":
           return html`<div class="w-full">
@@ -473,6 +506,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                 ?disabled="${!enabled}"
                 pattern="^(https?://)?.*"
                 class="grow"
+                @change="${(e: Event) =>
+                  saveSetting(def.key!, (e.target as HTMLInputElement).value)}"
               />
             </label>
           </div>`;
@@ -485,6 +520,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             .value="${String(value || "")}"
             data-setting-key="${def.key}"
             ?disabled="${!enabled}"
+            @change="${(e: Event) =>
+              saveSetting(def.key!, (e.target as HTMLInputElement).value)}"
           />`;
 
         case "emoji":
@@ -497,6 +534,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             .value="${String(value || "")}"
             data-setting-key="${def.key}"
             ?disabled="${!enabled}"
+            @change="${(e: Event) =>
+              saveSetting(def.key!, (e.target as HTMLInputElement).value)}"
           />`;
       }
     })(),
@@ -511,7 +550,7 @@ function renderSetting(def: HubSettingDef, enabled: boolean, hidden?: boolean) {
     </div>`;
   }
 
-  if (def.kind === "discord-panel") {
+  if (def.kind === "discord-panel" || def.kind === "about") {
     return renderSettingControl(def, enabled);
   }
 
@@ -557,43 +596,6 @@ async function getInitialTheme() {
     ? "dark"
     : "light";
 }
-
-const resetIconSvg = html`<svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 640 640"
-  fill="currentColor"
->
-  <path
-    d="M320 128C263.2 128 212.1 152.7 176.9 192L224 192C241.7 192 256 206.3 256 224C256 241.7 241.7 256 224 256L96 256C78.3 256 64 241.7 64 224L64 96C64 78.3 78.3 64 96 64C113.7 64 128 78.3 128 96L128 150.7C174.9 97.6 243.5 64 320 64C461.4 64 576 178.6 576 320C576 461.4 461.4 576 320 576C233 576 156.1 532.6 109.9 466.3C99.8 451.8 103.3 431.9 117.8 421.7C132.3 411.5 152.2 415.1 162.4 429.6C197.2 479.4 254.8 511.9 320 511.9C426 511.9 512 425.9 512 319.9C512 213.9 426 128 320 128z"
-  />
-</svg>`;
-const saveIconSvg = html`<svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 640 640"
-  fill="currentColor"
->
-  <path
-    d="M160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 237.3C544 220.3 537.3 204 525.3 192L448 114.7C436 102.7 419.7 96 402.7 96L160 96zM192 192C192 174.3 206.3 160 224 160L384 160C401.7 160 416 174.3 416 192L416 256C416 273.7 401.7 288 384 288L224 288C206.3 288 192 273.7 192 256L192 192zM320 352C355.3 352 384 380.7 384 416C384 451.3 355.3 480 320 480C284.7 480 256 451.3 256 416C256 380.7 284.7 352 320 352z"
-  />
-</svg>`;
-const sunIconSvg = html`<svg
-  class="swap-on h-5 w-5 fill-current"
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 24 24"
->
-  <path
-    d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"
-  />
-</svg>`;
-const moonIconSvg = html`<svg
-  class="swap-off h-5 w-5 fill-current"
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 24 24"
->
-  <path
-    d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"
-  />
-</svg>`;
 
 const GRID_COLS_CLASSES = ["", "", "md:grid-cols-2", "md:grid-cols-3"] as const;
 
@@ -661,7 +663,7 @@ function renderTabsContent(
                       data-reset-feature="${f.id}"
                     >
                       <span class="size-3.5 flex items-center justify-center"
-                        >${resetIconSvg}</span
+                        >${unsafeHTML(RESET_SVG)}</span
                       >
                       Reset
                     </button>
@@ -851,11 +853,19 @@ async function createModal(active: FeatureId[]): Promise<void> {
       <div
         class="flex-none flex items-center justify-between px-6 py-4 border-b border-base-200 bg-base-100 z-10"
       >
-        <div class="flex items-baseline gap-2">
-          <h3 class="font-bold text-xl tracking-tight">${HUB_INFO.name}</h3>
-          <p class="text-[14px] opacity-60 font-bold tracking-widest">
-            v${HUB_INFO.version}
-          </p>
+        <div class="flex items-center gap-3">
+          <div
+            class="size-8 flex items-center justify-center"
+            style="color: #00babc;"
+          >
+            ${unsafeHTML(ICON_SVG)}
+          </div>
+          <div class="flex items-baseline gap-2">
+            <h3 class="font-bold text-xl tracking-tight">${HUB_INFO.name}</h3>
+            <p class="text-[14px] opacity-60 font-bold tracking-widest">
+              v${HUB_INFO.version}
+            </p>
+          </div>
         </div>
         <button
           class="btn btn-circle btn-ghost"
@@ -905,7 +915,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
               id="hub-theme-toggle"
               ?checked="${currentTheme === "dark"}"
             />
-            ${sunIconSvg} ${moonIconSvg}
+            ${unsafeHTML(SUN_SVG)} ${unsafeHTML(MOON_SVG)}
           </label>
           <div class="flex items-center gap-2 text-xs font-bold opacity-60">
             <div
@@ -924,13 +934,13 @@ async function createModal(active: FeatureId[]): Promise<void> {
           </div>
         </div>
         <button
-          id="hub-save"
+          id="hub-reload"
           class="btn btn-success px-8 font-bold flex items-center gap-2"
         >
           <span class="size-5 flex items-center justify-center">
-            ${saveIconSvg}
+            ${unsafeHTML(RELOAD_SVG)}
           </span>
-          Save & Reload
+          Reload
         </button>
       </div>
     </div>`;
@@ -950,10 +960,16 @@ async function createModal(active: FeatureId[]): Promise<void> {
     ? presetKey
     : "dark";
   const storedTheme = (await getConfig("BETTER_INTRA_THEME")) || "dark";
-  const effective = storedTheme === "system"
-    ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
-    : storedTheme;
-  hubContainer?.setAttribute("data-theme", effective === "light" ? "light" : validPreset);
+  const effective =
+    storedTheme === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+      : storedTheme;
+  hubContainer?.setAttribute(
+    "data-theme",
+    effective === "light" ? "light" : validPreset,
+  );
 
   themeToggle?.addEventListener("change", async () => {
     const isDark = themeToggle.checked;
@@ -965,17 +981,17 @@ async function createModal(active: FeatureId[]): Promise<void> {
       : "dark";
 
     hubContainer?.setAttribute("data-theme", isDark ? validPreset : "light");
-    await chrome.storage.local.set({ BETTER_INTRA_THEME: isDark ? "dark" : "light" });
+    await chrome.storage.local.set({
+      BETTER_INTRA_THEME: isDark ? "dark" : "light",
+    });
 
     if (ghIcon) {
-      ghIcon.style.filter =
-        isDark ? "none" : "invert(1) brightness(0)";
+      ghIcon.style.filter = isDark ? "none" : "invert(1) brightness(0)";
     }
   });
 
-  const saveBtn = shadow.querySelector("#hub-save");
-  saveBtn?.addEventListener("click", async () => {
-    await saveHubState(shadow);
+  const reloadBtn = shadow.querySelector("#hub-reload");
+  reloadBtn?.addEventListener("click", () => {
     location.reload();
   });
 
@@ -1049,145 +1065,6 @@ async function createModal(active: FeatureId[]): Promise<void> {
       (el as any).disabled = !on;
     }
   });
-}
-
-async function saveHubState(root: ShadowRoot | HTMLElement) {
-  const saveBtn = root.querySelector("#hub-save") as HTMLButtonElement;
-
-  if (!saveBtn) return;
-
-  // Store original state for error recovery
-  const originalText = saveBtn.innerText;
-  const originalDisabled = saveBtn.disabled;
-
-  try {
-    // Disable button and show saving state
-    saveBtn.disabled = true;
-    saveBtn.innerText = "Saving local...";
-    saveBtn.classList.add("opacity-70", "animate-pulse");
-
-    // Collect and save local settings
-    const selected = Array.from(
-      root.querySelectorAll<HTMLInputElement>("input.hub-feature-toggle"),
-    )
-      .filter((sw) => sw.checked)
-      .map((sw) => sw.dataset.id as FeatureId);
-
-    const batchData: Record<string, any> = {
-      [STORAGE_KEY]: JSON.stringify(selected),
-    };
-    const keys = new Set<string>();
-
-    root.querySelectorAll("[data-setting-key]").forEach((el) => {
-      keys.add((el as HTMLElement).dataset.settingKey!);
-    });
-
-    const keysToRemove: string[] = [];
-    Array.from(keys).forEach((key) => {
-      const controls = root.querySelectorAll(`[data-setting-key="${key}"]`);
-      if (controls.length === 0) return;
-      const first = controls[0] as HTMLInputElement;
-      let val: any;
-
-      if (first.type === "radio") {
-        const checkedRadio = Array.from(controls).find(
-          (r) => (r as HTMLInputElement).checked,
-        ) as HTMLInputElement;
-        val = checkedRadio ? checkedRadio.value : null;
-      } else if (first.type === "checkbox") {
-        val = first.checked;
-      } else {
-        val = first.value;
-      }
-
-      if (val === "" || val === null || val === undefined) {
-        keysToRemove.push(key);
-      } else {
-        batchData[key] = val;
-      }
-    });
-
-    // Handle shortcuts panel
-    const shortcutsPanel = root.querySelector(
-      '[data-shortcuts-panel="true"]',
-    ) as HTMLElement | null;
-    if (shortcutsPanel) {
-      const links = extractLinksFromForm(shortcutsPanel);
-      if (links.length > 0) {
-        batchData["SHORTCUTS_LINKS"] = JSON.stringify(links);
-      } else {
-        keysToRemove.push("SHORTCUTS_LINKS");
-      }
-    }
-
-    // Save to local storage
-    if (Object.keys(batchData).length > 0) {
-      await chrome.storage.local.set(batchData);
-    }
-    if (keysToRemove.length > 0) {
-      await chrome.storage.local.remove(keysToRemove);
-    }
-
-    // Check if cloud sync is enabled and attempt sync
-    const isSyncEnabled = await getConfig("CLOUD_SYNC_ENABLED");
-    const hasCloudToken = await getConfig("CLOUD_TOKEN");
-
-    if (isSyncEnabled && hasCloudToken) {
-      // User has enabled cloud sync and is logged in
-      saveBtn.innerText = "☁️ Syncing to cloud...";
-
-      const syncSuccess = await syncToCloud();
-
-      if (syncSuccess) {
-        // Cloud sync succeeded
-        await chrome.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
-        saveBtn.innerText = "✓ Cloud synced!";
-        saveBtn.classList.remove("opacity-70", "animate-pulse");
-        saveBtn.classList.add("btn-success");
-      } else {
-        // Cloud sync failed but local saved
-        console.warn("Cloud sync failed, but local settings were saved");
-        saveBtn.innerText = "⚠️ Local saved (cloud failed)";
-        saveBtn.classList.remove("opacity-70", "animate-pulse");
-        saveBtn.classList.add("btn-warning");
-
-        // Wait before reloading
-        await new Promise((resolve) => setTimeout(resolve, 2500));
-      }
-    } else if (isSyncEnabled && !hasCloudToken) {
-      // Cloud sync is enabled but user is not logged in
-      saveBtn.innerText = "⚠️ Not logged in to cloud";
-      saveBtn.classList.remove("opacity-70", "animate-pulse");
-      saveBtn.classList.add("btn-info");
-    } else {
-      // Cloud sync is disabled
-      saveBtn.innerText = "Settings saved";
-      saveBtn.classList.remove("opacity-70", "animate-pulse");
-      saveBtn.classList.add("btn-success");
-    }
-
-    // Wait for user to see the result, then reload
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    location.reload();
-  } catch (error) {
-    // Error handling: allow user to retry
-    console.error("Error saving hub state:", error);
-    saveBtn.innerText = "✗ Save failed, retrying...";
-    saveBtn.classList.remove("opacity-70", "animate-pulse");
-    saveBtn.classList.add("btn-error");
-
-    // Reset button after 3 seconds
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    saveBtn.innerText = originalText;
-    saveBtn.disabled = originalDisabled;
-    saveBtn.classList.remove(
-      "btn-error",
-      "btn-success",
-      "btn-warning",
-      "btn-info",
-    );
-    saveBtn.classList.add("btn-success");
-  }
 }
 
 async function resetFeatureSettings(

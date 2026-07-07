@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-07-07
+
+### Features 🎉
+
+- feat(svg): update SVG assets and remove unused icons ([48e0559](https://github.com/nicopasla/better-intra/commit/48e0559))
+
+### Bug fixes 🐛
+
+- fix(about): update color classes and improve layout for better UI/UX ([d1e2e92](https://github.com/nicopasla/better-intra/commit/d1e2e92))
+- fix(profile): prevent unnecessary updates during profile initialization ([e49a2e2](https://github.com/nicopasla/better-intra/commit/e49a2e2))
+- fix(profile): improve marks fetching and enhance existing marks functionality ([fb5b73d](https://github.com/nicopasla/better-intra/commit/fb5b73d))
+
+### Other Changes 🔄
+
+- refactor(account): remove sync toggle functionality and clean up related code ([627b46a](https://github.com/nicopasla/better-intra/commit/627b46a))
+- refactor(hub): auto-save hub settings locally, replace Save & Reload with Reload ([6808bf6](https://github.com/nicopasla/better-intra/commit/6808bf6))
+
 ## [1.3.1] - 2026-07-06
 
 ### Features 🎉
@@ -656,7 +673,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.3.1...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/nicopasla/better-intra/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/nicopasla/better-intra/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/nicopasla/better-intra/compare/v1.2.5...v1.3.0
 [1.2.5]: https://github.com/nicopasla/better-intra/compare/v1.2.4...v1.2.5

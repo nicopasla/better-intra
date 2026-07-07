@@ -1,6 +1,10 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
-import { clearAuthFailed, getCloudLogin, testCloudConnection } from "./account.ts";
+import {
+  clearAuthFailed,
+  getCloudLogin,
+  testCloudConnection,
+} from "./account.ts";
 import { getConfig } from "../../config.ts";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 import { AccountState, createInitialState } from "./state.ts";
@@ -23,7 +27,9 @@ function renderAccountTab(
             ? html`<h2 class="text-2xl font-bold">Session expired</h2>
                 <p class="opacity-70 mt-1">Reconnect to restore features.</p>`
             : html`<h2 class="text-2xl font-bold">Connect your Account</h2>
-                <p class="opacity-70 mt-1">Sync your settings across devices.</p>`}
+                <p class="opacity-70 mt-1">
+                  Sync your settings across devices.
+                </p>`}
         </div>
         <button
           class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] w-full max-w-sm h-16 text-lg flex items-center justify-center gap-3 transition-colors duration-200 mt-4"
@@ -42,7 +48,10 @@ function renderAccountTab(
   }
 
   return html`
-    <div data-theme="light" class="w-full h-full flex flex-col gap-4 overflow-y-auto">
+    <div
+      data-theme="light"
+      class="w-full h-full flex flex-col gap-4 overflow-y-auto"
+    >
       ${state.needsReconnect
         ? html`<div
             class="alert alert-warning shadow-lg rounded-xl flex items-center justify-between"
@@ -105,13 +114,15 @@ function renderAccountTab(
         </div>
 
         <!-- Right Card: Cloud Sync -->
-        <div class="bg-base-200 shadow-md p-5 rounded-xl border border-base-300">
+        <div
+          class="bg-base-200 shadow-md p-5 rounded-xl border border-base-300"
+        >
           <h2 class="text-lg font-bold text-base-content mb-4">Cloud Sync</h2>
           <div class="grid grid-cols-2 gap-3">
-            <!-- Pull Button - spans rows 1+2 -->
+            <!-- Pull Button -->
             <button
               id="pull-cloud-btn"
-              class="btn btn-info font-bold transition-all text-info-content text-base row-span-2 h-full ${state
+              class="btn btn-info font-bold transition-all text-info-content text-base row-span-2 py-8 w-full ${state
                 .buttons.pull.loading
                 ? "loading"
                 : state.buttons.pull.success
@@ -128,13 +139,17 @@ function renderAccountTab(
                 : state.buttons.pull.text}
             </button>
 
-            <!-- Push Button - row 1 right -->
+            <!-- Push Button -->
             <button
               id="push-cloud-btn"
-              class="btn btn-success text-success-content font-bold transition-all text-base ${state
+              class="btn btn-success text-success-content font-bold transition-all text-base row-span-2 py-8 w-full ${state
                 .buttons.push.loading
                 ? "loading"
-                : ""}"
+                : state.buttons.push.success
+                  ? "btn-success text-success-content"
+                  : state.buttons.push.error
+                    ? "btn-error text-error-content"
+                    : ""}"
               type="button"
               ?disabled="${state.buttons.push.loading}"
               @click="${handlers.handlePush}"
@@ -143,26 +158,6 @@ function renderAccountTab(
                 ? "Pushing..."
                 : state.buttons.push.text}
             </button>
-
-            <!-- Auto-sync - row 2 right -->
-            <div class="bg-base-100 p-3 rounded-lg border border-base-300">
-              <label
-                class="flex items-center justify-between cursor-pointer w-full"
-              >
-                <span class="font-medium text-sm text-base-content"
-                  >Auto-sync</span
-                >
-                <input
-                  type="checkbox"
-                  class="toggle toggle-info"
-                  ?checked="${state.isSyncEnabled}"
-                  @change="${(e: Event) =>
-                    handlers.handleToggleSync(
-                      (e.target as HTMLInputElement).checked,
-                    )}"
-                />
-              </label>
-            </div>
           </div>
         </div>
       </div>
@@ -205,6 +200,5 @@ export async function initAccountSettings(container: HTMLElement) {
   }
 
   // Initial load
-  state.isSyncEnabled = (await getConfig("CLOUD_SYNC_ENABLED")) ?? true;
   await update();
 }

@@ -19,14 +19,11 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
     });
   };
 
-  const handleToggleSync = async (enabled: boolean) => {
-    state.isSyncEnabled = enabled;
-    await chrome.storage.local.set({ CLOUD_SYNC_ENABLED: enabled });
-    updateUI();
-  };
-
   const reloadTab = async () => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
     if (tab?.id) chrome.tabs.reload(tab.id);
   };
 
@@ -146,7 +143,6 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
 
   return {
     handleLogin42,
-    handleToggleSync,
     handleDelete,
     handleWipe,
     handlePush,

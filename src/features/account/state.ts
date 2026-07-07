@@ -8,7 +8,6 @@ export interface ButtonState {
 export interface AccountState {
   login: string | null;
   token: string;
-  isSyncEnabled: boolean;
   activeSessions: number;
   needsReconnect: boolean;
   buttons: {
@@ -21,7 +20,6 @@ export function createInitialState(): AccountState {
   return {
     login: null,
     token: "",
-    isSyncEnabled: true,
     activeSessions: 0,
     needsReconnect: false,
     buttons: {

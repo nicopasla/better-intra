@@ -27,6 +27,7 @@ const INJECTED_ID = "ft-marks-injected";
 
 let marksCache: Record<string, MarkedProject[]> = {};
 let marksInitialized = false;
+let ownProfileLoading = false;
 let otherProfileRunning = false;
 let cachedToken: string | null = null;
 let cachedLogin: string | null = null;
@@ -139,7 +140,12 @@ async function fetchOutstandingProjects(
   const cacheKey = targetLogin
     ? `OUTSTANDING_CACHE_${targetLogin}`
     : "OUTSTANDING_CACHE";
-  const raw = (await chrome.storage.local.get(cacheKey))[cacheKey];
+  const stored = await chrome.storage.local.get([
+    cacheKey,
+    "CLOUD_LOGIN",
+    "CLOUD_TOKEN",
+  ]);
+  const raw = stored[cacheKey];
   if (raw && typeof raw === "string") {
     const parsed = JSON.parse(raw);
     const age = Date.now() - parsed.fetchedAt;
@@ -149,8 +155,8 @@ async function fetchOutstandingProjects(
     }
   }
 
-  const cloudLogin = await getCloudLogin();
-  const sessionToken = await getConfig("CLOUD_TOKEN");
+  const cloudLogin: string | null = (stored["CLOUD_LOGIN"] as string) || null;
+  const sessionToken: string = (stored["CLOUD_TOKEN"] as string) || "";
   if (!cloudLogin || !sessionToken) {
     return targetLogin ? {} : outstandingCache || {};
   }
@@ -196,6 +202,11 @@ async function fetchMarks(
 ): Promise<MarkedProject[]> {
   const url = `https://intrapy.intra.42.fr/api/v1/users/${login}/projects/marked?cursus_id=${cursusId}`;
   try {
+    let outstandingPromise: Promise<Record<number, number>> | undefined;
+    if (!targetLogin) {
+      outstandingPromise = fetchOutstandingProjects();
+    }
+
     const res = await fetch(url, {
       headers: { Authorization: token },
     });
@@ -204,10 +215,11 @@ async function fetchMarks(
     }
     const data = (await res.json()) as MarkedProject[];
     const filtered = data.filter((p) => p.final_mark !== null);
-    const outstanding = await fetchOutstandingProjects(
-      targetLogin,
-      filtered.length,
-    );
+
+    const outstanding = targetLogin
+      ? await fetchOutstandingProjects(targetLogin, filtered.length)
+      : await outstandingPromise!;
+
     const outstandingCount = Object.keys(outstanding).length;
     let starredCount = 0;
     for (const p of filtered) {
@@ -541,6 +553,7 @@ async function tryInjectMarks(marks: MarkedProject[]) {
 }
 
 async function handleCursusSwitch(cursusId: string) {
+  if (ownProfileLoading) return;
   const login = cachedLogin;
   const token = cachedToken;
   if (!login || !token) return;
@@ -576,6 +589,7 @@ async function enhanceExistingMarks(
   targetLogin: string,
   marks?: MarkedProject[],
 ): Promise<boolean> {
+  if (card.dataset.ftEnhanced === "true") return true;
   let attempts = 0;
   while (attempts < 30) {
     const container = card.querySelector<HTMLElement>(".flex.flex-col.gap-2");
@@ -601,6 +615,8 @@ async function enhanceExistingMarks(
           const count = outstanding[entry.projectsUserId];
           if (!count) continue;
 
+          if (entry.el.querySelector("[data-star-count]")) continue;
+
           const flexRow = entry.el.querySelector<HTMLElement>(
             ".flex.flex-row.justify-between, .flex.flex-row",
           );
@@ -612,6 +628,7 @@ async function enhanceExistingMarks(
           const star = document.createElement("span");
           star.className = "text-xs";
           star.style.marginLeft = "2px";
+          star.dataset.starCount = String(count);
           star.textContent = "⭐".repeat(count);
           link.parentElement?.appendChild(star);
           starred++;
@@ -793,6 +810,15 @@ async function enhanceExistingMarks(
           }
         }
 
+        const sortedEntries = [...container.children] as HTMLElement[];
+        sortedEntries.sort((a, b) => {
+          const da = a.getAttribute("data-last-event-date") || "";
+          const db = b.getAttribute("data-last-event-date") || "";
+          return db.localeCompare(da);
+        });
+        for (const entry of sortedEntries) container.appendChild(entry);
+
+        card.dataset.ftEnhanced = "true";
         return true;
       }
     }
@@ -822,12 +848,12 @@ export async function initMarks() {
       return;
     }
 
-    const token = await waitForToken(30000);
+    const token = await waitForToken(15000);
     if (!token) return;
 
     cachedLogin = profileLogin;
     cachedToken = token;
-    marksInitialized = true;
+    ownProfileLoading = true;
 
     document.addEventListener("42_CURSUS_ID", ((e: CustomEvent) => {
       const cursusId =
@@ -842,6 +868,8 @@ export async function initMarks() {
     }
 
     await tryInjectMarks(marksCache[cursusId]);
+    marksInitialized = true;
+    ownProfileLoading = false;
   } else {
     const targetLogin = location.pathname.split("/")[2];
     if (!targetLogin) return;
@@ -864,11 +892,15 @@ export async function initMarks() {
     }
     const enhanced = await enhanceExistingMarks(card, targetLogin, marksData);
     otherProfileRunning = false;
-    if (!enhanced) { marksInitialized = true; return; }
+    if (!enhanced) {
+      marksInitialized = true;
+      return;
+    }
 
     marksInitialized = true;
 
-    const sidebar = card.closest(".w-full")?.previousElementSibling as HTMLElement | null;
+    const sidebar = card.closest(".w-full")
+      ?.previousElementSibling as HTMLElement | null;
     const wrapper = sidebar?.nextElementSibling as HTMLElement | null;
     if (wrapper) {
       let enhancing = false;
@@ -876,21 +908,13 @@ export async function initMarks() {
         if (enhancing) return;
         const marksCard = findCard("MARKS");
         if (!marksCard || !wrapper.contains(marksCard)) return;
-        if (marksCard.querySelector("[data-last-event-date]")) return;
+        if (marksCard.dataset.ftEnhanced === "true") return;
         enhancing = true;
-        void enhanceExistingMarks(marksCard, targetLogin, marksData).finally(() => {
-          enhancing = false;
-          const container = marksCard.querySelector<HTMLElement>(".flex.flex-col.gap-2");
-          if (container) {
-            const items = [...container.children] as HTMLElement[];
-            items.sort((a, b) => {
-              const da = a.getAttribute("data-last-event-date") || "";
-              const db = b.getAttribute("data-last-event-date") || "";
-              return db.localeCompare(da);
-            });
-            for (const item of items) container.appendChild(item);
-          }
-        });
+        void enhanceExistingMarks(marksCard, targetLogin, marksData).finally(
+          () => {
+            enhancing = false;
+          },
+        );
       });
       observer.observe(wrapper, { childList: true, subtree: true });
     }

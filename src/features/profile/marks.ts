@@ -355,54 +355,47 @@ export function createTeamRow(
   return row;
 }
 
-function injectMarks(marks: MarkedProject[], hasOngoing: boolean) {
-  const existing = document.getElementById(INJECTED_ID);
-  if (existing) existing.remove();
-
-  const card = findCard("PROJECTS");
-  if (!card) {
-    return;
-  }
-
-  const nativeUl = card.querySelector(".h-full ul");
-  if (hasOngoing && nativeUl) {
-    const nativeContainer = nativeUl.closest(".h-full");
-    if (nativeContainer instanceof HTMLElement) {
-      nativeContainer.style.display = "";
-      nativeContainer.style.paddingTop = "8px";
-      nativeContainer.style.maxHeight = "96px";
-      nativeContainer.style.overflowY = "auto";
+async function waitForCard(
+  title: "PROJECTS" | "MARKS",
+): Promise<HTMLElement | null> {
+  for (let i = 0; i < 100; i++) {
+    const card = findCard(title);
+    if (card) {
+      if (i >= 30) return card;
+      const ul = card.querySelector(".h-full ul");
+      const lis = ul?.querySelectorAll("li");
+      if (lis && lis.length > 0) return card;
     }
-    if (nativeUl instanceof HTMLElement) {
-      nativeUl.style.display = "grid";
-      nativeUl.style.gridAutoFlow = "column";
-      nativeUl.style.gridTemplateRows = "repeat(2, auto)";
-      nativeUl.style.gridTemplateColumns = "repeat(3, 1fr)";
-      nativeUl.style.alignContent = "center";
-      nativeUl.style.columnGap = "8px";
-      nativeUl.style.rowGap = "0";
-    }
-  } else if (nativeUl && nativeUl.parentElement) {
-    nativeUl.parentElement.style.display = "none";
+    await new Promise((r) => requestAnimationFrame(r));
   }
+  return null;
+}
+
+function injectFinishedProjects(card: HTMLElement, marks: MarkedProject[]) {
+  document.getElementById(INJECTED_ID)?.remove();
+
+  if (marks.length === 0) return;
+
+  const inner = card.querySelector<HTMLElement>(".flex.flex-col.w-full.h-full");
+  if (!inner) return;
+
+  const hFull = inner.querySelector<HTMLElement>(".h-full");
+  const hasBadges = hFull?.querySelector("ul")?.style.display === "none";
+
+  const sorted = [...marks].sort(
+    (a, b) =>
+      new Date(b.last_event_date).getTime() -
+      new Date(a.last_event_date).getTime(),
+  );
 
   const container = document.createElement("div");
   container.id = INJECTED_ID;
-  container.style.cssText = hasOngoing
-    ? `border-top: 1px solid hsl(var(--border)); margin-top: 0.25rem; padding: 0.25rem 8px 0 0; flex: 1; min-height: 0; overflow-y: auto; font-family: ${INTRA_FONT};`
-    : `padding: 0.5rem 8px 0.5rem 0; flex: 1; font-family: ${INTRA_FONT};`;
+  container.style.cssText = `${hasBadges ? "border-top: 1px solid hsl(var(--primary) / 0.2); " : ""}padding: 0.5rem 8px 0.5rem 0; font-family: ${INTRA_FONT};`;
 
   const list = document.createElement("div");
   list.className = "flex flex-col";
 
-  if (!hasOngoing) {
-    const header = document.createElement("div");
-    header.className = "text-xs uppercase font-bold mb-1 opacity-60";
-    header.textContent = "Finished projects";
-    list.appendChild(header);
-  }
-
-  for (const project of marks) {
+  for (const project of sorted) {
     if (project.teams && project.teams.length > 1) {
       const wrapper = document.createElement("div");
       wrapper.className = "w-full";
@@ -452,7 +445,7 @@ function injectMarks(marks: MarkedProject[], hasOngoing: boolean) {
       panel.id = uid;
       panel.style.display = "none";
       panel.style.padding = "0 0 0 12px";
-      panel.style.borderTop = "1px solid hsl(var(--border))";
+      panel.style.borderTop = "1px solid hsl(var(--primary) / 0.2)";
 
       const sortedTeams = [...project.teams].sort(
         (a, b) => b.occurrence - a.occurrence,
@@ -513,43 +506,11 @@ function injectMarks(marks: MarkedProject[], hasOngoing: boolean) {
 
   container.appendChild(list);
 
-  const flexContainer = card.querySelector(".flex.flex-col") || card;
-  flexContainer.appendChild(container);
-}
-
-async function tryInjectMarks(marks: MarkedProject[]) {
-  const sortOrder = await getConfig("PROFILE_MARKS_SORT_ORDER");
-  const sorted = [...marks].sort((a, b) => {
-    const diff =
-      new Date(a.last_event_date).getTime() -
-      new Date(b.last_event_date).getTime();
-    return sortOrder === "oldest_first" ? diff : -diff;
-  });
-  if (sorted.length === 0) {
-    return;
+  if (hFull) {
+    inner.insertBefore(container, hFull.nextSibling);
+  } else {
+    inner.appendChild(container);
   }
-
-  let attempts = 0;
-  const liWait = 8;
-  const poll = () => {
-    if (++attempts > 50) {
-      return;
-    }
-    const c = findCard("PROJECTS");
-    if (!c) {
-      requestAnimationFrame(poll);
-      return;
-    }
-    const ul = c.querySelector(".h-full ul");
-    const lis = ul?.querySelectorAll("li");
-    const hasOngoing = !!(lis && lis.length > 0);
-    if (!ul || hasOngoing || attempts >= liWait) {
-      injectMarks(sorted, hasOngoing);
-      return;
-    }
-    requestAnimationFrame(poll);
-  };
-  requestAnimationFrame(poll);
 }
 
 async function handleCursusSwitch(cursusId: string) {
@@ -561,7 +522,10 @@ async function handleCursusSwitch(cursusId: string) {
   if (!marksCache[cursusId]) {
     marksCache[cursusId] = await fetchMarks(login, token, cursusId);
   }
-  await tryInjectMarks(marksCache[cursusId]);
+  const card = await waitForCard("PROJECTS");
+  if (card) {
+    injectFinishedProjects(card, marksCache[cursusId]);
+  }
 }
 
 function getLoginFromPage(): string | null {
@@ -829,31 +793,33 @@ async function enhanceExistingMarks(
 }
 
 export async function initMarks() {
-  if (marksInitialized) {
-    return;
-  }
+  if (marksInitialized) return;
 
   const showMarks = await getConfig("PROFILE_SHOW_MARKS");
   if (!showMarks) return;
 
-  if (location.hostname !== "profile-v3.intra.42.fr") {
-    return;
-  }
+  if (location.hostname !== "profile-v3.intra.42.fr") return;
 
   const isOwnProfile = location.pathname === "/";
   if (isOwnProfile) {
+    if (ownProfileLoading) return;
+    ownProfileLoading = true;
+
     const pageLogin = getLoginFromPage();
     const profileLogin = (await getCloudLogin()) || pageLogin;
     if (!profileLogin) {
+      ownProfileLoading = false;
       return;
     }
 
     const token = await waitForToken(15000);
-    if (!token) return;
+    if (!token) {
+      ownProfileLoading = false;
+      return;
+    }
 
     cachedLogin = profileLogin;
     cachedToken = token;
-    ownProfileLoading = true;
 
     document.addEventListener("42_CURSUS_ID", ((e: CustomEvent) => {
       const cursusId =
@@ -864,10 +830,13 @@ export async function initMarks() {
     const cursusId = await waitForCursusId(10000);
     if (!marksCache[cursusId]) {
       marksCache[cursusId] = await fetchMarks(profileLogin, token, cursusId);
-    } else {
     }
 
-    await tryInjectMarks(marksCache[cursusId]);
+    const card = await waitForCard("PROJECTS");
+    if (card) {
+      injectFinishedProjects(card, marksCache[cursusId]);
+    }
+
     marksInitialized = true;
     ownProfileLoading = false;
   } else {
@@ -876,7 +845,7 @@ export async function initMarks() {
 
     if (otherProfileRunning) return;
 
-    const card = findCard("MARKS");
+    const card = await waitForCard("MARKS");
     if (!card) return;
 
     otherProfileRunning = true;

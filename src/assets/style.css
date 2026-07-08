@@ -10,7 +10,8 @@
     "#shortcuts-shadow-wrapper",
     "#friends-shadow-wrapper",
     "#logtime-shadow-wrapper",
-    "#popup-root";
+    "#popup-root",
+    "#project-badges-shadow";
   themes: "light", "dark", "synthwave", "forest", "halloween", "dracula", "night", "sunset", "luxury", "cyberpunk", "dim", "black", "coffee", "aqua";
   include: [ 'button', 'toggle', 'input', 'select', 'radio', 'label',
     'card', 'tabs', 'modal', 'divider', 'swap', 'fieldset', 'status',

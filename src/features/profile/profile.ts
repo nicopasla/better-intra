@@ -11,6 +11,7 @@ import { injectFriendsWidget } from "../friends/friends.ui.ts";
 import { injectFriendButton } from "../friends/profile-button.ts";
 import { initAchievements } from "./achievements.ts";
 import { initMarks } from "./marks.ts";
+import { initProjectBadges } from "./project-badges.ts";
 import { initProjectsSort } from "./projects-sort.ts";
 import { initRouletteStats } from "./roulette-stats.ts";
 import { initEvaluations } from "./evaluations.ts";
@@ -57,6 +58,7 @@ export async function initProfile() {
           initProfileCardStyling(),
           initAchievements(),
           initMarks(),
+          initProjectBadges(),
           initProjectsSort(),
           initRouletteStats(),
           initEvaluations(),

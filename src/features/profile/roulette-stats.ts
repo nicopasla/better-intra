@@ -1,0 +1,450 @@
+import { getConfig } from "../../config.ts";
+import { getCloudLogin } from "../account/account.ts";
+import { hashLogin } from "../../utils/crypto.ts";
+
+const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
+const CARD_ID = "ft-roulette-card";
+
+let rouletteStatsInitialized = false;
+let rouletteStatsPolling = false;
+
+interface RouletteEntry {
+  historic_id: number;
+  sum: number;
+  total: number;
+  created_at: string;
+}
+
+interface EvalStatsData {
+  byMonth: Record<
+    string,
+    { total: number; failed: number; successPercentage: number | null }
+  >;
+  global: { total: number; failed: number; successPercentage: number | null };
+}
+
+function formatRouletteDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+function nextRouletteTimestamp(from: number): number {
+  const d = new Date(from);
+  const next = new Date(
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 6, 0, 0),
+  );
+  while (next.getUTCDay() !== 5 || next.getTime() <= from) {
+    next.setUTCDate(next.getUTCDate() + 1);
+  }
+  return next.getTime();
+}
+
+function getNextRoulette(): {
+  days: number;
+  hours: number;
+  minutes: number;
+  dateLabel: string;
+} {
+  const now = Date.now();
+  const nextMs = nextRouletteTimestamp(now);
+  const diff = nextMs - now;
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+
+  const d = new Date(nextMs);
+  const dateLabel = `${d.toLocaleDateString("en-US", { weekday: "long" })} ${d.getDate()} ${d.toLocaleDateString("en-US", { month: "long" })}, 8:00`;
+
+  return { days, hours, minutes, dateLabel };
+}
+
+function formatCountdownText(): string {
+  const now = Date.now();
+  const nextMs = nextRouletteTimestamp(now);
+  const diff = nextMs - now;
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  const seconds = Math.floor((diff % 60000) / 1000);
+  return `${String(days).padStart(2, "0")}:${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function getTargetLogin(): string | null {
+  if (location.pathname.startsWith("/users/")) {
+    const parts = location.pathname.split("/").filter(Boolean);
+    return parts[1] || null;
+  }
+  return null;
+}
+
+async function fetchProfileStats(targetLogin: string): Promise<{
+  roulette: RouletteEntry[];
+  evalStats: EvalStatsData | null;
+}> {
+  const cloudLogin = await getCloudLogin();
+  const sessionToken = await getConfig("CLOUD_TOKEN");
+  if (!cloudLogin || !sessionToken) return { roulette: [], evalStats: null };
+
+  const hashedLogin = await hashLogin(cloudLogin);
+
+  try {
+    const params = new URLSearchParams({
+      login: hashedLogin,
+      target: targetLogin,
+    });
+    const res = await fetch(
+      `${WORKER_URL}/api/v1/private/profile-stats?${params}`,
+      {
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      },
+    );
+    if (!res.ok) return { roulette: [], evalStats: null };
+
+    const data = (await res.json()) as {
+      roulette: { entries: RouletteEntry[] };
+      evalStats: EvalStatsData;
+    };
+
+    return {
+      roulette: data.roulette?.entries || [],
+      evalStats: data.evalStats || null,
+    };
+  } catch {
+    return { roulette: [], evalStats: null };
+  }
+}
+
+function buildRouletteSection(
+  entries: RouletteEntry[],
+  showHistory: boolean,
+): HTMLElement {
+  const section = document.createElement("div");
+
+  const wins = new Set(entries.map((e) => formatRouletteDate(e.created_at)))
+    .size;
+  const points = entries.reduce((acc, e) => acc + e.sum, 0);
+  const { dateLabel } = getNextRoulette();
+
+  const counters = document.createElement("div");
+  counters.className = "flex flex-row justify-around items-stretch my-2 gap-3";
+
+  const winCol = document.createElement("div");
+  winCol.style.cssText =
+    "background: rgba(59,130,246,0.08); border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: row; align-items: center; gap: 6px;";
+  const winNum = document.createElement("span");
+  winNum.className = "text-2xl font-bold text-blue-600";
+  winNum.textContent = String(wins);
+  const winLabel = document.createElement("span");
+  winLabel.className = "text-xs opacity-70 uppercase tracking-wide";
+  winLabel.textContent = "Wins";
+  winCol.appendChild(winNum);
+  winCol.appendChild(winLabel);
+  counters.appendChild(winCol);
+
+  const ptsCol = document.createElement("div");
+  ptsCol.style.cssText =
+    "background: rgba(34,197,94,0.08); border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: row; align-items: center; gap: 6px;";
+  const ptsNum = document.createElement("span");
+  ptsNum.className = "text-2xl font-bold text-green-600";
+  ptsNum.textContent = String(points);
+  const ptsLabel = document.createElement("span");
+  ptsLabel.className = "text-xs opacity-70 uppercase tracking-wide";
+  ptsLabel.textContent = "Points";
+  ptsCol.appendChild(ptsNum);
+  ptsCol.appendChild(ptsLabel);
+  counters.appendChild(ptsCol);
+
+  const nextCol = document.createElement("div");
+  nextCol.style.cssText =
+    "display: flex; flex-direction: column; align-items: center; justify-content: center;";
+  const nextRow = document.createElement("div");
+  nextRow.style.cssText =
+    "background: rgba(245,158,11,0.08); border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: row; align-items: center; gap: 6px;";
+  const countdownText = document.createElement("span");
+  countdownText.id = "ft-roulette-countdown";
+  countdownText.className = "text-2xl font-bold text-amber-600";
+  countdownText.style.cssText =
+    "font-variant-numeric: tabular-nums; font-feature-settings: 'tnum';";
+  countdownText.textContent = formatCountdownText();
+  const nextLabel = document.createElement("span");
+  nextLabel.className = "text-xs opacity-70 uppercase tracking-wide";
+  nextLabel.textContent = "Next draw";
+  nextRow.appendChild(countdownText);
+  nextRow.appendChild(nextLabel);
+  nextCol.appendChild(nextRow);
+  counters.appendChild(nextCol);
+
+  section.appendChild(counters);
+
+  if (showHistory && entries.length > 0) {
+    const divider = document.createElement("div");
+    divider.style.cssText =
+      "border-top: 1px solid hsl(var(--border)); margin: 8px 0;";
+    section.appendChild(divider);
+
+    const scrollWrap = document.createElement("div");
+    scrollWrap.style.cssText = "overflow-y: auto; max-height: 100px;";
+
+    const list = document.createElement("div");
+    list.style.cssText = "display: flex; flex-wrap: wrap; gap: 6px;";
+
+    const grouped = new Map<string, number>();
+    for (const entry of entries) {
+      const dateStr = formatRouletteDate(entry.created_at);
+      grouped.set(dateStr, (grouped.get(dateStr) || 0) + entry.sum);
+    }
+    for (const [dateStr, totalSum] of grouped) {
+      const badge = document.createElement("span");
+      badge.style.cssText =
+        "display: inline-flex; align-items: center; gap: 6px; background: rgba(34,197,94,0.1); color: rgb(34,197,94); font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 999px; white-space: nowrap;";
+      const datePart = document.createElement("span");
+      datePart.style.cssText = "opacity: 0.65; font-size: 11px;";
+      datePart.textContent = dateStr;
+      badge.appendChild(datePart);
+      const plus = document.createElement("span");
+      plus.style.cssText = "font-size: 14px; font-weight: 700;";
+      plus.textContent = `+${totalSum}`;
+      badge.appendChild(plus);
+      list.appendChild(badge);
+    }
+
+    scrollWrap.appendChild(list);
+    section.appendChild(scrollWrap);
+  }
+
+  return section;
+}
+
+function buildEvalStatsSection(data: EvalStatsData): HTMLElement {
+  const section = document.createElement("div");
+
+  const titleRow = document.createElement("div");
+  titleRow.style.cssText =
+    "display: flex; align-items: center; gap: 8px; margin-bottom: 8px;";
+
+  const title = document.createElement("span");
+  title.style.cssText =
+    "font-weight: 700; text-transform: uppercase; font-size: 14px;";
+  title.textContent = "As Corrector";
+  titleRow.appendChild(title);
+
+  if (data.global.successPercentage !== null) {
+    const badge = document.createElement("span");
+    badge.style.cssText = `font-size: 16px; font-weight: 700; padding: 2px 12px; border-radius: 999px; ${data.global.successPercentage >= 80 ? "color: rgb(34,197,94); background: rgba(34,197,94,0.1);" : "color: rgb(239,68,68); background: rgba(239,68,68,0.1);"}`;
+    badge.textContent = `${data.global.successPercentage}%`;
+    titleRow.appendChild(badge);
+  }
+
+  section.appendChild(titleRow);
+
+  const tableWrap = document.createElement("div");
+
+  const table = document.createElement("table");
+  table.style.cssText =
+    "width: 100% !important; border-collapse: collapse !important; font-size: 12px !important;";
+
+  const thead = document.createElement("thead");
+  thead.style.cssText = "position: sticky; top: 0; z-index: 1;";
+  const headerRow = document.createElement("tr");
+  headerRow.style.cssText =
+    "border-bottom: 1px solid hsl(var(--primary) / 0.2) !important;";
+  const headers = ["Month", "Total", "Failed", "Success %"];
+  for (const h of headers) {
+    const th = document.createElement("th");
+    th.style.cssText =
+      "text-align: left !important; padding: 4px 4px !important; font-weight: 500 !important; color: hsl(var(--primary) / 0.6) !important;";
+    th.textContent = h;
+    headerRow.appendChild(th);
+  }
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  const months = Object.keys(data.byMonth).sort();
+  for (const month of months) {
+    const m = data.byMonth[month];
+    const tr = document.createElement("tr");
+    tr.style.cssText =
+      "border-bottom: 1px solid hsl(var(--primary) / 0.2) !important;";
+
+    const dateTd = document.createElement("td");
+    dateTd.style.cssText =
+      "padding: 4px 4px !important; color: hsl(var(--primary) / 0.5) !important;";
+    const [yearNum, monthNum] = month.split("-");
+    dateTd.textContent = `${monthNum}/${yearNum}`;
+    tr.appendChild(dateTd);
+
+    const totalTd = document.createElement("td");
+    totalTd.style.cssText =
+      "padding: 4px 4px !important; font-weight: 500 !important; color: inherit !important;";
+    totalTd.textContent = String(m.total);
+    tr.appendChild(totalTd);
+
+    const failedTd = document.createElement("td");
+    failedTd.style.cssText =
+      "padding: 4px 4px !important; color: inherit !important;";
+    if (m.failed > 0) failedTd.style.color = "rgb(239,68,68) !important";
+    failedTd.textContent = String(m.failed);
+    tr.appendChild(failedTd);
+
+    const pctTd = document.createElement("td");
+    pctTd.style.cssText =
+      "padding: 4px 4px !important; font-weight: 500 !important;";
+    if (m.successPercentage !== null) {
+      pctTd.style.color =
+        m.successPercentage >= 80
+          ? "rgb(34,197,94) !important"
+          : "rgb(239,68,68) !important";
+      pctTd.textContent = `${m.successPercentage}%`;
+    } else {
+      pctTd.textContent = "—";
+      pctTd.style.color = "hsl(var(--primary) / 0.3) !important";
+    }
+    tr.appendChild(pctTd);
+
+    tbody.appendChild(tr);
+  }
+
+  const globalTr = document.createElement("tr");
+  globalTr.style.cssText =
+    "border-top: 2px solid hsl(var(--primary) / 0.4) !important; font-weight: 600 !important;";
+
+  const globalLabel = document.createElement("td");
+  globalLabel.style.cssText =
+    "padding: 4px 4px !important; color: inherit !important;";
+  globalLabel.textContent = "Total";
+  globalTr.appendChild(globalLabel);
+
+  const globalTotalTd = document.createElement("td");
+  globalTotalTd.style.cssText =
+    "padding: 4px 4px !important; color: inherit !important;";
+  globalTotalTd.textContent = String(data.global.total);
+  globalTr.appendChild(globalTotalTd);
+
+  const globalFailedTd = document.createElement("td");
+  globalFailedTd.style.cssText =
+    "padding: 4px 4px !important; color: inherit !important;";
+  globalFailedTd.textContent = String(data.global.failed);
+  globalTr.appendChild(globalFailedTd);
+
+  const globalPctTd = document.createElement("td");
+  globalPctTd.style.cssText = "padding: 4px 4px !important;";
+  if (data.global.successPercentage !== null) {
+    globalPctTd.style.color =
+      data.global.successPercentage >= 80
+        ? "rgb(34,197,94) !important"
+        : "rgb(239,68,68) !important";
+    globalPctTd.textContent = `${data.global.successPercentage}%`;
+  } else {
+    globalPctTd.textContent = "—";
+    globalPctTd.style.color = "hsl(var(--primary) / 0.3) !important";
+  }
+  globalTr.appendChild(globalPctTd);
+
+  tbody.appendChild(globalTr);
+  table.appendChild(tbody);
+  tableWrap.appendChild(table);
+  section.appendChild(tableWrap);
+
+  return section;
+}
+
+function buildCombinedCard(
+  rouletteEntries: RouletteEntry[],
+  evalStats: EvalStatsData | null,
+  showRouletteHistory: boolean,
+) {
+  const existing = document.getElementById(CARD_ID);
+  if (existing) existing.remove();
+
+  const card = document.createElement("div");
+  card.id = CARD_ID;
+  card.className = "bg-white md:h-96 md:drop-shadow-md md:rounded-lg";
+  card.style.cssText =
+    "overflow: hidden; display: flex; flex-direction: column; height: 384px;";
+
+  const topSection = document.createElement("div");
+  topSection.style.cssText =
+    "flex: 1; min-height: 0; overflow-y: scroll; padding: 24px 24px 12px 24px;";
+
+  const rouletteTitle = document.createElement("div");
+  rouletteTitle.style.cssText =
+    "font-weight: 700; text-transform: uppercase; font-size: 14px; margin-bottom: 8px;";
+  rouletteTitle.textContent = "Thursday Roulette";
+  topSection.appendChild(rouletteTitle);
+
+  topSection.appendChild(
+    buildRouletteSection(rouletteEntries, showRouletteHistory),
+  );
+
+  card.appendChild(topSection);
+
+  if (evalStats) {
+    const divider = document.createElement("div");
+    divider.style.cssText =
+      "border-top: 1px solid hsl(var(--primary) / 0.2); flex-shrink: 0; margin: 0 24px;";
+    card.appendChild(divider);
+
+    const bottomSection = document.createElement("div");
+    bottomSection.style.cssText =
+      "flex: 1; min-height: 0; overflow-y: scroll; padding: 12px 24px 24px 24px;";
+    bottomSection.appendChild(buildEvalStatsSection(evalStats));
+    card.appendChild(bottomSection);
+  }
+
+  const grid =
+    document.querySelector(".dash-main") ||
+    document.querySelector(".bg-white.md\\:h-96")?.parentElement;
+  if (grid) grid.appendChild(card);
+
+  const countdownInterval = setInterval(() => {
+    const el = document.getElementById("ft-roulette-countdown");
+    if (!el) {
+      clearInterval(countdownInterval);
+      return;
+    }
+    el.textContent = formatCountdownText();
+  }, 1000);
+}
+
+export async function initRouletteStats() {
+  if (rouletteStatsInitialized || rouletteStatsPolling) return;
+  if (!(await getConfig("PROFILE_SHOW_ROULETTE"))) return;
+
+  if (
+    location.hostname !== "profile-v3.intra.42.fr" ||
+    !(location.pathname === "/" || location.pathname.startsWith("/users"))
+  )
+    return;
+
+  const showHistory = await getConfig("PROFILE_SHOW_ROULETTE_HISTORY");
+  const cloudLogin = await getCloudLogin();
+  const targetLogin = getTargetLogin() || cloudLogin;
+  if (!targetLogin) return;
+
+  rouletteStatsPolling = true;
+
+  let attempts = 0;
+  const poll = () => {
+    if (++attempts > 30) return;
+
+    const grid =
+      document.querySelector(".dash-main") ||
+      document.querySelector(".bg-white.md\\:h-96")?.parentElement;
+
+    if (!grid) {
+      requestAnimationFrame(poll);
+      return;
+    }
+
+    fetchProfileStats(targetLogin).then(({ roulette, evalStats }) => {
+      rouletteStatsInitialized = true;
+      rouletteStatsPolling = false;
+      buildCombinedCard(roulette, evalStats, showHistory);
+    });
+  };
+  requestAnimationFrame(poll);
+}

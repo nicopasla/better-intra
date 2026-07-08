@@ -12,7 +12,7 @@ import { injectFriendButton } from "../friends/profile-button.ts";
 import { initAchievements } from "./achievements.ts";
 import { initMarks } from "./marks.ts";
 import { initProjectsSort } from "./projects-sort.ts";
-import { initRoulette } from "./roulette.ts";
+import { initRouletteStats } from "./roulette-stats.ts";
 import { initEvaluations } from "./evaluations.ts";
 
 const waitForBody = () =>
@@ -58,7 +58,7 @@ export async function initProfile() {
           initAchievements(),
           initMarks(),
           initProjectsSort(),
-          initRoulette(),
+          initRouletteStats(),
           initEvaluations(),
           findSlotsButton(),
           injectEventsSelect(),

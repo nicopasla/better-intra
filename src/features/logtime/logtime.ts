@@ -12,6 +12,7 @@ import {
 } from "./render.ts";
 import { getLastSeenFormatted, limit } from "./utils.ts";
 import { getEffectiveTheme } from "../profile/theme/theme-manager.ts";
+import { syncCalendarIcs } from "../calendar/calendar-sync.ts";
 
 export interface CalendarEvent {
   id: number;
@@ -159,8 +160,17 @@ function installFetchHook() {
     if (!detail) return;
 
     if (isOwnProfile()) {
-      const events = await fetchEvents();
-      renderLogtime(detail, events);
+      renderLogtime(detail);
+
+      fetchEvents().then((events) => {
+        renderLogtime(detail, events);
+
+        const flatEvents = Object.values(events).flat();
+        const subscribed = flatEvents.filter((e) => e.is_subscribed);
+        if (subscribed.length > 0) {
+          syncCalendarIcs(subscribed);
+        }
+      });
     } else {
       renderLogtime(detail);
     }

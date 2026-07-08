@@ -13,6 +13,20 @@ import {
 import { getLastSeenFormatted, limit } from "./utils.ts";
 import { getEffectiveTheme } from "../profile/theme/theme-manager.ts";
 
+export interface CalendarEvent {
+  id: number;
+  name: string;
+  kind: string;
+  begin_at: string;
+  end_at: string;
+  location: string;
+  is_subscribed: boolean;
+}
+
+export type EventsByDate = Record<string, CalendarEvent[]>;
+
+const INTRAPY_BASE = "https://intrapy.intra.42.fr";
+
 const getConfigs = async () => ({
   goal_hours: await getConfig("LOGTIME_GOAL_HOURS"),
   show_average: await getConfig("LOGTIME_SHOW_AVERAGE"),
@@ -35,7 +49,43 @@ let CONFIG: LogtimeConfig;
 export let lastStats: Record<string, string> | null = null;
 let currentTheme = "light";
 
-function renderLogtime(stats: Record<string, string>): void {
+function isOwnProfile(): boolean {
+  return (
+    location.hostname === "profile-v3.intra.42.fr" && location.pathname === "/"
+  );
+}
+
+function groupEventsByDate(
+  events: CalendarEvent[],
+): Record<string, CalendarEvent[]> {
+  const byDate: Record<string, CalendarEvent[]> = {};
+  for (const ev of events) {
+    const dateKey = ev.begin_at.slice(0, 10);
+    if (!byDate[dateKey]) byDate[dateKey] = [];
+    byDate[dateKey].push(ev);
+  }
+  return byDate;
+}
+
+async function fetchEvents(): Promise<Record<string, CalendarEvent[]>> {
+  try {
+    const token = sessionStorage.getItem("ft_intrapy_token");
+    if (!token) return {};
+    const res = await fetch(`${INTRAPY_BASE}/api/v1/users/me/events`, {
+      headers: { Authorization: token },
+    });
+    if (!res.ok) return {};
+    const data = (await res.json()) as Record<string, CalendarEvent>;
+    return groupEventsByDate(Object.values(data));
+  } catch {
+    return {};
+  }
+}
+
+function renderLogtime(
+  stats: Record<string, string>,
+  eventsByDate?: Record<string, CalendarEvent[]>,
+): void {
   if (!stats || !CONFIG) return;
   lastStats = stats;
 
@@ -53,7 +103,13 @@ function renderLogtime(stats: Record<string, string>): void {
 
   const monthKeys = Object.keys(byMonth).sort();
   const monthCards = monthKeys.map((ym, index) =>
-    renderMonthCard(ym, byMonth[ym], index === monthKeys.length - 1, CONFIG),
+    renderMonthCard(
+      ym,
+      byMonth[ym],
+      index === monthKeys.length - 1,
+      CONFIG,
+      eventsByDate,
+    ),
   );
   const lastSeenValue = getLastSeenFormatted(stats, CONFIG.show_days_mode);
   const header = renderHeaderContent(lastSeenValue, byMonth, CONFIG);
@@ -68,7 +124,10 @@ function renderLogtime(stats: Record<string, string>): void {
   }
   hideOldLogtime();
 
-  render(renderContainer(header, monthCards, currentTheme, CONFIG), shadowHost.shadowRoot!);
+  render(
+    renderContainer(header, monthCards, currentTheme, CONFIG),
+    shadowHost.shadowRoot!,
+  );
 
   const scrollWrapper = shadowHost.shadowRoot!.querySelector(
     ".log-slider-fixed",
@@ -95,9 +154,16 @@ function isProfileV3TargetPage() {
 }
 
 function installFetchHook() {
-  document.addEventListener("42_LOGTIME_DATA", (event: Event) => {
+  document.addEventListener("42_LOGTIME_DATA", async (event: Event) => {
     const detail = (event as CustomEvent<Record<string, string>>).detail;
-    if (detail) renderLogtime(detail);
+    if (!detail) return;
+
+    if (isOwnProfile()) {
+      const events = await fetchEvents();
+      renderLogtime(detail, events);
+    } else {
+      renderLogtime(detail);
+    }
   });
 }
 

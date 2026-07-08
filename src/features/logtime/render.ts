@@ -7,7 +7,7 @@ import {
   INTRA_FONT,
 } from "./constants";
 import { fmtHours, hexToRgba, safeLabelsColor } from "./utils";
-import { LogtimeConfig } from "./logtime";
+import { LogtimeConfig, CalendarEvent, EventsByDate } from "./logtime";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import LOGTIME_CSS from "./logtime.css?inline";
 
@@ -18,23 +18,60 @@ function renderDayCell(
   hasData: boolean,
   todayStr: string,
   config: LogtimeConfig,
+  events?: CalendarEvent[],
 ) {
   const alpha = Math.min(secs / MAX_INTENSITY_SECS, 1);
   const bgColor =
     secs > 0 ? hexToRgba(config.calendar_color, alpha) : "var(--muted)";
 
   const textColor =
-    secs > MAX_INTENSITY_SECS / 2 ? "var(--primary-foreground)" : "var(--muted-foreground)";
+    secs > MAX_INTENSITY_SECS / 2
+      ? "var(--primary-foreground)"
+      : "var(--muted-foreground)";
+
+  const hasSubscribed = events?.some((e) => e.is_subscribed);
+  const hasEvent = events && events.length > 0;
+  const isFuture = dKey > todayStr;
+
+  let borderStyle = "";
+  if (hasSubscribed) {
+    borderStyle =
+      "border-color: rgb(34,197,94) !important; border-width: 2px !important;";
+  } else if (hasEvent) {
+    borderStyle = "border-bottom: 3px solid #eab308 !important;";
+  }
+
+  const showTooltip = hasData || hasEvent;
 
   return html`<div
     class="day-cell aspect-square flex items-center justify-center text-[11px] font-bold ${dKey ===
     todayStr
       ? "today-highlight"
       : ""}"
-    style="border-radius: ${CELL_RADIUS}; background: ${bgColor}; color: ${textColor};"
+    style="border-radius: ${CELL_RADIUS}; background: ${bgColor}; color: ${textColor}; ${borderStyle}"
   >
     ${String(day)}
-    <div class="day-tooltip">${hasData ? fmtHours(secs) : "No data"}</div>
+    ${showTooltip
+      ? html`<div class="day-tooltip">
+          ${hasData ? fmtHours(secs) : ""}
+          ${events
+            ? events.map((e, i) => {
+                const url =
+                  e.kind === "exam"
+                    ? `https://profile.intra.42.fr/exams/${e.id}`
+                    : `https://profile.intra.42.fr/events/${e.id}`;
+                const color = e.is_subscribed ? "rgb(34,197,94)" : "#ed8179";
+                return html`${hasData || i > 0 ? html`<br />` : ""}<a
+                    href="${url}"
+                    target="_blank"
+                    rel="noreferrer"
+                    style="color:${color};font-weight:600;text-decoration:none"
+                    >${e.kind === "exam" ? "📝 " : "📅 "}${e.name}</a
+                  >`;
+              })
+            : ""}
+        </div>`
+      : ""}
   </div>`;
 }
 
@@ -44,6 +81,7 @@ function renderCalendarGrid(
   data: Record<string, number>,
   lastDayDate: number,
   config: LogtimeConfig,
+  eventsByDate?: EventsByDate,
 ) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -77,7 +115,10 @@ function renderCalendarGrid(
     const secs = hasData ? data[dKey] : 0;
     weekSecs += secs;
 
-    dayRows.push(renderDayCell(day, dKey, secs, hasData, todayStr, config));
+    const dayEvents = eventsByDate?.[dKey];
+    dayRows.push(
+      renderDayCell(day, dKey, secs, hasData, todayStr, config, dayEvents),
+    );
     cellCount++;
 
     if ((cellCount % 7 === 0 && cellCount > 0) || day === lastDayDate) {
@@ -110,6 +151,7 @@ export function renderMonthCard(
   data: Record<string, number>,
   isCurrent: boolean,
   config: LogtimeConfig,
+  eventsByDate?: EventsByDate,
 ) {
   const [year, mon] = ym.split("-").map(Number);
   const total = Object.values(data).reduce((a, b) => a + b, 0);
@@ -195,7 +237,7 @@ export function renderMonthCard(
           ></div>
         </div>`
       : ""}
-    ${renderCalendarGrid(year, mon, data, lastDayDate, config)}
+    ${renderCalendarGrid(year, mon, data, lastDayDate, config, eventsByDate)}
   </div>`;
 }
 

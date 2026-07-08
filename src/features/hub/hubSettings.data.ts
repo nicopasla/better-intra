@@ -1,4 +1,5 @@
 import CLOCK from "../../assets/svg/clock.svg?raw";
+import CALENDAR from "../../assets/svg/calendar.svg?raw";
 import CLUSTERS from "../../assets/svg/grip-vertical.svg?raw";
 import USER from "../../assets/svg/user.svg?raw";
 import SHORTCUT from "../../assets/svg/shortcut.svg?raw";
@@ -52,6 +53,12 @@ export const FEATURE_DEFS = [
     desc: "Get evaluation reminders via Discord DM.",
   },
   {
+    id: "calendar",
+    name: "Calendar",
+    icon: CALENDAR,
+    desc: "Subscribe to your 42 events in Google Calendar, Apple Calendar, or any calendar app.",
+  },
+  {
     id: "about",
     name: "About",
     icon: ABOUT,
@@ -79,6 +86,7 @@ export type SettingKind =
   | "card-order"
   | "action"
   | "discord-panel"
+  | "calendar-panel"
   | "theme-preset";
 
 export { INTRA_FONT } from "../logtime/constants.ts";
@@ -554,6 +562,15 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "Discord",
       desc: "Notifications and account connection.",
       kind: "discord-panel",
+      fullWidth: true,
+    },
+  ],
+  calendar: [
+    {
+      feature: "calendar",
+      label: "Calendar Sync",
+      desc: "Subscribe to your 42 events in your calendar app.",
+      kind: "calendar-panel",
       fullWidth: true,
     },
   ],

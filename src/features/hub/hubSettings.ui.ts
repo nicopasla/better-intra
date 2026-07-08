@@ -18,6 +18,7 @@ import {
 } from "../shortcuts/shortcuts.ui.ts";
 import { clearAuthFailed } from "../account/account.ts";
 import { loginWith42 } from "../account/account.ts";
+import { hashLogin } from "../../utils/crypto.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
 import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
@@ -29,6 +30,7 @@ import MOON_SVG from "../../assets/svg/moon.svg?raw";
 import ICON_SVG from "../../assets/svg/icon.svg?raw";
 import { renderAboutPanel } from "./hub.about.ts";
 import { renderDiscordPanel } from "../discord/discord.ui.ts";
+import { renderCalendarPanel } from "../calendar/calendar.ui.ts";
 
 async function saveSetting(key: string, value: unknown): Promise<void> {
   await chrome.storage.local.set({ [key]: value });
@@ -311,6 +313,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
   }
 
   if (def.kind === "discord-panel") return renderDiscordPanel();
+  if (def.kind === "calendar-panel") return renderCalendarPanel();
 
   return until(
     (async () => {
@@ -550,7 +553,11 @@ function renderSetting(def: HubSettingDef, enabled: boolean, hidden?: boolean) {
     </div>`;
   }
 
-  if (def.kind === "discord-panel" || def.kind === "about") {
+  if (
+    def.kind === "discord-panel" ||
+    def.kind === "about" ||
+    def.kind === "calendar-panel"
+  ) {
     return renderSettingControl(def, enabled);
   }
 
@@ -616,6 +623,7 @@ function renderTabsContent(
         def,
         f.id === "about" ||
           f.id === "discord" ||
+          f.id === "calendar" ||
           (enabled &&
             !(def.key && disabledDeps.has(def.key)) &&
             !(def.requiresCloud && disabledDeps.has("__CLOUD__"))),
@@ -641,14 +649,15 @@ function renderTabsContent(
         <div
           class="flex flex-col ${enabled ||
           f.id === "about" ||
-          f.id === "discord"
+          f.id === "discord" ||
+          f.id === "calendar"
             ? cloudDisabled
               ? "opacity-40 grayscale"
               : ""
             : "opacity-40 grayscale"}"
           data-feature-panel="${f.id}"
         >
-          ${f.id !== "about" && f.id !== "discord"
+          ${f.id !== "about" && f.id !== "discord" && f.id !== "calendar"
             ? html`
                 <div
                   class="sticky top-0 z-20 flex items-center justify-between bg-base-200 px-6 py-4 border-b border-base-300 shadow-sm"

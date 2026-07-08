@@ -28,6 +28,7 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 * **Last active label** — shows when you were last seen. Choose between a date, "2 days ago", or both.
 * **Emoji mode** — pick an emoji and set how much it's "worth". Track your earnings with a monthly cap.
 * **Custom colours** — pick your own accent colour for the calendar and labels.
+* **Calendar events overlay** — synced 42 events appear as markers on your logtime calendar days.
 
 ---
 
@@ -45,6 +46,7 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 * **Visuals sync** — your custom images are visible to other Better Intra users when they view your profile. Click any custom avatar to see the original one. ☁️
 * **Instant profile visuals** — custom avatars, banners, and backgrounds are cached locally. After the first visit they appear instantly on any profile. Changes refresh silently in the background.
 * **Dashboard cards** — reorder your profile cards (Logtime, Agenda, Evaluations, Projects, Achievements) by dragging them. Hide cards you don't need.
+* **Project badges** — projects in the Projects card appear as colour-coded badges (green for normal projects, red for exams) for quick visual scanning.
 * **Event filtering** — filter your agenda by campus and event type (exam, conference, workshop, hackathon, etc.).
 * **Slots redirection** — the "Manage slots" button and defense links take you to the correct slots page.
 * **Sort evaluation slots** — pending evaluations split into "Evaluator" and "Evaluated" sections for easier browsing.
@@ -55,6 +57,7 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 * **Freeze alerts** — a freeze card appears on profiles of frozen students.
 * **Clickable seat label** — click someone's seat on their profile to open the cluster map with their seat highlighted and pulsating.
 * **Thursday Roulette** — a dashboard card showing the current profile's roulette win history, total points, and a live countdown to the next Thursday 8:00 draw. Works on any user's profile. ☁️
+* **Evaluation stats** — the Thursday Roulette card also shows your monthly evaluation history as a corrector: total evaluations, failures, and success percentage. ☁️
 * **Moulinette robot icons** — on project corrected pages, the default moulinette image is replaced with a robot icon (normal for passed, broken for failed).
 * **Info card badges** — wallet, level, rank, score, and seat shown as coloured badges below the profile header. Can be hidden in settings.
 * **Wallet shop link** — clicking the wallet badge opens the 42 shop in a new tab.
@@ -72,6 +75,17 @@ Quick-access links shown as colourful buttons on your profile page.
 * **Hide important links** — optionally hide the default Intra navigation links to give shortcuts the full width.
 * **Alignment** — when important links are hidden, align your shortcuts left, center, or right.
 * Set them up in the settings panel.
+
+---
+
+### 📅 Calendar Sync ☁️
+
+Subscribe to your 42 events in any calendar app with a private ICS subscription URL.
+
+* **ICS subscription** — generate a private ICS URL compatible with Google Calendar, Apple Calendar, Outlook, and more.
+* **QR code** — scan the code in the Calendar tab for easy mobile setup.
+* **Auto-sync** — events refresh automatically on each profile visit.
+* Configure from the **Calendar** tab in the Settings Hub.
 
 ---
 

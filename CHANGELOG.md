@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-07-09
+
+### Features 🎉
+
+- feat(calendar): add QR code for calendar subscription ([753c3a5](https://github.com/nicopasla/better-intra/commit/753c3a5))
+- feat: add calendar sync with ICS subscription ([a9c6d5e](https://github.com/nicopasla/better-intra/commit/a9c6d5e))
+- feat(logtime): show subscribed events in logtime calendar ([99621d9](https://github.com/nicopasla/better-intra/commit/99621d9))
+- feat(profile): add project badges ([de40b50](https://github.com/nicopasla/better-intra/commit/de40b50))
+- feat: add evaluation stats ([ce22c78](https://github.com/nicopasla/better-intra/commit/ce22c78))
+
+### Bug fixes 🐛
+
+- fix(logtime): show calendar before laoding events ([e552cca](https://github.com/nicopasla/better-intra/commit/e552cca))
+- fix(config): add missing cloud config keys ([33e3535](https://github.com/nicopasla/better-intra/commit/33e3535))
+
 ## [1.3.2] - 2026-07-07
 
 ### Features 🎉
@@ -673,7 +688,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.3.2...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/nicopasla/better-intra/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/nicopasla/better-intra/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/nicopasla/better-intra/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/nicopasla/better-intra/compare/v1.2.5...v1.3.0

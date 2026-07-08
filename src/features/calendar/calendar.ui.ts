@@ -2,6 +2,7 @@ import { html, render } from "lit-html";
 import { ref } from "lit-html/directives/ref.js";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { hashLogin } from "../../utils/crypto.ts";
+import { generateQrDataUrl } from "./qr.ts";
 import CALENDAR_PLUS_SVG from "../../assets/svg/calendar-plus.svg?raw";
 import COPY_SVG from "../../assets/svg/copy.svg?raw";
 import SYNC_SVG from "../../assets/svg/sync.svg?raw";
@@ -24,6 +25,11 @@ function renderPanel(el: Element | undefined) {
   const update = async () => {
     const store = await chrome.storage.local.get([TOKEN_KEY]);
     const token = store[TOKEN_KEY] as string | undefined;
+
+    const qrUrl = token
+      ? `https://${WORKER_URL.replace("https://", "")}/calendar/${token}.ics`
+      : "";
+    const qrDataUrl = token ? generateQrDataUrl(qrUrl, 200) : "";
 
     render(
       html`
@@ -82,6 +88,16 @@ function renderPanel(el: Element | undefined) {
                       <span class="font-semibold">Outlook</span>
                       <p class="opacity-60 mt-0.5">Add calendar → Subscribe</p>
                     </div>
+                  </div>
+
+                  <div class="flex justify-center pt-1">
+                    <img
+                      src="${qrDataUrl}"
+                      alt="QR Code"
+                      class="rounded-lg"
+                      width="200"
+                      height="200"
+                    />
                   </div>
 
                   <div class="flex flex-wrap items-center gap-2">

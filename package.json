@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
-    "lit-html": "^3.3.3"
+    "lit-html": "^3.3.3",
+    "qrcode-generator": "^2.0.4"
   }
 }

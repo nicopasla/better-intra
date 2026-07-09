@@ -50,8 +50,9 @@
 }
 
 .day-cell:hover {
-  transform: scale(1.2);
-  filter: brightness(0.9);
+  transform: none;
+  filter: brightness(1.15);
+  box-shadow: 0 0 0 2px var(--calendar-color, #00bcba);
   z-index: 50 !important;
 }
 
@@ -66,7 +67,7 @@
 .day-tooltip {
   display: none;
   position: absolute;
-  bottom: 130%;
+  bottom: 110%;
   left: 50%;
   transform: translateX(-50%);
   background: hsl(var(--card));
@@ -76,24 +77,6 @@
   border-radius: 4px;
   z-index: 100;
   white-space: nowrap;
-}
-
-.day-tooltip::before {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  height: 20px;
-}
-
-.day-tooltip a {
-  pointer-events: auto;
-}
-
-.day-cell:hover .day-tooltip,
-.day-tooltip:hover {
-  display: block;
 }
 
 .day-cell:hover .day-tooltip {

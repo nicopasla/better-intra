@@ -171,6 +171,7 @@ export async function syncMyVisuals(visuals: {
   background: string;
   backgroundMode?: string;
   avatarBg?: string;
+  decoration?: string;
 }): Promise<void> {
   const login = await getCloudLogin();
   const token = await getConfig("CLOUD_TOKEN");
@@ -194,6 +195,7 @@ export async function syncMyVisuals(visuals: {
             PROFILE_BACKGROUND_URL: visuals.background,
             PROFILE_BACKGROUND_MODE: visuals.backgroundMode || "fill",
             PROFILE_AVATAR_BG: visuals.avatarBg || "transparent",
+            PROFILE_DECORATION: visuals.decoration || "none",
           },
         }),
       },
@@ -225,6 +227,7 @@ export async function fetchUserVisuals(login: string): Promise<VisualUrls | null
       background: String(data.background || ""),
       backgroundMode: String(data.backgroundMode || "fill"),
       avatarBg: String(data.avatarBg || "transparent"),
+      decoration: String(data.decoration || "none"),
       theme: (data.theme as { profileColor?: string }) || null,
       logtime: (data.logtime as Record<string, unknown>) || null,
     };

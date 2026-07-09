@@ -7,11 +7,14 @@ import { sharedCSS } from "../../assets/shared-styles.ts";
 
 function handleLivePreview(e: Event) {
   const root = (e.target as HTMLElement).getRootNode() as ShadowRoot;
-  const bgModeRadio = root.querySelector<HTMLInputElement>('input[name="PROFILE_AVATAR_BG_MODE"]:checked');
+  const bgModeRadio = root.querySelector<HTMLInputElement>(
+    'input[name="PROFILE_AVATAR_BG_MODE"]:checked',
+  );
   const bgMode = bgModeRadio?.value || "transparent";
-  const color = bgMode === "transparent"
-    ? "transparent"
-    : (root.getElementById("PROFILE_AVATAR_BG_COLOR") as HTMLInputElement)
+  const color =
+    bgMode === "transparent"
+      ? "transparent"
+      : (root.getElementById("PROFILE_AVATAR_BG_COLOR") as HTMLInputElement)
           ?.value || "transparent";
   applyImgs({
     avatar:
@@ -21,15 +24,20 @@ function handleLivePreview(e: Event) {
       (root.getElementById("PROFILE_BANNER_URL") as HTMLInputElement)?.value ||
       "",
     bannerMode:
-      root.querySelector<HTMLInputElement>('input[name="PROFILE_BANNER_MODE"]:checked')
-        ?.value || "fill",
+      root.querySelector<HTMLInputElement>(
+        'input[name="PROFILE_BANNER_MODE"]:checked',
+      )?.value || "fill",
     background:
       (root.getElementById("PROFILE_BACKGROUND_URL") as HTMLInputElement)
         ?.value || "",
     backgroundMode:
-      root.querySelector<HTMLInputElement>('input[name="PROFILE_BACKGROUND_MODE"]:checked')
+      (root.getElementById("PROFILE_BACKGROUND_MODE") as HTMLSelectElement)
         ?.value || "fill",
     avatarBg: color,
+    decoration:
+      root.querySelector<HTMLInputElement>(
+        'input[name="PROFILE_DECORATION"]:checked',
+      )?.value || "none",
   });
 }
 
@@ -105,6 +113,7 @@ function renderPanelContent(
     background: string;
     backgroundMode: string;
     avatarBg: string;
+    decoration: string;
   },
   currentTheme: string,
   onClose: () => void,
@@ -146,9 +155,11 @@ function renderPanelContent(
               value="transparent"
               ?checked="${isTransparent}"
               @change="${(e: Event) => {
-                const root = (e.target as HTMLElement).getRootNode() as ShadowRoot;
-                const wrap = root.getElementById('ft-avatar-bg-color-wrap');
-                if (wrap) wrap.classList.add('hidden');
+                const root = (
+                  e.target as HTMLElement
+                ).getRootNode() as ShadowRoot;
+                const wrap = root.getElementById("ft-avatar-bg-color-wrap");
+                if (wrap) wrap.classList.add("hidden");
                 handleLivePreview(e);
               }}"
             />
@@ -160,20 +171,48 @@ function renderPanelContent(
               value="custom"
               ?checked="${!isTransparent}"
               @change="${(e: Event) => {
-                const root = (e.target as HTMLElement).getRootNode() as ShadowRoot;
-                const wrap = root.getElementById('ft-avatar-bg-color-wrap');
-                if (wrap) wrap.classList.remove('hidden');
+                const root = (
+                  e.target as HTMLElement
+                ).getRootNode() as ShadowRoot;
+                const wrap = root.getElementById("ft-avatar-bg-color-wrap");
+                if (wrap) wrap.classList.remove("hidden");
                 handleLivePreview(e);
               }}"
             />
           </div>
-          <div id="ft-avatar-bg-color-wrap" class="${isTransparent ? "hidden" : ""}">
+          <div
+            id="ft-avatar-bg-color-wrap"
+            class="${isTransparent ? "hidden" : ""}"
+          >
             <input
               type="color"
               id="PROFILE_AVATAR_BG_COLOR"
               class="input input-bordered input-sm p-1 h-8 w-16"
               .value="${isTransparent ? "#00bcba" : saved.avatarBg}"
               @input="${handleLivePreview}"
+            />
+          </div>
+        </div>
+        <div class="border-t border-base-300 pt-3">
+          <span class="text-xs opacity-60">Border decoration</span>
+          <div class="join w-full mt-2">
+            <input
+              type="radio"
+              name="PROFILE_DECORATION"
+              class="btn btn-sm join-item flex-1"
+              aria-label="None"
+              value="none"
+              ?checked="${saved.decoration === "none"}"
+              @change="${handleLivePreview}"
+            />
+            <input
+              type="radio"
+              name="PROFILE_DECORATION"
+              class="btn btn-sm join-item flex-1"
+              aria-label="Solid"
+              value="solid"
+              ?checked="${saved.decoration === "solid"}"
+              @change="${handleLivePreview}"
             />
           </div>
         </div>
@@ -211,6 +250,7 @@ export const createSettingsModal = async (
     background: await getConfig("PROFILE_BACKGROUND_URL"),
     backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
     avatarBg: await getConfig("PROFILE_AVATAR_BG"),
+    decoration: await getConfig("PROFILE_DECORATION"),
   };
 
   const themePref = await getConfig("BETTER_INTRA_THEME");
@@ -257,6 +297,7 @@ export const createSettingsModal = async (
       "PROFILE_BACKGROUND_URL",
       "PROFILE_BACKGROUND_MODE",
       "PROFILE_AVATAR_BG",
+      "PROFILE_DECORATION",
     ]);
     close();
     location.reload();
@@ -288,18 +329,28 @@ export const createSettingsModal = async (
       } else {
         batchData[urlKey] = val;
         if (modeKey) {
-          const radio = shadow.querySelector<HTMLInputElement>(`input[name="${modeKey}"]:checked`);
+          const radio = shadow.querySelector<HTMLInputElement>(
+            `input[name="${modeKey}"]:checked`,
+          );
           batchData[modeKey] = radio?.value || "fill";
         }
       }
     }
 
-    const bgModeRadio = shadow.querySelector<HTMLInputElement>('input[name="PROFILE_AVATAR_BG_MODE"]:checked');
+    const bgModeRadio = shadow.querySelector<HTMLInputElement>(
+      'input[name="PROFILE_AVATAR_BG_MODE"]:checked',
+    );
     const bgMode = bgModeRadio?.value || "transparent";
-    const avatarBg = bgMode === "transparent"
-      ? "transparent"
-      : (shadow.getElementById("PROFILE_AVATAR_BG_COLOR") as HTMLInputElement)?.value || "transparent";
+    const avatarBg =
+      bgMode === "transparent"
+        ? "transparent"
+        : (shadow.getElementById("PROFILE_AVATAR_BG_COLOR") as HTMLInputElement)
+            ?.value || "transparent";
     batchData["PROFILE_AVATAR_BG"] = avatarBg;
+    const decorationRadio = shadow.querySelector<HTMLInputElement>(
+      'input[name="PROFILE_DECORATION"]:checked',
+    );
+    batchData["PROFILE_DECORATION"] = decorationRadio?.value || "none";
 
     if (Object.keys(batchData).length > 0)
       await chrome.storage.local.set(batchData);
@@ -313,6 +364,7 @@ export const createSettingsModal = async (
       background: batchData["PROFILE_BACKGROUND_URL"] || "",
       backgroundMode: batchData["PROFILE_BACKGROUND_MODE"] || "fill",
       avatarBg,
+      decoration: batchData["PROFILE_DECORATION"],
     };
 
     try {

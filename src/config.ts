@@ -62,6 +62,7 @@ export interface BetterIntraConfig {
   PROFILE_SHOW_EVALUATIONS: boolean;
   PROFILE_USE_MODERN_INFO_CARD: boolean;
   PROFILE_AVATAR_BG: string;
+  PROFILE_DECORATION: string;
 
   // Shortcuts Feature Settings
   SHORTCUTS_LINKS: { name: string; url: string }[];
@@ -149,6 +150,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   PROFILE_SHOW_EVALUATIONS: false,
   PROFILE_USE_MODERN_INFO_CARD: true,
   PROFILE_AVATAR_BG: "transparent",
+  PROFILE_DECORATION: "none",
 
   BETTER_INTRA_THEME: "dark",
   SHORTCUTS_LINKS: [],
@@ -216,6 +218,7 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "PROFILE_SHOW_EVALUATIONS",
   "PROFILE_USE_MODERN_INFO_CARD",
   "PROFILE_AVATAR_BG",
+  "PROFILE_DECORATION",
   "SHORTCUTS_LINKS",
   "SHORTCUTS_HIDE_IMPORTANT_LINKS",
   "SHORTCUTS_ALIGNMENT",

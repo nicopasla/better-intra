@@ -16,6 +16,7 @@ export interface VisualUrls {
   background: string;
   backgroundMode: string;
   avatarBg?: string;
+  decoration?: string;
   theme?: { profileColor?: string } | null;
   logtime?: {
     calendarColor?: string;
@@ -43,6 +44,7 @@ const getVisualKey = (urls: VisualUrls) =>
     background: urls.background || "",
     backgroundMode: urls.backgroundMode || "",
     avatarBg: urls.avatarBg || "transparent",
+    decoration: urls.decoration || "none",
     theme: urls.theme || null,
     logtime: urls.logtime || null,
   });
@@ -155,6 +157,10 @@ export const injectCustomStyles = () => {
     .banner-mode-stretch { background-size: 100% 100% !important; background-repeat: no-repeat !important; background-position: center !important; }
     .banner-mode-center { background-size: auto !important; background-repeat: no-repeat !important; background-position: center !important; }
     .banner-mode-tile { background-size: auto !important; background-repeat: repeat !important; background-position: top left !important; }
+
+    .ft-deco-solid {
+      box-shadow: 0 0 0 3px var(--user-color, #00babc) !important;
+    }
   `;
   document.head.appendChild(style);
 };
@@ -223,6 +229,12 @@ export const applyImgs = (urls: VisualUrls | null) => {
     avatar.style.setProperty("opacity", "1", "important");
   }
 
+  if (avatar) {
+    avatar.classList.remove("ft-deco-solid");
+    const deco = urls.decoration;
+    if (deco && deco !== "none") avatar.classList.add(`ft-deco-${deco}`);
+  }
+
   if (urls.banner) {
     const bannerMode = urls.bannerMode || "fill";
     setStyleForSelector(
@@ -275,9 +287,13 @@ const attachToggleListener = (avatarEl: HTMLElement) => {
           visualCache.avatarBg || "transparent",
           "important",
         );
+        currentAvatar.classList.remove("ft-deco-solid");
+        const d = visualCache.decoration;
+        if (d && d !== "none") currentAvatar.classList.add(`ft-deco-${d}`);
       }
     } else {
       showingOriginalAvatar = true;
+      currentAvatar.classList.remove("ft-deco-solid");
       if (originalAvatarUrl) {
         currentAvatar.style.setProperty(
           "background-image",
@@ -360,6 +376,7 @@ export const updateVisuals = async () => {
         background: await getConfig("PROFILE_BACKGROUND_URL"),
         backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
         avatarBg: await getConfig("PROFILE_AVATAR_BG"),
+        decoration: await getConfig("PROFILE_DECORATION"),
       };
 
       if (

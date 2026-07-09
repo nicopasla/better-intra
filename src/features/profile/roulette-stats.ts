@@ -138,10 +138,10 @@ function buildRouletteSection(
   winNum.className = "text-2xl font-bold text-blue-600";
   winNum.textContent = String(wins);
   const winLabel = document.createElement("span");
-  winLabel.className = "text-xs opacity-70 uppercase tracking-wide";
+  winLabel.className = "text-sm font-semibold opacity-70 uppercase tracking-wide";
   winLabel.textContent = "Wins";
-  winCol.appendChild(winNum);
   winCol.appendChild(winLabel);
+  winCol.appendChild(winNum);
   counters.appendChild(winCol);
 
   const ptsCol = document.createElement("div");
@@ -151,10 +151,10 @@ function buildRouletteSection(
   ptsNum.className = "text-2xl font-bold text-green-600";
   ptsNum.textContent = String(points);
   const ptsLabel = document.createElement("span");
-  ptsLabel.className = "text-xs opacity-70 uppercase tracking-wide";
+  ptsLabel.className = "text-sm font-semibold opacity-70 uppercase tracking-wide";
   ptsLabel.textContent = "Points";
-  ptsCol.appendChild(ptsNum);
   ptsCol.appendChild(ptsLabel);
+  ptsCol.appendChild(ptsNum);
   counters.appendChild(ptsCol);
 
   const nextCol = document.createElement("div");
@@ -170,10 +170,10 @@ function buildRouletteSection(
     "font-variant-numeric: tabular-nums; font-feature-settings: 'tnum';";
   countdownText.textContent = formatCountdownText();
   const nextLabel = document.createElement("span");
-  nextLabel.className = "text-xs opacity-70 uppercase tracking-wide";
+  nextLabel.className = "text-sm font-semibold opacity-70 uppercase tracking-wide";
   nextLabel.textContent = "Next draw";
-  nextRow.appendChild(countdownText);
   nextRow.appendChild(nextLabel);
+  nextRow.appendChild(countdownText);
   nextCol.appendChild(nextRow);
   counters.appendChild(nextCol);
 
@@ -225,18 +225,82 @@ function buildEvalStatsSection(data: EvalStatsData): HTMLElement {
   titleRow.style.cssText =
     "display: flex; align-items: center; gap: 8px; margin-bottom: 8px;";
 
+  const titleWrap = document.createElement("div");
+  titleWrap.className = "inline-flex";
   const title = document.createElement("span");
-  title.style.cssText =
-    "font-weight: 700; text-transform: uppercase; font-size: 14px;";
-  title.textContent = "As Corrector";
-  titleRow.appendChild(title);
+  title.className = "font-bold uppercase text-sm cursor-help";
+  title.textContent = "Evaluations as Corrector";
+  titleWrap.appendChild(title);
+  titleRow.appendChild(titleWrap);
+
+  let tooltipEl: HTMLElement | null = null;
+  title.addEventListener("mouseenter", () => {
+    if (tooltipEl) return;
+    const rect = title.getBoundingClientRect();
+    tooltipEl = document.createElement("div");
+    tooltipEl.className =
+      "bg-gray-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg z-50 pointer-events-none w-64";
+    tooltipEl.textContent =
+      "Shows how many times you acted as a corrector (evaluator) per month, and how many of those evaluations failed — with the success percentage";
+    tooltipEl.style.cssText =
+      `position: fixed; left: ${rect.left}px; bottom: ${window.innerHeight - rect.top + 8}px;`;
+    document.body.appendChild(tooltipEl);
+  });
+  title.addEventListener("mouseleave", () => {
+    tooltipEl?.remove();
+    tooltipEl = null;
+  });
+
+  const badgesWrap = document.createElement("div");
+  badgesWrap.style.cssText =
+    "display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; white-space: nowrap;";
+
+  function makeBadge(
+    containerStyle: string,
+    label: string,
+    value: string,
+  ): HTMLSpanElement {
+    const badge = document.createElement("span");
+    badge.style.cssText = containerStyle;
+    const labelEl = document.createElement("span");
+    labelEl.className = "text-sm font-semibold opacity-70 uppercase tracking-wide";
+    labelEl.textContent = label;
+    badge.appendChild(labelEl);
+    const valueEl = document.createElement("span");
+    valueEl.style.cssText = "font-size: 20px; font-weight: 700; margin-left: 6px;";
+    valueEl.textContent = value;
+    badge.appendChild(valueEl);
+    return badge;
+  }
 
   if (data.global.successPercentage !== null) {
+    const color =
+      data.global.successPercentage >= 80
+        ? "rgb(34,197,94)"
+        : "rgb(239,68,68)";
     const badge = document.createElement("span");
-    badge.style.cssText = `font-size: 16px; font-weight: 700; padding: 2px 12px; border-radius: 999px; ${data.global.successPercentage >= 80 ? "color: rgb(34,197,94); background: rgba(34,197,94,0.1);" : "color: rgb(239,68,68); background: rgba(239,68,68,0.1);"}`;
+    badge.style.cssText = `font-size: 20px; font-weight: 700; padding: 8px 16px; border-radius: 10px; color: ${color}; background: rgba(${data.global.successPercentage >= 80 ? "34,197,94" : "239,68,68"},0.1);`;
     badge.textContent = `${data.global.successPercentage}%`;
-    titleRow.appendChild(badge);
+    badgesWrap.appendChild(badge);
   }
+
+  badgesWrap.appendChild(
+    makeBadge(
+      "display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 10px; color: rgb(59,130,246); background: rgba(59,130,246,0.1);",
+      "total",
+      String(data.global.total),
+    ),
+  );
+
+  badgesWrap.appendChild(
+    makeBadge(
+      "display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 10px; color: rgb(239,68,68); background: rgba(239,68,68,0.1);",
+      "failed",
+      String(data.global.failed),
+    ),
+  );
+
+  titleRow.appendChild(badgesWrap);
 
   section.appendChild(titleRow);
 
@@ -247,7 +311,6 @@ function buildEvalStatsSection(data: EvalStatsData): HTMLElement {
     "width: 100% !important; border-collapse: collapse !important; font-size: 12px !important;";
 
   const thead = document.createElement("thead");
-  thead.style.cssText = "position: sticky; top: 0; z-index: 1;";
   const headerRow = document.createElement("tr");
   headerRow.style.cssText =
     "border-bottom: 1px solid hsl(var(--primary) / 0.2) !important;";
@@ -263,7 +326,7 @@ function buildEvalStatsSection(data: EvalStatsData): HTMLElement {
   table.appendChild(thead);
 
   const tbody = document.createElement("tbody");
-  const months = Object.keys(data.byMonth).sort();
+  const months = Object.keys(data.byMonth).sort().reverse();
   for (const month of months) {
     const m = data.byMonth[month];
     const tr = document.createElement("tr");
@@ -308,43 +371,6 @@ function buildEvalStatsSection(data: EvalStatsData): HTMLElement {
     tbody.appendChild(tr);
   }
 
-  const globalTr = document.createElement("tr");
-  globalTr.style.cssText =
-    "border-top: 2px solid hsl(var(--primary) / 0.4) !important; font-weight: 600 !important;";
-
-  const globalLabel = document.createElement("td");
-  globalLabel.style.cssText =
-    "padding: 4px 4px !important; color: inherit !important;";
-  globalLabel.textContent = "Total";
-  globalTr.appendChild(globalLabel);
-
-  const globalTotalTd = document.createElement("td");
-  globalTotalTd.style.cssText =
-    "padding: 4px 4px !important; color: inherit !important;";
-  globalTotalTd.textContent = String(data.global.total);
-  globalTr.appendChild(globalTotalTd);
-
-  const globalFailedTd = document.createElement("td");
-  globalFailedTd.style.cssText =
-    "padding: 4px 4px !important; color: inherit !important;";
-  globalFailedTd.textContent = String(data.global.failed);
-  globalTr.appendChild(globalFailedTd);
-
-  const globalPctTd = document.createElement("td");
-  globalPctTd.style.cssText = "padding: 4px 4px !important;";
-  if (data.global.successPercentage !== null) {
-    globalPctTd.style.color =
-      data.global.successPercentage >= 80
-        ? "rgb(34,197,94) !important"
-        : "rgb(239,68,68) !important";
-    globalPctTd.textContent = `${data.global.successPercentage}%`;
-  } else {
-    globalPctTd.textContent = "—";
-    globalPctTd.style.color = "hsl(var(--primary) / 0.3) !important";
-  }
-  globalTr.appendChild(globalPctTd);
-
-  tbody.appendChild(globalTr);
   table.appendChild(tbody);
   tableWrap.appendChild(table);
   section.appendChild(tableWrap);

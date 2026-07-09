@@ -52,7 +52,7 @@
 .day-cell:hover {
   transform: none;
   filter: brightness(1.15);
-  box-shadow: 0 0 0 2px var(--calendar-color, #00bcba);
+  box-shadow: inset 0 0 0 2px var(--calendar-color, #00bcba);
   z-index: 50 !important;
 }
 
@@ -72,9 +72,10 @@
   transform: translateX(-50%);
   background: hsl(var(--card));
   color: hsl(var(--foreground));
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 8px;
   z-index: 100;
   white-space: nowrap;
 }

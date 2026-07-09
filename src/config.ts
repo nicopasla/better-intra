@@ -79,6 +79,10 @@ export interface BetterIntraConfig {
   DISCORD_QUIET_ENABLED: boolean;
   DISCORD_QUIET_START: string;
   DISCORD_QUIET_END: string;
+
+  // Calendar Sync
+  CALENDAR_SYNC_TOKEN: string;
+  CALENDAR_EVENTS_HASH: string;
 }
 
 /**
@@ -161,6 +165,9 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   DISCORD_QUIET_ENABLED: false,
   DISCORD_QUIET_START: "22:00",
   DISCORD_QUIET_END: "08:00",
+
+  CALENDAR_SYNC_TOKEN: "",
+  CALENDAR_EVENTS_HASH: "",
 };
 
 /**
@@ -219,6 +226,8 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "DISCORD_QUIET_ENABLED",
   "DISCORD_QUIET_START",
   "DISCORD_QUIET_END",
+  "CALENDAR_SYNC_TOKEN",
+  "CALENDAR_EVENTS_HASH",
 ];
 
 /**

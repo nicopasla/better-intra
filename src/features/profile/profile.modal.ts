@@ -7,6 +7,12 @@ import { sharedCSS } from "../../assets/shared-styles.ts";
 
 function handleLivePreview(e: Event) {
   const root = (e.target as HTMLElement).getRootNode() as ShadowRoot;
+  const bgModeRadio = root.querySelector<HTMLInputElement>('input[name="PROFILE_AVATAR_BG_MODE"]:checked');
+  const bgMode = bgModeRadio?.value || "transparent";
+  const color = bgMode === "transparent"
+    ? "transparent"
+    : (root.getElementById("PROFILE_AVATAR_BG_COLOR") as HTMLInputElement)
+          ?.value || "transparent";
   applyImgs({
     avatar:
       (root.getElementById("PROFILE_IMAGE_URL") as HTMLInputElement)?.value ||
@@ -15,14 +21,15 @@ function handleLivePreview(e: Event) {
       (root.getElementById("PROFILE_BANNER_URL") as HTMLInputElement)?.value ||
       "",
     bannerMode:
-      (root.getElementById("PROFILE_BANNER_MODE") as HTMLSelectElement)
+      root.querySelector<HTMLInputElement>('input[name="PROFILE_BANNER_MODE"]:checked')
         ?.value || "fill",
     background:
       (root.getElementById("PROFILE_BACKGROUND_URL") as HTMLInputElement)
         ?.value || "",
     backgroundMode:
-      (root.getElementById("PROFILE_BACKGROUND_MODE") as HTMLSelectElement)
+      root.querySelector<HTMLInputElement>('input[name="PROFILE_BACKGROUND_MODE"]:checked')
         ?.value || "fill",
+    avatarBg: color,
   });
 }
 
@@ -70,25 +77,22 @@ function renderUrlField(id: string, label: string, value: string) {
   `;
 }
 
-function renderModeSelect(id: string, label: string, currentValue: string) {
+function renderModeRadios(name: string, currentValue: string) {
   const modes = ["fill", "fit", "stretch", "center", "tile"];
   return html`
-    <div class="form-control w-full mt-1">
-      <label class="label py-0.5">
-        <span class="label-text text-xs opacity-60">${label}</span>
-      </label>
-      <select
-        id="${id}"
-        class="select select-bordered select-sm w-full"
-        @change="${handleLivePreview}"
-      >
-        ${modes.map(
-          (m) =>
-            html`<option value="${m}" ?selected="${currentValue === m}">
-              ${m.charAt(0).toUpperCase() + m.slice(1)}
-            </option>`,
-        )}
-      </select>
+    <div class="join w-full mt-4">
+      ${modes.map(
+        (m) =>
+          html`<input
+            type="radio"
+            name="${name}"
+            class="btn btn-sm join-item flex-1"
+            aria-label="${m.charAt(0).toUpperCase() + m.slice(1)}"
+            value="${m}"
+            ?checked="${currentValue === m}"
+            @change="${handleLivePreview}"
+          />`,
+      )}
     </div>
   `;
 }
@@ -100,11 +104,13 @@ function renderPanelContent(
     bannerMode: string;
     background: string;
     backgroundMode: string;
+    avatarBg: string;
   },
   currentTheme: string,
   onClose: () => void,
   onReset: () => void,
 ) {
+  const isTransparent = saved.avatarBg === "transparent";
   return html`
     <style>
       :host { display: block; width: 100%; height: 100%; }
@@ -130,13 +136,50 @@ function renderPanelContent(
         class="fieldset rounded-box gap-3 border border-base-300 bg-base-200/50 p-3"
       >
         ${renderUrlField("PROFILE_IMAGE_URL", "Avatar URL", saved.avatar)}
+        <div class="flex gap-2 items-center" style="margin-top: 4px;">
+          <div class="join w-full">
+            <input
+              type="radio"
+              name="PROFILE_AVATAR_BG_MODE"
+              class="btn btn-sm join-item flex-1"
+              aria-label="Transparent"
+              value="transparent"
+              ?checked="${isTransparent}"
+              @change="${(e: Event) => {
+                const root = (e.target as HTMLElement).getRootNode() as ShadowRoot;
+                const wrap = root.getElementById('ft-avatar-bg-color-wrap');
+                if (wrap) wrap.classList.add('hidden');
+                handleLivePreview(e);
+              }}"
+            />
+            <input
+              type="radio"
+              name="PROFILE_AVATAR_BG_MODE"
+              class="btn btn-sm join-item flex-1"
+              aria-label="Color"
+              value="custom"
+              ?checked="${!isTransparent}"
+              @change="${(e: Event) => {
+                const root = (e.target as HTMLElement).getRootNode() as ShadowRoot;
+                const wrap = root.getElementById('ft-avatar-bg-color-wrap');
+                if (wrap) wrap.classList.remove('hidden');
+                handleLivePreview(e);
+              }}"
+            />
+          </div>
+          <div id="ft-avatar-bg-color-wrap" class="${isTransparent ? "hidden" : ""}">
+            <input
+              type="color"
+              id="PROFILE_AVATAR_BG_COLOR"
+              class="input input-bordered input-sm p-1 h-8 w-16"
+              .value="${isTransparent ? "#00bcba" : saved.avatarBg}"
+              @input="${handleLivePreview}"
+            />
+          </div>
+        </div>
         <div class="border-t border-base-300 pt-3">
           ${renderUrlField("PROFILE_BANNER_URL", "Banner URL", saved.banner)}
-          ${renderModeSelect(
-            "PROFILE_BANNER_MODE",
-            "Alignment",
-            saved.bannerMode,
-          )}
+          ${renderModeRadios("PROFILE_BANNER_MODE", saved.bannerMode)}
         </div>
         <div class="border-t border-base-300 pt-3">
           ${renderUrlField(
@@ -144,11 +187,7 @@ function renderPanelContent(
             "Background URL",
             saved.background,
           )}
-          ${renderModeSelect(
-            "PROFILE_BACKGROUND_MODE",
-            "Alignment",
-            saved.backgroundMode,
-          )}
+          ${renderModeRadios("PROFILE_BACKGROUND_MODE", saved.backgroundMode)}
         </div>
       </fieldset>
       <div class="flex flex-col gap-2">
@@ -171,18 +210,20 @@ export const createSettingsModal = async (
     bannerMode: (await getConfig("PROFILE_BANNER_MODE")) || "fill",
     background: await getConfig("PROFILE_BACKGROUND_URL"),
     backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
+    avatarBg: await getConfig("PROFILE_AVATAR_BG"),
   };
 
   const themePref = await getConfig("BETTER_INTRA_THEME");
-  const currentTheme =
+  const isDark =
     themePref === "system"
       ? window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"
-      : themePref || "dark";
+      : themePref !== "light";
+  const presetKey = (await getConfig("PROFILE_THEME_PRESET")) || "dark";
+  const currentTheme = isDark ? presetKey : "light";
 
   const dialog = Object.assign(document.createElement("dialog"), {
     id: "profile-modal-host",
+    className: "bg-transparent backdrop:bg-black/50",
   });
   Object.assign(dialog.style, {
     marginTop: "auto",
@@ -192,7 +233,6 @@ export const createSettingsModal = async (
     borderRadius: "1.5rem",
     overflow: "hidden",
     padding: "0",
-    border: "1px solid hsl(var(--border))",
   });
 
   const content = document.createElement("div");
@@ -216,6 +256,7 @@ export const createSettingsModal = async (
       "PROFILE_BANNER_MODE",
       "PROFILE_BACKGROUND_URL",
       "PROFILE_BACKGROUND_MODE",
+      "PROFILE_AVATAR_BG",
     ]);
     close();
     location.reload();
@@ -247,11 +288,18 @@ export const createSettingsModal = async (
       } else {
         batchData[urlKey] = val;
         if (modeKey) {
-          const select = shadow.getElementById(modeKey) as HTMLSelectElement;
-          batchData[modeKey] = select?.value || "fill";
+          const radio = shadow.querySelector<HTMLInputElement>(`input[name="${modeKey}"]:checked`);
+          batchData[modeKey] = radio?.value || "fill";
         }
       }
     }
+
+    const bgModeRadio = shadow.querySelector<HTMLInputElement>('input[name="PROFILE_AVATAR_BG_MODE"]:checked');
+    const bgMode = bgModeRadio?.value || "transparent";
+    const avatarBg = bgMode === "transparent"
+      ? "transparent"
+      : (shadow.getElementById("PROFILE_AVATAR_BG_COLOR") as HTMLInputElement)?.value || "transparent";
+    batchData["PROFILE_AVATAR_BG"] = avatarBg;
 
     if (Object.keys(batchData).length > 0)
       await chrome.storage.local.set(batchData);
@@ -264,6 +312,7 @@ export const createSettingsModal = async (
       bannerMode: batchData["PROFILE_BANNER_MODE"] || "fill",
       background: batchData["PROFILE_BACKGROUND_URL"] || "",
       backgroundMode: batchData["PROFILE_BACKGROUND_MODE"] || "fill",
+      avatarBg,
     };
 
     try {

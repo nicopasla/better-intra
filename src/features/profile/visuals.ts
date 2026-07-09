@@ -15,6 +15,7 @@ export interface VisualUrls {
   bannerMode: string;
   background: string;
   backgroundMode: string;
+  avatarBg?: string;
   theme?: { profileColor?: string } | null;
   logtime?: {
     calendarColor?: string;
@@ -41,6 +42,7 @@ const getVisualKey = (urls: VisualUrls) =>
     bannerMode: urls.bannerMode || "",
     background: urls.background || "",
     backgroundMode: urls.backgroundMode || "",
+    avatarBg: urls.avatarBg || "transparent",
     theme: urls.theme || null,
     logtime: urls.logtime || null,
   });
@@ -211,6 +213,11 @@ export const applyImgs = (urls: VisualUrls | null) => {
       `url("${urls.avatar}")`,
       "important",
     );
+    avatar.style.setProperty(
+      "background-color",
+      urls.avatarBg || "transparent",
+      "important",
+    );
   }
   if (avatar && !showingOriginalAvatar) {
     avatar.style.setProperty("opacity", "1", "important");
@@ -261,6 +268,11 @@ const attachToggleListener = (avatarEl: HTMLElement) => {
         currentAvatar.style.setProperty(
           "background-image",
           `url("${visualCache.avatar}")`,
+          "important",
+        );
+        currentAvatar.style.setProperty(
+          "background-color",
+          visualCache.avatarBg || "transparent",
           "important",
         );
       }
@@ -347,6 +359,7 @@ export const updateVisuals = async () => {
         bannerMode: (await getConfig("PROFILE_BANNER_MODE")) || "fill",
         background: await getConfig("PROFILE_BACKGROUND_URL"),
         backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
+        avatarBg: await getConfig("PROFILE_AVATAR_BG"),
       };
 
       if (

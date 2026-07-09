@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-07-09
+
+### Features 🎉
+
+- feat(profile): add avatar decoration option ([478b1c7](https://github.com/nicopasla/better-intra/commit/478b1c7))
+- feat(profile): add avatar background color configuration ([fc8f1a3](https://github.com/nicopasla/better-intra/commit/fc8f1a3))
+- feat(logtime): add event start time to tooltip ([5a02346](https://github.com/nicopasla/better-intra/commit/5a02346))
+- feat(roulette): enhance UI for roulette stats and evaluations ([9b3bd32](https://github.com/nicopasla/better-intra/commit/9b3bd32))
+
+### Bug fixes 🐛
+
+- fix(calendar): add calendar sync token and events hash to configuration ([b948a6b](https://github.com/nicopasla/better-intra/commit/b948a6b))
+- fix(logtime): adjust day-cell hover effect and enhance tooltip styling ([428cedf](https://github.com/nicopasla/better-intra/commit/428cedf))
+- fix(logtime): improve day-cell hover effects and tooltip positioning ([edd02d7](https://github.com/nicopasla/better-intra/commit/edd02d7))
+
+### Maintenance 🧹
+
+- chore(docs): update README ([bf3aca3](https://github.com/nicopasla/better-intra/commit/bf3aca3))
+- chore(docs): update CHROME_LISTING ([5980220](https://github.com/nicopasla/better-intra/commit/5980220))
+
 ## [1.4.0] - 2026-07-09
 
 ### Features 🎉
@@ -688,7 +708,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.4.0...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/nicopasla/better-intra/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/nicopasla/better-intra/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/nicopasla/better-intra/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/nicopasla/better-intra/compare/v1.3.0...v1.3.1

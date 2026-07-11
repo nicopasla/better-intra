@@ -1,5 +1,5 @@
 import { getConfig } from "../../config.ts";
-import { CLUSTERS } from "../clusters/clusters.data.ts";
+import { CLUSTERS, getClusterData } from "../clusters/clusters.data.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import ARROW_SHARE_SVG from "../../assets/svg/arrow_share.svg?raw";
 
@@ -75,7 +75,7 @@ function populateMainBadges(
   if (seatBadge) container.prepend(seatBadge);
 }
 
-function injectSeatBadge(profileCard: HTMLElement) {
+async function injectSeatBadge(profileCard: HTMLElement) {
   const shadowHost = document.getElementById(SHADOW_HOST_ID);
   if (!shadowHost) return;
   const shadowRoot = shadowHost.shadowRoot;
@@ -130,7 +130,14 @@ function injectSeatBadge(profileCard: HTMLElement) {
   badge.style.cursor = "pointer";
   badge.title = "View on cluster map";
 
-  const cluster = CLUSTERS.find((c) =>
+  let clusters = CLUSTERS;
+  if (clusters.length === 0) {
+    const campus = await getConfig("CLUSTERS_CAMPUS");
+    const data = await getClusterData(campus);
+    clusters = data.clusters;
+  }
+
+  const cluster = clusters.find((c) =>
     seatText.toLowerCase().startsWith(c.name.toLowerCase()),
   );
   if (cluster) {
@@ -243,7 +250,7 @@ function startStatsPolling(profileCard: HTMLElement, attempts: number) {
     const items = extractItems(statsBar);
     if (items.length >= 3 || (items.length >= 1 && attempts >= 5)) {
       createInfoCard(items, profileCard);
-      injectSeatBadge(profileCard);
+      void injectSeatBadge(profileCard);
       if (items.length < 3) pollForUpdatedStats();
       return;
     }

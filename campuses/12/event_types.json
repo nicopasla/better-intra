@@ -1,0 +1,30 @@
+{
+  "event_types": {
+    "exam": { "display": "Exam", "keywords": ["exam"] },
+    "conference": {
+      "display": "Conference",
+      "keywords": ["conference", "talk", "lecture", "conférence"]
+    },
+    "workshop": {
+      "display": "Workshop",
+      "keywords": ["workshop", "atelier", "hands-on"]
+    },
+    "hackathon": { "display": "Hackathon", "keywords": ["hackathon", "hack"] },
+    "event": {
+      "display": "Event",
+      "keywords": [
+        "event",
+        "association",
+        "party",
+        "social",
+        "gathering",
+        "soirée"
+      ]
+    },
+    "meet_up": {
+      "display": "Meet up",
+      "keywords": ["meetup", "meet-up", "networking"]
+    },
+    "sun": { "display": "SUN", "keywords": ["sun", "bde"] }
+  }
+}

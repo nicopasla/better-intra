@@ -3,10 +3,8 @@ import { getConfig } from "../../../config.ts";
 import { HUB_SETTING_DEFS } from "../../hub/hubSettings.data.ts";
 import { sharedCSS } from "../../../assets/shared-styles.ts";
 import { THEMES } from "../theme/theme-manager.ts";
-import eventData from "./events.belgium.json";
 
 export async function updateEventFilters() {
-  const campus_mode = (await getConfig("PROFILE_CAMPUS_FILTER")) || "all";
   const event_mode = (await getConfig("PROFILE_EVENT_TYPE_FILTER")) || "all";
 
   const eventCards = document.querySelectorAll(
@@ -17,26 +15,12 @@ export async function updateEventFilters() {
     const htmlCard = card as HTMLElement;
     const typeText =
       htmlCard.querySelector("b")?.textContent?.toLowerCase() || "";
-    const loc =
-      htmlCard
-        .querySelector("svg.lucide-map-pin")
-        ?.nextElementSibling?.textContent?.toLowerCase() || "";
 
-    const campusMatch =
-      campus_mode === "all" ||
-      eventData.campus[
-        campus_mode as keyof typeof eventData.campus
-      ]?.keywords.some((k) => loc.includes(k));
-
-    const typeMatch =
-      event_mode === "all" ||
-      eventData.event_types[
-        event_mode as keyof typeof eventData.event_types
-      ]?.some((t) => typeText.includes(t));
+    const typeMatch = event_mode === "all" || typeText === event_mode;
 
     htmlCard.style.setProperty(
       "display",
-      campusMatch && typeMatch ? "flex" : "none",
+      typeMatch ? "flex" : "none",
       "important",
     );
   });

@@ -123,7 +123,7 @@ export type HubSettingDef = {
   step?: number;
   placeholder?: string;
   actionLabel?: string;
-  actionType?: "export" | "import" | "reset";
+  actionType?: "export" | "import" | "reset" | "detect-campus" | "clear-campus";
 };
 
 export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
@@ -259,6 +259,34 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
   ],
   clusters: [
+    {
+      feature: "clusters",
+      key: "CLUSTERS_CAMPUS",
+      label: "Campus",
+      desc: "Select your campus to load the correct cluster maps and data.",
+      kind: "select",
+      defaultValue: CONFIG_DEFAULT.CLUSTERS_CAMPUS,
+      options: [],
+      fullWidth: true,
+    },
+    {
+      feature: "clusters",
+      label: "Auto-find campus",
+      desc: "Detect your campus automatically from the 42 API.",
+      kind: "action",
+      actionType: "detect-campus",
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "clusters",
+      label: "Clear campus",
+      desc: "Remove the saved campus selection.",
+      kind: "action",
+      actionType: "clear-campus",
+      grid: true,
+      colSpan: 1,
+    },
     {
       feature: "clusters",
       key: "CLUSTERS_SHOW_MARKERS",
@@ -493,33 +521,12 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
-      key: "PROFILE_CAMPUS_FILTER",
-      label: "Campus Display Mode",
-      desc: "Choose which campus events to display on your profile.",
-      kind: "radio-group",
-      defaultValue: CONFIG_DEFAULT.PROFILE_CAMPUS_FILTER,
-      options: [
-        { label: "Show All", value: "all" },
-        { label: "Brussels", value: "brussels" },
-        { label: "Antwerp", value: "antwerp" },
-      ],
-    },
-    {
-      feature: "profile",
       key: "PROFILE_EVENT_TYPE_FILTER",
       label: "Event visibility",
       desc: "Choose which types of events you want to see.",
       kind: "radio-group",
       defaultValue: CONFIG_DEFAULT.PROFILE_EVENT_TYPE_FILTER,
-      options: [
-        { label: "Show All", value: "all" },
-        { label: "Exam", value: "exam" },
-        { label: "Conference", value: "conference" },
-        { label: "Workshop", value: "workshop" },
-        { label: "Hackathon", value: "hackathon" },
-        { label: "Event", value: "event" },
-        { label: "Meet up", value: "meet_up" },
-      ],
+      options: [],
     },
     {
       feature: "profile",

@@ -37,6 +37,12 @@ async function saveSetting(key: string, value: unknown): Promise<void> {
   await chrome.storage.local.set({ [key]: value });
 }
 
+import { fetchCampusList, fetchEventTypes } from "../clusters/clusters.data.ts";
+
+let campusAutoDetected = false;
+let dynamicCampusOptions: { label: string; value: string }[] = [];
+let dynamicEventTypeOptions: { label: string; value: string }[] = [];
+
 export async function openHubModal(active: FeatureId[]) {
   let dialog = document.getElementById("hub-dialog") as HTMLDialogElement;
   if (!dialog) {
@@ -369,7 +375,13 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
               />`;
         }
 
-        case "select":
+        case "select": {
+          const options =
+            def.key === "CLUSTERS_CAMPUS" && dynamicCampusOptions.length > 0
+              ? dynamicCampusOptions
+              : def.key === "PROFILE_EVENT_TYPE_FILTER" && dynamicEventTypeOptions.length > 0
+                ? [{ label: "Show All", value: "all" }, ...dynamicEventTypeOptions]
+                : (def.options ?? []);
           return html`<select
             class="select select-accent w-60"
             data-setting-key="${def.key}"
@@ -379,7 +391,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             @mousedown="${(e: Event) => e.stopPropagation()}"
             @click="${(e: Event) => e.stopPropagation()}"
           >
-            ${(def.options ?? []).map(
+            ${options.map(
               (o) =>
                 html`<option
                   value="${o.value}"
@@ -389,6 +401,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                 </option>`,
             )}
           </select>`;
+        }
 
         case "color":
           return html`<input
@@ -401,9 +414,13 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
               saveSetting(def.key!, (e.target as HTMLInputElement).value)}"
           />`;
 
-        case "radio-group":
+        case "radio-group": {
+          const options =
+            def.key === "PROFILE_EVENT_TYPE_FILTER" && dynamicEventTypeOptions.length > 0
+              ? [{ label: "Show All", value: "all" }, ...dynamicEventTypeOptions]
+              : (def.options ?? []);
           return html`<div class="flex flex-wrap gap-2 sm:gap-4">
-            ${(def.options ?? []).map(
+            ${options.map(
               (o) =>
                 html`<label class="label cursor-pointer gap-2 py-1">
                   <span class="label-text text-xs sm:text-sm">${o.label}</span>
@@ -424,6 +441,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                 </label>`,
             )}
           </div>`;
+        }
 
         case "theme-preset":
           return html`<div class="flex flex-wrap gap-1 w-full">
@@ -598,6 +616,28 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                   }
                 };
                 input.click();
+              } else if (actionType === "detect-campus") {
+                void (async () => {
+                  const token = sessionStorage.getItem("ft_intrapy_token");
+                  if (!token) { alert("Not logged in."); return; }
+                  const res = await fetch("https://intrapy.intra.42.fr/api/v1/users/me/campus", {
+                    headers: { Authorization: token },
+                  });
+                  if (!res.ok) { alert("Failed to detect campus."); return; }
+                  const data = await res.json() as { id: number; is_primary: boolean }[];
+                  const primary = data.find((c: any) => c.is_primary) || data[0];
+                  if (!primary) { alert("No campus found."); return; }
+                  await chrome.storage.local.set({
+                    CLUSTERS_CAMPUS: String(primary.id),
+                    CLUSTERS_CAMPUS_AUTO: true,
+                  });
+                  location.reload();
+                })();
+              } else if (actionType === "clear-campus") {
+                void (async () => {
+                  await chrome.storage.local.set({ CLUSTERS_CAMPUS: "", CLUSTERS_CAMPUS_AUTO: false });
+                  location.reload();
+                })();
               } else if (actionType === "reset") {
                 if (confirm("This will clear ALL Better Intra settings and reload. Continue?")) {
                   void (async () => {
@@ -667,7 +707,11 @@ function renderSetting(def: HubSettingDef, enabled: boolean, hidden?: boolean) {
         : "flex-col sm:flex-row sm:items-center"} justify-between gap-3 sm:gap-4"
     >
       <div class="flex flex-col">
-        <span class="text-sm">${def.label}</span>
+        <span class="text-sm"
+          >${def.label}${def.key === "CLUSTERS_CAMPUS" && campusAutoDetected
+            ? html`<span class="text-success ml-1 font-bold">✓</span>`
+            : ""}</span
+        >
         ${def.desc
           ? html`<span class="text-xs opacity-50">${def.desc}</span>`
           : ""}
@@ -906,7 +950,17 @@ async function createModal(active: FeatureId[]): Promise<void> {
     }
   }
 
+  try {
+    const manifest = await fetchCampusList();
+    dynamicCampusOptions = manifest.campuses.map((c) => ({
+      label: c.name,
+      value: c.id,
+    }));
+  } catch {
+    dynamicCampusOptions = [];
+  }
   const tabsContent = renderTabsContent(active, disabledDeps, hiddenDeps);
+  campusAutoDetected = await getConfig("CLUSTERS_CAMPUS_AUTO");
   const lastSync = (await chrome.storage.local.get("LAST_CLOUD_SYNC"))
     .LAST_CLOUD_SYNC;
   const isConnected = !!(await getConfig("CLOUD_TOKEN"));

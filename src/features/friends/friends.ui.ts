@@ -19,7 +19,7 @@ import {
 } from "../account/account.ts";
 import { getConfig } from "../../config.ts";
 import { getEffectiveTheme } from "../profile/theme/theme-manager.ts";
-import { CLUSTERS } from "../clusters/clusters.data.ts";
+import { CLUSTERS, getClusterData } from "../clusters/clusters.data.ts";
 import FRIENDS_SVG from "../../assets/svg/friends.svg?raw";
 import WARNING_SVG from "../../assets/svg/triangle-exclamation.svg?raw";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
@@ -695,6 +695,11 @@ export async function injectFriendsWidget() {
 
   const show = await getConfig("SHOW_FRIENDS_WIDGET");
   if (!show) return;
+
+  if (CLUSTERS.length === 0) {
+    const campus = await getConfig("CLUSTERS_CAMPUS");
+    await getClusterData(campus);
+  }
 
   _host = document.createElement("div");
   _host.id = HOST_ID;

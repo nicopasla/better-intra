@@ -1,5 +1,6 @@
 import { html, render } from "lit-html";
-import { CLUSTERS } from "../clusters/clusters.data.ts";
+import { CLUSTERS, getClusterData } from "../clusters/clusters.data.ts";
+import { getConfig } from "../../config.ts";
 import ARROW from "../../assets/svg/arrow_share.svg";
 
 /** The unique ID for the injected stylesheet. */
@@ -213,7 +214,14 @@ export async function handleProfileRedirect() {
  * Initializes all features related to seat highlighting and profile redirection.
  * Sets up event listeners to handle navigation and dynamic content.
  */
-function init() {
+async function init() {
+  if (CLUSTERS.length === 0) {
+    try {
+      const campus = await getConfig("CLUSTERS_CAMPUS");
+      await getClusterData(campus);
+    } catch {}
+  }
+
   injectHighlightStyles();
 
   if (
@@ -238,4 +246,4 @@ function init() {
   );
 }
 
-init();
+void init();

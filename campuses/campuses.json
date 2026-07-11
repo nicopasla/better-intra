@@ -1,0 +1,17 @@
+{
+  "campuses": [
+    { "id": "12", "name": "Belgium" },
+    { "id": "16", "name": "Khouribga" },
+    { "id": "22", "name": "Madrid" },
+    { "id": "35", "name": "Amman" },
+    { "id": "41", "name": "Nice" },
+    { "id": "48", "name": "Mulhouse" },
+    { "id": "50", "name": "Kocaeli" },
+    { "id": "55", "name": "Tétouan" },
+    { "id": "62", "name": "Le Havre" },
+    { "id": "65", "name": "Antananarivo" },
+    { "id": "67", "name": "Warsaw" },
+    { "id": "69", "name": "Gyeongsan" },
+    { "id": "75", "name": "Rabat" }
+  ]
+}

@@ -15,6 +15,7 @@ import { initProjectBadges } from "./project-badges.ts";
 import { initProjectsSort } from "./projects-sort.ts";
 import { initRouletteStats } from "./roulette-stats.ts";
 import { initEvaluations } from "./evaluations.ts";
+import { ensureCampusData } from "../clusters/clusters.data.ts";
 
 const waitForBody = () =>
   document.body
@@ -36,6 +37,8 @@ export async function initProfile() {
     replaceMoulinetteImage();
   }
   if (location.origin !== "https://profile-v3.intra.42.fr") return;
+
+  void ensureCampusData();
 
   let isUpdating = false;
   let needsRerun = false;

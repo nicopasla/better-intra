@@ -46,16 +46,16 @@
         { "row": "c5", "pos": [1], "dir": "RIGHT" },
         { "row": "c6", "pos": [1, 2, 3, 4], "dir": "RIGHT" }
       ],
-      "overrides": { 
-        "r1-p1": "UP", 
-        "r1-p2": "UP", 
-        "r1-p3": "UP", 
-        "r1-p4": "UP", 
-        "r1-p5": "UP", 
-        "r1-p6": "UP", 
-        "r8-p1": "RIGHT", 
-        "r8-p2": "RIGHT", 
-        "r8-p3": "RIGHT" 
+      "overrides": {
+        "r1-p1": "UP",
+        "r1-p2": "UP",
+        "r1-p3": "UP",
+        "r1-p4": "UP",
+        "r1-p5": "UP",
+        "r1-p6": "UP",
+        "r8-p1": "RIGHT",
+        "r8-p2": "RIGHT",
+        "r8-p3": "RIGHT"
       }
     }
   }

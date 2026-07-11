@@ -2,6 +2,10 @@
 
 UI and UX improvements for 42 Intra v3: logtime calendar, cluster map tools, custom profiles, shortcuts, friends widget, and more.
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/L8S22311GA)
+
+> Donations help cover the cost of the **Cloudflare Workers Pro** plan ($5/month) and the **domain name**, which power the cloud sync backend, evaluation notifications, and friends feature,...
+
 ## ⚡ Quick Start
 
 To install this extension, click the buttons below or visit the [Releases](https://github.com/nicopasla/better-intra/releases/latest/) page.

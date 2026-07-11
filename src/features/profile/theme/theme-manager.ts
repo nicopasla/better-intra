@@ -89,6 +89,29 @@ async function applyThemePreset() {
 
 function applyTheme(theme: "dark" | "light") {
   const isDark = theme === "dark";
+  const isV3 = window.location.hostname === "profile-v3.intra.42.fr";
+
+  if (!isV3) {
+    let styleEl = document.getElementById("better-intra-theme-stylesheet");
+    let presetEl = document.getElementById("better-intra-theme-preset");
+    if (presetEl) presetEl.remove();
+    if (isDark) {
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = "better-intra-theme-stylesheet";
+        (document.head || document.documentElement).appendChild(styleEl);
+      }
+      styleEl.textContent = themev2;
+      document.documentElement.classList.add("dark");
+    } else {
+      if (styleEl) styleEl.remove();
+      document.documentElement.classList.remove("dark");
+    }
+    document.documentElement.removeAttribute("data-theme");
+    if (document.body) document.body.classList.toggle("dark", isDark);
+    sessionStorage.setItem("intra-theme", theme);
+    return;
+  }
 
   document.documentElement.classList.toggle("dark", isDark);
   document.documentElement.setAttribute("data-theme", theme);
@@ -97,7 +120,6 @@ function applyTheme(theme: "dark" | "light") {
   }
 
   let styleEl = document.getElementById("better-intra-theme-stylesheet");
-  const isV3 = window.location.hostname === "profile-v3.intra.42.fr";
 
   if (isDark) {
     const css = isV3 ? themev3 : themev2;

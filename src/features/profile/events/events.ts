@@ -1,6 +1,6 @@
 import { html, render } from "lit-html";
 import { getConfig } from "../../../config.ts";
-import { HUB_SETTING_DEFS } from "../../hub/hubSettings.data.ts";
+import { fetchEventTypes } from "../../clusters/clusters.data.ts";
 import { sharedCSS } from "../../../assets/shared-styles.ts";
 import { THEMES } from "../theme/theme-manager.ts";
 
@@ -39,11 +39,10 @@ function renderFilterSelectBar(
     >
       <option
         value="all"
-        disabled
         ?selected="${currentFilter === "all"}"
         class="bg-base-100 text-base-content"
       >
-        Pick an Event Type
+        Show All
       </option>
 
       ${eventOptions.map(
@@ -67,10 +66,9 @@ export async function injectEventsSelect() {
   if (!agendaContainer || agendaContainer.dataset.filterInjected === "true")
     return;
 
-  const eventDef = (HUB_SETTING_DEFS as any).profile?.find(
-    (d: any) => d.key === "PROFILE_EVENT_TYPE_FILTER",
-  );
-  if (!eventDef?.options) return;
+  const campus = (await getConfig("CLUSTERS_CAMPUS")) || "12";
+  const eventOptions = await fetchEventTypes(campus);
+  if (eventOptions.length === 0) return;
   agendaContainer.dataset.filterInjected = "true";
 
   agendaContainer.style.setProperty("display", "flex", "important");
@@ -145,7 +143,7 @@ export async function injectEventsSelect() {
   };
 
   render(
-    renderFilterSelectBar(eventDef.options, currentFilter, handleEventChange),
+    renderFilterSelectBar(eventOptions, currentFilter, handleEventChange),
     wrapper,
   );
 

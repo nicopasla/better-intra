@@ -959,6 +959,12 @@ async function createModal(active: FeatureId[]): Promise<void> {
   } catch {
     dynamicCampusOptions = [];
   }
+  try {
+    const campus = (await getConfig("CLUSTERS_CAMPUS")) || "12";
+    dynamicEventTypeOptions = await fetchEventTypes(campus);
+  } catch {
+    dynamicEventTypeOptions = [];
+  }
   const tabsContent = renderTabsContent(active, disabledDeps, hiddenDeps);
   campusAutoDetected = await getConfig("CLUSTERS_CAMPUS_AUTO");
   const lastSync = (await chrome.storage.local.get("LAST_CLOUD_SYNC"))

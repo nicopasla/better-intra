@@ -85,6 +85,7 @@ export interface BetterIntraConfig {
   // Calendar Sync
   CALENDAR_SYNC_TOKEN: string;
   CALENDAR_EVENTS_HASH: string;
+  ADVANCED_OPEN_LINKS_NEW_TAB: boolean;
 }
 
 /**
@@ -93,12 +94,7 @@ export interface BetterIntraConfig {
  * It must implement the BetterIntraConfig interface to ensure all keys have a default.
  */
 export const CONFIG_DEFAULT: BetterIntraConfig = {
-  ACTIVE_SCRIPTS: [
-    "logtime",
-    "clusters",
-    "profile",
-    "shortcuts",
-  ],
+  ACTIVE_SCRIPTS: ["logtime", "clusters", "profile", "shortcuts"],
   CLOUD_SYNC_ENABLED: false,
   LAST_CLOUD_SYNC: null,
   CLOUD_TOKEN: "",
@@ -172,6 +168,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
 
   CALENDAR_SYNC_TOKEN: "",
   CALENDAR_EVENTS_HASH: "",
+  ADVANCED_OPEN_LINKS_NEW_TAB: true,
 };
 
 /**
@@ -234,6 +231,7 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "DISCORD_QUIET_END",
   "CALENDAR_SYNC_TOKEN",
   "CALENDAR_EVENTS_HASH",
+  "ADVANCED_OPEN_LINKS_NEW_TAB",
 ];
 
 /**

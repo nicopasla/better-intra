@@ -5,6 +5,7 @@ import USER from "../../assets/svg/user.svg?raw";
 import SHORTCUT from "../../assets/svg/shortcut.svg?raw";
 import ABOUT from "../../assets/svg/about.svg?raw";
 import DISCORD_SVG from "../../assets/svg/discord.svg?raw";
+import ADVANCED_SVG from "../../assets/svg/advanced.svg?raw";
 import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
 import { CLUSTERS as CLUSTER_OPTIONS } from "../clusters/clusters.data.ts";
 
@@ -57,6 +58,12 @@ export const FEATURE_DEFS = [
     name: "Calendar",
     icon: CALENDAR,
     desc: "Subscribe to your 42 events in Google Calendar, Apple Calendar, or any calendar app.",
+  },
+  {
+    id: "advanced",
+    name: "Advanced",
+    icon: ADVANCED_SVG,
+    desc: "General behavior settings.",
   },
   {
     id: "about",
@@ -608,6 +615,16 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       label: "",
       kind: "about",
       fullWidth: true,
+    },
+  ],
+  advanced: [
+    {
+      feature: "advanced",
+      key: "ADVANCED_OPEN_LINKS_NEW_TAB",
+      label: "Open links in new tab",
+      desc: "External links from Better Intra will open in a new tab instead of the current one.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.ADVANCED_OPEN_LINKS_NEW_TAB,
     },
   ],
 };

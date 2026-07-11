@@ -151,16 +151,18 @@ export function renderShortcutsSettings(
         </button>
       </div>
 
-      ${links.length > 0 ? html`
-        <div class="divider my-1"></div>
-        <div
-          class="preview-section p-4 rounded-xl border border-base-300 bg-base-200/10"
-        >
-          <div class="flex justify-center">
-            ${renderShortcutsDisplay(links, onMoveRow)}
-          </div>
-        </div>
-      ` : ''}
+      ${links.length > 0
+        ? html`
+            <div class="divider my-1"></div>
+            <div
+              class="preview-section p-4 rounded-xl border border-base-300 bg-base-200/10"
+            >
+              <div class="flex justify-center">
+                ${renderShortcutsDisplay(links, onMoveRow)}
+              </div>
+            </div>
+          `
+        : ""}
     </div>
   `;
 }
@@ -260,6 +262,7 @@ function renderLinkContent(
 export function renderShortcutsDisplay(
   links: ShortcutLink[],
   onMoveRow?: (from: number, to: number) => void,
+  openNewTab = true,
 ): ReturnType<typeof html> {
   const isDragMode = !!onMoveRow;
   const displayLinks = isDragMode
@@ -283,8 +286,7 @@ export function renderShortcutsDisplay(
 
           return html`<a
             href="${isValid ? link.url : "#"}"
-            target="_blank"
-            rel="noopener noreferrer"
+            ${openNewTab ? 'target="_blank" rel="noopener noreferrer"' : ""}
             class="btn btn-lg h-auto min-h-12 px-4 py-2 rounded-2xl border-none font-bold uppercase tracking-wider shadow-lg hover:shadow-lg no-underline inline-flex items-center gap-3 ${dimmed
               ? "opacity-40 grayscale"
               : ""}"
@@ -338,8 +340,7 @@ export function renderShortcutsDisplay(
 
         return html`<a
           href="${link.url}"
-          target="_blank"
-          rel="noopener noreferrer"
+          ${openNewTab ? 'target="_blank" rel="noopener noreferrer"' : ""}
           class="btn btn-lg h-auto min-h-12 px-4 py-2 rounded-2xl border-none font-bold uppercase tracking-wider shadow-lg hover:shadow-lg no-underline inline-flex items-center gap-3"
           style="background-color: ${link.color}; color: ${contrast};"
         >

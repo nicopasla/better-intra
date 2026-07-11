@@ -30,10 +30,11 @@ export async function injectShortcutsDisplay() {
   );
   if (!banner) return;
 
-  const [hideImportantLinks, alignment, links] = await Promise.all([
+  const [hideImportantLinks, alignment, links, openNewTab] = await Promise.all([
     getConfig("SHORTCUTS_HIDE_IMPORTANT_LINKS"),
     getConfig("SHORTCUTS_ALIGNMENT"),
     getStoredLinks(),
+    getConfig("ADVANCED_OPEN_LINKS_NEW_TAB"),
   ]);
 
   const displayLinks = links.filter((l) => l.url && l.name);
@@ -98,7 +99,7 @@ export async function injectShortcutsDisplay() {
           }
         </style>
         ${hideImportantLinks ? "" : html`<div class="separator"></div>`}
-        ${renderShortcutsDisplay(links)}
+        ${renderShortcutsDisplay(links, undefined, openNewTab)}
       `,
       shadowRoot,
     );

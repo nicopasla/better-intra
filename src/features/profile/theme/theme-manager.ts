@@ -41,14 +41,20 @@ async function applyThemePreset() {
     "better-intra-theme-preset",
   ) as HTMLStyleElement | null;
 
+  if (!styleEl) {
+    styleEl = document.createElement("style");
+    styleEl.id = "better-intra-theme-preset";
+    (document.head || document.documentElement).appendChild(styleEl);
+  }
+
   if (!presetKey || presetKey === "dark" || presetKey === "light") {
-    if (styleEl) styleEl.remove();
+    styleEl.textContent = "";
     return;
   }
 
   const preset = THEMES[presetKey];
   if (!preset) {
-    if (styleEl) styleEl.remove();
+    styleEl.textContent = "";
     return;
   }
 
@@ -78,16 +84,6 @@ async function applyThemePreset() {
     content = `html:not(.dark) {\n    ${vars.join(";\n    ")};\n  }\n${themeLightV3Overrides}`;
   }
 
-  if (!content) {
-    if (styleEl) styleEl.remove();
-    return;
-  }
-
-  if (!styleEl) {
-    styleEl = document.createElement("style");
-    styleEl.id = "better-intra-theme-preset";
-    (document.head || document.documentElement).appendChild(styleEl);
-  }
   styleEl.textContent = content;
 }
 

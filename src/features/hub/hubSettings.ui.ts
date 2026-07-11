@@ -639,7 +639,12 @@ function renderTabsContent(
   hiddenDeps: Set<string>,
 ) {
   return FEATURE_DEFS.map((f, idx) => {
-    const enabled = active.includes(f.id);
+    const isAlwaysEnabled =
+      f.id === "about" ||
+      f.id === "discord" ||
+      f.id === "calendar" ||
+      f.id === "advanced";
+    const enabled = active.includes(f.id) || isAlwaysEnabled;
     const cloudDisabled =
       "requiresCloud" in f &&
       (f as { requiresCloud?: boolean }).requiresCloud &&
@@ -648,9 +653,7 @@ function renderTabsContent(
       const hidden = !!(def.key && hiddenDeps.has(def.key));
       return renderSetting(
         def,
-        f.id === "about" ||
-          f.id === "discord" ||
-          f.id === "calendar" ||
+        isAlwaysEnabled ||
           (enabled &&
             !(def.key && disabledDeps.has(def.key)) &&
             !(def.requiresCloud && disabledDeps.has("__CLOUD__"))),
@@ -674,17 +677,14 @@ function renderTabsContent(
         class="tab-content bg-base-100 border-base-300 p-0 overflow-y-auto"
       >
         <div
-          class="flex flex-col ${enabled ||
-          f.id === "about" ||
-          f.id === "discord" ||
-          f.id === "calendar"
+          class="flex flex-col ${enabled || isAlwaysEnabled
             ? cloudDisabled
               ? "opacity-40 grayscale"
               : ""
             : "opacity-40 grayscale"}"
           data-feature-panel="${f.id}"
         >
-          ${f.id !== "about" && f.id !== "discord" && f.id !== "calendar"
+          ${!isAlwaysEnabled
             ? html`
                 <div
                   class="sticky top-0 z-20 flex items-center justify-between bg-base-200 px-6 py-4 border-b border-base-300 shadow-sm"

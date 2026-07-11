@@ -22,7 +22,7 @@ export default defineConfig({
   <title>Better Intra</title>
   <style>
     html, body { margin: 0; padding: 0; width: 420px; min-height: 320px; }
-    #popup-root { width: 100%; min-height: 320px; background: var(--color-base-100); }
+    #popup-root { width: 100%; min-height: 320px; background: white; }
   </style>
 </head>
 <body>

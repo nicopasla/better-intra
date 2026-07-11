@@ -4,7 +4,7 @@ import { hashLogin } from "../../utils/crypto.ts";
 
 export { hashLogin };
 
-const WORKER_URL = "https://worker.betterintra.com/";
+const WORKER_URL = "https://worker.betterintra.com";
 
 async function handleAuthResponse(response: Response): Promise<boolean> {
   if (response.status === 401) {

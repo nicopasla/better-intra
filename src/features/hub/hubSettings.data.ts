@@ -95,7 +95,8 @@ export type SettingKind =
   | "action"
   | "discord-panel"
   | "calendar-panel"
-  | "theme-preset";
+  | "theme-preset"
+  | "campus-selector";
 
 export { INTRA_FONT } from "../logtime/constants.ts";
 
@@ -264,28 +265,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       key: "CLUSTERS_CAMPUS",
       label: "Campus",
       desc: "Select your campus to load the correct cluster maps and data.",
-      kind: "select",
-      defaultValue: CONFIG_DEFAULT.CLUSTERS_CAMPUS,
-      options: [],
+      kind: "campus-selector",
       fullWidth: true,
-    },
-    {
-      feature: "clusters",
-      label: "Auto-find campus",
-      desc: "Detect your campus automatically from the 42 API.",
-      kind: "action",
-      actionType: "detect-campus",
-      grid: true,
-      colSpan: 1,
-    },
-    {
-      feature: "clusters",
-      label: "Clear campus",
-      desc: "Remove the saved campus selection.",
-      kind: "action",
-      actionType: "clear-campus",
-      grid: true,
-      colSpan: 1,
     },
     {
       feature: "clusters",

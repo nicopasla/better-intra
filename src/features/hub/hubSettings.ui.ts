@@ -38,6 +38,8 @@ async function saveSetting(key: string, value: unknown): Promise<void> {
 }
 
 import { fetchCampusList, fetchEventTypes } from "../clusters/clusters.data.ts";
+import { CLUSTERS, ensureCampusData } from "../campus/campus.ts";
+import { renderCampusCard } from "../campus/campus.ui.ts";
 
 let campusAutoDetected = false;
 let dynamicCampusOptions: { label: string; value: string }[] = [];
@@ -381,7 +383,9 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
               ? dynamicCampusOptions
               : def.key === "PROFILE_EVENT_TYPE_FILTER" && dynamicEventTypeOptions.length > 0
                 ? [{ label: "Show All", value: "all" }, ...dynamicEventTypeOptions]
-                : (def.options ?? []);
+                : def.key === "CLUSTERS_DEFAULT_ID" && CLUSTERS.length > 0
+                  ? CLUSTERS.map((c) => ({ label: c.name.toUpperCase(), value: c.id }))
+                  : (def.options ?? []);
           return html`<select
             class="select select-accent w-60"
             data-setting-key="${def.key}"
@@ -616,28 +620,6 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                   }
                 };
                 input.click();
-              } else if (actionType === "detect-campus") {
-                void (async () => {
-                  const token = sessionStorage.getItem("ft_intrapy_token");
-                  if (!token) { alert("Not logged in."); return; }
-                  const res = await fetch("https://intrapy.intra.42.fr/api/v1/users/me/campus", {
-                    headers: { Authorization: token },
-                  });
-                  if (!res.ok) { alert("Failed to detect campus."); return; }
-                  const data = await res.json() as { id: number; is_primary: boolean }[];
-                  const primary = data.find((c: any) => c.is_primary) || data[0];
-                  if (!primary) { alert("No campus found."); return; }
-                  await chrome.storage.local.set({
-                    CLUSTERS_CAMPUS: String(primary.id),
-                    CLUSTERS_CAMPUS_AUTO: true,
-                  });
-                  location.reload();
-                })();
-              } else if (actionType === "clear-campus") {
-                void (async () => {
-                  await chrome.storage.local.set({ CLUSTERS_CAMPUS: "", CLUSTERS_CAMPUS_AUTO: false });
-                  location.reload();
-                })();
               } else if (actionType === "reset") {
                 if (confirm("This will clear ALL Better Intra settings and reload. Continue?")) {
                   void (async () => {
@@ -651,6 +633,13 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             ${actionLabel || "Action"}
           </button>`;
         }
+
+        case "campus-selector":
+          return renderCampusCard(
+            dynamicCampusOptions,
+            String(value || ""),
+            campusAutoDetected,
+          );
 
         case "emoji":
         default:
@@ -959,6 +948,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
   } catch {
     dynamicCampusOptions = [];
   }
+  await ensureCampusData();
   try {
     const campus = (await getConfig("CLUSTERS_CAMPUS")) || "12";
     dynamicEventTypeOptions = await fetchEventTypes(campus);
@@ -1039,7 +1029,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
             >
             <button
               class="btn btn-warning btn-sm font-bold"
-              @click="${() => {
+            @click="${() => {
                 dialog.close();
                 loginWith42(async () => {
                   await clearAuthFailed();

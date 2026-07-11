@@ -1,6 +1,7 @@
 import { getConfig } from "../../config.ts";
 import { applyManualScreens, applyMarkersVisibility, injectUI } from "./dom.ts";
 import { createShadowUI } from "./ui.ts";
+import { ensureCampusData } from "../campus/campus.ts";
 
 type Config = {
   show_markers: boolean;
@@ -57,6 +58,7 @@ export async function initClusters() {
   };
 
   async function start() {
+    await ensureCampusData();
     CONFIG = {
       show_markers: await getConfig("CLUSTERS_SHOW_MARKERS"),
       default_id: await getConfig("CLUSTERS_DEFAULT_ID"),

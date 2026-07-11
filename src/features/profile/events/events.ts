@@ -1,8 +1,18 @@
 import { html, render } from "lit-html";
 import { getConfig } from "../../../config.ts";
 import { fetchEventTypes } from "../../clusters/clusters.data.ts";
+import { loadEventTypeKeywords } from "../../campus/campus.ts";
 import { sharedCSS } from "../../../assets/shared-styles.ts";
 import { THEMES } from "../theme/theme-manager.ts";
+
+let eventKeywordsCache: Record<string, string[]> | null = null;
+
+async function getKeywords(): Promise<Record<string, string[]>> {
+  if (eventKeywordsCache) return eventKeywordsCache;
+  const campus = (await getConfig("CLUSTERS_CAMPUS")) || "12";
+  eventKeywordsCache = await loadEventTypeKeywords(campus);
+  return eventKeywordsCache;
+}
 
 export async function updateEventFilters() {
   const event_mode = (await getConfig("PROFILE_EVENT_TYPE_FILTER")) || "all";
@@ -11,12 +21,22 @@ export async function updateEventFilters() {
     "div.relative.clear-both.m-1.border.rounded",
   );
 
+  if (event_mode === "all") {
+    eventCards.forEach((card) => {
+      (card as HTMLElement).style.setProperty("display", "flex", "important");
+    });
+    return;
+  }
+
+  const keywords = await getKeywords();
+  const matchKeywords = keywords[event_mode] ?? [event_mode];
+
   eventCards.forEach((card) => {
     const htmlCard = card as HTMLElement;
     const typeText =
       htmlCard.querySelector("b")?.textContent?.toLowerCase() || "";
 
-    const typeMatch = event_mode === "all" || typeText === event_mode;
+    const typeMatch = matchKeywords.some((kw) => typeText.includes(kw));
 
     htmlCard.style.setProperty(
       "display",

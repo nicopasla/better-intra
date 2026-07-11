@@ -24,7 +24,6 @@
     "meet_up": {
       "display": "Meet up",
       "keywords": ["meetup", "meet-up", "networking"]
-    },
-    "sun": { "display": "SUN", "keywords": ["sun", "bde"] }
+    }
   }
 }

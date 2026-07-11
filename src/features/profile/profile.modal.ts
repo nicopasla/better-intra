@@ -259,7 +259,12 @@ export const createSettingsModal = async (
       ? window.matchMedia("(prefers-color-scheme: dark)").matches
       : themePref !== "light";
   const presetKey = (await getConfig("PROFILE_THEME_PRESET")) || "dark";
-  const currentTheme = isDark ? presetKey : "light";
+  const currentTheme =
+    presetKey !== "dark" && presetKey !== "light"
+      ? presetKey
+      : isDark
+        ? "dark"
+        : "light";
 
   const dialog = Object.assign(document.createElement("dialog"), {
     id: "profile-modal-host",

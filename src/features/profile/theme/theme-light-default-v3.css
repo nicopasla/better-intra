@@ -1,0 +1,35 @@
+html:not(.dark) {
+  --legacy-main: 180.6, 100%, 36.9%;
+}
+
+html:not(.dark) a.text-legacy-main:hover,
+html:not(.dark) button.text-legacy-main:hover,
+html:not(.dark) .text-legacy-main[role="button"]:hover {
+  background-color: #00babc !important;
+  color: #fff !important;
+}
+
+html:not(.dark) .hover\:bg-gray-300 a.text-legacy-main:hover,
+html:not(.dark) .hover\:bg-slate-300 a.text-legacy-main:hover,
+html:not(.dark) .hover\:bg-zinc-300 a.text-legacy-main:hover {
+  background-color: transparent !important;
+}
+
+html:not(.dark) .stroke-legacy-main {
+  stroke: #00babc !important;
+}
+
+html:not(.dark) .fill-legacy-main {
+  fill: #00babc !important;
+}
+
+html:not(.dark) .ft-contacts-card a {
+  color: #fff !important;
+}
+
+html:not(.dark) .ft-contacts-card button {
+  color: #fff !important;
+  background: transparent !important;
+  border: 1px solid #3b82f6 !important;
+  font-size: 1rem !important;
+}

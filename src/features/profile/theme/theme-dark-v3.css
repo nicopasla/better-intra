@@ -21,6 +21,11 @@ html.dark {
    CORE: Page & Root Elements
    ============================================================================ */
 
+html.dark [style*="--radix-popper-available-width"] {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
 html.dark,
 html.dark body,
 html.dark main,
@@ -373,7 +378,8 @@ html.dark .flex.flex-row.items-center.justify-between svg line {
 }
 
 html.dark .hover\:opacity-100:hover svg path,
-html.dark .hover\:opacity-100:hover svg line {
+html.dark .hover\:opacity-100:hover svg line,
+html.dark .hover\:opacity-100:hover svg circle {
   stroke: hsl(var(--primary)) !important;
 }
 

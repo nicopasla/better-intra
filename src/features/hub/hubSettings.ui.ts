@@ -31,6 +31,7 @@ import ICON_SVG from "../../assets/svg/icon.svg?raw";
 import { renderAboutPanel } from "./hub.about.ts";
 import { renderDiscordPanel } from "../discord/discord.ui.ts";
 import { renderCalendarPanel } from "../calendar/calendar.ui.ts";
+import { THEMES } from "../profile/theme/theme-manager.ts";
 
 async function saveSetting(key: string, value: unknown): Promise<void> {
   await chrome.storage.local.set({ [key]: value });
@@ -425,8 +426,21 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
           </div>`;
 
         case "theme-preset":
-          return html`<div class="join w-full">
+          return html`<div class="flex flex-wrap gap-1 w-full">
             ${(def.options ?? []).map((o) => {
+              if ((o as { divider?: boolean }).divider) {
+                return html`<div class="w-full h-px bg-base-300 my-1"></div>`;
+              }
+              if (
+                (o as { label?: string }).label &&
+                !(o as { value?: string }).value
+              ) {
+                return html`<div
+                  class="w-full text-xs font-bold uppercase opacity-50 pt-1"
+                >
+                  ${o.label}
+                </div>`;
+              }
               const hsl = (o as { color?: string }).color ?? "199 89% 48%";
               const selected = String(o.value) === String(value);
               const parts = hsl.split(" ");
@@ -436,7 +450,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
               return html`<input
                 type="radio"
                 name="${def.key}"
-                class="btn btn-sm join-item flex-1"
+                class="btn btn-sm flex-none"
                 aria-label="${o.label}"
                 value="${o.value}"
                 data-hsl="${hsl}"
@@ -450,7 +464,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                   const input = e.target as HTMLInputElement;
                   if (!input.checked) return;
                   saveSetting(def.key!, input.value);
-                  const group = input.closest(".join")!;
+                  const group = input.closest(".flex")!;
                   group
                     .querySelectorAll(`input[name="${def.key}"]`)
                     .forEach((r) => {
@@ -470,6 +484,19 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                   ) as HTMLElement;
                   if (container)
                     container.setAttribute("data-theme", input.value);
+                  const toggle = root.querySelector(
+                    "#hub-theme-toggle",
+                  ) as HTMLInputElement;
+                  if (toggle) {
+                    const isLight =
+                      input.value === "light" || !!THEMES[input.value]?.light;
+                    if (toggle.checked === isLight) {
+                      toggle.checked = !isLight;
+                      chrome.storage.local.set({
+                        BETTER_INTRA_THEME: isLight ? "light" : "dark",
+                      });
+                    }
+                  }
                 }}"
               />`;
             })}
@@ -968,28 +995,26 @@ async function createModal(active: FeatureId[]): Promise<void> {
     ?.options?.some((o) => o.value === presetKey)
     ? presetKey
     : "dark";
-  const storedTheme = (await getConfig("BETTER_INTRA_THEME")) || "dark";
-  const effective =
-    storedTheme === "system"
-      ? window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"
-      : storedTheme;
-  hubContainer?.setAttribute(
-    "data-theme",
-    effective === "light" ? "light" : validPreset,
-  );
+  hubContainer?.setAttribute("data-theme", validPreset);
+  const isLightPreset =
+    validPreset === "light" ||
+    (validPreset !== "dark" && !!THEMES[validPreset]?.light);
+  if (themeToggle) themeToggle.checked = !isLightPreset;
 
   themeToggle?.addEventListener("change", async () => {
     const isDark = themeToggle.checked;
     const preset = (await getConfig("PROFILE_THEME_PRESET")) || "dark";
-    const validPreset = HUB_SETTING_DEFS.profile
-      .find((s) => s.key === "PROFILE_THEME_PRESET")
-      ?.options?.some((o) => o.value === preset)
-      ? preset
-      : "dark";
+    const isLightPreset =
+      preset === "light" || (preset !== "dark" && !!THEMES[preset]?.light);
+    const theme = isDark
+      ? isLightPreset
+        ? "dark"
+        : preset
+      : isLightPreset
+        ? preset
+        : "light";
 
-    hubContainer?.setAttribute("data-theme", isDark ? validPreset : "light");
+    hubContainer?.setAttribute("data-theme", theme);
     await chrome.storage.local.set({
       BETTER_INTRA_THEME: isDark ? "dark" : "light",
     });

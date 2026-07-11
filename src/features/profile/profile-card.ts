@@ -485,10 +485,10 @@ export async function initProfileCardStyling() {
     : "light";
   const presetKey = await getConfig("PROFILE_THEME_PRESET");
   _badgeTheme =
-    effectiveTheme === "light"
-      ? "light"
-      : presetKey && presetKey !== "dark"
-        ? presetKey
+    presetKey !== "dark" && presetKey !== "light"
+      ? presetKey
+      : effectiveTheme === "light"
+        ? "light"
         : "dark";
 
   if (profileCard && !profileCard.classList.contains(PROFILE_CARD_CLASS)) {

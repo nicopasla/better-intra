@@ -2,7 +2,7 @@ import { html, render } from "lit-html";
 import { getConfig } from "../../../config.ts";
 import { HUB_SETTING_DEFS } from "../../hub/hubSettings.data.ts";
 import { sharedCSS } from "../../../assets/shared-styles.ts";
-import { THEME_PRESETS } from "../theme/theme-manager.ts";
+import { THEMES } from "../theme/theme-manager.ts";
 import eventData from "./events.belgium.json";
 
 export async function updateEventFilters() {
@@ -101,13 +101,31 @@ export async function injectEventsSelect() {
   shadowHost.style.setProperty("display", "inline-flex", "important");
 
   const shadowRoot = shadowHost.attachShadow({ mode: "open" });
-  const effectiveTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+  const effectiveTheme = document.documentElement.classList.contains("dark")
+    ? "dark"
+    : "light";
   const presetKey = await getConfig("PROFILE_THEME_PRESET");
-  const daisyTheme = effectiveTheme === "light" ? "light" : (presetKey && presetKey !== "dark" ? presetKey : "dark");
-  const preset = THEME_PRESETS[presetKey] ?? THEME_PRESETS["dark"];
-  const primaryHsl = presetKey === "dark" ? "199 89% 48%" : preset.primary;
-  const base100 = effectiveTheme === "light" ? "hsl(0 0% 100%)" : "hsl(225 17% 14%)";
-  const baseContent = effectiveTheme === "light" ? "hsl(0 0% 10%)" : "hsl(210 20% 98%)";
+  const preset = THEMES[presetKey] ?? THEMES["dark"];
+  const isLightPreset = !preset.dark && !!preset.light;
+  const daisyTheme =
+    presetKey !== "dark" && presetKey !== "light"
+      ? presetKey
+      : isLightPreset
+        ? "light"
+        : "dark";
+  const isLight = daisyTheme === "light" || isLightPreset;
+  const primaryHsl = preset.primary;
+  const presetVars = isLight && preset.light ? preset.light : null;
+  const base100 = presetVars
+    ? `hsl(${presetVars.card})`
+    : effectiveTheme === "light"
+      ? "hsl(0 0% 100%)"
+      : "hsl(225 17% 14%)";
+  const baseContent = presetVars
+    ? `hsl(${presetVars.foreground})`
+    : effectiveTheme === "light"
+      ? "hsl(0 0% 10%)"
+      : "hsl(210 20% 98%)";
   const style = document.createElement("style");
   style.textContent = `
     ${sharedCSS}
@@ -126,7 +144,11 @@ export async function injectEventsSelect() {
   const wrapper = document.createElement("div");
   wrapper.id = "events-shadow-wrapper";
   wrapper.setAttribute("data-theme", daisyTheme);
-  wrapper.style.setProperty("--color-primary", `hsl(${primaryHsl})`, "important");
+  wrapper.style.setProperty(
+    "--color-primary",
+    `hsl(${primaryHsl})`,
+    "important",
+  );
   wrapper.style.setProperty("--color-base-100", base100, "important");
   wrapper.style.setProperty("--color-base-content", baseContent, "important");
   wrapper.style.setProperty("display", "flex", "important");

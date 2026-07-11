@@ -1,12 +1,189 @@
-html:not(.dark) {
-  --legacy-main: 180.6, 100%, 36.9%;
+/* ============================================================================
+   CORE: Page Background
+   ============================================================================ */
+
+html:not(.dark),
+html:not(.dark) body {
+  background-color: hsl(var(--background)) !important;
+}
+
+html:not(.dark) .bg-\[\#4E5566\] {
+  background-color: hsl(var(--muted)) !important;
+}
+
+/* ============================================================================
+   SIDEBAR & NAVIGATION
+   ============================================================================ */
+
+html:not(.dark) [class*="sidebar"],
+html:not(.dark) [class*="nav-left"],
+html:not(.dark) [class*="navigation"],
+html:not(.dark) .main-left-navbar {
+  background-color: hsl(var(--card)) !important;
+  border-right: 1px solid hsl(var(--border)) !important;
+}
+
+html:not(.dark) [class*="sidebar"] a,
+html:not(.dark) [class*="nav-left"] a {
+  transition: all 0.2s ease;
+}
+
+html:not(.dark) [class*="sidebar"] a:hover,
+html:not(.dark) [class*="nav-left"] a:hover {
+  background-color: hsl(var(--muted)) !important;
+}
+
+html:not(.dark) [class*="sidebar"] a.active,
+html:not(.dark) [class*="nav-left"] a.active,
+html:not(.dark) [class*="sidebar"] a[aria-current="page"] {
+  color: hsl(var(--primary)) !important;
+  background-color: hsl(var(--primary) / 0.1) !important;
+  border-left: 3px solid hsl(var(--primary)) !important;
+}
+
+html:not(.dark) [class*="sidebar"] svg,
+html:not(.dark) [class*="nav-left"] svg {
+  stroke: hsl(var(--foreground)) !important;
+}
+
+html:not(.dark) [class*="sidebar"] svg path,
+html:not(.dark) [class*="sidebar"] svg line,
+html:not(.dark) [class*="sidebar"] svg circle,
+html:not(.dark) [class*="nav-left"] svg path,
+html:not(.dark) [class*="nav-left"] svg line,
+html:not(.dark) [class*="nav-left"] svg circle {
+  stroke: hsl(var(--foreground)) !important;
+}
+
+html:not(.dark) [class*="sidebar"] a:hover svg {
+  stroke: hsl(var(--primary)) !important;
+}
+
+/* ============================================================================
+   FORMS: Inputs, Selects, Textareas
+   ============================================================================ */
+
+html:not(.dark) input,
+html:not(.dark) textarea,
+html:not(.dark) select,
+html:not(.dark) [class*="input"],
+html:not(.dark) [class*="field"] {
+  background-color: hsl(var(--input)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+html:not(.dark) select option {
+  background-color: hsl(var(--card)) !important;
+}
+
+/* ============================================================================
+   LINKS & INTERACTIVE
+   ============================================================================ */
+
+html:not(.dark) [class*="info-link"],
+html:not(.dark) [class*="tool-link"],
+html:not(.dark) [class*="resource-link"] {
+  color: hsl(var(--primary)) !important;
+  text-decoration: underline;
+}
+
+/* ============================================================================
+   UTILITY CLASS OVERRIDES: Tailwind & Common Classes
+   ============================================================================ */
+
+html:not(.dark) .bg-legacy-main .text-white,
+html:not(.dark) .bg-legacy-main-muted .text-white,
+html:not(.dark) .bg-\[rgb\(23\,23\,23\)\] .text-white {
+  color: hsl(var(--foreground)) !important;
+}
+
+html:not(.dark) .border-neutral-200 {
+  border-color: hsl(var(--primary) / 0.4) !important;
+}
+
+html:not(.dark) .stroke-\[hsla\(180\,_100\%\,_37\%\,_0\.3\)\] {
+  stroke: hsl(var(--primary) / 0.3) !important;
+}
+
+html:not(.dark) [style*="--radix-popper-available-width"] {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+html:not(.dark) div.bg-white,
+html:not(.dark) div.bg-zinc-100 {
+  background-color: hsl(var(--card)) !important;
+}
+
+html:not(.dark) div.bg-gray-50,
+html:not(.dark) div.bg-gray-100,
+html:not(.dark) div.bg-gray-200,
+html:not(.dark) div.bg-white\/50,
+html:not(.dark) div.bg-neutral-50,
+html:not(.dark) div.bg-neutral-100,
+html:not(.dark) div.bg-zinc-50,
+html:not(.dark) div.bg-slate-50,
+html:not(.dark) div.bg-slate-100,
+html:not(.dark) div.bg-\[\#fafafa\],
+html:not(.dark) div.bg-\[\#f8f9fa\],
+html:not(.dark) div.bg-\[\#f3f4f6\],
+html:not(.dark) div[class*="bg-neutral-"],
+html:not(.dark) div[style*="background-color: #fafafa"],
+html:not(.dark) div[style*="background-color: #f8f9fa"],
+html:not(.dark) div[style*="background-color: #f3f4f6"],
+html:not(.dark) div[style*="background-color: rgb(250, 250, 250)"],
+html:not(.dark) div[style*="background-color: rgb(249, 250, 251)"],
+html:not(.dark) div[style*="background: #fff"],
+html:not(.dark) div[style*="background-color: #ffffff"],
+html:not(.dark) div[style*="background-color: #fff"] {
+  background-color: hsl(var(--background)) !important;
+}
+
+/* ============================================================================
+   HOVER STATES: Search results, list items
+   ============================================================================ */
+
+html:not(.dark) .hover\:bg-gray-50:hover,
+html:not(.dark) .hover\:bg-gray-100:hover,
+html:not(.dark) .hover\:bg-gray-200:hover,
+html:not(.dark) .hover\:bg-gray-300:hover,
+html:not(.dark) .hover\:bg-slate-50:hover,
+html:not(.dark) .hover\:bg-slate-100:hover,
+html:not(.dark) .hover\:bg-slate-200:hover,
+html:not(.dark) .hover\:bg-slate-300:hover,
+html:not(.dark) .hover\:bg-zinc-50:hover,
+html:not(.dark) .hover\:bg-zinc-100:hover,
+html:not(.dark) .hover\:bg-zinc-200:hover,
+html:not(.dark) .hover\:bg-zinc-300:hover {
+  background-color: hsl(var(--muted)) !important;
+}
+
+html:not(.dark) .text-legacy-main {
+  color: hsl(var(--primary)) !important;
+}
+
+html:not(.dark) .stroke-legacy-main {
+  stroke: hsl(var(--primary)) !important;
+}
+
+html:not(.dark) .fill-legacy-main {
+  fill: hsl(var(--primary)) !important;
+}
+
+html:not(.dark) .border-b-2.border-legacy-main {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+html:not(.dark) .border-legacy-main {
+  border-color: hsl(var(--primary)) !important;
 }
 
 html:not(.dark) a.text-legacy-main:hover,
 html:not(.dark) button.text-legacy-main:hover,
 html:not(.dark) .text-legacy-main[role="button"]:hover {
-  background-color: #00babc !important;
-  color: #fff !important;
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
 }
 
 html:not(.dark) .hover\:bg-gray-300 a.text-legacy-main:hover,
@@ -15,21 +192,115 @@ html:not(.dark) .hover\:bg-zinc-300 a.text-legacy-main:hover {
   background-color: transparent !important;
 }
 
-html:not(.dark) .stroke-legacy-main {
-  stroke: #00babc !important;
+/* ============================================================================
+   DIALOG: Evaluation points
+   ============================================================================ */
+
+html:not(.dark) div[role="alertdialog"],
+html:not(.dark) div.alert-dialog-content {
+  background-color: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
 }
 
-html:not(.dark) .fill-legacy-main {
-  fill: #00babc !important;
+html:not(.dark) .alert-dialog-overlay {
+  background-color: rgba(0, 0, 0, 0.3) !important;
 }
 
-html:not(.dark) .ft-contacts-card a {
-  color: #fff !important;
+html:not(.dark) .alert-dialog-title {
+  color: hsl(var(--foreground)) !important;
 }
 
-html:not(.dark) .ft-contacts-card button {
-  color: #fff !important;
-  background: transparent !important;
-  border: 1px solid #3b82f6 !important;
-  font-size: 1rem !important;
+html:not(.dark) div[role="alertdialog"] legend,
+html:not(.dark) div[role="alertdialog"] fieldset,
+html:not(.dark) div[role="alertdialog"] p {
+  color: hsl(var(--foreground)) !important;
+}
+
+html:not(.dark) div[role="alertdialog"] label.rounded-full.bg-legacy-main {
+  background-color: hsl(var(--primary)) !important;
+  border: 2px solid hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+html:not(.dark) div[role="alertdialog"] label.rounded-full.bg-legacy-main.selected,
+html:not(.dark) div[role="alertdialog"] label.rounded-full.bg-legacy-main[data-selected="true"] {
+  outline: 2px solid hsl(var(--primary)) !important;
+  outline-offset: 2px !important;
+}
+
+html:not(.dark) div[role="alertdialog"] button.button.bg-gray-400 {
+  color: hsl(var(--foreground)) !important;
+}
+
+html:not(.dark) div[role="alertdialog"] button.button.bg-gray-400:hover {
+  filter: brightness(0.85) !important;
+}
+
+html:not(.dark) div[role="alertdialog"] button.button.bg-black {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border: 1px solid hsl(var(--primary)) !important;
+}
+
+html:not(.dark) div[role="alertdialog"] button.button.bg-black:hover {
+  filter: brightness(1.1) !important;
+}
+
+html:not(.dark) div[role="alertdialog"] button.button.bg-black:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  filter: none !important;
+}
+
+/* ============================================================================
+   SVG & SIDEBAR NAV
+   ============================================================================ */
+
+html:not(.dark) .flex.flex-row.items-center.justify-between svg path,
+html:not(.dark) .flex.flex-row.items-center.justify-between svg line {
+  stroke: hsl(var(--foreground)) !important;
+}
+
+html:not(.dark) .hover\:opacity-100:hover svg path,
+html:not(.dark) .hover\:opacity-100:hover svg line,
+html:not(.dark) .hover\:opacity-100:hover svg circle {
+  stroke: hsl(var(--primary)) !important;
+}
+
+/* ============================================================================
+   MILESTONE / COMMON CORE ETA
+   ============================================================================ */
+
+html:not(.dark) .bg-legacy-main {
+  background-color: hsl(var(--primary)) !important;
+}
+
+html:not(.dark) .bg-legacy-main-muted {
+  background-color: hsl(var(--muted)) !important;
+}
+
+html:not(.dark) .border-b-legacy-main-border {
+  border-bottom-color: hsl(var(--border)) !important;
+}
+
+html:not(.dark) .border-\[hsla\(0\,_0\%\,_20\%\,_1\)\] {
+  border-color: hsl(var(--border)) !important;
+}
+
+html:not(.dark) .bg-legacy-main .text-white {
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+html:not(.dark) .bg-legacy-main-muted .text-white {
+  color: hsl(var(--foreground)) !important;
+}
+
+html:not(.dark) .bg-\[rgb\(23\,23\,23\)\] {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+html:not(.dark) .bg-ft-black {
+  background-color: hsl(var(--muted)) !important;
 }

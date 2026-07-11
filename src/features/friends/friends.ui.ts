@@ -46,7 +46,8 @@ function renderLevelBar(level: number, color = "var(--color-primary)") {
           style="width:${pct}%; background:${color};"
         ></div>
         <span
-          class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-base-content/70 mix-blend-difference leading-none"
+          class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white leading-none"
+          style="text-shadow: 0 0 3px rgba(0,0,0,0.7);"
           >${pct}%</span
         >
       </div>
@@ -64,10 +65,13 @@ function renderFriendRow(
   showCustomAvatars = true,
 ) {
   const medalClass =
-    rank === 0 ? "medal-glow-gold"
-    : rank === 1 ? "medal-glow-silver"
-    : rank === 2 ? "medal-glow-rainbow"
-    : "";
+    rank === 0
+      ? "medal-glow-gold"
+      : rank === 1
+        ? "medal-glow-silver"
+        : rank === 2
+          ? "medal-glow-rainbow"
+          : "";
   const hasCustom = !!(
     showCustomAvatars &&
     friend.customAvatar &&
@@ -171,9 +175,7 @@ function renderFriendRow(
     >
       <!-- Login + display name + status inline -->
       <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
-        <span class="font-bold text-base"
-          >${friend.login}</span
-        >
+        <span class="font-bold text-base">${friend.login}</span>
         ${friend.displayName && friend.displayName !== friend.login
           ? html`<span class="text-xs opacity-70 truncate"
               >${friend.displayName}</span
@@ -704,7 +706,12 @@ export async function injectFriendsWidget() {
 
   const effectiveTheme = await getEffectiveTheme();
   const presetKey = await getConfig("PROFILE_THEME_PRESET");
-  const daisyTheme = effectiveTheme === "light" ? "light" : (presetKey && presetKey !== "dark" ? presetKey : "dark");
+  const daisyTheme =
+    presetKey !== "dark" && presetKey !== "light"
+      ? presetKey
+      : effectiveTheme === "light"
+        ? "light"
+        : "dark";
 
   _state = {
     open: false,
@@ -822,7 +829,8 @@ export async function injectFriendsWidget() {
 
   renderWidgetUI();
 
-  const pendingPull = (await chrome.storage.local.get("PENDING_SETTINGS_PULL")).PENDING_SETTINGS_PULL;
+  const pendingPull = (await chrome.storage.local.get("PENDING_SETTINGS_PULL"))
+    .PENDING_SETTINGS_PULL;
   if (pendingPull) {
     await chrome.storage.local.remove("PENDING_SETTINGS_PULL");
     const settings = await fetchMySettings();

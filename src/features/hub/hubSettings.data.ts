@@ -318,7 +318,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
         { label: "Sunset", value: "sunset", color: "16 100% 68%" },
         { label: "Luxury", value: "luxury", color: "0 0% 100%" },
         { label: "Cyberpunk", value: "cyberpunk", color: "341 100% 70%" },
-        { label: "Dim", value: "dim", color: "108 66% 73%" },
+        { label: "Arthur", value: "dim", color: "108 66% 73%" },
         { label: "Black", value: "black", color: "0 0% 23%" },
         { label: "Coffee", value: "coffee", color: "30 66% 58%" },
         { label: "Aqua", value: "aqua", color: "182 90% 51%" },

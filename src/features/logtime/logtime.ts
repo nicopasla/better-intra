@@ -61,7 +61,9 @@ function groupEventsByDate(
 ): Record<string, CalendarEvent[]> {
   const byDate: Record<string, CalendarEvent[]> = {};
   for (const ev of events) {
-    const dateKey = ev.begin_at.slice(0, 10);
+    const iso = ev.begin_at.endsWith("Z") ? ev.begin_at : ev.begin_at + "Z";
+    const d = new Date(iso);
+    const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     if (!byDate[dateKey]) byDate[dateKey] = [];
     byDate[dateKey].push(ev);
   }

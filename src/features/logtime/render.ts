@@ -67,7 +67,9 @@ function renderDayCell(
                     rel="noreferrer"
                     style="color:${color};font-weight:600;text-decoration:none"
                     >${e.kind === "exam" ? "📚 " : "📅 "}${e.name} —
-                    ${new Date(e.begin_at).toLocaleTimeString("en-US", {
+                    ${new Date(
+                      e.begin_at.endsWith("Z") ? e.begin_at : e.begin_at + "Z",
+                    ).toLocaleTimeString("en-US", {
                       hour: "2-digit",
                       minute: "2-digit",
                       hour12: false,

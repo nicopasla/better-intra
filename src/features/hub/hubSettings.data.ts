@@ -310,6 +310,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       options: [
         { label: "Dark" },
         { label: "Default Dark", value: "dark", color: "199 89% 48%" },
+        { label: "Neon", value: "neon", color: "324 100% 50%" },
         { label: "Synthwave", value: "synthwave", color: "327 92% 68%" },
         { label: "Forest", value: "forest", color: "141 71% 42%" },
         { label: "Halloween", value: "halloween", color: "34 100% 50%" },
@@ -344,6 +345,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
         { label: "Nord", value: "nord", color: "211 37% 54%" },
         { label: "Caramellatte", value: "caramellatte", color: "0 0% 0%" },
         { label: "Silk", value: "silk", color: "230 21% 23%" },
+        { label: "Soap", value: "soap", color: "4 68% 66%" },
+        { label: "Citrus", value: "citrus", color: "51 100% 50%" },
       ],
     },
     {

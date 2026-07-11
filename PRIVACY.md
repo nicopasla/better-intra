@@ -54,7 +54,7 @@ The Cloudflare Worker runs a cron job every 10 minutes to check for evaluation s
 
 - `storage` — to save and load settings locally
 - `activeTab` — to interact with the 42 Intra page
-- `https://better-intra-worker.nicopasla.workers.dev/` — to communicate with the extension's Cloudflare Worker for optional cloud features
+- `https://worker.betterintra.com/` — to communicate with the extension's Cloudflare Worker for optional cloud features
 
 ## Changes to This Policy
 

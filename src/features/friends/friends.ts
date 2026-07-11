@@ -1,7 +1,7 @@
 import { getConfig } from "../../config.ts";
 import { hashLogin } from "../account/account.ts";
 
-const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
+const WORKER_URL = "https://worker.betterintra.com";
 
 export interface FriendData {
   login: string;
@@ -55,11 +55,20 @@ export async function isFriend(login: string): Promise<boolean> {
 const CACHE_KEY = "FRIENDS_DATA_CACHE";
 const CACHE_TTL = 30_000;
 
-async function getCachedData(): Promise<{ data: FriendData[]; timestamp: number } | null> {
+async function getCachedData(): Promise<{
+  data: FriendData[];
+  timestamp: number;
+} | null> {
   try {
-    const raw = await chrome.storage.local.get(CACHE_KEY) as Record<string, unknown>;
-    const val = raw[CACHE_KEY] as { data: FriendData[]; timestamp: number } | undefined;
-    if (val && Array.isArray(val.data) && typeof val.timestamp === "number") return val;
+    const raw = (await chrome.storage.local.get(CACHE_KEY)) as Record<
+      string,
+      unknown
+    >;
+    const val = raw[CACHE_KEY] as
+      | { data: FriendData[]; timestamp: number }
+      | undefined;
+    if (val && Array.isArray(val.data) && typeof val.timestamp === "number")
+      return val;
     return null;
   } catch {
     return null;
@@ -96,7 +105,9 @@ export async function fetchFriendsData(
       if (res.status === 401) {
         await chrome.storage.local.set({ CLOUD_AUTH_FAILED: true });
       }
-      return res.ok ? ((await res.json()) as { friends?: FriendData[] }).friends ?? [] : [];
+      return res.ok
+        ? (((await res.json()) as { friends?: FriendData[] }).friends ?? [])
+        : [];
     } catch {
       return [];
     }

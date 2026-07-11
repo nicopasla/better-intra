@@ -7,7 +7,7 @@ import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 import { hashLogin } from "../../utils/crypto";
 import { loginWith42, clearAuthFailed } from "../account/account.ts";
 
-const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
+const WORKER_URL = "https://worker.betterintra.com";
 
 type StepState = "locked" | "active" | "done";
 

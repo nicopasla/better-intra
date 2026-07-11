@@ -7,7 +7,7 @@ import CALENDAR_PLUS_SVG from "../../assets/svg/calendar-plus.svg?raw";
 import COPY_SVG from "../../assets/svg/copy.svg?raw";
 import SYNC_SVG from "../../assets/svg/sync.svg?raw";
 
-const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
+const WORKER_URL = "https://worker.betterintra.com";
 const TOKEN_KEY = "CALENDAR_SYNC_TOKEN";
 
 function calUrl(token: string): string {

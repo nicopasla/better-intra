@@ -2,7 +2,7 @@ import { getConfig } from "../../config.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { hashLogin } from "../../utils/crypto.ts";
 
-const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
+const WORKER_URL = "https://worker.betterintra.com";
 const CARD_ID = "ft-roulette-card";
 
 let rouletteStatsInitialized = false;
@@ -138,7 +138,8 @@ function buildRouletteSection(
   winNum.className = "text-2xl font-bold text-blue-600";
   winNum.textContent = String(wins);
   const winLabel = document.createElement("span");
-  winLabel.className = "text-sm font-semibold opacity-70 uppercase tracking-wide";
+  winLabel.className =
+    "text-sm font-semibold opacity-70 uppercase tracking-wide";
   winLabel.textContent = "Wins";
   winCol.appendChild(winLabel);
   winCol.appendChild(winNum);
@@ -151,7 +152,8 @@ function buildRouletteSection(
   ptsNum.className = "text-2xl font-bold text-green-600";
   ptsNum.textContent = String(points);
   const ptsLabel = document.createElement("span");
-  ptsLabel.className = "text-sm font-semibold opacity-70 uppercase tracking-wide";
+  ptsLabel.className =
+    "text-sm font-semibold opacity-70 uppercase tracking-wide";
   ptsLabel.textContent = "Points";
   ptsCol.appendChild(ptsLabel);
   ptsCol.appendChild(ptsNum);
@@ -170,7 +172,8 @@ function buildRouletteSection(
     "font-variant-numeric: tabular-nums; font-feature-settings: 'tnum';";
   countdownText.textContent = formatCountdownText();
   const nextLabel = document.createElement("span");
-  nextLabel.className = "text-sm font-semibold opacity-70 uppercase tracking-wide";
+  nextLabel.className =
+    "text-sm font-semibold opacity-70 uppercase tracking-wide";
   nextLabel.textContent = "Next draw";
   nextRow.appendChild(nextLabel);
   nextRow.appendChild(countdownText);
@@ -242,8 +245,7 @@ function buildEvalStatsSection(data: EvalStatsData): HTMLElement {
       "bg-gray-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg z-50 pointer-events-none w-64";
     tooltipEl.textContent =
       "Shows how many times you acted as a corrector (evaluator) per month, and how many of those evaluations failed — with the success percentage";
-    tooltipEl.style.cssText =
-      `position: fixed; left: ${rect.left}px; bottom: ${window.innerHeight - rect.top + 8}px;`;
+    tooltipEl.style.cssText = `position: fixed; left: ${rect.left}px; bottom: ${window.innerHeight - rect.top + 8}px;`;
     document.body.appendChild(tooltipEl);
   });
   title.addEventListener("mouseleave", () => {
@@ -263,11 +265,13 @@ function buildEvalStatsSection(data: EvalStatsData): HTMLElement {
     const badge = document.createElement("span");
     badge.style.cssText = containerStyle;
     const labelEl = document.createElement("span");
-    labelEl.className = "text-sm font-semibold opacity-70 uppercase tracking-wide";
+    labelEl.className =
+      "text-sm font-semibold opacity-70 uppercase tracking-wide";
     labelEl.textContent = label;
     badge.appendChild(labelEl);
     const valueEl = document.createElement("span");
-    valueEl.style.cssText = "font-size: 20px; font-weight: 700; margin-left: 6px;";
+    valueEl.style.cssText =
+      "font-size: 20px; font-weight: 700; margin-left: 6px;";
     valueEl.textContent = value;
     badge.appendChild(valueEl);
     return badge;
@@ -275,9 +279,7 @@ function buildEvalStatsSection(data: EvalStatsData): HTMLElement {
 
   if (data.global.successPercentage !== null) {
     const color =
-      data.global.successPercentage >= 80
-        ? "rgb(34,197,94)"
-        : "rgb(239,68,68)";
+      data.global.successPercentage >= 80 ? "rgb(34,197,94)" : "rgb(239,68,68)";
     const badge = document.createElement("span");
     badge.style.cssText = `font-size: 20px; font-weight: 700; padding: 8px 16px; border-radius: 10px; color: ${color}; background: rgba(${data.global.successPercentage >= 80 ? "34,197,94" : "239,68,68"},0.1);`;
     badge.textContent = `${data.global.successPercentage}%`;

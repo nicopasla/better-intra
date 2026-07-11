@@ -1,6 +1,6 @@
 ﻿import { hashLogin } from "./utils/crypto";
 
-const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
+const WORKER_URL = "https://worker.betterintra.com";
 
 chrome.runtime.onInstalled.addListener(() => {
   syncDiscord();

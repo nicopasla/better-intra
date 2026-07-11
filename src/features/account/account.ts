@@ -4,7 +4,7 @@ import { hashLogin } from "../../utils/crypto.ts";
 
 export { hashLogin };
 
-const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
+const WORKER_URL = "https://worker.betterintra.com/";
 
 async function handleAuthResponse(response: Response): Promise<boolean> {
   if (response.status === 401) {
@@ -23,7 +23,9 @@ export async function clearAuthFailed(): Promise<void> {
  * It listens for a message from the popup to receive the session token upon success.
  * @param onSuccess Optional callback to run after a successful login.
  */
-export async function loginWith42(onSuccess?: () => void | Promise<void>): Promise<void> {
+export async function loginWith42(
+  onSuccess?: () => void | Promise<void>,
+): Promise<void> {
   const extensionFakeCallback = window.location.href;
   const authUrl = `${WORKER_URL}/login?redirect_uri=${encodeURIComponent(extensionFakeCallback)}`;
 
@@ -211,7 +213,9 @@ export async function syncMyVisuals(visuals: {
  * @param login The target user's 42 login.
  * @returns A promise that resolves to the user's visual settings, or null on failure.
  */
-export async function fetchUserVisuals(login: string): Promise<VisualUrls | null> {
+export async function fetchUserVisuals(
+  login: string,
+): Promise<VisualUrls | null> {
   try {
     const hashedTarget = await hashLogin(login);
     const response = await fetch(
@@ -261,7 +265,8 @@ export async function fetchMySettings(): Promise<Partial<BetterIntraConfig> | nu
       (settings as Record<string, unknown>).DISCORD_ID = data.discordId;
     }
     if (data.discordUsername) {
-      (settings as Record<string, unknown>).DISCORD_USERNAME = data.discordUsername;
+      (settings as Record<string, unknown>).DISCORD_USERNAME =
+        data.discordUsername;
     }
     return settings as Partial<BetterIntraConfig>;
   } catch (error) {
@@ -346,7 +351,9 @@ export async function applyCloudSettings(
 
   for (const key of CLOUD_SYNC_KEYS) {
     if (key in cloudData) {
-      (dataToSave as Record<string, unknown>)[key] = (cloudData as Record<string, unknown>)[key];
+      (dataToSave as Record<string, unknown>)[key] = (
+        cloudData as Record<string, unknown>
+      )[key];
     }
   }
 

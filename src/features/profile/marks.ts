@@ -4,7 +4,7 @@ import { getCloudLogin } from "../account/account.ts";
 import { hashLogin } from "../../utils/crypto.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
 
-const WORKER_URL = "https://better-intra-worker.nicopasla.workers.dev";
+const WORKER_URL = "https://worker.betterintra.com";
 
 interface MarkedProject {
   projects_user_id: number;

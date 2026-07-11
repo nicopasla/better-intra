@@ -64,6 +64,7 @@ export const FEATURE_DEFS = [
     name: "Advanced",
     icon: ADVANCED_SVG,
     desc: "General behavior settings.",
+    cols: 2,
   },
   {
     id: "about",
@@ -122,6 +123,7 @@ export type HubSettingDef = {
   step?: number;
   placeholder?: string;
   actionLabel?: string;
+  actionType?: "export" | "import" | "reset";
 };
 
 export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
@@ -252,16 +254,6 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "color",
       placeholder: "#26a641",
       defaultValue: CONFIG_DEFAULT.LOGTIME_LABELS_COLOR,
-      grid: true,
-      colSpan: 1,
-    },
-    {
-      feature: "logtime",
-      key: "DISABLE_ANIMATIONS",
-      label: "Disable Animations",
-      desc: "Removes transition effects.",
-      kind: "toggle",
-      defaultValue: CONFIG_DEFAULT.DISABLE_ANIMATIONS,
       grid: true,
       colSpan: 1,
     },
@@ -622,9 +614,51 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       feature: "advanced",
       key: "ADVANCED_OPEN_LINKS_NEW_TAB",
       label: "Open links in new tab",
-      desc: "External links from Better Intra will open in a new tab instead of the current one.",
+      desc: "External links from Better Intra open in a new tab instead of the current one.",
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.ADVANCED_OPEN_LINKS_NEW_TAB,
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "advanced",
+      key: "DISABLE_ANIMATIONS",
+      label: "Disable animations",
+      desc: "Removes transition effects across all Better Intra features.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.DISABLE_ANIMATIONS,
+      grid: true,
+      colSpan: 1,
+    },
+    { feature: "advanced", label: "Backup", kind: "divider" },
+    {
+      feature: "advanced",
+      label: "Export settings",
+      desc: "Download all your Better Intra settings as a JSON file.",
+      kind: "action",
+      actionType: "export",
+      actionLabel: "Export",
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "advanced",
+      label: "Import settings",
+      desc: "Restore settings from a previously exported backup file.",
+      kind: "action",
+      actionType: "import",
+      actionLabel: "Import",
+      grid: true,
+      colSpan: 1,
+    },
+    { feature: "advanced", label: "Reset", kind: "divider" },
+    {
+      feature: "advanced",
+      label: "Reset all data",
+      desc: "Clear all Better Intra settings and start fresh. This cannot be undone.",
+      kind: "action",
+      actionType: "reset",
+      actionLabel: "Reset",
     },
   ],
 };

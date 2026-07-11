@@ -554,6 +554,64 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
               saveSetting(def.key!, (e.target as HTMLInputElement).value)}"
           />`;
 
+        case "action": {
+          const { actionType, actionLabel } = def as {
+            actionType?: string;
+            actionLabel?: string;
+          };
+          return html`<button
+            type="button"
+            class="btn btn-sm ${actionType === "reset" ? "btn-error" : "btn-primary"} font-bold"
+            @click="${() => {
+              if (actionType === "export") {
+                chrome.storage.local.get(null, (items) => {
+                  const configKeys = new Set(Object.keys(CONFIG_DEFAULT));
+                  const exclude = new Set(["FRIENDS_DATA_CACHE", "CALENDAR_EVENTS_HASH"]);
+                  const filtered: Record<string, unknown> = {};
+                  for (const [k, v] of Object.entries(items)) {
+                    if (configKeys.has(k) && !exclude.has(k)) filtered[k] = v;
+                  }
+                  const blob = new Blob([JSON.stringify(filtered, null, 2)], {
+                    type: "application/json",
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "better-intra-settings.json";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                });
+              } else if (actionType === "import") {
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = ".json";
+                input.onchange = async () => {
+                  const file = input.files?.[0];
+                  if (!file) return;
+                  try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+                    await chrome.storage.local.set(data);
+                    location.reload();
+                  } catch {
+                    alert("Invalid backup file.");
+                  }
+                };
+                input.click();
+              } else if (actionType === "reset") {
+                if (confirm("This will clear ALL Better Intra settings and reload. Continue?")) {
+                  void (async () => {
+                    await chrome.storage.local.clear();
+                    location.reload();
+                  })();
+                }
+              }
+            }}"
+          >
+            ${actionLabel || "Action"}
+          </button>`;
+        }
+
         case "emoji":
         default:
           return html`<input
@@ -728,7 +786,7 @@ function renderTabsContent(
                 <button
                   type="button"
                   class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
-                  @click="${() => {
+            @click="${async () => {
                     loginWith42(async () => {
                       await clearAuthFailed();
                       window.location.reload();

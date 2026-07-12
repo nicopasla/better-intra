@@ -1,13 +1,19 @@
 import { getConfig } from "../../config.ts";
 
+async function isBelgium(): Promise<boolean> {
+  const campus = await getConfig("CLUSTERS_CAMPUS");
+  return campus === "12";
+}
+
 export async function findSlotsButton() {
-  const slots_redirection = await getConfig("PROFILE_SLOTS_REDIRECTION");
+  const belgium = await isBelgium();
+  if (!belgium) return;
 
   const slotsBtn = document.querySelector(
     'a[href="https://profile.intra.42.fr/slots"]',
   ) as HTMLAnchorElement | null;
 
-  if (slotsBtn && slots_redirection && !slotsBtn.dataset.customized) {
+  if (slotsBtn && !slotsBtn.dataset.customized) {
     slotsBtn.href = "https://slots.42belgium.be/slots";
     slotsBtn.target = "_blank";
     slotsBtn.rel = "noopener noreferrer";
@@ -16,8 +22,8 @@ export async function findSlotsButton() {
 }
 
 export async function redirectDefenseLinks() {
-  const slots_redirection = await getConfig("PROFILE_SLOTS_REDIRECTION");
-  if (!slots_redirection) return;
+  const belgium = await isBelgium();
+  if (!belgium) return;
 
   const links = document.querySelectorAll(
     'a[href*="/slots?team_id="]',

@@ -419,16 +419,6 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
-      key: "PROFILE_SLOTS_REDIRECTION",
-      label: "Slots button redirection",
-      desc: "Redirects the 'Manage slots' button to the proper Slots webpage.",
-      kind: "toggle",
-      defaultValue: CONFIG_DEFAULT.PROFILE_SLOTS_REDIRECTION,
-      grid: true,
-      colSpan: 1,
-    },
-    {
-      feature: "profile",
       key: "PROFILE_PROJECTS_SORT",
       label: "Projects sort",
       desc: "Adds a sort dropdown to the Marks list on user profiles.",

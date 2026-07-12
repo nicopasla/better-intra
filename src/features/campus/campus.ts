@@ -17,6 +17,28 @@ const CACHE_PREFIX = "CAMPUS_DATA_";
 const MANIFEST_CACHE_KEY = "CAMPUS_MANIFEST";
 const CACHE_TTL = 60 * 60 * 1000;
 
+let campusListenerInstalled = false;
+
+function installCampusDetectedListener(): void {
+  if (campusListenerInstalled) return;
+  campusListenerInstalled = true;
+
+  document.addEventListener("42_CAMPUS_DETECTED", async (e) => {
+    if (location.pathname.includes("/users/")) return;
+    const campusId = (e as CustomEvent).detail as string;
+    await chrome.storage.local.set({
+      CLUSTERS_CAMPUS: campusId,
+      CLUSTERS_CAMPUS_AUTO: true,
+    });
+    if (CLUSTERS.length === 0) {
+      try {
+        const data = await loadCampusData(campusId);
+        CLUSTERS = data.clusters;
+      } catch {}
+    }
+  });
+}
+
 export async function fetchCampusList(): Promise<CampusManifest> {
   const cached = await chrome.storage.local.get(MANIFEST_CACHE_KEY);
   const cachedData = cached[MANIFEST_CACHE_KEY] as
@@ -54,9 +76,11 @@ export async function loadCampusData(
   return data;
 }
 
-export async function detectCampus(): Promise<string | null> {
+export async function detectCampus(
+  providedToken?: string,
+): Promise<string | null> {
   try {
-    const token = sessionStorage.getItem("ft_intrapy_token");
+    const token = providedToken || sessionStorage.getItem("ft_intrapy_token");
     if (!token) return null;
     const res = await fetch(
       "https://intrapy.intra.42.fr/api/v1/users/me/campus",
@@ -74,27 +98,17 @@ export async function detectCampus(): Promise<string | null> {
   }
 }
 
-const CAMPUS_LOADED_KEY = "ft_campus_data_loaded";
-
 export async function ensureCampusData(): Promise<void> {
-  if (sessionStorage.getItem(CAMPUS_LOADED_KEY)) return;
-  sessionStorage.setItem(CAMPUS_LOADED_KEY, "1");
+  installCampusDetectedListener();
 
-  let campus = await getConfig("CLUSTERS_CAMPUS");
-  if (!campus || campus === "") {
-    const detected = await detectCampus();
-    if (detected) {
-      await chrome.storage.local.set({
-        CLUSTERS_CAMPUS: detected,
-        CLUSTERS_CAMPUS_AUTO: true,
-      });
-      campus = detected;
+  const campus = await getConfig("CLUSTERS_CAMPUS");
+  if (campus && campus !== "") {
+    if (CLUSTERS.length === 0) {
+      try {
+        const data = await loadCampusData(campus);
+        CLUSTERS = data.clusters;
+      } catch {}
     }
-  }
-
-  if (campus && campus !== "" && CLUSTERS.length === 0) {
-    const data = await loadCampusData(campus);
-    CLUSTERS = data.clusters;
   }
 }
 

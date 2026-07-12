@@ -39,9 +39,7 @@ async function saveSetting(key: string, value: unknown): Promise<void> {
 
 import { fetchCampusList, fetchEventTypes } from "../clusters/clusters.data.ts";
 import { CLUSTERS, ensureCampusData } from "../campus/campus.ts";
-import { renderCampusCard } from "../campus/campus.ui.ts";
 
-let campusAutoDetected = false;
 let dynamicCampusOptions: { label: string; value: string }[] = [];
 let dynamicEventTypeOptions: { label: string; value: string }[] = [];
 
@@ -381,10 +379,17 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
           const options =
             def.key === "CLUSTERS_CAMPUS" && dynamicCampusOptions.length > 0
               ? dynamicCampusOptions
-              : def.key === "PROFILE_EVENT_TYPE_FILTER" && dynamicEventTypeOptions.length > 0
-                ? [{ label: "Show All", value: "all" }, ...dynamicEventTypeOptions]
+              : def.key === "PROFILE_EVENT_TYPE_FILTER" &&
+                  dynamicEventTypeOptions.length > 0
+                ? [
+                    { label: "Show All", value: "all" },
+                    ...dynamicEventTypeOptions,
+                  ]
                 : def.key === "CLUSTERS_DEFAULT_ID" && CLUSTERS.length > 0
-                  ? CLUSTERS.map((c) => ({ label: c.name.toUpperCase(), value: c.id }))
+                  ? CLUSTERS.map((c) => ({
+                      label: c.name.toUpperCase(),
+                      value: c.id,
+                    }))
                   : (def.options ?? []);
           return html`<select
             class="select select-accent w-60"
@@ -420,8 +425,12 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
 
         case "radio-group": {
           const options =
-            def.key === "PROFILE_EVENT_TYPE_FILTER" && dynamicEventTypeOptions.length > 0
-              ? [{ label: "Show All", value: "all" }, ...dynamicEventTypeOptions]
+            def.key === "PROFILE_EVENT_TYPE_FILTER" &&
+            dynamicEventTypeOptions.length > 0
+              ? [
+                  { label: "Show All", value: "all" },
+                  ...dynamicEventTypeOptions,
+                ]
               : (def.options ?? []);
           return html`<div class="flex flex-wrap gap-2 sm:gap-4">
             ${options.map(
@@ -581,14 +590,77 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             actionType?: string;
             actionLabel?: string;
           };
+
+          if (actionType === "backup") {
+            return html`<div class="flex gap-2">
+              <button
+                type="button"
+                class="btn btn-sm btn-primary font-bold"
+                @click="${() => {
+                  chrome.storage.local.get(null, (items) => {
+                    const configKeys = new Set(Object.keys(CONFIG_DEFAULT));
+                    const exclude = new Set([
+                      "FRIENDS_DATA_CACHE",
+                      "CALENDAR_EVENTS_HASH",
+                    ]);
+                    const filtered: Record<string, unknown> = {};
+                    for (const [k, v] of Object.entries(items)) {
+                      if (configKeys.has(k) && !exclude.has(k)) filtered[k] = v;
+                    }
+                    const blob = new Blob([JSON.stringify(filtered, null, 2)], {
+                      type: "application/json",
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "better-intra-settings.json";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  });
+                }}"
+              >
+                Export
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-primary font-bold"
+                @click="${() => {
+                  const input = document.createElement("input");
+                  input.type = "file";
+                  input.accept = ".json";
+                  input.onchange = async () => {
+                    const file = input.files?.[0];
+                    if (!file) return;
+                    try {
+                      const text = await file.text();
+                      const data = JSON.parse(text);
+                      await chrome.storage.local.set(data);
+                      location.reload();
+                    } catch {
+                      alert("Invalid backup file.");
+                    }
+                  };
+                  input.click();
+                }}"
+              >
+                Import
+              </button>
+            </div>`;
+          }
+
           return html`<button
             type="button"
-            class="btn btn-sm ${actionType === "reset" ? "btn-error" : "btn-primary"} font-bold"
+            class="btn btn-sm ${actionType === "reset"
+              ? "btn-error"
+              : "btn-primary"} font-bold"
             @click="${() => {
               if (actionType === "export") {
                 chrome.storage.local.get(null, (items) => {
                   const configKeys = new Set(Object.keys(CONFIG_DEFAULT));
-                  const exclude = new Set(["FRIENDS_DATA_CACHE", "CALENDAR_EVENTS_HASH"]);
+                  const exclude = new Set([
+                    "FRIENDS_DATA_CACHE",
+                    "CALENDAR_EVENTS_HASH",
+                  ]);
                   const filtered: Record<string, unknown> = {};
                   for (const [k, v] of Object.entries(items)) {
                     if (configKeys.has(k) && !exclude.has(k)) filtered[k] = v;
@@ -621,7 +693,11 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                 };
                 input.click();
               } else if (actionType === "reset") {
-                if (confirm("This will clear ALL Better Intra settings and reload. Continue?")) {
+                if (
+                  confirm(
+                    "This will clear ALL Better Intra settings and reload. Continue?",
+                  )
+                ) {
                   void (async () => {
                     await chrome.storage.local.clear();
                     location.reload();
@@ -634,12 +710,16 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
           </button>`;
         }
 
-        case "campus-selector":
-          return renderCampusCard(
-            dynamicCampusOptions,
-            String(value || ""),
-            campusAutoDetected,
-          );
+        case "campus-info": {
+          const campusId = await getConfig("CLUSTERS_CAMPUS");
+          const campusName = campusId
+            ? dynamicCampusOptions.find((c) => c.value === campusId)?.label ||
+              campusId
+            : "Not detected";
+          return html`<span class="badge badge-info badge-lg text-base"
+            >${campusName}</span
+          >`;
+        }
 
         case "emoji":
         default:
@@ -696,11 +776,7 @@ function renderSetting(def: HubSettingDef, enabled: boolean, hidden?: boolean) {
         : "flex-col sm:flex-row sm:items-center"} justify-between gap-3 sm:gap-4"
     >
       <div class="flex flex-col">
-        <span class="text-sm"
-          >${def.label}${def.key === "CLUSTERS_CAMPUS" && campusAutoDetected
-            ? html`<span class="text-success ml-1 font-bold">✓</span>`
-            : ""}</span
-        >
+        <span class="text-sm">${def.label}</span>
         ${def.desc
           ? html`<span class="text-xs opacity-50">${def.desc}</span>`
           : ""}
@@ -819,7 +895,7 @@ function renderTabsContent(
                 <button
                   type="button"
                   class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
-            @click="${async () => {
+                  @click="${async () => {
                     loginWith42(async () => {
                       await clearAuthFailed();
                       window.location.reload();
@@ -950,13 +1026,20 @@ async function createModal(active: FeatureId[]): Promise<void> {
   }
   await ensureCampusData();
   try {
-    const campus = (await getConfig("CLUSTERS_CAMPUS")) || "12";
-    dynamicEventTypeOptions = await fetchEventTypes(campus);
+    const campus = await getConfig("CLUSTERS_CAMPUS");
+    if (!campus) {
+      dynamicEventTypeOptions = [];
+    } else {
+      try {
+        dynamicEventTypeOptions = await fetchEventTypes(campus);
+      } catch {
+        dynamicEventTypeOptions = [];
+      }
+    }
   } catch {
     dynamicEventTypeOptions = [];
   }
   const tabsContent = renderTabsContent(active, disabledDeps, hiddenDeps);
-  campusAutoDetected = await getConfig("CLUSTERS_CAMPUS_AUTO");
   const lastSync = (await chrome.storage.local.get("LAST_CLOUD_SYNC"))
     .LAST_CLOUD_SYNC;
   const isConnected = !!(await getConfig("CLOUD_TOKEN"));
@@ -1029,7 +1112,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
             >
             <button
               class="btn btn-warning btn-sm font-bold"
-            @click="${() => {
+              @click="${() => {
                 dialog.close();
                 loginWith42(async () => {
                   await clearAuthFailed();

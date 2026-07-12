@@ -96,7 +96,7 @@ export type SettingKind =
   | "discord-panel"
   | "calendar-panel"
   | "theme-preset"
-  | "campus-selector";
+  | "campus-info";
 
 export { INTRA_FONT } from "../logtime/constants.ts";
 
@@ -124,7 +124,7 @@ export type HubSettingDef = {
   step?: number;
   placeholder?: string;
   actionLabel?: string;
-  actionType?: "export" | "import" | "reset" | "detect-campus" | "clear-campus";
+  actionType?: "export" | "import" | "reset" | "backup";
 };
 
 export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
@@ -260,14 +260,6 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
   ],
   clusters: [
-    {
-      feature: "clusters",
-      key: "CLUSTERS_CAMPUS",
-      label: "Campus",
-      desc: "Select your campus to load the correct cluster maps and data.",
-      kind: "campus-selector",
-      fullWidth: true,
-    },
     {
       feature: "clusters",
       key: "CLUSTERS_SHOW_MARKERS",
@@ -621,24 +613,22 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       grid: true,
       colSpan: 1,
     },
-    { feature: "advanced", label: "Backup", kind: "divider" },
     {
       feature: "advanced",
-      label: "Export settings",
-      desc: "Download all your Better Intra settings as a JSON file.",
-      kind: "action",
-      actionType: "export",
-      actionLabel: "Export",
+      label: "Auto-detected campus",
+      desc: "Your campus, detected automatically via the 42 API.",
+      kind: "campus-info",
+      fullWidth: false,
       grid: true,
       colSpan: 1,
     },
     {
       feature: "advanced",
-      label: "Import settings",
-      desc: "Restore settings from a previously exported backup file.",
+      label: "Backup & Restore",
+      desc: "Export or import your Better Intra settings as a JSON file.",
       kind: "action",
-      actionType: "import",
-      actionLabel: "Import",
+      actionType: "backup",
+      actionLabel: "Backup",
       grid: true,
       colSpan: 1,
     },

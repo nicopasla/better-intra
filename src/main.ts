@@ -4,6 +4,7 @@ import { initProfile } from "./features/profile/profile.ts";
 import { initHubSettings } from "./features/hub/hubSettings.ts";
 import { initShortcuts } from "./features/shortcuts/shortcuts.ts";
 import { initThemeManager } from "./features/profile/theme/theme-manager.ts";
+import { ensureCampusData } from "./features/campus/campus.ts";
 import { AVATAR_SELECTOR } from "./features/profile/selectors.ts";
 import { html, render } from "lit-html";
 
@@ -174,6 +175,8 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
         // Hub settings are always initialized for the settings page.
         // initHubSettings returns the active feature list.
         const activeScripts = await initHubSettings();
+
+        await ensureCampusData();
 
         // Loop through the user's active scripts and initialize them if they exist in our map.
         for (const scriptId of activeScripts) {

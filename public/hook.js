@@ -78,6 +78,27 @@
         .catch(function () {});
     }
 
+    if (url.indexOf("/users/") !== -1 && url.indexOf("/campus") !== -1) {
+      response
+        .clone()
+        .json()
+        .then(function (data) {
+          var primary = Array.isArray(data)
+            ? data.find(function (c) {
+                return c.is_primary;
+              }) || data[0]
+            : null;
+          if (primary && primary.id) {
+            document.dispatchEvent(
+              new CustomEvent("42_CAMPUS_DETECTED", {
+                detail: String(primary.id),
+              }),
+            );
+          }
+        })
+        .catch(function () {});
+    }
+
     if (url.indexOf(".intra.42.fr") !== -1) {
       var auth = getAuthHeader(args);
       if (auth && auth !== intrapyToken) {

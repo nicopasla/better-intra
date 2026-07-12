@@ -9,7 +9,8 @@ let eventKeywordsCache: Record<string, string[]> | null = null;
 
 async function getKeywords(): Promise<Record<string, string[]>> {
   if (eventKeywordsCache) return eventKeywordsCache;
-  const campus = (await getConfig("CLUSTERS_CAMPUS")) || "12";
+  const campus = await getConfig("CLUSTERS_CAMPUS");
+  if (!campus) return {};
   eventKeywordsCache = await loadEventTypeKeywords(campus);
   return eventKeywordsCache;
 }
@@ -86,7 +87,8 @@ export async function injectEventsSelect() {
   if (!agendaContainer || agendaContainer.dataset.filterInjected === "true")
     return;
 
-  const campus = (await getConfig("CLUSTERS_CAMPUS")) || "12";
+  const campus = await getConfig("CLUSTERS_CAMPUS");
+  if (!campus) return;
   const eventOptions = await fetchEventTypes(campus);
   if (eventOptions.length === 0) return;
   agendaContainer.dataset.filterInjected = "true";

@@ -17,6 +17,13 @@ const CACHE_PREFIX = "CAMPUS_DATA_";
 const MANIFEST_CACHE_KEY = "CAMPUS_MANIFEST";
 const CACHE_TTL = 60 * 60 * 1000;
 
+async function resolveCampusFolder(campusId: string): Promise<string> {
+  const manifest = await fetchCampusList();
+  const campus = manifest.campuses.find((c) => c.id === campusId);
+  if (!campus) return campusId;
+  return campus.name.toLowerCase().replace(/\s+/g, "-");
+}
+
 let campusListenerInstalled = false;
 
 function installCampusDetectedListener(): void {
@@ -66,35 +73,14 @@ export async function loadCampusData(
   if (cachedData && Date.now() - cachedData.timestamp < CACHE_TTL) {
     return cachedData.data;
   }
-  const res = await fetch(`${CAMPUS_BASE}/${campusId}/clusters.json`);
+  const prefix = await resolveCampusFolder(campusId);
+  const res = await fetch(`${CAMPUS_BASE}/${prefix}_clusters.json`);
   if (!res.ok) throw new Error(`Failed to fetch campus data for ${campusId}`);
   const data = (await res.json()) as ClusterDataFile;
   await chrome.storage.local.set({
     [cacheKey]: { data, timestamp: Date.now() },
   });
   return data;
-}
-
-export async function detectCampus(
-  providedToken?: string,
-): Promise<string | null> {
-  try {
-    const token = providedToken || sessionStorage.getItem("ft_intrapy_token");
-    if (!token) return null;
-    const res = await fetch(
-      "https://intrapy.intra.42.fr/api/v1/users/me/campus",
-      { headers: { Authorization: token } },
-    );
-    if (!res.ok) return null;
-    const data = (await res.json()) as {
-      id: number;
-      is_primary: boolean;
-    }[];
-    const primary = data.find((c) => c.is_primary) || data[0];
-    return primary ? String(primary.id) : null;
-  } catch {
-    return null;
-  }
 }
 
 export async function ensureCampusData(): Promise<void> {
@@ -108,46 +94,5 @@ export async function ensureCampusData(): Promise<void> {
         CLUSTERS = data.clusters;
       } catch {}
     }
-  }
-}
-
-export async function fetchEventTypes(
-  campusId: string,
-): Promise<{ label: string; value: string }[]> {
-  try {
-    const res = await fetch(`${CAMPUS_BASE}/${campusId}/event_types.json`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    const types = data.event_types as Record<
-      string,
-      { display: string; keywords: string[] }
-    >;
-    return Object.entries(types).map(([key, val]) => ({
-      label: val.display || key,
-      value: key,
-    }));
-  } catch {
-    return [];
-  }
-}
-
-export async function loadEventTypeKeywords(
-  campusId: string,
-): Promise<Record<string, string[]>> {
-  try {
-    const res = await fetch(`${CAMPUS_BASE}/${campusId}/event_types.json`);
-    if (!res.ok) return {};
-    const data = await res.json();
-    const types = data.event_types as Record<
-      string,
-      { display: string; keywords: string[] }
-    >;
-    const map: Record<string, string[]> = {};
-    for (const [key, val] of Object.entries(types)) {
-      map[key] = val.keywords;
-    }
-    return map;
-  } catch {
-    return {};
   }
 }

@@ -987,16 +987,11 @@ async function createModal(active: FeatureId[]): Promise<void> {
   }
   await ensureCampusData();
   try {
-    const campus = await getConfig("CLUSTERS_CAMPUS");
-    if (!campus) {
-      dynamicEventTypeOptions = [];
-    } else {
-      try {
-        dynamicEventTypeOptions = await fetchEventTypes(campus);
+    try {
+        dynamicEventTypeOptions = await fetchEventTypes();
       } catch {
         dynamicEventTypeOptions = [];
       }
-    }
   } catch {
     dynamicEventTypeOptions = [];
   }

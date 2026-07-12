@@ -1,4 +1,5 @@
-export { fetchEventTypes, detectCampus, ensureCampusData, fetchCampusList, CLUSTERS } from "../campus/campus.ts";
+export { fetchEventTypes } from "../profile/events/events.ts";
+export { ensureCampusData, fetchCampusList, CLUSTERS } from "../campus/campus.ts";
 import { loadCampusData, CLUSTERS as CAMPUS_CLUSTERS } from "../campus/campus.ts";
 
 export type ScreenDirection = "UP" | "DOWN" | "LEFT" | "RIGHT" | "NONE";

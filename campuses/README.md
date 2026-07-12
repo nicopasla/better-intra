@@ -2,14 +2,39 @@
 
 ## How to add your campus
 
-1. Find your campus ID from the 42 API (`/v2/users/:id/campus` — the `id` field)
-2. Create a folder named after your campus ID (e.g., `42/`)
-3. Add a `clusters.json` file with seating data (see format below)
-4. Add an `event_types.json` file with event filter keywords (see format below)
-5. Update `campuses.json` to include your campus
-6. Submit a pull request
+1. Find your campus ID from the [campus list](https://meta.intra.42.fr/clusters)
+2. Create a `{name-slug}_clusters.json` file using the lowercase-hyphenated campus name (e.g., `belgium_clusters.json`, `le-havre_clusters.json`)
+3. Update `campuses.json` to include your campus — the `name` field determines the filename
+4. Submit a pull request
 
-## clusters.json format
+Seat definitions can be added later — start with just `"definitions": {}`.
+
+## File structure
+
+```
+campuses/
+├── README.md
+├── campuses.json          Campus list (id → name mapping)
+├── belgium_clusters.json
+├── le-havre_clusters.json
+└── ...
+```
+
+## campuses.json format
+
+```json
+{
+  "campuses": [
+    { "id": "12", "name": "Belgium" },
+    { "id": "67", "name": "Warsaw" }
+  ]
+}
+```
+
+- `id` — numeric campus ID from the 42 API (as a string)
+- `name` — display name, determines the cluster filename (`{lowercase-hyphenated}_clusters.json`)
+
+## {name-slug}_clusters.json format
 
 ```json
 {
@@ -36,7 +61,7 @@
 ### Fields
 
 - `clusters[]` — list of clusters on this campus
-  - `id` — cluster ID from 42 network
+  - `id` — cluster ID from the 42 API
   - `name` — short lowercase name (used for seat matching)
 
 - `definitions` — map of cluster name → seating layout
@@ -51,35 +76,3 @@
   - `overrides` — per-seat direction overrides
     - Key format: `"{row}-p{pos}"` (e.g., `"r1-p2"`)
     - Value: same direction as above
-
-## event_types.json format
-
-```json
-{
-  "event_types": {
-    "exam": { "display": "Exam", "keywords": ["exam"] },
-    "conference": { "display": "Conference", "keywords": ["conference", "talk", "lecture"] },
-    "event": { "display": "Event", "keywords": ["event", "association", "party"] }
-  }
-}
-```
-
-### Fields
-
-- `display` — label shown in the event filter dropdown
-- `keywords` — matched against event kind text in the DOM (lowercase, substring match)
-  - First keyword should always be the raw 42 API kind value
-
-## campuses.json format
-
-```json
-{
-  "campuses": [
-    { "id": "12", "name": "Belgium" },
-    { "id": "42", "name": "Paris" }
-  ]
-}
-```
-
-- `id` — numeric campus ID from the 42 API (as a string)
-- `name` — display name shown in the campus selector

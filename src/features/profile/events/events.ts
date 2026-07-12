@@ -1,17 +1,57 @@
 import { html, render } from "lit-html";
 import { getConfig } from "../../../config.ts";
-import { fetchEventTypes } from "../../clusters/clusters.data.ts";
-import { loadEventTypeKeywords } from "../../campus/campus.ts";
 import { sharedCSS } from "../../../assets/shared-styles.ts";
 import { THEMES } from "../theme/theme-manager.ts";
+
+const DATA_BASE =
+  "https://raw.githubusercontent.com/nicopasla/better-intra/main/data";
+
+export async function fetchEventTypes(): Promise<
+  { label: string; value: string }[]
+> {
+  try {
+    const res = await fetch(`${DATA_BASE}/event_types.json`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    const types = data.event_types as Record<
+      string,
+      { display: string; keywords: string[] }
+    >;
+    return Object.entries(types).map(([key, val]) => ({
+      label: val.display || key,
+      value: key,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function loadEventTypeKeywords(): Promise<
+  Record<string, string[]>
+> {
+  try {
+    const res = await fetch(`${DATA_BASE}/event_types.json`);
+    if (!res.ok) return {};
+    const data = await res.json();
+    const types = data.event_types as Record<
+      string,
+      { display: string; keywords: string[] }
+    >;
+    const map: Record<string, string[]> = {};
+    for (const [key, val] of Object.entries(types)) {
+      map[key] = val.keywords;
+    }
+    return map;
+  } catch {
+    return {};
+  }
+}
 
 let eventKeywordsCache: Record<string, string[]> | null = null;
 
 async function getKeywords(): Promise<Record<string, string[]>> {
   if (eventKeywordsCache) return eventKeywordsCache;
-  const campus = await getConfig("CLUSTERS_CAMPUS");
-  if (!campus) return {};
-  eventKeywordsCache = await loadEventTypeKeywords(campus);
+  eventKeywordsCache = await loadEventTypeKeywords();
   return eventKeywordsCache;
 }
 
@@ -87,9 +127,7 @@ export async function injectEventsSelect() {
   if (!agendaContainer || agendaContainer.dataset.filterInjected === "true")
     return;
 
-  const campus = await getConfig("CLUSTERS_CAMPUS");
-  if (!campus) return;
-  const eventOptions = await fetchEventTypes(campus);
+  const eventOptions = await fetchEventTypes();
   if (eventOptions.length === 0) return;
   agendaContainer.dataset.filterInjected = "true";
 

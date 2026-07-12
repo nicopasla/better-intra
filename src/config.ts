@@ -43,7 +43,6 @@ export interface BetterIntraConfig {
   // Profile Feature Settings
   PROFILE_EVENT_TYPE_FILTER: string;
   CLUSTERS_CAMPUS: string;
-  CLUSTERS_CAMPUS_AUTO: boolean;
   PROFILE_IMAGE_URL: string;
   PROFILE_BANNER_URL: string;
   PROFILE_BANNER_MODE: "fill" | "fit";
@@ -121,7 +120,6 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
 
   PROFILE_EVENT_TYPE_FILTER: "all",
   CLUSTERS_CAMPUS: "",
-  CLUSTERS_CAMPUS_AUTO: false,
   PROFILE_IMAGE_URL: "",
   PROFILE_BANNER_URL: "",
   PROFILE_BANNER_MODE: "fill",
@@ -198,7 +196,6 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "CLUSTERS_DEFAULT_ID",
   "PROFILE_EVENT_TYPE_FILTER",
   "CLUSTERS_CAMPUS",
-  "CLUSTERS_CAMPUS_AUTO",
   "PROFILE_IMAGE_URL",
   "PROFILE_BANNER_URL",
   "PROFILE_BANNER_MODE",
@@ -235,6 +232,7 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "CALENDAR_SYNC_TOKEN",
   "CALENDAR_EVENTS_HASH",
   "ADVANCED_OPEN_LINKS_NEW_TAB",
+  "CLOUD_SYNC_ENABLED",
 ];
 
 /**

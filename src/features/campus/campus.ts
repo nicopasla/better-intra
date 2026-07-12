@@ -28,7 +28,6 @@ function installCampusDetectedListener(): void {
     const campusId = (e as CustomEvent).detail as string;
     await chrome.storage.local.set({
       CLUSTERS_CAMPUS: campusId,
-      CLUSTERS_CAMPUS_AUTO: true,
     });
     if (CLUSTERS.length === 0) {
       try {

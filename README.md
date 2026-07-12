@@ -2,9 +2,6 @@
 
 UI and UX improvements for 42 Intra v3: logtime calendar, cluster map tools, custom profiles, shortcuts, friends widget, and more.
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/L8S22311GA)
-
-> Donations help cover the cost of the **Cloudflare Workers Pro** plan ($5/month) and the **domain name**, which power the cloud sync backend, evaluation notifications, and friends feature,...
 
 ## ⚡ Quick Start
 
@@ -143,6 +140,12 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 * Click the **gear icon** on the intra sidebar to open it.
 * Tabs: Logtime, Clusters, Profile, Shortcuts, Discord, About.
 * Turn features on/off individually, or reset a feature's settings to default.
+
+## Support
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/L8S22311GA)
+
+> Donations help cover the cost of the **Cloudflare Workers Pro** plan ($5/month) and the **domain name**, which power the cloud sync backend, evaluation notifications, and friends feature,...
 
 ## Screenshots
 

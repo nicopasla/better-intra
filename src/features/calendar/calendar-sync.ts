@@ -1,6 +1,6 @@
 import { hashLogin } from "../../utils/crypto.ts";
 
-const WORKER_URL = "https://worker.betterintra.com";
+const WORKER_URL = "https://api.betterintra.com";
 
 function escapeIcs(text: string): string {
   return text

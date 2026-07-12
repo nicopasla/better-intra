@@ -2,7 +2,7 @@ import { getConfig } from "../../config.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { hashLogin } from "../../utils/crypto.ts";
 
-const WORKER_URL = "https://worker.betterintra.com";
+const WORKER_URL = "https://api.betterintra.com";
 const CARD_ID = "ft-roulette-card";
 
 let rouletteStatsInitialized = false;

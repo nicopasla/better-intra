@@ -3,8 +3,7 @@ import { getConfig } from "../../../config.ts";
 import { sharedCSS } from "../../../assets/shared-styles.ts";
 import { THEMES } from "../theme/theme-manager.ts";
 
-const DATA_BASE =
-  "https://raw.githubusercontent.com/nicopasla/better-intra/main/data";
+const DATA_BASE = "https://api.betterintra.com/gh/data";
 const EVENT_TYPES_CACHE_KEY = "EVENT_TYPES_DATA";
 const EVENT_TYPES_CACHE_TTL = 60 * 60 * 1000;
 
@@ -18,7 +17,10 @@ async function fetchEventTypesData(): Promise<EventTypesData | null> {
     const cachedData = cached[EVENT_TYPES_CACHE_KEY] as
       | { data: EventTypesData; timestamp: number }
       | undefined;
-    if (cachedData && Date.now() - cachedData.timestamp < EVENT_TYPES_CACHE_TTL) {
+    if (
+      cachedData &&
+      Date.now() - cachedData.timestamp < EVENT_TYPES_CACHE_TTL
+    ) {
       return cachedData.data;
     }
     const res = await fetch(`${DATA_BASE}/event_types.json`);

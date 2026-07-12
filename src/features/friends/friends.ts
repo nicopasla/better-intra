@@ -1,7 +1,7 @@
 import { getConfig } from "../../config.ts";
 import { hashLogin } from "../account/account.ts";
 
-const WORKER_URL = "https://worker.betterintra.com";
+const WORKER_URL = "https://api.betterintra.com";
 
 export interface FriendData {
   login: string;

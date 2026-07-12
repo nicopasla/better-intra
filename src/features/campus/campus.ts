@@ -11,8 +11,7 @@ interface CampusManifest {
 
 export let CLUSTERS: { id: string; name: string }[] = [];
 
-const CAMPUS_BASE =
-  "https://raw.githubusercontent.com/nicopasla/better-intra/main/campuses";
+const CAMPUS_BASE = "https://api.betterintra.com/gh/campuses";
 const CACHE_PREFIX = "CAMPUS_DATA_";
 const MANIFEST_CACHE_KEY = "CAMPUS_MANIFEST";
 const CACHE_TTL = 60 * 60 * 1000;

@@ -5,46 +5,55 @@ import { THEMES } from "../theme/theme-manager.ts";
 
 const DATA_BASE =
   "https://raw.githubusercontent.com/nicopasla/better-intra/main/data";
+const EVENT_TYPES_CACHE_KEY = "EVENT_TYPES_DATA";
+const EVENT_TYPES_CACHE_TTL = 60 * 60 * 1000;
+
+interface EventTypesData {
+  event_types: Record<string, { display: string; keywords: string[] }>;
+}
+
+async function fetchEventTypesData(): Promise<EventTypesData | null> {
+  try {
+    const cached = await chrome.storage.local.get(EVENT_TYPES_CACHE_KEY);
+    const cachedData = cached[EVENT_TYPES_CACHE_KEY] as
+      | { data: EventTypesData; timestamp: number }
+      | undefined;
+    if (cachedData && Date.now() - cachedData.timestamp < EVENT_TYPES_CACHE_TTL) {
+      return cachedData.data;
+    }
+    const res = await fetch(`${DATA_BASE}/event_types.json`);
+    if (!res.ok) return null;
+    const data = (await res.json()) as EventTypesData;
+    await chrome.storage.local.set({
+      [EVENT_TYPES_CACHE_KEY]: { data, timestamp: Date.now() },
+    });
+    return data;
+  } catch {
+    return null;
+  }
+}
 
 export async function fetchEventTypes(): Promise<
   { label: string; value: string }[]
 > {
-  try {
-    const res = await fetch(`${DATA_BASE}/event_types.json`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    const types = data.event_types as Record<
-      string,
-      { display: string; keywords: string[] }
-    >;
-    return Object.entries(types).map(([key, val]) => ({
-      label: val.display || key,
-      value: key,
-    }));
-  } catch {
-    return [];
-  }
+  const data = await fetchEventTypesData();
+  if (!data) return [];
+  return Object.entries(data.event_types).map(([key, val]) => ({
+    label: val.display || key,
+    value: key,
+  }));
 }
 
 export async function loadEventTypeKeywords(): Promise<
   Record<string, string[]>
 > {
-  try {
-    const res = await fetch(`${DATA_BASE}/event_types.json`);
-    if (!res.ok) return {};
-    const data = await res.json();
-    const types = data.event_types as Record<
-      string,
-      { display: string; keywords: string[] }
-    >;
-    const map: Record<string, string[]> = {};
-    for (const [key, val] of Object.entries(types)) {
-      map[key] = val.keywords;
-    }
-    return map;
-  } catch {
-    return {};
+  const data = await fetchEventTypesData();
+  if (!data) return {};
+  const map: Record<string, string[]> = {};
+  for (const [key, val] of Object.entries(data.event_types)) {
+    map[key] = val.keywords;
   }
+  return map;
 }
 
 let eventKeywordsCache: Record<string, string[]> | null = null;

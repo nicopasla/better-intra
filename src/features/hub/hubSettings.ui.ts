@@ -988,10 +988,10 @@ async function createModal(active: FeatureId[]): Promise<void> {
   await ensureCampusData();
   try {
     try {
-        dynamicEventTypeOptions = await fetchEventTypes();
-      } catch {
-        dynamicEventTypeOptions = [];
-      }
+      dynamicEventTypeOptions = await fetchEventTypes();
+    } catch {
+      dynamicEventTypeOptions = [];
+    }
   } catch {
     dynamicEventTypeOptions = [];
   }

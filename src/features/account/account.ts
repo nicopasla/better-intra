@@ -155,7 +155,11 @@ export async function syncToCloud(): Promise<boolean> {
         body: JSON.stringify({ settings }),
       },
     );
-    return await handleAuthResponse(response);
+    const success = await handleAuthResponse(response);
+    if (success) {
+      await chrome.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
+    }
+    return success;
   } catch (error) {
     console.error("Cloud sync failed:", error);
     return false;

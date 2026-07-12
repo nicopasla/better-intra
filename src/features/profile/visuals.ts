@@ -344,6 +344,7 @@ export const updateVisuals = async () => {
       avatarEl.style.cursor = "pointer";
       avatarEl.addEventListener("click", (e) => {
         e.stopPropagation();
+        showingOriginalAvatar = false;
         createSettingsModal((updatedVisuals) => {
           visualCache = updatedVisuals;
           setCachedVisuals(targetLogin, updatedVisuals);
@@ -356,6 +357,7 @@ export const updateVisuals = async () => {
   }
 
   if (visualCache) {
+    if (document.getElementById("profile-modal-host")) return;
     const key = getVisualKey(visualCache);
     const reapply = needsReapply(visualCache);
     if (lastAppliedUser === targetLogin && lastAppliedKey === key && !reapply)
@@ -385,7 +387,7 @@ export const updateVisuals = async () => {
         !visualCache.background
       ) {
         avatarEl.style.setProperty("opacity", "1", "important");
-      } else {
+      } else if (!document.getElementById("profile-modal-host")) {
         applyImgs(visualCache);
         lastAppliedUser = targetLogin;
         lastAppliedKey = getVisualKey(visualCache);

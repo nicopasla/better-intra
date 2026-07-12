@@ -31,8 +31,9 @@ function handleLivePreview(e: Event) {
       (root.getElementById("PROFILE_BACKGROUND_URL") as HTMLInputElement)
         ?.value || "",
     backgroundMode:
-      (root.getElementById("PROFILE_BACKGROUND_MODE") as HTMLSelectElement)
-        ?.value || "fill",
+      root.querySelector<HTMLInputElement>(
+        'input[name="PROFILE_BACKGROUND_MODE"]:checked',
+      )?.value || "fill",
     avatarBg: color,
     decoration:
       root.querySelector<HTMLInputElement>(

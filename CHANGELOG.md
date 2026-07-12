@@ -2,6 +2,60 @@
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-07-12
+
+### Features 🎉
+
+- feat(friends): add friend button with shadow DOM and shared styles ([d6ffb9c](https://github.com/nicopasla/better-intra/commit/d6ffb9c))
+- feat: implement caching for event types data retrieval ([bcb9df9](https://github.com/nicopasla/better-intra/commit/bcb9df9))
+- feat: update campus data structure and event types integration ([f18c8ff](https://github.com/nicopasla/better-intra/commit/f18c8ff))
+- feat: update export to include timestamp ([1042a96](https://github.com/nicopasla/better-intra/commit/1042a96))
+- feat(account): implement auto push functionality ([073a2be](https://github.com/nicopasla/better-intra/commit/073a2be))
+- feat: implement campus detection ([e094053](https://github.com/nicopasla/better-intra/commit/e094053))
+- feat(theme): add new themes: soap, citrus, and neon ([750f88d](https://github.com/nicopasla/better-intra/commit/750f88d))
+- feat(campus): implement campus data management and UI components ([b646e2b](https://github.com/nicopasla/better-intra/commit/b646e2b))
+- feat(clusters): add campus detection and configuration options ([3dd32d1](https://github.com/nicopasla/better-intra/commit/3dd32d1))
+- feat(advancedSettings): add export, import, and reset actions ([1283eee](https://github.com/nicopasla/better-intra/commit/1283eee))
+- feat(advancedSettings): add option to open links in new tab and implement related UI changes ([3886720](https://github.com/nicopasla/better-intra/commit/3886720))
+- feat(profile): add light themes ([ea1e04c](https://github.com/nicopasla/better-intra/commit/ea1e04c))
+
+### Bug fixes 🐛
+
+- fix(docs): update feature descriptions and privacy policy for clarity and accuracy ([18a727b](https://github.com/nicopasla/better-intra/commit/18a727b))
+- fix(api): update WORKER_URL and host_permissions to use api.betterintra.com ([5a4fdee](https://github.com/nicopasla/better-intra/commit/5a4fdee))
+- fix(account): update syncToCloud to store last sync timestamp on success ([0a6603b](https://github.com/nicopasla/better-intra/commit/0a6603b))
+- fix(visuals): prevent visual updates when profile modal is open and reset original avatar state ([f3545be](https://github.com/nicopasla/better-intra/commit/f3545be))
+- fix(profile): update background mode retrieval to use checked input ([69d5749](https://github.com/nicopasla/better-intra/commit/69d5749))
+- fix(profile): add styles for profile header badges ([12fa18e](https://github.com/nicopasla/better-intra/commit/12fa18e))
+- fix: restore event types configuration in data directory ([1b7b049](https://github.com/nicopasla/better-intra/commit/1b7b049))
+- fix: update WORKER_URL to remove trailing slash ([769037d](https://github.com/nicopasla/better-intra/commit/769037d))
+- fix(event_types): correct keywords for meet up event type ([58ffdd6](https://github.com/nicopasla/better-intra/commit/58ffdd6))
+- fix(hubSettings): rename theme ([8f3f406](https://github.com/nicopasla/better-intra/commit/8f3f406))
+- fix(theme): improve theme application logic for non-v3 environments ([af264c8](https://github.com/nicopasla/better-intra/commit/af264c8))
+- fix(event_types): correct keywords for meet up event type ([2f48b3d](https://github.com/nicopasla/better-intra/commit/2f48b3d))
+- fix(event_types): remove redundant sun event type ([653c4ab](https://github.com/nicopasla/better-intra/commit/653c4ab))
+- fix(events): add show all ([39cb9e2](https://github.com/nicopasla/better-intra/commit/39cb9e2))
+- fix(popup): change background color of popup root to white for better visibility ([c71d9ec](https://github.com/nicopasla/better-intra/commit/c71d9ec))
+- fix(hubSettings): update button text color for better visibility ([a31f3b3](https://github.com/nicopasla/better-intra/commit/a31f3b3))
+- fix(logtime): ensure correct date formatting for event grouping and rendering ([d207d1f](https://github.com/nicopasla/better-intra/commit/d207d1f))
+
+### Maintenance 🧹
+
+- chore(campuses): add cluster configuration files for Amman, Antananarivo, Gyeongsan, and Kocaeli ([7d4eb78](https://github.com/nicopasla/better-intra/commit/7d4eb78))
+- chore: move donation information to Support section in README ([8dee62c](https://github.com/nicopasla/better-intra/commit/8dee62c))
+- chore: update worker URL to new domain ([f58812e](https://github.com/nicopasla/better-intra/commit/f58812e))
+- chore(package): add allowScripts configuration for fsevents ([d4b28c2](https://github.com/nicopasla/better-intra/commit/d4b28c2))
+
+### Other Changes 🔄
+
+- refactor(profile): remove PROFILE_SLOTS_REDIRECTION and update related logic ([caaffbb](https://github.com/nicopasla/better-intra/commit/caaffbb))
+- refactor: remove CLUSTERS_CAMPUS_AUTO from configuration ([dc726ac](https://github.com/nicopasla/better-intra/commit/dc726ac))
+- Create CNAME ([ae4aa53](https://github.com/nicopasla/better-intra/commit/ae4aa53))
+- Delete CNAME ([bd40f80](https://github.com/nicopasla/better-intra/commit/bd40f80))
+- Create CNAME ([c0703c1](https://github.com/nicopasla/better-intra/commit/c0703c1))
+- docs(README): add donation information and support link ([449f347](https://github.com/nicopasla/better-intra/commit/449f347))
+- Add Ko-fi username to FUNDING.yml ([844f9ac](https://github.com/nicopasla/better-intra/commit/844f9ac))
+
 ## [1.4.1] - 2026-07-09
 
 ### Features 🎉
@@ -708,7 +762,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.4.1...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/nicopasla/better-intra/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/nicopasla/better-intra/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/nicopasla/better-intra/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/nicopasla/better-intra/compare/v1.3.1...v1.3.2

@@ -17,8 +17,7 @@ import {
   type ShortcutLink,
 } from "../shortcuts/shortcuts.ui.ts";
 import { clearAuthFailed } from "../account/account.ts";
-import { loginWith42 } from "../account/account.ts";
-import { hashLogin } from "../../utils/crypto.ts";
+import { loginWith42, syncToCloud } from "../account/account.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
 import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
@@ -27,6 +26,9 @@ import RELOAD_SVG from "../../assets/svg/reload.svg?raw";
 import RESET_SVG from "../../assets/svg/reset.svg?raw";
 import SUN_SVG from "../../assets/svg/sun.svg?raw";
 import MOON_SVG from "../../assets/svg/moon.svg?raw";
+import CLOUD_SVG from "../../assets/svg/cloud.svg?raw";
+import UPLOAD_SVG from "../../assets/svg/upload.svg?raw";
+import AUTO_SVG from "../../assets/svg/auto.svg?raw";
 import ICON_SVG from "../../assets/svg/icon.svg?raw";
 import { renderAboutPanel } from "./hub.about.ts";
 import { renderDiscordPanel } from "../discord/discord.ui.ts";
@@ -650,63 +652,21 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
 
           return html`<button
             type="button"
-            class="btn btn-sm ${actionType === "reset"
-              ? "btn-error"
-              : "btn-primary"} font-bold"
+            class="btn btn-sm btn-error font-bold"
             @click="${() => {
-              if (actionType === "export") {
-                chrome.storage.local.get(null, (items) => {
-                  const configKeys = new Set(Object.keys(CONFIG_DEFAULT));
-                  const exclude = new Set([
-                    "FRIENDS_DATA_CACHE",
-                    "CALENDAR_EVENTS_HASH",
-                  ]);
-                  const filtered: Record<string, unknown> = {};
-                  for (const [k, v] of Object.entries(items)) {
-                    if (configKeys.has(k) && !exclude.has(k)) filtered[k] = v;
-                  }
-                  const blob = new Blob([JSON.stringify(filtered, null, 2)], {
-                    type: "application/json",
-                  });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = "better-intra-settings.json";
-                  a.click();
-                  URL.revokeObjectURL(url);
-                });
-              } else if (actionType === "import") {
-                const input = document.createElement("input");
-                input.type = "file";
-                input.accept = ".json";
-                input.onchange = async () => {
-                  const file = input.files?.[0];
-                  if (!file) return;
-                  try {
-                    const text = await file.text();
-                    const data = JSON.parse(text);
-                    await chrome.storage.local.set(data);
-                    location.reload();
-                  } catch {
-                    alert("Invalid backup file.");
-                  }
-                };
-                input.click();
-              } else if (actionType === "reset") {
-                if (
-                  confirm(
-                    "This will clear ALL Better Intra settings and reload. Continue?",
-                  )
-                ) {
-                  void (async () => {
-                    await chrome.storage.local.clear();
-                    location.reload();
-                  })();
-                }
+              if (
+                confirm(
+                  "This will clear ALL Better Intra settings and reload. Continue?",
+                )
+              ) {
+                void (async () => {
+                  await chrome.storage.local.clear();
+                  location.reload();
+                })();
               }
             }}"
           >
-            ${actionLabel || "Action"}
+            ${actionLabel || "Reset"}
           </button>`;
         }
 
@@ -1136,28 +1096,60 @@ async function createModal(active: FeatureId[]): Promise<void> {
         class="flex-none p-4 border-t border-base-200 bg-base-200/50 flex justify-between items-center"
       >
         <div class="flex items-center gap-3">
-          <label class="swap swap-rotate btn btn-circle btn-ghost">
+          <label
+            class="swap btn btn-accent border border-base-content/20 text-center items-center"
+          >
             <input
               type="checkbox"
               id="hub-theme-toggle"
               ?checked="${currentTheme === "dark"}"
             />
-            ${unsafeHTML(SUN_SVG)} ${unsafeHTML(MOON_SVG)}
+            <span class="swap-on flex items-center justify-center gap-1">
+              ${unsafeHTML(SUN_SVG)}
+              <span class="text-sm font-bold">Light</span>
+            </span>
+            <span class="swap-off flex items-center justify-center gap-1">
+              ${unsafeHTML(MOON_SVG)}
+              <span class="text-sm font-bold">Dark</span>
+            </span>
           </label>
-          <div class="flex items-center gap-2 text-xs font-bold opacity-60">
-            <div
-              class="size-2 rounded-full ${isConnected
-                ? "bg-success"
-                : "bg-error"}"
-            ></div>
+          <div class="flex items-center gap-2 text-xs">
             ${isConnected
-              ? html`<span class="flex items-center gap-1">
-                  ☁️ Connected
-                </span>`
-              : "Offline"}
-            <span class="text-[10px] opacity-40 font-mono"
+              ? html`<span class="btn btn-success border border-base-content/20"
+                  ><span class="size-4 inline-flex items-center"
+                    >${unsafeHTML(CLOUD_SVG)}</span
+                  >
+                  Connected</span
+                >`
+              : html`<span class="btn btn-error border border-base-content/20"
+                  >Offline</span
+                >`}
+            <span class="btn btn-info border border-base-content/20"
               >Synced at ${dateString}</span
             >
+            ${isConnected
+              ? html`<label
+                  class="swap btn btn-accent border border-base-content/20 text-center items-center"
+                >
+                  <input
+                    type="checkbox"
+                    id="hub-auto-push-toggle"
+                    ?checked="${await getConfig("CLOUD_SYNC_ENABLED")}"
+                  />
+                  <span class="swap-on flex items-center justify-center gap-1">
+                    <span class="size-4 inline-flex items-center"
+                      >${unsafeHTML(AUTO_SVG)}</span
+                    >
+                    <span class="text-sm font-bold">Auto push</span>
+                  </span>
+                  <span class="swap-off flex items-center justify-center gap-1">
+                    <span class="size-4 inline-flex items-center"
+                      >${unsafeHTML(UPLOAD_SVG)}</span
+                    >
+                    <span class="text-sm font-bold">Manual push</span>
+                  </span>
+                </label>`
+              : ""}
           </div>
         </div>
         <button
@@ -1216,7 +1208,20 @@ async function createModal(active: FeatureId[]): Promise<void> {
   });
 
   const reloadBtn = shadow.querySelector("#hub-reload");
-  reloadBtn?.addEventListener("click", () => {
+  const autoPushToggle = shadow.querySelector(
+    "#hub-auto-push-toggle",
+  ) as HTMLInputElement | null;
+
+  autoPushToggle?.addEventListener("change", () => {
+    chrome.storage.local.set({ CLOUD_SYNC_ENABLED: autoPushToggle.checked });
+  });
+
+  reloadBtn?.addEventListener("click", async () => {
+    if (autoPushToggle?.checked) {
+      try {
+        await syncToCloud();
+      } catch {}
+    }
     location.reload();
   });
 

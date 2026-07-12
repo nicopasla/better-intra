@@ -1,4 +1,4 @@
-<svg class="swap-on h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <g transform="scale(26.6667)" vector-effect="non-scaling-stroke">
     <circle cx="12" cy="12" r="4"/>
     <path d="M12 2v2"/>

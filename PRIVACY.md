@@ -1,6 +1,6 @@
 # Privacy Policy for Better Intra
 
-*Last updated: June 2026*
+*Last updated: July 2026*
 
 ## Data Collection
 
@@ -16,10 +16,10 @@ When viewing other users' profiles, their public custom visual URLs (avatar, ban
 
 ### Cloud Sync (Optional)
 
-If you enable cloud sync, the following data is transmitted to the extension's Cloudflare Worker at `better-intra-worker.nicopasla.workers.dev`:
+If you enable cloud sync, the following data is transmitted to the extension's Cloudflare Worker at `api.betterintra.com`:
 
 - Your **42 login** (hashed) — used to identify your stored settings
-- Your **extension settings** — so they can be synced across devices
+- Your **extension settings** — so they can be synced across devices. The auto-push feature can automatically sync your settings when clicking Reload in the hub footer.
 - Your **friend logins** — to fetch their online status and location
 - Your **custom profile visuals** (avatar, banner, background URLs) — so other Better Intra users can see them when viewing your profile
 - Your **Discord User ID** (if enabled) — for sending evaluation notifications via DM
@@ -54,7 +54,7 @@ The Cloudflare Worker runs a cron job every 10 minutes to check for evaluation s
 
 - `storage` — to save and load settings locally
 - `activeTab` — to interact with the 42 Intra page
-- `https://worker.betterintra.com/` — to communicate with the extension's Cloudflare Worker for optional cloud features
+- `https://api.betterintra.com/` — to communicate with the extension's Cloudflare Worker for optional cloud features
 
 ## Changes to This Policy
 

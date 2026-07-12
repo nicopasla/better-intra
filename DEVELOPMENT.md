@@ -40,9 +40,9 @@ cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && cross-env TARGET=fire
 ## Project structure
 
 - `src/main.ts` — content script entrypoint. Feature init via `featureInitializers` map.
-- `src/background.ts` — background service worker for evaluations notifications.
+- `src/background.ts` — background service worker for Discord sync and tab reloading.
 - `src/popup/popup.ts` — popup entrypoint (account/cloud sync UI).
-- `src/features/` — self-contained features: `logtime/`, `clusters/`, `profile/` (visuals, marks, freeze, milestones, layout, theme), `shortcuts/`, `account/`, `friends/`, `hub/`.
+- `src/features/` — self-contained features: `logtime/`, `clusters/`, `profile/` (visuals, marks, freeze, milestones, layout, events, theme), `shortcuts/`, `account/`, `friends/`, `hub/`, `campus/`.
 - `src/config.ts` — single source of truth for all `chrome.storage` keys; typed `BetterIntraConfig` interface + defaults.
 - `manifests/` — per-browser manifest templates.
 - `better-intra-worker/` — separate Cloudflare Worker (wrangler) for cloud sync. Has its own `package.json`.
@@ -72,7 +72,6 @@ npm run deploy    # wrangler deploy --remote
 ### KV namespaces
 
 - **`BETTER_INTRA_KV`** — user data (session tokens, settings, encrypted 42 token, project map, friend IDs cache, online cache).
-- **`EVAL_KV`** — evaluation state keys (`EVAL_{hash}_{id}_role`), pending notifications (`PENDING_{hash}`), enabled users list, Discord-linked users list.
 
 ### Secrets
 
@@ -82,7 +81,7 @@ npx wrangler secret put DISCORD_BOT_TOKEN
 
 ### Evaluations architecture
 
-Worker cron (`*/5 * * * *`) fetches 42 API `/v2/me/scale_teams` for each user, detects state changes (`null → booked → revealed`), sends Discord DMs, and stores pending notifications in `EVAL_KV`. The extension's background service worker polls `/evaluations?action=pending` every 5 minutes and shows Chrome notifications from the pending list.
+Worker cron (`*/10 * * * *`) fetches 42 API `/v2/me/scale_teams` for each user, detects state changes (`null → booked → revealed`), and sends Discord DMs. Evaluation states are stored in Cloudflare D1 (`eval_states` table).
 
 ## Testing
 

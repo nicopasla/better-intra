@@ -49,7 +49,9 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 * **Dashboard cards** — reorder your profile cards (Logtime, Agenda, Evaluations, Projects, Achievements) by dragging them. Hide cards you don't need.
 * **Project badges** — projects in the Projects card appear as colour-coded badges (green for normal projects, red for exams) for quick visual scanning.
 * **Event filtering** — filter your agenda by campus and event type (exam, conference, workshop, hackathon, etc.).
-* **Slots redirection** — the "Manage slots" button and defense links take you to the correct slots page.
+* **Avatar decoration** — add a solid border around your avatar in your chosen colour.
+* **Avatar background** — pick a solid background colour behind your avatar.
+* **Slots redirection** — automatically redirects slots and defense links for Belgium campus users when your campus is detected.
 * **Sort evaluation slots** — pending evaluations split into "Evaluator" and "Evaluated" sections for easier browsing.
 * **Achievement milestones** — completed achievements get a subtle animated glow.
 * **Full achievements list** — replaces the native "Last Achievements" card with a scrollable list of all achievements.
@@ -62,6 +64,16 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 * **Moulinette robot icons** — on project corrected pages, the default moulinette image is replaced with a robot icon (normal for passed, broken for failed).
 * **Info card badges** — wallet, level, rank, score, and seat shown as coloured badges below the profile header. Can be hidden in settings.
 * **Wallet shop link** — clicking the wallet badge opens the 42 shop in a new tab.
+
+---
+
+### 🏫 Campus Detection
+
+Your 42 campus is detected automatically — no manual setup.
+
+* **Passive detection** — visiting your profile page silently detects your campus from the intra's own API. Your detected campus appears as a badge in the Advanced settings tab.
+* **Seat direction markers** — cluster screen arrows load automatically for your detected campus. Available for all campuses with submitted cluster data.
+* **Contributing** — add your campus by submitting cluster name/ID data via a pull request to the [campuses/](https://github.com/nicopasla/better-intra/tree/main/campuses) directory.
 
 ---
 
@@ -103,8 +115,8 @@ Discord DM notifications when your evaluations change state.
 
 ### 🎨 Theme
 
-* **Dark / Light** — choose your preferred theme for the extension UI. Set from the Settings Hub or the extension popup.
-* **Theme presets** — pick from 13 dark themes (synthwave, dracula, cyberpunk, forest, etc.) that recolor profile badges and accents.
+* **Dark / Light** — swap between modes from the hub footer using the sun/moon toggle button.
+* **30+ theme presets** — pick from light themes (garden, cupcake, retro, emerald, etc.) and dark themes (synthwave, dracula, cyberpunk, forest, neon, soap, citrus, and more). Recolours profile badges, sidebar, progress bars, and accents across the intra.
 
 ---
 
@@ -113,6 +125,7 @@ Discord DM notifications when your evaluations change state.
 * Authenticate with your 42 Intra account via OAuth through the Cloudflare Worker.
 * **Push** — upload all local settings to the cloud.
 * **Pull** — download and apply settings from the cloud to this device.
+* **Auto-push** — toggle in the hub footer. When enabled, clicking Reload sends all settings to the cloud before refreshing the page.
 
 * **Disconnect / Wipe All Data** — logout or erase all cloud-stored data.
 * **Share visuals** — synced avatar, banner, and background become visible to other Better Intra users viewing your profile.
@@ -126,6 +139,7 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 
 * **Add friends** by login using the input at the bottom of the panel.
 * See each friend's **avatar, level bar, wallet, correction points, and online status**.
+* **Profile friend button** — a button appears next to the role dropdown on any user's profile, letting you follow or unfollow without opening the full widget.
 * Click a friend's **location badge** to open the cluster map with their seat highlighted.
 * Sort by: online status, name, level, wallet, or evaluation points.
 * **Medal borders** — the top 3 friends (by chosen sort order) get gold, silver, and bronze borders.
@@ -138,8 +152,13 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 
 * All extension settings in one place.
 * Click the **gear icon** on the intra sidebar to open it.
-* Tabs: Logtime, Clusters, Profile, Shortcuts, Discord, About.
+* Tabs: Logtime, Clusters, Profile, Shortcuts, Discord, Calendar, Advanced, About.
 * Turn features on/off individually, or reset a feature's settings to default.
+* The footer bar shows your theme toggle, cloud connection status, last sync badge, and auto-push toggle.
+* **Backup & Restore** — export all settings to a timestamped JSON file, or import from a previous backup. In the Advanced tab.
+* **Reset all data** — wipe all Better Intra settings and start fresh. In the Advanced tab.
+* **Auto-detected campus** — shown as a badge in the Advanced tab.
+* **Open links in new tab** — external links from Better Intra open in a new tab. In the Advanced tab.
 
 ## Support
 

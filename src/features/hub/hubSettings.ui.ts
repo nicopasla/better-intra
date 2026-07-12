@@ -615,7 +615,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
                     a.href = url;
-                    a.download = "better-intra-settings.json";
+                    const n = new Date();
+                    a.download = `better-intra-settings-${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}_${String(n.getHours()).padStart(2, "0")}-${String(n.getMinutes()).padStart(2, "0")}-${String(n.getSeconds()).padStart(2, "0")}.json`;
                     a.click();
                     URL.revokeObjectURL(url);
                   });

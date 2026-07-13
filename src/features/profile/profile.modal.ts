@@ -4,45 +4,27 @@ import { getConfig } from "../../config.ts";
 import { syncMyVisuals } from "../account/account.ts";
 import { applyImgs, injectCustomStyles, VisualUrls } from "./visuals.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
+import { renderAvatarEditor } from "./avatar-editor.ts";
 
-function handleLivePreview(e: Event) {
-  const root = (e.target as HTMLElement).getRootNode() as ShadowRoot;
-  const bgModeRadio = root.querySelector<HTMLInputElement>(
-    'input[name="PROFILE_AVATAR_BG_MODE"]:checked',
-  );
-  const bgMode = bgModeRadio?.value || "transparent";
-  const color =
-    bgMode === "transparent"
-      ? "transparent"
-      : (root.getElementById("PROFILE_AVATAR_BG_COLOR") as HTMLInputElement)
-          ?.value || "transparent";
-  applyImgs({
-    avatar:
-      (root.getElementById("PROFILE_IMAGE_URL") as HTMLInputElement)?.value ||
-      "",
-    banner:
-      (root.getElementById("PROFILE_BANNER_URL") as HTMLInputElement)?.value ||
-      "",
-    bannerMode:
-      root.querySelector<HTMLInputElement>(
-        'input[name="PROFILE_BANNER_MODE"]:checked',
-      )?.value || "fill",
-    background:
-      (root.getElementById("PROFILE_BACKGROUND_URL") as HTMLInputElement)
-        ?.value || "",
-    backgroundMode:
-      root.querySelector<HTMLInputElement>(
-        'input[name="PROFILE_BACKGROUND_MODE"]:checked',
-      )?.value || "fill",
-    avatarBg: color,
-    decoration:
-      root.querySelector<HTMLInputElement>(
-        'input[name="PROFILE_DECORATION"]:checked',
-      )?.value || "none",
-  });
+interface FormState {
+  avatar: string;
+  banner: string;
+  bannerMode: string;
+  background: string;
+  backgroundMode: string;
+  avatarBg: string;
+  decoration: string;
+  avatarPosX: number;
+  avatarPosY: number;
+  avatarScale: number;
 }
 
-function renderUrlField(id: string, label: string, value: string) {
+function renderUrlField(
+  id: string,
+  label: string,
+  value: string,
+  onInput: (val: string) => void,
+) {
   return html`
     <div class="form-control w-full">
       <label class="label py-1">
@@ -73,20 +55,24 @@ function renderUrlField(id: string, label: string, value: string) {
         </svg>
         <input
           type="url"
-          id="${id}"
           required
           placeholder="https://example.com/image.png"
           .value="${value}"
           pattern="^(https?://)?.*"
           class="grow"
-          @input="${handleLivePreview}"
+          @input="${(e: Event) =>
+            onInput((e.target as HTMLInputElement).value)}"
         />
       </label>
     </div>
   `;
 }
 
-function renderModeRadios(name: string, currentValue: string) {
+function renderModeRadios(
+  name: string,
+  currentValue: string,
+  onChange: (val: string) => void,
+) {
   const modes = ["fill", "fit", "stretch", "center", "tile"];
   return html`
     <div class="join w-full mt-4">
@@ -99,7 +85,8 @@ function renderModeRadios(name: string, currentValue: string) {
             aria-label="${m.charAt(0).toUpperCase() + m.slice(1)}"
             value="${m}"
             ?checked="${currentValue === m}"
-            @change="${handleLivePreview}"
+            @change="${(e: Event) =>
+              onChange((e.target as HTMLInputElement).value)}"
           />`,
       )}
     </div>
@@ -107,20 +94,12 @@ function renderModeRadios(name: string, currentValue: string) {
 }
 
 function renderPanelContent(
-  saved: {
-    avatar: string;
-    banner: string;
-    bannerMode: string;
-    background: string;
-    backgroundMode: string;
-    avatarBg: string;
-    decoration: string;
-  },
+  state: FormState,
   currentTheme: string,
-  onClose: () => void,
-  onReset: () => void,
+  onFormUpdate: (updates: Partial<FormState>) => void,
 ) {
-  const isTransparent = saved.avatarBg === "transparent";
+  const isTransparent = state.avatarBg === "transparent";
+
   return html`
     <style>
       :host { display: block; width: 100%; height: 100%; }
@@ -130,108 +109,178 @@ function renderPanelContent(
       data-theme="${currentTheme}"
       class="flex flex-col h-full p-4 gap-3 bg-base-100 rounded-2xl"
     >
-      <div class="flex justify-between items-center">
+      <div class="flex justify-between items-center shrink-0">
         <button
           type="button"
-          @click="${onReset}"
+          id="profile-reset-btn"
           class="btn btn-ghost btn-sm text-error"
         >
           Reset
         </button>
-        <button class="btn btn-circle btn-ghost btn-sm" @click="${onClose}">
+        <button class="btn btn-circle btn-ghost btn-sm" id="profile-close-btn">
           ✕
         </button>
       </div>
-      <fieldset
-        class="fieldset rounded-box gap-3 border border-base-300 bg-base-200/50 p-3"
-      >
-        ${renderUrlField("PROFILE_IMAGE_URL", "Avatar URL", saved.avatar)}
-        <div class="flex gap-2 items-center" style="margin-top: 4px;">
-          <div class="join w-full">
-            <input
-              type="radio"
-              name="PROFILE_AVATAR_BG_MODE"
-              class="btn btn-sm join-item flex-1"
-              aria-label="Transparent"
-              value="transparent"
-              ?checked="${isTransparent}"
-              @change="${(e: Event) => {
-                const root = (
-                  e.target as HTMLElement
-                ).getRootNode() as ShadowRoot;
-                const wrap = root.getElementById("ft-avatar-bg-color-wrap");
-                if (wrap) wrap.classList.add("hidden");
-                handleLivePreview(e);
-              }}"
-            />
-            <input
-              type="radio"
-              name="PROFILE_AVATAR_BG_MODE"
-              class="btn btn-sm join-item flex-1"
-              aria-label="Color"
-              value="custom"
-              ?checked="${!isTransparent}"
-              @change="${(e: Event) => {
-                const root = (
-                  e.target as HTMLElement
-                ).getRootNode() as ShadowRoot;
-                const wrap = root.getElementById("ft-avatar-bg-color-wrap");
-                if (wrap) wrap.classList.remove("hidden");
-                handleLivePreview(e);
-              }}"
-            />
-          </div>
+
+      <div class="flex-1 min-h-0 flex flex-col gap-3 overflow-y-auto pr-1">
+        <!-- Top row: Avatar (left) + Preview (right) -->
+        <div class="shrink-0 flex gap-5">
+          <!-- Avatar card -->
           <div
-            id="ft-avatar-bg-color-wrap"
-            class="${isTransparent ? "hidden" : ""}"
+            class="flex-1 rounded-box border border-base-300 bg-base-200/50 p-3"
           >
-            <input
-              type="color"
-              id="PROFILE_AVATAR_BG_COLOR"
-              class="input input-bordered input-sm p-1 h-8 w-16"
-              .value="${isTransparent ? "#00bcba" : saved.avatarBg}"
-              @input="${handleLivePreview}"
-            />
+            <div
+              class="text-xs font-semibold uppercase tracking-wider opacity-50 mb-3"
+            >
+              Avatar
+            </div>
+            ${renderUrlField(
+              "PROFILE_IMAGE_URL",
+              "Image URL",
+              state.avatar,
+              (val) => onFormUpdate({ avatar: val }),
+            )}
+            <div class="flex gap-2 items-center mt-2">
+              <div class="join w-full">
+                <input
+                  type="radio"
+                  name="PROFILE_AVATAR_BG_MODE"
+                  class="btn btn-sm join-item flex-1"
+                  aria-label="Transparent"
+                  value="transparent"
+                  ?checked="${isTransparent}"
+                  @change="${() => onFormUpdate({ avatarBg: "transparent" })}"
+                />
+                <input
+                  type="radio"
+                  name="PROFILE_AVATAR_BG_MODE"
+                  class="btn btn-sm join-item flex-1"
+                  aria-label="Color"
+                  value="custom"
+                  ?checked="${!isTransparent}"
+                  @change="${() => onFormUpdate({ avatarBg: "#00bcba" })}"
+                />
+              </div>
+              <div
+                id="ft-avatar-bg-color-wrap"
+                class="${isTransparent ? "hidden" : ""}"
+              >
+                <input
+                  type="color"
+                  id="PROFILE_AVATAR_BG_COLOR"
+                  class="input input-bordered input-sm p-1 h-8 w-14"
+                  .value="${isTransparent ? "#00bcba" : state.avatarBg}"
+                  @input="${(e: Event) =>
+                    onFormUpdate({
+                      avatarBg: (e.target as HTMLInputElement).value,
+                    })}"
+                />
+              </div>
+            </div>
+            <div class="pt-2">
+              <span class="text-xs opacity-60">Border</span>
+              <div class="join w-full mt-1">
+                <input
+                  type="radio"
+                  name="PROFILE_DECORATION"
+                  class="btn btn-sm join-item flex-1"
+                  aria-label="None"
+                  value="none"
+                  ?checked="${state.decoration === "none"}"
+                  @change="${() => onFormUpdate({ decoration: "none" })}"
+                />
+                <input
+                  type="radio"
+                  name="PROFILE_DECORATION"
+                  class="btn btn-sm join-item flex-1"
+                  aria-label="Solid"
+                  value="solid"
+                  ?checked="${state.decoration === "solid"}"
+                  @change="${() => onFormUpdate({ decoration: "solid" })}"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="w-64 shrink-0 flex flex-col items-center gap-3">
+            <span
+              class="text-xs font-semibold uppercase tracking-wider opacity-50"
+              >Preview</span
+            >
+            ${state.avatar
+              ? renderAvatarEditor(
+                  {
+                    url: state.avatar,
+                    posX: state.avatarPosX,
+                    posY: state.avatarPosY,
+                    scale: state.avatarScale,
+                    bgColor: state.avatarBg,
+                    decoration: state.decoration,
+                  },
+                  (changes) => {
+                    const updates: Partial<FormState> = {};
+                    if (changes.scale !== undefined)
+                      updates.avatarScale = changes.scale;
+                    if (changes.posX !== undefined)
+                      updates.avatarPosX = changes.posX;
+                    if (changes.posY !== undefined)
+                      updates.avatarPosY = changes.posY;
+                    onFormUpdate(updates);
+                  },
+                )
+              : html`<div
+                  class="w-52 h-52 rounded-full bg-base-300 flex items-center justify-center"
+                >
+                  <span class="text-xs opacity-50">No avatar URL set</span>
+                </div>`}
           </div>
         </div>
-        <div class="border-t border-base-300 pt-3">
-          <span class="text-xs opacity-60">Border decoration</span>
-          <div class="join w-full mt-2">
-            <input
-              type="radio"
-              name="PROFILE_DECORATION"
-              class="btn btn-sm join-item flex-1"
-              aria-label="None"
-              value="none"
-              ?checked="${saved.decoration === "none"}"
-              @change="${handleLivePreview}"
-            />
-            <input
-              type="radio"
-              name="PROFILE_DECORATION"
-              class="btn btn-sm join-item flex-1"
-              aria-label="Solid"
-              value="solid"
-              ?checked="${saved.decoration === "solid"}"
-              @change="${handleLivePreview}"
-            />
+
+        <!-- Banner + Background row -->
+        <div class="shrink-0 flex gap-5">
+          <div
+            class="flex-1 rounded-box border border-base-300 bg-base-200/50 p-3"
+          >
+            <div
+              class="text-xs font-semibold uppercase tracking-wider opacity-50 mb-3"
+            >
+              Banner
+            </div>
+            ${renderUrlField(
+              "PROFILE_BANNER_URL",
+              "Image URL",
+              state.banner,
+              (val) => onFormUpdate({ banner: val }),
+            )}
+            ${renderModeRadios("PROFILE_BANNER_MODE", state.bannerMode, (val) =>
+              onFormUpdate({ bannerMode: val }),
+            )}
+          </div>
+
+          <div
+            class="flex-1 rounded-box border border-base-300 bg-base-200/50 p-3"
+          >
+            <div
+              class="text-xs font-semibold uppercase tracking-wider opacity-50 mb-3"
+            >
+              Background
+            </div>
+            ${renderUrlField(
+              "PROFILE_BACKGROUND_URL",
+              "Image URL",
+              state.background,
+              (val) => onFormUpdate({ background: val }),
+            )}
+            ${renderModeRadios(
+              "PROFILE_BACKGROUND_MODE",
+              state.backgroundMode,
+              (val) => onFormUpdate({ backgroundMode: val }),
+            )}
           </div>
         </div>
-        <div class="border-t border-base-300 pt-3">
-          ${renderUrlField("PROFILE_BANNER_URL", "Banner URL", saved.banner)}
-          ${renderModeRadios("PROFILE_BANNER_MODE", saved.bannerMode)}
-        </div>
-        <div class="border-t border-base-300 pt-3">
-          ${renderUrlField(
-            "PROFILE_BACKGROUND_URL",
-            "Background URL",
-            saved.background,
-          )}
-          ${renderModeRadios("PROFILE_BACKGROUND_MODE", saved.backgroundMode)}
-        </div>
-      </fieldset>
-      <div class="flex flex-col gap-2">
-        <button id="profile-save" class="btn btn-success font-bold">
+
+        <button id="profile-save" class="btn btn-success font-bold shrink-0">
           Save Changes
         </button>
       </div>
@@ -244,7 +293,7 @@ export const createSettingsModal = async (
 ) => {
   if (document.getElementById("profile-modal-host")) return;
 
-  const saved = {
+  const saved: FormState = {
     avatar: await getConfig("PROFILE_IMAGE_URL"),
     banner: await getConfig("PROFILE_BANNER_URL"),
     bannerMode: (await getConfig("PROFILE_BANNER_MODE")) || "fill",
@@ -252,7 +301,12 @@ export const createSettingsModal = async (
     backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
     avatarBg: await getConfig("PROFILE_AVATAR_BG"),
     decoration: await getConfig("PROFILE_DECORATION"),
+    avatarPosX: await getConfig("PROFILE_AVATAR_POSITION_X"),
+    avatarPosY: await getConfig("PROFILE_AVATAR_POSITION_Y"),
+    avatarScale: await getConfig("PROFILE_AVATAR_SCALE"),
   };
+
+  const state: FormState = { ...saved };
 
   const themePref = await getConfig("BETTER_INTRA_THEME");
   const isDark =
@@ -274,7 +328,7 @@ export const createSettingsModal = async (
   Object.assign(dialog.style, {
     marginTop: "auto",
     marginBottom: "10vh",
-    width: "min(540px, calc(100dvw - 2rem))",
+    width: "min(740px, calc(100dvw - 2rem))",
     maxHeight: "80vh",
     borderRadius: "1.5rem",
     overflow: "hidden",
@@ -304,13 +358,27 @@ export const createSettingsModal = async (
       "PROFILE_BACKGROUND_MODE",
       "PROFILE_AVATAR_BG",
       "PROFILE_DECORATION",
+      "PROFILE_AVATAR_POSITION_X",
+      "PROFILE_AVATAR_POSITION_Y",
+      "PROFILE_AVATAR_SCALE",
     ]);
     close();
     location.reload();
   };
 
+  const handleFormUpdate = (updates: Partial<FormState>) => {
+    Object.assign(state, updates);
+    liveApplyBannerBg(state);
+    rerender();
+  };
+
+  const rerender = () => {
+    render(renderPanelContent(state, currentTheme, handleFormUpdate), shadow);
+    bindButtons(shadow, close, reset);
+  };
+
   injectCustomStyles();
-  render(renderPanelContent(saved, currentTheme, close, reset), shadow);
+  rerender();
 
   content.addEventListener("click", (e) => e.stopPropagation());
   dialog.addEventListener("click", () => close());
@@ -318,59 +386,51 @@ export const createSettingsModal = async (
   dialog.showModal();
 
   shadow.querySelector("#profile-save")?.addEventListener("click", async () => {
-    const batchData: Record<string, string> = {};
+    const batchData: Record<string, string | number> = {};
     const keysToRemove: string[] = [];
-    const fields = [
-      { urlKey: "PROFILE_IMAGE_URL" },
-      { urlKey: "PROFILE_BANNER_URL", modeKey: "PROFILE_BANNER_MODE" },
-      { urlKey: "PROFILE_BACKGROUND_URL", modeKey: "PROFILE_BACKGROUND_MODE" },
-    ];
 
-    for (const { urlKey, modeKey } of fields) {
-      const input = shadow.getElementById(urlKey) as HTMLInputElement;
-      const val = input?.value.trim() || "";
-      if (!val) {
-        keysToRemove.push(urlKey);
-        if (modeKey) keysToRemove.push(modeKey);
-      } else {
-        batchData[urlKey] = val;
-        if (modeKey) {
-          const radio = shadow.querySelector<HTMLInputElement>(
-            `input[name="${modeKey}"]:checked`,
-          );
-          batchData[modeKey] = radio?.value || "fill";
-        }
-      }
+    if (!state.avatar) {
+      keysToRemove.push("PROFILE_IMAGE_URL");
+    } else {
+      batchData["PROFILE_IMAGE_URL"] = state.avatar;
     }
 
-    const bgModeRadio = shadow.querySelector<HTMLInputElement>(
-      'input[name="PROFILE_AVATAR_BG_MODE"]:checked',
-    );
-    const bgMode = bgModeRadio?.value || "transparent";
-    const avatarBg =
-      bgMode === "transparent"
-        ? "transparent"
-        : (shadow.getElementById("PROFILE_AVATAR_BG_COLOR") as HTMLInputElement)
-            ?.value || "transparent";
-    batchData["PROFILE_AVATAR_BG"] = avatarBg;
-    const decorationRadio = shadow.querySelector<HTMLInputElement>(
-      'input[name="PROFILE_DECORATION"]:checked',
-    );
-    batchData["PROFILE_DECORATION"] = decorationRadio?.value || "none";
+    if (!state.banner) {
+      keysToRemove.push("PROFILE_BANNER_URL", "PROFILE_BANNER_MODE");
+    } else {
+      batchData["PROFILE_BANNER_URL"] = state.banner;
+      batchData["PROFILE_BANNER_MODE"] = state.bannerMode;
+    }
+
+    if (!state.background) {
+      keysToRemove.push("PROFILE_BACKGROUND_URL", "PROFILE_BACKGROUND_MODE");
+    } else {
+      batchData["PROFILE_BACKGROUND_URL"] = state.background;
+      batchData["PROFILE_BACKGROUND_MODE"] = state.backgroundMode;
+    }
+
+    batchData["PROFILE_AVATAR_BG"] = state.avatarBg;
+    batchData["PROFILE_DECORATION"] = state.decoration;
+    batchData["PROFILE_AVATAR_POSITION_X"] = state.avatarPosX;
+    batchData["PROFILE_AVATAR_POSITION_Y"] = state.avatarPosY;
+    batchData["PROFILE_AVATAR_SCALE"] = state.avatarScale;
 
     if (Object.keys(batchData).length > 0)
-      await chrome.storage.local.set(batchData);
+      await chrome.storage.local.set(batchData as Record<string, string>);
     if (keysToRemove.length > 0)
       await chrome.storage.local.remove(keysToRemove);
 
-    const updatedVisuals = {
-      avatar: batchData["PROFILE_IMAGE_URL"] || "",
-      banner: batchData["PROFILE_BANNER_URL"] || "",
-      bannerMode: batchData["PROFILE_BANNER_MODE"] || "fill",
-      background: batchData["PROFILE_BACKGROUND_URL"] || "",
-      backgroundMode: batchData["PROFILE_BACKGROUND_MODE"] || "fill",
-      avatarBg,
-      decoration: batchData["PROFILE_DECORATION"],
+    const updatedVisuals: VisualUrls = {
+      avatar: state.avatar || "",
+      banner: state.banner || "",
+      bannerMode: state.bannerMode || "fill",
+      background: state.background || "",
+      backgroundMode: state.backgroundMode || "fill",
+      avatarBg: state.avatarBg,
+      decoration: state.decoration,
+      avatarPosX: state.avatarPosX,
+      avatarPosY: state.avatarPosY,
+      avatarScale: state.avatarScale,
     };
 
     try {
@@ -382,3 +442,32 @@ export const createSettingsModal = async (
     close();
   });
 };
+
+function liveApplyBannerBg(state: FormState) {
+  applyImgs({
+    avatar: "",
+    banner: state.banner,
+    bannerMode: state.bannerMode,
+    background: state.background,
+    backgroundMode: state.backgroundMode,
+    avatarBg: state.avatarBg,
+    decoration: state.decoration,
+  });
+}
+
+function bindButtons(shadow: ShadowRoot, close: () => void, reset: () => void) {
+  const resetBtn = shadow.querySelector(
+    "#profile-reset-btn",
+  ) as HTMLElement | null;
+  const closeBtn = shadow.querySelector(
+    "#profile-close-btn",
+  ) as HTMLElement | null;
+  if (resetBtn && !resetBtn.dataset.bound) {
+    resetBtn.addEventListener("click", reset);
+    resetBtn.dataset.bound = "1";
+  }
+  if (closeBtn && !closeBtn.dataset.bound) {
+    closeBtn.addEventListener("click", close);
+    closeBtn.dataset.bound = "1";
+  }
+}

@@ -178,6 +178,9 @@ export async function syncMyVisuals(visuals: {
   backgroundMode?: string;
   avatarBg?: string;
   decoration?: string;
+  avatarPosX?: number;
+  avatarPosY?: number;
+  avatarScale?: number;
 }): Promise<void> {
   const login = await getCloudLogin();
   const token = await getConfig("CLOUD_TOKEN");
@@ -202,6 +205,9 @@ export async function syncMyVisuals(visuals: {
             PROFILE_BACKGROUND_MODE: visuals.backgroundMode || "fill",
             PROFILE_AVATAR_BG: visuals.avatarBg || "transparent",
             PROFILE_DECORATION: visuals.decoration || "none",
+            PROFILE_AVATAR_POSITION_X: visuals.avatarPosX ?? 50,
+            PROFILE_AVATAR_POSITION_Y: visuals.avatarPosY ?? 50,
+            PROFILE_AVATAR_SCALE: visuals.avatarScale ?? 100,
           },
         }),
       },
@@ -236,6 +242,9 @@ export async function fetchUserVisuals(
       backgroundMode: String(data.backgroundMode || "fill"),
       avatarBg: String(data.avatarBg || "transparent"),
       decoration: String(data.decoration || "none"),
+      avatarPosX: Number(data.avatarPosX ?? 50),
+      avatarPosY: Number(data.avatarPosY ?? 50),
+      avatarScale: Number(data.avatarScale ?? 100),
       theme: (data.theme as { profileColor?: string }) || null,
       logtime: (data.logtime as Record<string, unknown>) || null,
     };

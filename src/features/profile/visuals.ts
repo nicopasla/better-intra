@@ -17,6 +17,9 @@ export interface VisualUrls {
   backgroundMode: string;
   avatarBg?: string;
   decoration?: string;
+  avatarPosX?: number;
+  avatarPosY?: number;
+  avatarScale?: number;
   theme?: { profileColor?: string } | null;
   logtime?: {
     calendarColor?: string;
@@ -45,6 +48,9 @@ const getVisualKey = (urls: VisualUrls) =>
     backgroundMode: urls.backgroundMode || "",
     avatarBg: urls.avatarBg || "transparent",
     decoration: urls.decoration || "none",
+    avatarPosX: urls.avatarPosX ?? 50,
+    avatarPosY: urls.avatarPosY ?? 50,
+    avatarScale: urls.avatarScale ?? 100,
     theme: urls.theme || null,
     logtime: urls.logtime || null,
   });
@@ -115,6 +121,13 @@ const needsReapply = (urls: VisualUrls) => {
     !hasBackground(avatar, urls.avatar)
   )
     return true;
+  if (urls.avatar && avatar) {
+    const pos = avatar.style.getPropertyValue("background-position");
+    const size = avatar.style.getPropertyValue("background-size");
+    const expectedPos = `${urls.avatarPosX ?? 50}% ${urls.avatarPosY ?? 50}%`;
+    const expectedSize = `${urls.avatarScale ?? 100}%`;
+    if (pos !== expectedPos || size !== expectedSize) return true;
+  }
   if (urls?.banner && !hasBackground(banner, urls.banner)) return true;
   if (urls?.background && !hasBackground(background, urls.background))
     return true;
@@ -224,6 +237,16 @@ export const applyImgs = (urls: VisualUrls | null) => {
       urls.avatarBg || "transparent",
       "important",
     );
+    avatar.style.setProperty(
+      "background-size",
+      `${urls.avatarScale ?? 100}%`,
+      "important",
+    );
+    avatar.style.setProperty(
+      "background-position",
+      `${urls.avatarPosX ?? 50}% ${urls.avatarPosY ?? 50}%`,
+      "important",
+    );
   }
   if (avatar && !showingOriginalAvatar) {
     avatar.style.setProperty("opacity", "1", "important");
@@ -285,6 +308,16 @@ const attachToggleListener = (avatarEl: HTMLElement) => {
         currentAvatar.style.setProperty(
           "background-color",
           visualCache.avatarBg || "transparent",
+          "important",
+        );
+        currentAvatar.style.setProperty(
+          "background-size",
+          `${visualCache.avatarScale ?? 100}%`,
+          "important",
+        );
+        currentAvatar.style.setProperty(
+          "background-position",
+          `${visualCache.avatarPosX ?? 50}% ${visualCache.avatarPosY ?? 50}%`,
           "important",
         );
         currentAvatar.classList.remove("ft-deco-solid");
@@ -379,6 +412,9 @@ export const updateVisuals = async () => {
         backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
         avatarBg: await getConfig("PROFILE_AVATAR_BG"),
         decoration: await getConfig("PROFILE_DECORATION"),
+        avatarPosX: await getConfig("PROFILE_AVATAR_POSITION_X"),
+        avatarPosY: await getConfig("PROFILE_AVATAR_POSITION_Y"),
+        avatarScale: await getConfig("PROFILE_AVATAR_SCALE"),
       };
 
       if (

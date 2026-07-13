@@ -39,6 +39,7 @@ export interface BetterIntraConfig {
   // Clusters Feature Settings
   CLUSTERS_SHOW_MARKERS: boolean;
   CLUSTERS_DEFAULT_ID: string;
+  CLUSTERS_OPEN_NEW_TAB: boolean;
 
   // Profile Feature Settings
   PROFILE_EVENT_TYPE_FILTER: string;
@@ -119,6 +120,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
 
   CLUSTERS_SHOW_MARKERS: true,
   CLUSTERS_DEFAULT_ID: "",
+  CLUSTERS_OPEN_NEW_TAB: false,
 
   PROFILE_EVENT_TYPE_FILTER: "all",
   CLUSTERS_CAMPUS: "",
@@ -198,6 +200,7 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "LOGTIME_LABELS_COLOR",
   "CLUSTERS_SHOW_MARKERS",
   "CLUSTERS_DEFAULT_ID",
+  "CLUSTERS_OPEN_NEW_TAB",
   "PROFILE_EVENT_TYPE_FILTER",
   "CLUSTERS_CAMPUS",
   "PROFILE_IMAGE_URL",

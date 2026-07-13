@@ -67,6 +67,10 @@ export async function initClusters() {
     reRenderUI();
     refreshMarkersSoon();
 
+    if (await getConfig("CLUSTERS_OPEN_NEW_TAB")) {
+      document.addEventListener("click", onClusterProfileClick, true);
+    }
+
     const findAndAttach = () => {
       const svg = document.querySelector<SVGSVGElement>("svg");
       if (svg && svg !== observedSvgRoot) {
@@ -118,7 +122,30 @@ export async function initClusters() {
       },
       { once: true },
     );
+  }
 
+  function onClusterProfileClick(e: MouseEvent) {
+    const target = e.target as HTMLElement;
+
+    const svgImage = target.closest("image[data-tooltip-login]");
+    if (svgImage) {
+      const login = svgImage.getAttribute("data-tooltip-login");
+      if (login) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.open(`https://profile.intra.42.fr/users/${login}`, "_blank");
+        return;
+      }
+    }
+
+    const link = target.closest(
+      "a[href*='profile.intra.42.fr/users/']",
+    ) as HTMLAnchorElement | null;
+    if (link) {
+      e.preventDefault();
+      e.stopPropagation();
+      window.open(link.href, "_blank");
+    }
   }
 
   start();

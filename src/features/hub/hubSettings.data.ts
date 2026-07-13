@@ -272,6 +272,16 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "clusters",
+      key: "CLUSTERS_OPEN_NEW_TAB",
+      label: "Open profiles in new tab",
+      desc: "When clicking a user on the clusters map, opens their profile in a new tab.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.CLUSTERS_OPEN_NEW_TAB,
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "clusters",
       key: "CLUSTERS_DEFAULT_ID",
       label: "Default cluster",
       desc: "Prefills a cluster page when the page opens.",

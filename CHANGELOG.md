@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-07-13
+
+### Features 🎉
+
+- feat(profile): add markers to custom clusters dialog ([7ae5c48](https://github.com/nicopasla/better-intra/commit/7ae5c48))
+- feat(clusters): implement cluster dialog ([aed57d1](https://github.com/nicopasla/better-intra/commit/aed57d1))
+- feat(clusters): add option to open user profiles in new tab from clusters map ([b912fa4](https://github.com/nicopasla/better-intra/commit/b912fa4))
+- feat(friends): add customizable avatar properties for enhanced user experience ([bfa36be](https://github.com/nicopasla/better-intra/commit/bfa36be))
+- feat(profile): add avatar customization options including position and scale ([a3e192e](https://github.com/nicopasla/better-intra/commit/a3e192e))
+
+### Bug fixes 🐛
+
+- fix(profile): adjust layout styles for profile modal to improve responsiveness ([b40fc16](https://github.com/nicopasla/better-intra/commit/b40fc16))
+
 ## [1.5.0] - 2026-07-12
 
 ### Features 🎉
@@ -762,7 +776,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.5.0...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.5.1...HEAD
+[1.5.1]: https://github.com/nicopasla/better-intra/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/nicopasla/better-intra/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/nicopasla/better-intra/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/nicopasla/better-intra/compare/v1.3.2...v1.4.0

@@ -102,12 +102,12 @@ function renderPanelContent(
 
   return html`
     <style>
-      :host { display: block; width: 100%; height: 100%; }
+      :host { display: block; }
       ${unsafeHTML(sharedCSS)}
     </style>
     <div
       data-theme="${currentTheme}"
-      class="flex flex-col h-full p-4 gap-3 bg-base-100 rounded-2xl"
+      class="flex flex-col p-4 gap-3 bg-base-100 rounded-2xl"
     >
       <div class="flex justify-between items-center shrink-0">
         <button
@@ -122,7 +122,7 @@ function renderPanelContent(
         </button>
       </div>
 
-      <div class="flex-1 min-h-0 flex flex-col gap-3 overflow-y-auto pr-1">
+      <div class="flex flex-col gap-3">
         <!-- Top row: Avatar (left) + Preview (right) -->
         <div class="shrink-0 flex gap-5">
           <!-- Avatar card -->
@@ -331,13 +331,12 @@ export const createSettingsModal = async (
     width: "min(740px, calc(100dvw - 2rem))",
     maxHeight: "80vh",
     borderRadius: "1.5rem",
-    overflow: "hidden",
+    overflowY: "auto",
     padding: "0",
   });
 
   const content = document.createElement("div");
-  content.style.cssText =
-    "width:100%;height:100%;display:flex;flex-direction:column;";
+  content.style.cssText = "width:100%;display:flex;flex-direction:column;";
   dialog.appendChild(content);
   document.body.appendChild(dialog);
 

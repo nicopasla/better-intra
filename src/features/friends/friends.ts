@@ -8,6 +8,10 @@ export interface FriendData {
   displayName: string;
   avatar: string | null;
   customAvatar: string | null;
+  avatarBg?: string;
+  avatarPosX?: number;
+  avatarPosY?: number;
+  avatarScale?: number;
   level: number;
   grade: string | null;
   isOnline: boolean;

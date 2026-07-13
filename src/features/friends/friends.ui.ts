@@ -78,6 +78,7 @@ function renderFriendRow(
     friend.customAvatar !== friend.avatar
   );
   const showingOriginal = showingOriginalAvatars.get(friend.login) ?? false;
+  const showCustom = hasCustom && !showingOriginal;
   const currentSrc =
     hasCustom && !showingOriginal ? friend.customAvatar : friend.avatar;
   const toggleTitle = hasCustom
@@ -85,6 +86,17 @@ function renderFriendRow(
       ? "Click to view custom avatar"
       : "Click to view original avatar"
     : "";
+
+  const toggleCustom = hasCustom
+    ? (e: Event) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const isOrig = showingOriginalAvatars.get(friend.login) ?? false;
+        showingOriginalAvatars.set(friend.login, !isOrig);
+        renderWidgetUI();
+      }
+    : undefined;
+
   return html`
     <!-- Avatar column -->
     <div class="shrink-0">
@@ -97,54 +109,53 @@ function renderFriendRow(
       >
         ${currentSrc
           ? html`<div class="avatar ${friend.isOnline ? "avatar-online" : ""}">
-              <div class="w-14 h-14 rounded-full ${medalClass}">
-                <img
-                  src="${currentSrc}"
-                  alt="${friend.login}"
-                  loading="lazy"
-                  title="${toggleTitle}"
-                  @click="${hasCustom
-                    ? (e: Event) => {
-                        e.stopPropagation();
-                        e.preventDefault();
+              ${showCustom
+                ? html`<div
+                    class="w-14 h-14 rounded-full ${medalClass} cursor-pointer"
+                    style="background-image:url(${currentSrc});background-size:${friend.avatarScale ??
+                    100}%;background-position:${friend.avatarPosX ??
+                    50}% ${friend.avatarPosY ??
+                    50}%;background-color:${friend.avatarBg || "transparent"};background-repeat:no-repeat;"
+                    title="${toggleTitle}"
+                    @click="${toggleCustom}"
+                  ></div>`
+                : html`<div class="w-14 h-14 rounded-full ${medalClass}">
+                    <img
+                      src="${currentSrc}"
+                      alt="${friend.login}"
+                      loading="lazy"
+                      title="${toggleTitle}"
+                      @click="${toggleCustom}"
+                      @error="${(e: Event) => {
                         const img = e.target as HTMLImageElement;
-                        const isOrig =
-                          showingOriginalAvatars.get(friend.login) ?? false;
-                        showingOriginalAvatars.set(friend.login, !isOrig);
-                        img.src = !isOrig
-                          ? friend.avatar!
-                          : friend.customAvatar!;
-                        img.title = !isOrig
-                          ? "Click to view custom avatar"
-                          : "Click to view original avatar";
-                      }
-                    : undefined}"
-                  @error="${(e: Event) => {
-                    const img = e.target as HTMLImageElement;
-                    if (img.dataset.fallback === "letter") return;
-                    if (hasCustom && !img.dataset.fallback && friend.avatar) {
-                      img.dataset.fallback = "42";
-                      img.src = friend.avatar;
-                      return;
-                    }
-                    img.dataset.fallback = "letter";
-                    const container = img.closest(".avatar");
-                    if (!container) return;
-                    const wrapper =
-                      container.querySelector<HTMLElement>(".w-14");
-                    if (!wrapper) return;
-                    render(
-                      html`<span class="text-base font-bold"
-                        >${friend.login[0].toUpperCase()}</span
-                      >`,
-                      wrapper,
-                    );
-                    container.classList.add("avatar-placeholder");
-                    container.classList.remove("avatar-online");
-                    img.remove();
-                  }}"
-                />
-              </div>
+                        if (img.dataset.fallback === "letter") return;
+                        if (
+                          hasCustom &&
+                          !img.dataset.fallback &&
+                          friend.avatar
+                        ) {
+                          img.dataset.fallback = "42";
+                          img.src = friend.avatar;
+                          return;
+                        }
+                        img.dataset.fallback = "letter";
+                        const container = img.closest(".avatar");
+                        if (!container) return;
+                        const wrapper =
+                          container.querySelector<HTMLElement>(".w-14");
+                        if (!wrapper) return;
+                        render(
+                          html`<span class="text-base font-bold"
+                            >${friend.login[0].toUpperCase()}</span
+                          >`,
+                          wrapper,
+                        );
+                        container.classList.add("avatar-placeholder");
+                        container.classList.remove("avatar-online");
+                        img.remove();
+                      }}"
+                    />
+                  </div>`}
             </div>`
           : html`<div
               class="avatar avatar-placeholder ${friend.isOnline

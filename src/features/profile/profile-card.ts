@@ -465,12 +465,9 @@ async function initShortcutButtons() {
     a.href = "#";
     a.addEventListener("click", (e) => {
       e.preventDefault();
-      console.log("[BI] Clusters button clicked, opening dialog...");
       try {
         openClusterDialog();
-      } catch (err) {
-        console.error("[BI] Failed to open cluster dialog:", err);
-      }
+      } catch (err) {}
     });
     a.insertAdjacentHTML(
       "beforeend",
@@ -481,7 +478,6 @@ async function initShortcutButtons() {
     a.appendChild(span);
     div.appendChild(a);
     container.appendChild(div);
-    console.log("[BI] Clusters button added to DOM");
   })();
   makeButton(
     "https://profile.intra.42.fr/users/me/edit",

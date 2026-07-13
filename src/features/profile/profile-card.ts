@@ -1,6 +1,7 @@
 import { getConfig } from "../../config.ts";
 import { CLUSTERS, getClusterData } from "../clusters/clusters.data.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
+import { openClusterDialog } from "../clusters/map-dialog.ts";
 import ARROW_SHARE_SVG from "../../assets/svg/arrow_share.svg?raw";
 
 const PROFILE_CARD_CLASS = "ft-profile-card";
@@ -456,12 +457,32 @@ async function initShortcutButtons() {
     "Holy Graph",
     openNewTab,
   );
-  makeButton(
-    "https://meta.intra.42.fr/clusters",
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20"><path d="M288 104C288 81.9 270.1 64 248 64L200 64C177.9 64 160 81.9 160 104L160 152C160 174.1 177.9 192 200 192L248 192C270.1 192 288 174.1 288 152L288 104zM288 296C288 273.9 270.1 256 248 256L200 256C177.9 256 160 273.9 160 296L160 344C160 366.1 177.9 384 200 384L248 384C270.1 384 288 366.1 288 344L288 296zM160 488L160 536C160 558.1 177.9 576 200 576L248 576C270.1 576 288 558.1 288 536L288 488C288 465.9 270.1 448 248 448L200 448C177.9 448 160 465.9 160 488zM480 104C480 81.9 462.1 64 440 64L392 64C369.9 64 352 81.9 352 104L352 152C352 174.1 369.9 192 392 192L440 192C462.1 192 480 174.1 480 152L480 104zM352 296L352 344C352 366.1 369.9 384 392 384L440 384C462.1 384 480 366.1 480 344L480 296C480 273.9 462.1 256 440 256L392 256C369.9 256 352 273.9 352 296zM480 488C480 465.9 462.1 448 440 448L392 448C369.9 448 352 465.9 352 488L352 536C352 558.1 369.9 576 392 576L440 576C462.1 576 480 558.1 480 536L480 488z"/></svg>`,
-    "Clusters",
-    openNewTab,
-  );
+  // Clusters — custom button that opens dialog
+  (() => {
+    const div = document.createElement("div");
+    div.className = "py-3 px-4 hover:text-legacy-main";
+    const a = document.createElement("a");
+    a.href = "#";
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("[BI] Clusters button clicked, opening dialog...");
+      try {
+        openClusterDialog();
+      } catch (err) {
+        console.error("[BI] Failed to open cluster dialog:", err);
+      }
+    });
+    a.insertAdjacentHTML(
+      "beforeend",
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20"><path d="M288 104C288 81.9 270.1 64 248 64L200 64C177.9 64 160 81.9 160 104L160 152C160 174.1 177.9 192 200 192L248 192C270.1 192 288 174.1 288 152L288 104zM288 296C288 273.9 270.1 256 248 256L200 256C177.9 256 160 273.9 160 296L160 344C160 366.1 177.9 384 200 384L248 384C270.1 384 288 366.1 288 344L288 296zM160 488L160 536C160 558.1 177.9 576 200 576L248 576C270.1 576 288 558.1 288 536L288 488C288 465.9 270.1 448 248 448L200 448C177.9 448 160 465.9 160 488zM480 104C480 81.9 462.1 64 440 64L392 64C369.9 64 352 81.9 352 104L352 152C352 174.1 369.9 192 392 192L440 192C462.1 192 480 174.1 480 152L480 104zM352 296L352 344C352 366.1 369.9 384 392 384L440 384C462.1 384 480 366.1 480 344L480 296C480 273.9 462.1 256 440 256L392 256C369.9 256 352 273.9 352 296zM480 488C480 465.9 462.1 448 440 448L392 448C369.9 448 352 465.9 352 488L352 536C352 558.1 369.9 576 392 576L440 576C462.1 576 480 558.1 480 536L480 488z"/></svg>`,
+    );
+    const span = document.createElement("span");
+    span.textContent = "Clusters";
+    a.appendChild(span);
+    div.appendChild(a);
+    container.appendChild(div);
+    console.log("[BI] Clusters button added to DOM");
+  })();
   makeButton(
     "https://profile.intra.42.fr/users/me/edit",
     `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><circle cx="19" cy="11" r="2"/><path d="M19 8v1"/><path d="M19 13v1"/><path d="m21.6 9.5-.87.5"/><path d="m17.27 12-.87.5"/><path d="m21.6 12.5-.87-.5"/><path d="m17.27 10-.87-.5"/></svg>`,

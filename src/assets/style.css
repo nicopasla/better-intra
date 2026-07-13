@@ -6,7 +6,8 @@
     "#profile-badges-shadow", "#cluster-shadow-host",
     "#shortcuts-shadow-wrapper", "#friends-shadow-wrapper",
     "#ft-friend-btn-shadow",
-    "#logtime-shadow-wrapper", "#popup-root", "#project-badges-shadow";
+    "#logtime-shadow-wrapper", "#popup-root", "#project-badges-shadow",
+    "#cluster-map-dialog", "#profile-modal-host";
   themes:
     "light", "dark", "valentine", "cupcake", "bumblebee", "emerald", "corporate",
     "retro", "garden", "lofi", "pastel", "fantasy", "wireframe", "cmyk", "autumn",

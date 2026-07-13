@@ -1,7 +1,7 @@
 import { getConfig } from "../../config.ts";
 
 interface ClusterDataFile {
-  clusters: { id: string; name: string }[];
+  clusters: { id: string; name: string; svg?: string }[];
   definitions: Record<string, unknown>;
 }
 
@@ -9,7 +9,7 @@ interface CampusManifest {
   campuses: { id: string; name: string }[];
 }
 
-export let CLUSTERS: { id: string; name: string }[] = [];
+export let CLUSTERS: { id: string; name: string; svg?: string }[] = [];
 
 const CAMPUS_BASE = "https://api.betterintra.com/gh/campuses";
 const CACHE_PREFIX = "CAMPUS_DATA_";

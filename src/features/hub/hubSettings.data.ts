@@ -20,11 +20,11 @@ export const HUB_INFO = {
 
 export const FEATURE_DEFS = [
   {
-    id: "logtime",
-    name: "Logtime",
-    icon: CLOCK,
-    desc: "Redesign the logtime to show weekly and total hours.",
-    cols: 3,
+    id: "profile",
+    name: "Profile",
+    icon: USER,
+    desc: "Improves readability and allows local profile/background image customization.",
+    cols: 2,
   },
   {
     id: "clusters",
@@ -34,11 +34,11 @@ export const FEATURE_DEFS = [
     cols: 2,
   },
   {
-    id: "profile",
-    name: "Profile",
-    icon: USER,
-    desc: "Improves readability and allows local profile/background image customization.",
-    cols: 2,
+    id: "logtime",
+    name: "Logtime",
+    icon: CLOCK,
+    desc: "Redesign the logtime to show weekly and total hours.",
+    cols: 3,
   },
   {
     id: "shortcuts",

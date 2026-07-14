@@ -561,6 +561,7 @@ function renderSeatOverlays(
   const svgRect = svgEl.getBoundingClientRect();
   if (svgRect.width === 0 || svgRect.height === 0) return;
 
+  const mapRect = mapArea.getBoundingClientRect();
   const scaleX = svgRect.width / svgViewBox.w;
   const scaleY = svgRect.height / svgViewBox.h;
 
@@ -573,6 +574,29 @@ function renderSeatOverlays(
   for (const [host, seat] of occupancy) {
     const pos = seatPosCache.get(host);
     if (!pos) continue;
+
+    let left: number, top: number, width: number, height: number;
+    let rotationDeg = 0;
+    const svgSeat = svgEl.querySelector(`[id="${CSS.escape(host)}"]`);
+    if (svgSeat) {
+      const rect = svgSeat.getBoundingClientRect();
+      const w = pos.w * scaleX;
+      const h = pos.h * scaleY;
+      left = rect.left + rect.width / 2 - mapRect.left - w / 2;
+      top = rect.top + rect.height / 2 - mapRect.top - h / 2;
+      width = w;
+      height = h;
+      const tr = svgSeat.getAttribute("transform");
+      if (tr) {
+        const m = tr.match(/rotate\(\s*([\d.-]+)/);
+        if (m) rotationDeg = parseFloat(m[1]) || 0;
+      }
+    } else {
+      left = pos.x * scaleX;
+      top = pos.y * scaleY;
+      width = pos.w * scaleX;
+      height = pos.h * scaleY;
+    }
 
     const since = new Date(seat.begin_at);
     const timeStr = since.toLocaleTimeString([], {
@@ -588,8 +612,9 @@ function renderSeatOverlays(
     });
     a.style.cssText = [
       "pointer-events:auto;",
-      `left:${pos.x * scaleX}px;top:${pos.y * scaleY}px;`,
-      `width:${pos.w * scaleX}px;height:${pos.h * scaleY}px;`,
+      `left:${left}px;top:${top}px;`,
+      `width:${width}px;height:${height}px;`,
+      rotationDeg !== 0 ? `transform:rotate(${rotationDeg}deg);` : "",
     ].join("");
 
     const tip = document.createElement("span");

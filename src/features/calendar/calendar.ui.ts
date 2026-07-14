@@ -64,7 +64,7 @@ function renderPanel(el: Element | undefined) {
                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                     <div class="bg-base-300 rounded-lg p-2.5">
                       <span class="font-semibold">Apple Calendar</span>
-                      <p class="opacity-60 mt-0.5">Click the webcal:// link</p>
+                      <p class="opacity-60 mt-0.5">Scan the QR code or File → New</p>
                     </div>
                     <div class="bg-base-300 rounded-lg p-2.5">
                       <span class="font-semibold">Google Calendar</span>

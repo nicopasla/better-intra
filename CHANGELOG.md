@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-07-15
+
+### Features 🎉
+
+- feat(rankings): add rankings dialog and integrate with profile card ([b93292f](https://github.com/nicopasla/better-intra/commit/b93292f))
+
+### Bug fixes 🐛
+
+- fix(calendar): update instructions for adding calendar to Apple Calendar ([cc3d184](https://github.com/nicopasla/better-intra/commit/cc3d184))
+- fix(calendar): remove unused sync button and associated SVG import ([6050a3f](https://github.com/nicopasla/better-intra/commit/6050a3f))
+- fix(feature-defs): swap logtime and profile entries ([3421482](https://github.com/nicopasla/better-intra/commit/3421482))
+- fix(avatar-editor): improve mouse drag positioning with dynamic scaling adjustments ([f0a35d4](https://github.com/nicopasla/better-intra/commit/f0a35d4))
+- fix(clusters): enhance seat overlay rendering with dynamic positioning and rotation ([06041e7](https://github.com/nicopasla/better-intra/commit/06041e7))
+
 ## [1.5.1] - 2026-07-13
 
 ### Features 🎉
@@ -776,7 +790,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.5.1...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.5.2...HEAD
+[1.5.2]: https://github.com/nicopasla/better-intra/compare/v1.5.1...v1.5.2
 [1.5.1]: https://github.com/nicopasla/better-intra/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/nicopasla/better-intra/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/nicopasla/better-intra/compare/v1.4.0...v1.4.1

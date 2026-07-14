@@ -38,19 +38,32 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 * **Directional markers** — small arrows on the cluster map showing which way each seat faces. Works for **Belgium** clusters (shi, fu, mi, a1, a2). Toggle on/off from the cluster tab bar.
 * **Cluster picker** — a dropdown on the cluster tab bar to quickly switch clusters, with a markers on/off button.
 * **Default cluster** — set your preferred cluster and it loads automatically when you open the page.
+* **Open in new tab** — optionally open user profiles in a new tab when clicking seats on the cluster map.
+
+---
+
+### 🗺️ Cluster Map Dialog
+
+A live interactive cluster map popup accessible from profile quick-link buttons.
+
+* **Real-time seat occupancy** — see user avatars overlaid on occupied seats with login tooltips. Polls every 30 seconds with a "Updated X min ago" indicator.
+* **Cluster room tabs** — switch between cluster rooms within the dialog.
+* **Wi-Fi users list** — a dedicated tab showing who's currently connected via Wi-Fi, with avatars, logins, and connection time.
+* **Click to visit profile** — click any occupied seat to open that user's profile, optionally in a new tab.
+* **In-dialog settings** — toggle directional markers and set your default cluster from within the dialog.
+* **Belgium-only** — full live map for Belgian campuses (campus ID 12). Other campuses get a direct link to the cluster map page.
 
 ---
 
 ### 👤 Profile
 
-* **Custom visuals** — set your own avatar, banner, and background images with mode options (fill, fit, stretch, center, tile). **Click your avatar** on your profile page to open the customisation panel. See a live preview as you type the image URL.
+* **Custom visuals** — set your own avatar, banner, and background images with mode options (fill, fit, stretch, center, tile). **Click your avatar** on your profile page to open the customisation panel with zoom slider (50–200%), click-and-drag repositioning, and mouse wheel zoom on the preview. See a live preview as you type the image URL.
+* **Avatar decoration** — toggle a transparent or solid-colour background behind your avatar with a colour picker. Add an optional solid border around your avatar.
 * **Visuals sync** — your custom images are visible to other Better Intra users when they view your profile. Click any custom avatar to see the original one. ☁️
 * **Instant profile visuals** — custom avatars, banners, and backgrounds are cached locally. After the first visit they appear instantly on any profile. Changes refresh silently in the background.
 * **Dashboard cards** — reorder your profile cards (Logtime, Agenda, Evaluations, Projects, Achievements) by dragging them. Hide cards you don't need.
 * **Project badges** — projects in the Projects card appear as colour-coded badges (green for normal projects, red for exams) for quick visual scanning.
 * **Event filtering** — filter your agenda by campus and event type (exam, conference, workshop, hackathon, etc.).
-* **Avatar decoration** — add a solid border around your avatar in your chosen colour.
-* **Avatar background** — pick a solid background colour behind your avatar.
 * **Slots redirection** — automatically redirects slots and defense links for Belgium campus users when your campus is detected.
 * **Sort evaluation slots** — pending evaluations split into "Evaluator" and "Evaluated" sections for easier browsing.
 * **Achievement milestones** — completed achievements get a subtle animated glow.
@@ -88,6 +101,17 @@ Quick-access links shown as colourful buttons on your profile page.
 * **Hide important links** — optionally hide the default Intra navigation links to give shortcuts the full width.
 * **Alignment** — when important links are hidden, align your shortcuts left, center, or right.
 * Set them up in the settings panel.
+
+---
+
+### 🏆 Rankings
+
+A monthly leaderboard dialog accessible from profile quick-link buttons.
+
+* **Cursus selector** — choose between Piscine Brussels and 42 Cursus tracks.
+* **Month/year picker** — filter the leaderboard by month and year. Selections persist across sessions.
+* **Detailed rankings** — each entry shows rank number, avatar, display name, login, and level.
+* **Belgium only** — available for campus ID 12.
 
 ---
 

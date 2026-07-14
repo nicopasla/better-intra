@@ -8,11 +8,17 @@ Replace the default logtime view with a monthly calendar showing your logged hou
 ### 🖥️ Clusters
 See directional arrows on the cluster map showing which way each seat faces (works for all campuses with submitted cluster data). Switch between clusters with a dropdown, toggle arrows on/off, and set a default cluster that loads automatically. Your campus is auto-detected — no manual setup needed.
 
+### 🗺️ Cluster Map Dialog
+Open a live interactive cluster map popup from your profile. See real-time seat occupancy with user avatars overlaid on occupied seats, switch between cluster rooms with tabs, and browse a Wi-Fi users list showing who's connected. Auto-refreshes every 30 seconds with a last-updated indicator. Click any seat to open that user's profile (optionally in a new tab). Belgium campuses get full live maps; other campuses get a direct link to the cluster map.
+
 ### 👤 Profile
-Personalise your profile with custom avatar, banner, and background images — click your avatar to open the customisation panel. Choose from 30+ theme presets (synthwave, dracula, cyberpunk, garden, neon, soap, citrus, and more) that recolor your profile badges and accents. Reorder or hide dashboard cards (Logtime, Agenda, Evaluations, Projects, Achievements) by dragging them. Wallet, level, rank, score, and seat show as coloured badges below the profile header — click wallet to open the 42 shop. Filter your agenda by campus and event type. Click any seat label to jump to the cluster map with that seat highlighted. The Projects card uses colour-coded badges (green for projects, red for exams) for quick scanning. The Thursday Roulette card also shows your monthly evaluation history as a corrector.
+Personalise your profile with custom avatar, banner, and background images — click your avatar to open the customisation panel with zoom slider (50-200%), click-and-drag repositioning, mouse wheel zoom, and transparent/colour background toggle with colour picker. Choose from 30+ theme presets (synthwave, dracula, cyberpunk, garden, neon, soap, citrus, and more) that recolor your profile badges and accents. Reorder or hide dashboard cards (Logtime, Agenda, Evaluations, Projects, Achievements) by dragging them. Wallet, level, rank, score, and seat show as coloured badges below the profile header — click wallet to open the 42 shop. Filter your agenda by campus and event type. Click any seat label to jump to the cluster map with that seat highlighted. The Projects card uses colour-coded badges (green for projects, red for exams) for quick scanning. The Thursday Roulette card also shows your monthly evaluation history as a corrector.
 
 ### 🔗 Shortcuts
 Add up to 8 quick-access links displayed as colourful buttons on your profile. Each link can have a name, URL, custom colour, and optional emoji. Site icons load automatically when no emoji is set. Text colour (black or white) is chosen for readability.
+
+### 🏆 Rankings
+Open a monthly leaderboard dialog from your profile showing ranked users by cursus (Piscine, 42 Cursus). Filter by month and year — selections persist across sessions. See each user's rank, avatar, name, login, and level. Belgium only.
 
 ### 👥 Friends
 Access a friends panel from a button in the bottom-right corner. Add friends by login, see their avatar, level bar, wallet, correction points, and online status. Sort by online status, name, level, wallet, or evaluation points. The button badge shows how many friends are online. A follow/unfollow button appears next to the role dropdown on any user's profile, letting you manage friends without opening the full widget. Requires cloud sync.

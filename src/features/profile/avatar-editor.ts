@@ -85,17 +85,16 @@ function onPreviewMouseDown(
     const startPosX = posMatch ? parseFloat(posMatch[1]) : 50;
     const startPosY = posMatch ? parseFloat(posMatch[2]) : 50;
 
-    const factor = Math.abs(startScale / 100 - 1);
+    const sign = startScale < 100 ? 1 : -1;
+    const speed = 10000 / startScale;
 
     const onMove = (moveEvent: MouseEvent) => {
       moveEvent.preventDefault();
       const dx = moveEvent.clientX - startX;
       const dy = moveEvent.clientY - startY;
 
-      if (factor < 0.001) return;
-
-      const dPosX = (dx / size) * (100 / factor);
-      const dPosY = (dy / size) * (100 / factor);
+      const dPosX = sign * (dx / size) * speed;
+      const dPosY = sign * (dy / size) * speed;
 
       onUpdate({
         posX: Math.round(Math.max(0, Math.min(100, startPosX + dPosX))),

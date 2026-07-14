@@ -2,7 +2,9 @@ import { getConfig } from "../../config.ts";
 import { CLUSTERS, getClusterData } from "../clusters/clusters.data.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import { openClusterDialog } from "../clusters/map-dialog.ts";
+import { openRankingsDialog } from "./rankings-dialog.ts";
 import ARROW_SHARE_SVG from "../../assets/svg/arrow_share.svg?raw";
+import RANKING_SVG from "../../assets/svg/ranking.svg?raw";
 
 const PROFILE_CARD_CLASS = "ft-profile-card";
 const SHADOW_HOST_ID = "profile-badges-shadow";
@@ -479,6 +481,33 @@ async function initShortcutButtons() {
     div.appendChild(a);
     container.appendChild(div);
   })();
+  // Rankings — custom button that opens dialog
+  if ((await getConfig("CLUSTERS_CAMPUS")) === "12") {
+    (() => {
+      const div = document.createElement("div");
+      div.className = "py-3 px-4 hover:text-legacy-main";
+      const a = document.createElement("a");
+      a.href = "#";
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        try {
+          openRankingsDialog();
+        } catch (err) {}
+      });
+      a.insertAdjacentHTML(
+        "beforeend",
+        RANKING_SVG.replace(
+          "<svg",
+          '<svg width="20" height="20" fill="currentColor"',
+        ),
+      );
+      const span = document.createElement("span");
+      span.textContent = "Rankings";
+      a.appendChild(span);
+      div.appendChild(a);
+      container.appendChild(div);
+    })();
+  }
   makeButton(
     "https://profile.intra.42.fr/users/me/edit",
     `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><circle cx="19" cy="11" r="2"/><path d="M19 8v1"/><path d="M19 13v1"/><path d="m21.6 9.5-.87.5"/><path d="m17.27 12-.87.5"/><path d="m21.6 12.5-.87-.5"/><path d="m17.27 10-.87-.5"/></svg>`,

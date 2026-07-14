@@ -5,7 +5,6 @@ import { hashLogin } from "../../utils/crypto.ts";
 import { generateQrDataUrl } from "./qr.ts";
 import CALENDAR_PLUS_SVG from "../../assets/svg/calendar-plus.svg?raw";
 import COPY_SVG from "../../assets/svg/copy.svg?raw";
-import SYNC_SVG from "../../assets/svg/sync.svg?raw";
 
 const WORKER_URL = "https://api.betterintra.com";
 const TOKEN_KEY = "CALENDAR_SYNC_TOKEN";
@@ -58,19 +57,6 @@ function renderPanel(el: Element | undefined) {
                     >
                       <span class="size-4 flex items-center justify-center"
                         >${unsafeHTML(COPY_SVG)}</span
-                      >
-                    </button>
-                    <button
-                      class="btn btn-sm btn-square"
-                      @click="${async () => {
-                        await navigator.clipboard.writeText(
-                          `webcal://${WORKER_URL.replace("https://", "")}/calendar/${token}.ics`,
-                        );
-                      }}"
-                      title="Copy webcal link"
-                    >
-                      <span class="size-4 flex items-center justify-center"
-                        >${unsafeHTML(SYNC_SVG)}</span
                       >
                     </button>
                   </div>

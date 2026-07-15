@@ -16,6 +16,7 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
       await clearAuthFailed();
       updateUI();
       await reloadTab();
+      window.location.reload();
     });
   };
 

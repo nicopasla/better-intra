@@ -174,8 +174,10 @@ export async function syncMyVisuals(visuals: {
   avatar: string;
   banner: string;
   bannerMode?: string;
+  bannerColor?: string;
   background: string;
   backgroundMode?: string;
+  backgroundColor?: string;
   avatarBg?: string;
   decoration?: string;
   avatarPosX?: number;
@@ -201,8 +203,10 @@ export async function syncMyVisuals(visuals: {
             PROFILE_IMAGE_URL: visuals.avatar,
             PROFILE_BANNER_URL: visuals.banner,
             PROFILE_BANNER_MODE: visuals.bannerMode || "fill",
+            PROFILE_BANNER_COLOR: visuals.bannerColor || "",
             PROFILE_BACKGROUND_URL: visuals.background,
             PROFILE_BACKGROUND_MODE: visuals.backgroundMode || "fill",
+            PROFILE_BACKGROUND_COLOR: visuals.backgroundColor || "",
             PROFILE_AVATAR_BG: visuals.avatarBg || "transparent",
             PROFILE_DECORATION: visuals.decoration || "none",
             PROFILE_AVATAR_POSITION_X: visuals.avatarPosX ?? 50,
@@ -238,8 +242,10 @@ export async function fetchUserVisuals(
       avatar: String(data.avatar || ""),
       banner: String(data.banner || ""),
       bannerMode: String(data.bannerMode || "fill"),
+      bannerColor: String(data.bannerColor || ""),
       background: String(data.background || ""),
       backgroundMode: String(data.backgroundMode || "fill"),
+      backgroundColor: String(data.backgroundColor || ""),
       avatarBg: String(data.avatarBg || "transparent"),
       decoration: String(data.decoration || "none"),
       avatarPosX: Number(data.avatarPosX ?? 50),

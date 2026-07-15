@@ -13,8 +13,10 @@ export interface VisualUrls {
   avatar: string;
   banner: string;
   bannerMode: string;
+  bannerColor?: string;
   background: string;
   backgroundMode: string;
+  backgroundColor?: string;
   avatarBg?: string;
   decoration?: string;
   avatarPosX?: number;
@@ -44,8 +46,10 @@ const getVisualKey = (urls: VisualUrls) =>
     avatar: urls.avatar || "",
     banner: urls.banner || "",
     bannerMode: urls.bannerMode || "",
+    bannerColor: urls.bannerColor || "",
     background: urls.background || "",
     backgroundMode: urls.backgroundMode || "",
+    backgroundColor: urls.backgroundColor || "",
     avatarBg: urls.avatarBg || "transparent",
     decoration: urls.decoration || "none",
     avatarPosX: urls.avatarPosX ?? 50,
@@ -129,8 +133,26 @@ const needsReapply = (urls: VisualUrls) => {
     if (pos !== expectedPos || size !== expectedSize) return true;
   }
   if (urls?.banner && !hasBackground(banner, urls.banner)) return true;
+  if (urls?.bannerColor && banner) {
+    const style = document.getElementById("ft-banner-style");
+    const expectedColor = `background-color: ${urls.bannerColor} !important; background-image: none !important;`;
+    if (
+      !style ||
+      style.textContent !== `${BANNER_SELECTOR} { ${expectedColor} }`
+    )
+      return true;
+  }
   if (urls?.background && !hasBackground(background, urls.background))
     return true;
+  if (urls?.backgroundColor && background) {
+    const style = document.getElementById("ft-bg-style");
+    const expectedColor = `background-color: ${urls.backgroundColor} !important; background-image: none !important;`;
+    if (
+      !style ||
+      style.textContent !== `${BACKGROUND_SELECTOR} { ${expectedColor} }`
+    )
+      return true;
+  }
   return false;
 };
 
@@ -265,6 +287,14 @@ export const applyImgs = (urls: VisualUrls | null) => {
       BANNER_SELECTOR,
       `background-image: url("${urls.banner}") !important; ${modeCss[bannerMode] || modeCss.fill}`,
     );
+  } else if (urls.bannerColor) {
+    setStyleForSelector(
+      "ft-banner-style",
+      BANNER_SELECTOR,
+      `background-color: ${urls.bannerColor} !important; background-image: none !important;`,
+    );
+  } else {
+    setStyleForSelector("ft-banner-style", BANNER_SELECTOR, "");
   }
 
   if (urls.background) {
@@ -274,6 +304,14 @@ export const applyImgs = (urls: VisualUrls | null) => {
       BACKGROUND_SELECTOR,
       `background-image: url("${urls.background}") !important; ${modeCss[bgMode] || modeCss.fill}`,
     );
+  } else if (urls.backgroundColor) {
+    setStyleForSelector(
+      "ft-bg-style",
+      BACKGROUND_SELECTOR,
+      `background-color: ${urls.backgroundColor} !important; background-image: none !important;`,
+    );
+  } else {
+    setStyleForSelector("ft-bg-style", BACKGROUND_SELECTOR, "");
   }
 
   if (urls.theme) {
@@ -408,8 +446,10 @@ export const updateVisuals = async () => {
         avatar: await getConfig("PROFILE_IMAGE_URL"),
         banner: await getConfig("PROFILE_BANNER_URL"),
         bannerMode: (await getConfig("PROFILE_BANNER_MODE")) || "fill",
+        bannerColor: await getConfig("PROFILE_BANNER_COLOR"),
         background: await getConfig("PROFILE_BACKGROUND_URL"),
         backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
+        backgroundColor: await getConfig("PROFILE_BACKGROUND_COLOR"),
         avatarBg: await getConfig("PROFILE_AVATAR_BG"),
         decoration: await getConfig("PROFILE_DECORATION"),
         avatarPosX: await getConfig("PROFILE_AVATAR_POSITION_X"),
@@ -420,7 +460,9 @@ export const updateVisuals = async () => {
       if (
         !visualCache.avatar &&
         !visualCache.banner &&
-        !visualCache.background
+        !visualCache.bannerColor &&
+        !visualCache.background &&
+        !visualCache.backgroundColor
       ) {
         avatarEl.style.setProperty("opacity", "1", "important");
       } else if (!document.getElementById("profile-modal-host")) {
@@ -434,7 +476,9 @@ export const updateVisuals = async () => {
         cached &&
         (cached.avatar ||
           cached.banner ||
+          cached.bannerColor ||
           cached.background ||
+          cached.backgroundColor ||
           cached.theme ||
           cached.logtime)
       ) {
@@ -456,7 +500,9 @@ export const updateVisuals = async () => {
             cloudUrls &&
             (cloudUrls.avatar ||
               cloudUrls.banner ||
+              cloudUrls.bannerColor ||
               cloudUrls.background ||
+              cloudUrls.backgroundColor ||
               cloudUrls.theme ||
               cloudUrls.logtime)
           ) {

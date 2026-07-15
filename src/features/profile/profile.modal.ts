@@ -10,8 +10,10 @@ interface FormState {
   avatar: string;
   banner: string;
   bannerMode: string;
+  bannerColor: string;
   background: string;
   backgroundMode: string;
+  backgroundColor: string;
   avatarBg: string;
   decoration: string;
   avatarPosX: number;
@@ -247,15 +249,56 @@ function renderPanelContent(
             >
               Banner
             </div>
-            ${renderUrlField(
-              "PROFILE_BANNER_URL",
-              "Image URL",
-              state.banner,
-              (val) => onFormUpdate({ banner: val }),
-            )}
-            ${renderModeRadios("PROFILE_BANNER_MODE", state.bannerMode, (val) =>
-              onFormUpdate({ bannerMode: val }),
-            )}
+            ${state.bannerColor
+              ? ""
+              : html`${renderUrlField(
+                  "PROFILE_BANNER_URL",
+                  "Image URL",
+                  state.banner,
+                  (val) => onFormUpdate({ banner: val }),
+                )}
+                ${renderModeRadios(
+                  "PROFILE_BANNER_MODE",
+                  state.bannerMode,
+                  (val) => onFormUpdate({ bannerMode: val }),
+                )}`}
+            ${state.bannerColor
+              ? html`<div class="form-control w-full">
+                  <label class="label py-1">
+                    <span class="label-text opacity-80">Color</span>
+                  </label>
+                  <input
+                    type="color"
+                    class="input input-bordered w-full h-10 p-1"
+                    .value="${state.bannerColor}"
+                    @input="${(e: Event) =>
+                      onFormUpdate({
+                        bannerColor: (e.target as HTMLInputElement).value,
+                      })}"
+                  />
+                </div>`
+              : ""}
+            <div class="join w-full mt-2">
+              <input
+                type="radio"
+                name="PROFILE_BANNER_TYPE"
+                class="btn btn-sm join-item flex-1"
+                aria-label="Image"
+                value="image"
+                ?checked="${!state.bannerColor}"
+                @change="${() => onFormUpdate({ bannerColor: "", banner: "" })}"
+              />
+              <input
+                type="radio"
+                name="PROFILE_BANNER_TYPE"
+                class="btn btn-sm join-item flex-1"
+                aria-label="Color"
+                value="color"
+                ?checked="${state.bannerColor !== ""}"
+                @change="${() =>
+                  onFormUpdate({ bannerColor: "#333333", banner: "" })}"
+              />
+            </div>
           </div>
 
           <div
@@ -266,17 +309,57 @@ function renderPanelContent(
             >
               Background
             </div>
-            ${renderUrlField(
-              "PROFILE_BACKGROUND_URL",
-              "Image URL",
-              state.background,
-              (val) => onFormUpdate({ background: val }),
-            )}
-            ${renderModeRadios(
-              "PROFILE_BACKGROUND_MODE",
-              state.backgroundMode,
-              (val) => onFormUpdate({ backgroundMode: val }),
-            )}
+            ${state.backgroundColor
+              ? ""
+              : html`${renderUrlField(
+                  "PROFILE_BACKGROUND_URL",
+                  "Image URL",
+                  state.background,
+                  (val) => onFormUpdate({ background: val }),
+                )}
+                ${renderModeRadios(
+                  "PROFILE_BACKGROUND_MODE",
+                  state.backgroundMode,
+                  (val) => onFormUpdate({ backgroundMode: val }),
+                )}`}
+            ${state.backgroundColor
+              ? html`<div class="form-control w-full">
+                  <label class="label py-1">
+                    <span class="label-text opacity-80">Color</span>
+                  </label>
+                  <input
+                    type="color"
+                    class="input input-bordered w-full h-10 p-1"
+                    .value="${state.backgroundColor}"
+                    @input="${(e: Event) =>
+                      onFormUpdate({
+                        backgroundColor: (e.target as HTMLInputElement).value,
+                      })}"
+                  />
+                </div>`
+              : ""}
+            <div class="join w-full mt-2">
+              <input
+                type="radio"
+                name="PROFILE_BACKGROUND_TYPE"
+                class="btn btn-sm join-item flex-1"
+                aria-label="Image"
+                value="image"
+                ?checked="${!state.backgroundColor}"
+                @change="${() =>
+                  onFormUpdate({ backgroundColor: "", background: "" })}"
+              />
+              <input
+                type="radio"
+                name="PROFILE_BACKGROUND_TYPE"
+                class="btn btn-sm join-item flex-1"
+                aria-label="Color"
+                value="color"
+                ?checked="${state.backgroundColor !== ""}"
+                @change="${() =>
+                  onFormUpdate({ backgroundColor: "#333333", background: "" })}"
+              />
+            </div>
           </div>
         </div>
 
@@ -297,8 +380,10 @@ export const createSettingsModal = async (
     avatar: await getConfig("PROFILE_IMAGE_URL"),
     banner: await getConfig("PROFILE_BANNER_URL"),
     bannerMode: (await getConfig("PROFILE_BANNER_MODE")) || "fill",
+    bannerColor: await getConfig("PROFILE_BANNER_COLOR"),
     background: await getConfig("PROFILE_BACKGROUND_URL"),
     backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
+    backgroundColor: await getConfig("PROFILE_BACKGROUND_COLOR"),
     avatarBg: await getConfig("PROFILE_AVATAR_BG"),
     decoration: await getConfig("PROFILE_DECORATION"),
     avatarPosX: await getConfig("PROFILE_AVATAR_POSITION_X"),
@@ -353,8 +438,10 @@ export const createSettingsModal = async (
       "PROFILE_IMAGE_URL",
       "PROFILE_BANNER_URL",
       "PROFILE_BANNER_MODE",
+      "PROFILE_BANNER_COLOR",
       "PROFILE_BACKGROUND_URL",
       "PROFILE_BACKGROUND_MODE",
+      "PROFILE_BACKGROUND_COLOR",
       "PROFILE_AVATAR_BG",
       "PROFILE_DECORATION",
       "PROFILE_AVATAR_POSITION_X",
@@ -401,11 +488,23 @@ export const createSettingsModal = async (
       batchData["PROFILE_BANNER_MODE"] = state.bannerMode;
     }
 
+    if (!state.bannerColor) {
+      keysToRemove.push("PROFILE_BANNER_COLOR");
+    } else {
+      batchData["PROFILE_BANNER_COLOR"] = state.bannerColor;
+    }
+
     if (!state.background) {
       keysToRemove.push("PROFILE_BACKGROUND_URL", "PROFILE_BACKGROUND_MODE");
     } else {
       batchData["PROFILE_BACKGROUND_URL"] = state.background;
       batchData["PROFILE_BACKGROUND_MODE"] = state.backgroundMode;
+    }
+
+    if (!state.backgroundColor) {
+      keysToRemove.push("PROFILE_BACKGROUND_COLOR");
+    } else {
+      batchData["PROFILE_BACKGROUND_COLOR"] = state.backgroundColor;
     }
 
     batchData["PROFILE_AVATAR_BG"] = state.avatarBg;
@@ -423,8 +522,10 @@ export const createSettingsModal = async (
       avatar: state.avatar || "",
       banner: state.banner || "",
       bannerMode: state.bannerMode || "fill",
+      bannerColor: state.bannerColor || "",
       background: state.background || "",
       backgroundMode: state.backgroundMode || "fill",
+      backgroundColor: state.backgroundColor || "",
       avatarBg: state.avatarBg,
       decoration: state.decoration,
       avatarPosX: state.avatarPosX,
@@ -445,10 +546,12 @@ export const createSettingsModal = async (
 function liveApplyBannerBg(state: FormState) {
   applyImgs({
     avatar: "",
-    banner: state.banner,
+    banner: state.bannerColor ? "" : state.banner,
     bannerMode: state.bannerMode,
-    background: state.background,
+    bannerColor: state.bannerColor,
+    background: state.backgroundColor ? "" : state.background,
     backgroundMode: state.backgroundMode,
+    backgroundColor: state.backgroundColor,
     avatarBg: state.avatarBg,
     decoration: state.decoration,
   });

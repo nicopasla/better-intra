@@ -233,7 +233,9 @@ export async function openClusterDialog() {
               ? (() => {
                   const ago = formatTimeAgo(lastUpdated);
                   return html`<span
+                    id="updated-badge"
                     class="btn btn-accent btn-sm border border-base-content/20"
+                    style="display:none"
                     >Updated ${ago === "now" ? ago : ago + " ago"}</span
                   >`;
                 })()
@@ -327,7 +329,14 @@ export async function openClusterDialog() {
     }
     lastUpdated = Date.now();
     renderSeatOverlays(shadow, occupancy, seatPosCache, svgViewBox);
-    rerender();
+    const ago = formatTimeAgo(lastUpdated);
+    const badge = shadow.getElementById(
+      "updated-badge",
+    ) as HTMLSpanElement | null;
+    if (badge) {
+      badge.style.display = "";
+      badge.textContent = `Updated ${ago === "now" ? ago : ago + " ago"}`;
+    }
   };
 
   const loadCluster = async (cluster: ClusterInfo) => {

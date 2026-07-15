@@ -94,6 +94,10 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
     }, 2500);
   };
 
+  const handleOpenIntra = () => {
+    window.open("https://intra.42.fr", "_blank");
+  };
+
   const handlePull = async () => {
     if (state.buttons.pull.loading) return;
     if (!confirm("Overwrite current local settings with cloud backup?")) return;
@@ -143,6 +147,7 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
 
   return {
     handleLogin42,
+    handleOpenIntra,
     handleDelete,
     handleWipe,
     handlePush,

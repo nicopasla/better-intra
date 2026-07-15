@@ -115,7 +115,7 @@ export async function openRankingsDialog() {
     width: "min(480px, calc(100dvw - 2rem))",
     maxHeight: "calc(100dvh - 2rem)",
     borderRadius: "1rem",
-    overflow: "auto",
+    overflow: "hidden",
     padding: "0",
     border: "none",
     background: "transparent",
@@ -228,8 +228,10 @@ export async function openRankingsDialog() {
       <div
         data-theme="${currentTheme}"
         class="flex flex-col bg-base-100 rounded-xl"
+        style="max-height:calc(100dvh - 2rem);"
       >
-        <div class="flex items-center gap-2 shrink-0 p-3 pb-0">
+        <div class="sticky top-0 z-10 bg-base-100 rounded-t-xl">
+        <div class="flex items-center gap-2 shrink-0 p-3">
           <select
             class="select w-36"
             @change="${async (e: Event) => {
@@ -278,10 +280,11 @@ export async function openRankingsDialog() {
             ✕
           </button>
         </div>
-        <div class="px-3 pt-1 text-xs opacity-50 text-center">
+        <div class="px-3 pb-2 text-xs opacity-50 text-center">
           ${cursusLabel} &mdash; ${selectedMonth.label} ${selectedYear}
         </div>
-        <div class="p-3">
+        </div>
+        <div class="flex-1 min-h-0 overflow-y-auto p-3">
           ${loading
             ? html`<div class="flex items-center justify-center p-8">
                 <span class="loading loading-spinner loading-lg"></span>

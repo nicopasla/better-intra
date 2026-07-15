@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [1.5.3] - 2026-07-15
+
+### Features 🎉
+
+- feat(account): implement cloud settings restoration and update UI on login ([4148f4f](https://github.com/nicopasla/better-intra/commit/4148f4f))
+- feat(rankings-dialog): enhance ranking display with medal indicators for top ranks ([e939eb6](https://github.com/nicopasla/better-intra/commit/e939eb6))
+- feat(profile): add support for banner and background color customization ([2990287](https://github.com/nicopasla/better-intra/commit/2990287))
+- feat(toolbar): add button to open Intra in a new tab ([1eefe13](https://github.com/nicopasla/better-intra/commit/1eefe13))
+
+### Bug fixes 🐛
+
+- fix(cluster-dialog):  badge display:none ([8727a9c](https://github.com/nicopasla/better-intra/commit/8727a9c))
+- fix(rankings-dialog): adjust overflow behavior and improve layout for better visibility ([eaaeedb](https://github.com/nicopasla/better-intra/commit/eaaeedb))
+- fix(sort): add better-intra-sort-host for project sorting and update styles ([e4b76f2](https://github.com/nicopasla/better-intra/commit/e4b76f2))
+- fix(seat-overlays): improve rotation calculation for SVG elements ([b1a3599](https://github.com/nicopasla/better-intra/commit/b1a3599))
+
 ## [1.5.2] - 2026-07-15
 
 ### Features 🎉
@@ -790,7 +806,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.5.2...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.5.3...HEAD
+[1.5.3]: https://github.com/nicopasla/better-intra/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/nicopasla/better-intra/compare/v1.5.1...v1.5.2
 [1.5.1]: https://github.com/nicopasla/better-intra/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/nicopasla/better-intra/compare/v1.4.1...v1.5.0

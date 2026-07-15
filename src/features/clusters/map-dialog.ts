@@ -577,7 +577,9 @@ function renderSeatOverlays(
 
     let left: number, top: number, width: number, height: number;
     let rotationDeg = 0;
-    const svgSeat = svgEl.querySelector(`[id="${CSS.escape(host)}"]`);
+    const svgSeat: Element | null = svgEl.querySelector(
+      `[id="${CSS.escape(host)}"]`,
+    );
     if (svgSeat) {
       const rect = svgSeat.getBoundingClientRect();
       const w = pos.w * scaleX;
@@ -586,11 +588,17 @@ function renderSeatOverlays(
       top = rect.top + rect.height / 2 - mapRect.top - h / 2;
       width = w;
       height = h;
-      const tr = svgSeat.getAttribute("transform");
-      if (tr) {
-        const m = tr.match(/rotate\(\s*([\d.-]+)/);
-        if (m) rotationDeg = parseFloat(m[1]) || 0;
+      let netRotation = 0;
+      let el: Element | null = svgSeat;
+      while (el && el !== svgEl) {
+        const tr = el.getAttribute("transform");
+        if (tr) {
+          const m = tr.match(/rotate\(\s*([\d.-]+)/);
+          if (m) netRotation += parseFloat(m[1]) || 0;
+        }
+        el = el.parentElement;
       }
+      rotationDeg = netRotation;
     } else {
       left = pos.x * scaleX;
       top = pos.y * scaleY;

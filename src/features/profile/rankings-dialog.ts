@@ -85,9 +85,7 @@ export async function openRankingsDialog() {
     RANKINGS_SELECTION?: { month: number; year: number };
   };
   if (saved.RANKINGS_SELECTION) {
-    const m = MONTHS.find(
-      (x) => x.value === saved.RANKINGS_SELECTION!.month,
-    );
+    const m = MONTHS.find((x) => x.value === saved.RANKINGS_SELECTION!.month);
     if (m) selectedMonth = m;
     const y = saved.RANKINGS_SELECTION.year;
     if (y >= 2023 && y <= currentYear) selectedYear = y;
@@ -188,12 +186,40 @@ export async function openRankingsDialog() {
           background: var(--color-base-200);
         }
         .rank-number {
-          width: 2rem;
-          text-align: center;
           font-weight: 700;
-          font-size: 1rem;
           color: var(--color-base-content);
           flex-shrink: 0;
+          width: 2rem;
+          text-align: center;
+        }
+        .rank-medal {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 2rem;
+          height: 2rem;
+          border-radius: 50%;
+          border: 2px solid;
+          font-size: 0.8rem;
+          font-weight: 700;
+        }
+        .rank-gold {
+          border-color: #ffd700;
+          box-shadow: 0 0 6px 2px #ffd700;
+          background: rgba(255, 215, 0, 0.25);
+          color: #b8860b;
+        }
+        .rank-silver {
+          border-color: #c0c0c0;
+          box-shadow: 0 0 6px 2px #c0c0c0;
+          background: rgba(192, 192, 192, 0.25);
+          color: #808080;
+        }
+        .rank-bronze {
+          border-color: #ff6a00;
+          box-shadow: 0 0 6px 2px #ff6a00;
+          background: rgba(255, 106, 0, 0.2);
+          color: #cc5500;
         }
         .rank-avatar {
           width: 2.25rem;
@@ -231,58 +257,58 @@ export async function openRankingsDialog() {
         style="max-height:calc(100dvh - 2rem);"
       >
         <div class="sticky top-0 z-10 bg-base-100 rounded-t-xl">
-        <div class="flex items-center gap-2 shrink-0 p-3">
-          <select
-            class="select w-36"
-            @change="${async (e: Event) => {
-              const v = Number((e.target as HTMLSelectElement).value);
-              selectedMonth = MONTHS.find((m) => m.value === v) || MONTHS[0];
-              saveSelection();
-              await load();
-            }}"
-          >
-            ${MONTHS.map(
-              (m) =>
-                html`<option
-                  value="${m.value}"
-                  ?selected="${m.value === selectedMonth.value}"
-                  style="color:${m.color};font-weight:600;"
-                >
-                  ${m.label}
-                </option>`,
-            )}
-          </select>
-          <select
-            class="select w-20"
-            @change="${async (e: Event) => {
-              selectedYear = Number((e.target as HTMLSelectElement).value);
-              saveSelection();
-              await load();
-            }}"
-          >
-            ${years.map(
-              (y) =>
-                html`<option value="${y}" ?selected="${y === selectedYear}">
-                  ${y}
-                </option>`,
-            )}
-          </select>
-          ${ago
-            ? html`<span
-                class="btn btn-accent border border-base-content/20 flex-shrink-0"
-                >Updated ${ago === "now" ? ago : ago + " ago"}</span
-              >`
-            : ""}
-          <button
-            class="btn btn-circle btn-ghost btn-sm text-xl ml-auto"
-            @click="${close}"
-          >
-            ✕
-          </button>
-        </div>
-        <div class="px-3 pb-2 text-xs opacity-50 text-center">
-          ${cursusLabel} &mdash; ${selectedMonth.label} ${selectedYear}
-        </div>
+          <div class="flex items-center gap-2 shrink-0 p-3">
+            <select
+              class="select w-36"
+              @change="${async (e: Event) => {
+                const v = Number((e.target as HTMLSelectElement).value);
+                selectedMonth = MONTHS.find((m) => m.value === v) || MONTHS[0];
+                saveSelection();
+                await load();
+              }}"
+            >
+              ${MONTHS.map(
+                (m) =>
+                  html`<option
+                    value="${m.value}"
+                    ?selected="${m.value === selectedMonth.value}"
+                    style="color:${m.color};font-weight:600;"
+                  >
+                    ${m.label}
+                  </option>`,
+              )}
+            </select>
+            <select
+              class="select w-20"
+              @change="${async (e: Event) => {
+                selectedYear = Number((e.target as HTMLSelectElement).value);
+                saveSelection();
+                await load();
+              }}"
+            >
+              ${years.map(
+                (y) =>
+                  html`<option value="${y}" ?selected="${y === selectedYear}">
+                    ${y}
+                  </option>`,
+              )}
+            </select>
+            ${ago
+              ? html`<span
+                  class="btn btn-accent border border-base-content/20 flex-shrink-0"
+                  >Updated ${ago === "now" ? ago : ago + " ago"}</span
+                >`
+              : ""}
+            <button
+              class="btn btn-circle btn-ghost btn-sm text-xl ml-auto"
+              @click="${close}"
+            >
+              ✕
+            </button>
+          </div>
+          <div class="px-3 pb-2 text-xs opacity-50 text-center">
+            ${cursusLabel} &mdash; ${selectedMonth.label} ${selectedYear}
+          </div>
         </div>
         <div class="flex-1 min-h-0 overflow-y-auto p-3">
           ${loading
@@ -295,34 +321,43 @@ export async function openRankingsDialog() {
                 </div>`
               : html`
                   <div class="flex flex-col gap-1">
-                    ${rankings.map(
-                      (r) =>
-                        html`<div
-                          class="rank-row"
-                          style="cursor:pointer;"
-                          @click="${() => {
-                            window.open(
-                              `https://profile.intra.42.fr/users/${r.login}`,
-                              "_blank",
-                            );
-                          }}"
-                        >
-                          <span class="rank-number">#${r.rank}</span>
-                          <img
-                            class="rank-avatar"
-                            src="${r.image_url}"
-                            alt="${r.login}"
-                            loading="lazy"
-                          />
-                          <div class="rank-info">
-                            <div class="rank-displayname">
-                              ${r.displayname || r.login}
-                            </div>
-                            <div class="rank-login">${r.login}</div>
+                    ${rankings.map((r) => {
+                      const medalClass =
+                        r.rank === 1
+                          ? "rank-number rank-medal rank-gold"
+                          : r.rank === 2
+                            ? "rank-number rank-medal rank-silver"
+                            : r.rank === 3
+                              ? "rank-number rank-medal rank-bronze"
+                              : "rank-number";
+                      return html`<div
+                        class="rank-row"
+                        style="cursor:pointer;"
+                        @click="${() => {
+                          window.open(
+                            `https://profile.intra.42.fr/users/${r.login}`,
+                            "_blank",
+                          );
+                        }}"
+                      >
+                        <span class="${medalClass}">
+                          ${r.rank <= 3 ? r.rank : `#${r.rank}`}
+                        </span>
+                        <img
+                          class="rank-avatar"
+                          src="${r.image_url}"
+                          alt="${r.login}"
+                          loading="lazy"
+                        />
+                        <div class="rank-info">
+                          <div class="rank-displayname">
+                            ${r.displayname || r.login}
                           </div>
-                          <span class="rank-level">${r.level.toFixed(2)}</span>
-                        </div>`,
-                    )}
+                          <div class="rank-login">${r.login}</div>
+                        </div>
+                        <span class="rank-level">${r.level.toFixed(2)}</span>
+                      </div>`;
+                    })}
                   </div>
                 `}
         </div>

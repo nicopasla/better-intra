@@ -1,4 +1,5 @@
 import { getConfig } from "../../config.ts";
+import { sharedCSS } from "../../assets/shared-styles.ts";
 
 type SortField = "name" | "date";
 
@@ -118,28 +119,6 @@ const extractItems = (panel: HTMLElement | null): ProjectItem[] => {
   return items;
 };
 
-const buildSvg = (type: "up" | "down") => {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("width", "16");
-  svg.setAttribute("height", "16");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("fill", "none");
-  svg.setAttribute("stroke", "currentColor");
-  svg.setAttribute("stroke-width", "2");
-  svg.setAttribute("stroke-linecap", "round");
-  svg.setAttribute("stroke-linejoin", "round");
-  const poly = document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "polyline",
-  );
-  poly.setAttribute(
-    "points",
-    type === "up" ? "18 15 12 9 6 15" : "6 9 12 15 18 9",
-  );
-  svg.appendChild(poly);
-  return svg;
-};
-
 export async function initProjectsSort() {
   const enabled = await getConfig("PROFILE_PROJECTS_SORT");
   if (!enabled) return;
@@ -154,79 +133,40 @@ export async function initProjectsSort() {
   const panel = marksHeader.closest<HTMLElement>(".bg-white");
   if (extractItems(panel).length < 2) return;
 
-  const marksTab = Array.from(
-    document.querySelectorAll<HTMLElement>(
-      ".cursor-pointer.text-xs.uppercase.font-bold",
-    ),
-  ).find((el) => el.textContent?.trim() === "Marks");
-  const sidebar = marksTab?.parentElement;
-  if (!sidebar) return;
+  const titleRow = marksHeader.parentElement;
+  if (!titleRow) return;
 
-  if (sidebar.querySelector(`#${HOST_ID}`)) return;
+  if (titleRow.querySelector(`#${HOST_ID}`)) return;
+
+  const themePref = await getConfig("BETTER_INTRA_THEME");
+  const isDark =
+    themePref === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+      : themePref !== "light";
+  const presetKey = (await getConfig("PROFILE_THEME_PRESET")) || "dark";
+  const currentTheme =
+    presetKey !== "dark" && presetKey !== "light"
+      ? presetKey
+      : isDark
+        ? "dark"
+        : "light";
 
   const host = document.createElement("span");
   host.id = HOST_ID;
-  host.style.display = "block";
-  host.style.width = "100%";
   const root = host.attachShadow({ mode: "open" });
 
   let field: SortField = "date";
   let asc = false;
 
   const style = document.createElement("style");
-  const updateStyle = () => {
-    const isDark = document.documentElement.classList.contains("dark");
-    const fg = isDark ? "#f9fafb" : "#111827";
-    style.textContent = `
-      .wrap {
-        display: flex;
-        align-items: center;
-        gap: 2px;
-      }
-      select {
-        font-size: 0.75rem;
-        line-height: 1rem;
-        border: 1px solid ${isDark ? "#4b5563" : "#d1d5db"};
-        border-radius: 0.25rem;
-        padding: 0.125rem 0.25rem;
-        background: ${isDark ? "#1f2937" : "white"};
-        color: ${fg};
-        outline: none;
-        cursor: pointer;
-        width: 100%;
-        appearance: none;
-      }
-      .chevron {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: ${fg};
-        flex-shrink: 0;
-        margin-left: -22px;
-        pointer-events: none;
-        width: 14px;
-      }
-    `;
-  };
-  updateStyle();
-
-  const classObs = new MutationObserver(() => updateStyle());
-  classObs.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["class"],
-  });
+  style.textContent = sharedCSS;
 
   const wrap = document.createElement("div");
-  wrap.className = "wrap";
+  wrap.setAttribute("data-theme", currentTheme);
+  wrap.className = "flex items-center gap-1";
 
   const select = document.createElement("select");
-
-  const chevron = document.createElement("span");
-  chevron.className = "chevron";
-
-  const updateChevron = () => {
-    chevron.replaceChildren(buildSvg(asc ? "up" : "down"));
-  };
+  select.className = "select select-info select-xs";
 
   const rebuildOptions = () => {
     select.replaceChildren();
@@ -237,7 +177,6 @@ export async function initProjectsSort() {
       if (f === field) option.selected = true;
       select.appendChild(option);
     }
-    updateChevron();
   };
 
   const applySort = () => {
@@ -275,10 +214,10 @@ export async function initProjectsSort() {
   });
 
   wrap.appendChild(select);
-  wrap.appendChild(chevron);
   root.appendChild(style);
   root.appendChild(wrap);
-  sidebar.appendChild(host);
+  titleRow.appendChild(host);
 
+  rebuildOptions();
   applySort();
 }

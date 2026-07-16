@@ -18,11 +18,7 @@ interface RankingsResponse {
 }
 
 const MONTHS = [
-  { value: 2, label: "February", cursusId: 64, color: "#ff6b6b" },
-  { value: 3, label: "March", cursusId: 64, color: "#f06595" },
   { value: 4, label: "April", cursusId: 21, color: "#51cf66" },
-  { value: 7, label: "July", cursusId: 64, color: "#ffd43b" },
-  { value: 8, label: "August", cursusId: 64, color: "#da77f2" },
   { value: 10, label: "October", cursusId: 21, color: "#4dabf7" },
 ];
 

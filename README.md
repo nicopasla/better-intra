@@ -104,16 +104,6 @@ Quick-access links shown as colourful buttons on your profile page.
 
 ---
 
-### 🏆 Rankings
-
-A monthly leaderboard dialog accessible from profile quick-link buttons.
-
-* **Cursus selector** — choose between Piscine Brussels and 42 Cursus tracks.
-* **Month/year picker** — filter the leaderboard by month and year. Selections persist across sessions.
-* **Detailed rankings** — each entry shows rank number, avatar, display name, login, and level.
-* **Belgium only** — available for campus ID 12.
-
----
 
 ### 📅 Calendar Sync ☁️
 

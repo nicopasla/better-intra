@@ -17,8 +17,6 @@ Personalise your profile with custom avatar, banner, and background images — c
 ### 🔗 Shortcuts
 Add up to 8 quick-access links displayed as colourful buttons on your profile. Each link can have a name, URL, custom colour, and optional emoji. Site icons load automatically when no emoji is set. Text colour (black or white) is chosen for readability.
 
-### 🏆 Rankings
-Open a monthly leaderboard dialog from your profile showing ranked users by cursus (Piscine, 42 Cursus). Filter by month and year — selections persist across sessions. See each user's rank, avatar, name, login, and level. Belgium only.
 
 ### 👥 Friends
 Access a friends panel from a button in the bottom-right corner. Add friends by login, see their avatar, level bar, wallet, correction points, and online status. Sort by online status, name, level, wallet, or evaluation points. The button badge shows how many friends are online. A follow/unfollow button appears next to the role dropdown on any user's profile, letting you manage friends without opening the full widget. Requires cloud sync.

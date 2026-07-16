@@ -196,6 +196,14 @@ export const injectCustomStyles = () => {
     .ft-deco-solid {
       box-shadow: 0 0 0 3px var(--user-color, #00babc) !important;
     }
+
+    html.dark .inline-flex.items-center.rounded.border.shadow-base {
+      color: #fff !important;
+    }
+
+    html:not(.dark) .inline-flex.items-center.rounded.border.shadow-base {
+      color: #fff !important;
+    }
   `;
   document.head.appendChild(style);
 };

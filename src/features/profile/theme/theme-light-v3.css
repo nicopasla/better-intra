@@ -304,13 +304,3 @@ html:not(.dark) .bg-\[rgb\(23\,23\,23\)\] {
 html:not(.dark) .bg-ft-black {
   background-color: hsl(var(--muted)) !important;
 }
-
-/* ============================================================================
-   PROFILE HEADER BADGES
-   ============================================================================ */
-
-html:not(.dark) [class*="shadow-base"] {
-  background-color: hsl(var(--primary)) !important;
-  border-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
-}

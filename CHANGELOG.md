@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [1.5.3] - 2026-07-16
+
+### Features 🎉
+
+- feat(clusters): enhance cluster SVG caching and occupancy loading ([2e23972](https://github.com/nicopasla/better-intra/commit/2e23972))
+
+### Bug fixes 🐛
+
+- fix(rankings): remove rankings section from documentation ([cffac73](https://github.com/nicopasla/better-intra/commit/cffac73))
+- fix(profile): update styles for profile badges ([0a953cc](https://github.com/nicopasla/better-intra/commit/0a953cc))
+- fix(rankings): remove rankings leaderboard ([87496b2](https://github.com/nicopasla/better-intra/commit/87496b2))
+- fix(rankings): remove piscine months ([fb0c74a](https://github.com/nicopasla/better-intra/commit/fb0c74a))
+
 ## [1.5.3] - 2026-07-15
 
 ### Features 🎉
@@ -806,7 +819,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.5.3...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.5.4...HEAD
+[1.5.4]: https://github.com/nicopasla/better-intra/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/nicopasla/better-intra/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/nicopasla/better-intra/compare/v1.5.1...v1.5.2
 [1.5.1]: https://github.com/nicopasla/better-intra/compare/v1.5.0...v1.5.1

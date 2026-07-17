@@ -19,7 +19,9 @@ function findNativeCard(): HTMLElement | null {
 let sorted = false;
 
 function sortRows(nativeCard: HTMLElement) {
-  const oldWraps = nativeCard.querySelectorAll(".ft-ev-top, .ft-ev-bot");
+  const oldWraps = nativeCard.querySelectorAll(
+    ".ft-ev-top, .ft-ev-bot, .ft-ev-fdb",
+  );
   for (const wrap of oldWraps) {
     const p = wrap.parentElement!;
     while (wrap.firstChild) {
@@ -31,7 +33,7 @@ function sortRows(nativeCard: HTMLElement) {
 
   const rows = Array.from(
     nativeCard.querySelectorAll<HTMLElement>(
-      ".flex.justify-between.w-full.items-center",
+      ".flex.justify-between.w-full.items-center, .flex.flex-row.justify-between",
     ),
   );
   if (rows.length === 0) return;
@@ -39,19 +41,45 @@ function sortRows(nativeCard: HTMLElement) {
   const parent = rows[0].parentElement!;
   parent.style.cssText = "display:flex;flex-direction:column;height:100%";
 
+  const feedbackRows: HTMLElement[] = [];
   const evaluatorRows: HTMLElement[] = [];
   const evaluatedRows: HTMLElement[] = [];
   for (const row of rows) {
     row.style.fontSize = "0.9375rem";
     const text = row.textContent || "";
-    if (text.includes("You will evaluate") || text.includes("You are ready to evaluate")) evaluatorRows.push(row);
+    if (text.includes("days left to feedback")) feedbackRows.push(row);
+    else if (
+      text.includes("You will evaluate") ||
+      text.includes("You are ready to evaluate")
+    )
+      evaluatorRows.push(row);
     else if (text.includes("You will be evaluated by")) evaluatedRows.push(row);
+  }
+
+  if (feedbackRows.length > 0) {
+    const fdbWrap = document.createElement("div");
+    fdbWrap.className = "ft-ev-fdb";
+    fdbWrap.style.cssText =
+      "flex:1;display:flex;flex-direction:column;padding:0";
+    parent.insertBefore(fdbWrap, parent.firstChild);
+
+    const fdbLabel = document.createElement("div");
+    fdbLabel.className = "ft-ev-label";
+    fdbLabel.style.cssText =
+      "font-weight:600;font-size:1rem;color:hsl(var(--foreground));margin:0 0 4px 4px;flex-shrink:0";
+    fdbLabel.textContent = `To Feedback (${feedbackRows.length})`;
+    fdbWrap.insertBefore(fdbLabel, fdbWrap.firstChild);
+
+    for (const row of feedbackRows) fdbWrap.appendChild(row);
   }
 
   const topWrap = document.createElement("div");
   topWrap.className = "ft-ev-top";
-  topWrap.style.cssText = "flex:1;display:flex;flex-direction:column;padding:0";
-  parent.insertBefore(topWrap, parent.firstChild);
+  topWrap.style.cssText =
+    feedbackRows.length > 0
+      ? "flex:1;display:flex;flex-direction:column;border-top:1px solid hsl(var(--border));padding:8px 0;margin-top:-1px"
+      : "flex:1;display:flex;flex-direction:column;padding:0";
+  parent.appendChild(topWrap);
 
   const botWrap = document.createElement("div");
   botWrap.className = "ft-ev-bot";
@@ -88,12 +116,19 @@ function sortRows(nativeCard: HTMLElement) {
 }
 
 function unsortRows(nativeCard: HTMLElement) {
+  const fdbWrap = nativeCard.querySelector(".ft-ev-fdb");
   const topWrap = nativeCard.querySelector(".ft-ev-top");
   const botWrap = nativeCard.querySelector(".ft-ev-bot");
-  if (!topWrap && !botWrap) return;
+  if (!fdbWrap && !topWrap && !botWrap) return;
 
-  const contentParent = (topWrap || botWrap)!.parentElement!;
+  const contentParent = (fdbWrap || topWrap || botWrap)!.parentElement!;
 
+  if (fdbWrap) {
+    while (fdbWrap.firstChild) {
+      contentParent.insertBefore(fdbWrap.firstChild, fdbWrap);
+    }
+    fdbWrap.remove();
+  }
   if (topWrap) {
     while (topWrap.firstChild) {
       contentParent.insertBefore(topWrap.firstChild, topWrap);
@@ -110,7 +145,7 @@ function unsortRows(nativeCard: HTMLElement) {
   contentParent.querySelectorAll(".ft-ev-label").forEach((l) => l.remove());
 
   const rows = contentParent.querySelectorAll<HTMLElement>(
-    ".flex.justify-between.w-full.items-center",
+    ".flex.justify-between.w-full.items-center, .flex.flex-row.justify-between",
   );
   for (const row of rows) {
     row.style.fontSize = "";
@@ -176,7 +211,7 @@ export async function initEvaluations() {
       return;
     }
     const rows = native.querySelectorAll(
-      ".flex.justify-between.w-full.items-center",
+      ".flex.justify-between.w-full.items-center, .flex.flex-row.justify-between",
     );
     if (rows.length === 0) {
       requestAnimationFrame(check);

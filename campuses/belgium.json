@@ -59,5 +59,11 @@
       }
     }
   },
-  "badgeUrlPattern": "https://{name}.42belgium.be"
+  "badgeBaseUrl": "https://{name}.42belgium.be",
+  "badges": {
+    "TUTOR": "tutors",
+    "PEGASUS": "pegasus",
+    "PHOENIX": "phoenix",
+    "SLOTS": "slots"
+  }
 }

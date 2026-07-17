@@ -191,9 +191,10 @@ export function renderMonthCard(
   return html`<div
     class="month-card ${isCurrent ? "current-month" : ""}"
     style="${!isCurrent ? `opacity: ${PAST_MONTHS_OPACITY};` : ""}"
+    data-month="${ym}"
   >
     <div class="flex justify-between items-center mb-3">
-      <span class="text-2xl font-bold text-base-content">${monthName}</span>
+      <span class="text-xl font-bold text-base-content">${monthName}</span>
       <span
         class="badge badge-lg font-bold transition-all duration-200 ${isGoalMet
           ? "badge-rainbow"
@@ -245,6 +246,41 @@ export function renderMonthCard(
         </div>`
       : ""}
     ${renderCalendarGrid(year, mon, data, lastDayDate, config, eventsByDate)}
+  </div>`;
+}
+
+export function renderLoadMoreCard(onClick: () => void, loading = false) {
+  return html`<div
+    class="month-card"
+    style="cursor: ${loading
+      ? "default"
+      : "pointer"}; opacity: ${PAST_MONTHS_OPACITY}; display: flex; align-items: center; justify-content: center; min-height: 200px;"
+    @click=${loading ? undefined : onClick}
+  >
+    <div class="flex flex-col items-center gap-2">
+      ${loading
+        ? html`<span class="loading loading-spinner loading-lg"></span>`
+        : html`<span class="text-base font-bold text-base-content"
+            >Load older months</span
+          >`}
+      <span class="text-sm" style="color: var(--muted-foreground);">
+        ${loading ? "Fetching data..." : "Click to fetch full logtime history"}
+      </span>
+    </div>
+  </div>`;
+}
+
+export function renderYearLabel(year: string) {
+  return html`<div
+    class="flex items-center justify-center px-1"
+    style="min-width: 48px;"
+  >
+    <span
+      class="text-xs font-bold uppercase tracking-widest"
+      style="color: var(--muted-foreground); writing-mode: vertical-lr;"
+    >
+      ${year}
+    </span>
   </div>`;
 }
 

@@ -1,5 +1,6 @@
 import { render } from "lit-html";
 import { getConfig } from "../../config.ts";
+import { hashLogin } from "../../utils/crypto.ts";
 import {
   findLogtimeMount,
   hideOldLogtime,
@@ -9,6 +10,8 @@ import {
   renderContainer,
   renderHeaderContent,
   renderMonthCard,
+  renderLoadMoreCard,
+  renderYearLabel,
 } from "./render.ts";
 import { getLastSeenFormatted, limit } from "./utils.ts";
 import { getEffectiveTheme } from "../profile/theme/theme-manager.ts";
@@ -27,6 +30,88 @@ export interface CalendarEvent {
 export type EventsByDate = Record<string, CalendarEvent[]>;
 
 const INTRAPY_BASE = "https://intrapy.intra.42.fr";
+const WORKER_URL = "https://api.betterintra.com";
+
+const historyCache = new Map<string, Record<string, number>>();
+const fetchPromiseMap = new Map<string, Promise<void>>();
+
+let loadMoreLogin: string | null = null;
+let loadMoreBefore: string | undefined;
+let loadMoreLoading = false;
+let restoreScrollLeft = -1;
+let skipScroll = false;
+
+function extractLoginFromPath(): string | null {
+  const m = location.pathname.match(/^\/users\/([^/]+)/);
+  return m ? m[1] : null;
+}
+
+async function fetchHistoricalLogtime(
+  login: string,
+  before?: string,
+): Promise<void> {
+  if (historyCache.has(login)) return;
+  if (fetchPromiseMap.has(login)) {
+    await fetchPromiseMap.get(login);
+    return;
+  }
+
+  const promise = (async () => {
+    try {
+      const cloudLogin = await getConfig("CLOUD_LOGIN");
+      const sessionToken = await getConfig("CLOUD_TOKEN");
+      if (!cloudLogin || !sessionToken) {
+        historyCache.set(login, {});
+        return;
+      }
+
+      const hashed = await hashLogin(cloudLogin);
+      let url = `${WORKER_URL}/api/v1/private/logtime/history?login=${encodeURIComponent(hashed)}&user=${encodeURIComponent(login)}`;
+      if (before) url += `&before=${encodeURIComponent(before)}`;
+
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.days) {
+          historyCache.set(login, data.days as Record<string, number>);
+          return;
+        }
+      }
+    } catch {}
+
+    historyCache.set(login, {});
+  })();
+
+  fetchPromiseMap.set(login, promise);
+  await promise;
+  fetchPromiseMap.delete(login);
+}
+
+function mergeHistoryWithHook(
+  hookData: Record<string, string>,
+  login: string,
+): Record<string, string> {
+  const merged: Record<string, string> = {};
+  const history = historyCache.get(login);
+
+  if (history) {
+    for (const [date, secs] of Object.entries(history)) {
+      const h = Math.floor(secs / 3600);
+      const m = Math.floor((secs % 3600) / 60);
+      const s = secs % 60;
+      merged[date] =
+        `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+  }
+
+  for (const [date, time] of Object.entries(hookData)) {
+    merged[date] = time;
+  }
+
+  return merged;
+}
 
 const getConfigs = async () => ({
   goal_hours: await getConfig("LOGTIME_GOAL_HOURS"),
@@ -105,15 +190,75 @@ function renderLogtime(
     });
 
   const monthKeys = Object.keys(byMonth).sort();
-  const monthCards = monthKeys.map((ym, index) =>
-    renderMonthCard(
-      ym,
-      byMonth[ym],
-      index === monthKeys.length - 1,
-      CONFIG,
-      eventsByDate,
-    ),
-  );
+  const monthCards: ReturnType<
+    typeof renderMonthCard | typeof renderYearLabel
+  >[] = [];
+  let prevYear = "";
+  for (const ym of monthKeys) {
+    const year = ym.slice(0, 4);
+    if (year !== prevYear && prevYear !== "") {
+      monthCards.push(renderYearLabel(year));
+    }
+    prevYear = year;
+    monthCards.push(
+      renderMonthCard(
+        ym,
+        byMonth[ym],
+        ym === monthKeys[monthKeys.length - 1],
+        CONFIG,
+        eventsByDate,
+      ),
+    );
+  }
+
+  if (loadMoreLogin && monthCards.length > 0) {
+    const login = loadMoreLogin;
+    const before = loadMoreBefore;
+    monthCards.unshift(
+      renderLoadMoreCard(async () => {
+        loadMoreLoading = true;
+        const host = document.getElementById("logtime-shadow-wrapper");
+        const root = host?.shadowRoot;
+        const sw = root?.querySelector(
+          ".log-slider-fixed",
+        ) as HTMLElement | null;
+        const hookMonth = before?.slice(0, 7);
+        const anchor = hookMonth
+          ? (root?.querySelector(
+              `[data-month="${hookMonth}"]`,
+            ) as HTMLElement | null)
+          : null;
+        const anchorOffset = anchor ? anchor.offsetLeft : 0;
+        const savedScroll = sw ? sw.scrollLeft : 0;
+
+        restoreScrollLeft = savedScroll;
+        renderLogtime(stats, eventsByDate);
+
+        await fetchHistoricalLogtime(login, before);
+        loadMoreLogin = null;
+        loadMoreBefore = undefined;
+        loadMoreLoading = false;
+
+        const merged = mergeHistoryWithHook(stats, login);
+        skipScroll = true;
+        renderLogtime(merged, eventsByDate);
+
+        const newAnchor = root?.querySelector(
+          `[data-month="${hookMonth}"]`,
+        ) as HTMLElement | null;
+        const shift = (newAnchor?.offsetLeft ?? anchorOffset) - anchorOffset;
+        const newSw = root?.querySelector(
+          ".log-slider-fixed",
+        ) as HTMLElement | null;
+        if (newSw) {
+          requestAnimationFrame(() => {
+            newSw.scrollLeft = Math.max(0, savedScroll + shift);
+          });
+        }
+      }, loadMoreLoading),
+    );
+  }
+
   const lastSeenValue = getLastSeenFormatted(stats, CONFIG.show_days_mode);
   const header = renderHeaderContent(lastSeenValue, byMonth, CONFIG);
 
@@ -137,15 +282,27 @@ function renderLogtime(
   ) as HTMLElement;
   if (scrollWrapper) {
     setupScrollHandlers(scrollWrapper);
-    const scrollToLatest = () => {
-      scrollWrapper.scrollLeft =
-        scrollWrapper.scrollWidth - scrollWrapper.clientWidth;
-    };
-    requestAnimationFrame(() => {
-      requestAnimationFrame(scrollToLatest);
-    });
-    window.addEventListener("load", scrollToLatest, { once: true });
-    setTimeout(scrollToLatest, 100);
+    if (skipScroll) {
+      skipScroll = false;
+    } else if (restoreScrollLeft >= 0) {
+      const target = restoreScrollLeft;
+      restoreScrollLeft = -1;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollWrapper.scrollLeft = target;
+        });
+      });
+    } else {
+      const scrollToLatest = () => {
+        scrollWrapper.scrollLeft =
+          scrollWrapper.scrollWidth - scrollWrapper.clientWidth;
+      };
+      requestAnimationFrame(() => {
+        requestAnimationFrame(scrollToLatest);
+      });
+      window.addEventListener("load", scrollToLatest, { once: true });
+      setTimeout(scrollToLatest, 100);
+    }
   }
 }
 
@@ -161,21 +318,50 @@ function installFetchHook() {
     const detail = (event as CustomEvent<Record<string, string>>).detail;
     if (!detail) return;
 
+    const hookDates = Object.keys(detail).sort();
+    const before = hookDates.length > 0 ? hookDates[0] : undefined;
+
     if (isOwnProfile()) {
-      renderLogtime(detail);
-
-      fetchEvents().then((events) => {
-        renderLogtime(detail, events);
-
-        const flatEvents = Object.values(events).flat();
-        const subscribed = flatEvents.filter((e) => e.is_subscribed);
-        if (subscribed.length > 0) {
-          syncCalendarIcs(subscribed);
+      const cloudLogin = await getConfig("CLOUD_LOGIN");
+      if (cloudLogin) {
+        const hasHistory = historyCache.has(cloudLogin);
+        if (!hasHistory) {
+          loadMoreLogin = cloudLogin;
+          loadMoreBefore = before;
         }
-      });
-    } else {
-      renderLogtime(detail);
+        const stats = hasHistory
+          ? mergeHistoryWithHook(detail, cloudLogin)
+          : detail;
+        renderLogtime(stats);
+
+        fetchEvents().then((events) => {
+          renderLogtime(lastStats || detail, events);
+
+          const flatEvents = Object.values(events).flat();
+          const subscribed = flatEvents.filter((e) => e.is_subscribed);
+          if (subscribed.length > 0) {
+            syncCalendarIcs(subscribed);
+          }
+        });
+        return;
+      }
     }
+
+    const targetLogin = extractLoginFromPath();
+    if (targetLogin) {
+      const hasHistory = historyCache.has(targetLogin);
+      if (!hasHistory) {
+        loadMoreLogin = targetLogin;
+        loadMoreBefore = before;
+      }
+      const stats = hasHistory
+        ? mergeHistoryWithHook(detail, targetLogin)
+        : detail;
+      renderLogtime(stats);
+      return;
+    }
+
+    renderLogtime(detail);
   });
 }
 

@@ -3,6 +3,7 @@ import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { getConfig } from "../../config.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
+import CHECK_CIRCLE_SVG from "../../assets/svg/check-circle.svg?raw";
 
 interface Achievement {
   name: string;
@@ -138,21 +139,11 @@ function renderList(
             </div>
             <div class="pt-1 flex flex-row gap-1 shrink-0 ml-3">
               <div>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="hsl(var(--legacy-main))"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-check-circle"
+                <span
+                  class="size-6 flex items-center justify-center"
+                  style="color: hsl(var(--legacy-main))"
+                  >${unsafeHTML(CHECK_CIRCLE_SVG)}</span
                 >
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
               </div>
               <div>
                 <p class="font-bold text-legacy-main">Achieved</p>

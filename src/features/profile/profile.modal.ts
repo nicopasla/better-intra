@@ -4,6 +4,7 @@ import { getConfig } from "../../config.ts";
 import { syncMyVisuals } from "../account/account.ts";
 import { applyImgs, injectCustomStyles, VisualUrls } from "./visuals.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
+import LINK_SVG from "../../assets/svg/link.svg?raw";
 import { renderAvatarEditor } from "./avatar-editor.ts";
 
 interface FormState {
@@ -35,26 +36,10 @@ function renderUrlField(
       <label
         class="input input-accent validator flex items-center gap-2 w-full"
       >
-        <svg
-          class="h-[1em] opacity-50"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
+        <span
+          class="h-[1em] opacity-50 flex items-center justify-center"
+          >${unsafeHTML(LINK_SVG)}</span
         >
-          <g
-            fill="none"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          >
-            <path
-              d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
-            ></path>
-            <path
-              d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
-            ></path>
-          </g>
-        </svg>
         <input
           type="url"
           required

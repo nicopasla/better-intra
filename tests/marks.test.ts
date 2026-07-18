@@ -11,16 +11,16 @@ describe("renderStatusIcon", () => {
     const c = document.createElement("div");
     renderStatusIcon(c, true);
     expect(c.className).toBe("text-green-500");
-    expect(c.querySelector(".lucide-check")).toBeTruthy();
-    expect(c.querySelector(".lucide-x")).toBeNull();
+    expect(c.querySelector("svg polyline")).toBeTruthy();
+    expect(c.querySelector("svg path")).toBeNull();
   });
 
   it("sets red class and renders X SVG for failed", () => {
     const c = document.createElement("div");
     renderStatusIcon(c, false);
     expect(c.className).toBe("text-red-500");
-    expect(c.querySelector(".lucide-x")).toBeTruthy();
-    expect(c.querySelector(".lucide-check")).toBeNull();
+    expect(c.querySelector("svg path")).toBeTruthy();
+    expect(c.querySelector("svg polyline")).toBeNull();
   });
 });
 
@@ -95,6 +95,6 @@ describe("createTeamRow", () => {
 
   it("renders X icon for non-validated team", () => {
     const row = createTeamRow(mockProject, mockTeam);
-    expect(row.querySelector(".lucide-x")).toBeTruthy();
+    expect(row.querySelector("svg path")).toBeTruthy();
   });
 });

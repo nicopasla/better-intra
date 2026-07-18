@@ -3,6 +3,9 @@ import { addFriend, removeFriend, isFriend } from "./friends.ts";
 import { getCloudLogin, syncToCloud } from "../account/account.ts";
 import { getConfig } from "../../config.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
+import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
+import CHECK_SVG from "../../assets/svg/check.svg?raw";
+import PLUS_SVG from "../../assets/svg/plus.svg?raw";
 
 let injected = false;
 let _btnRunning = false;
@@ -92,31 +95,14 @@ export async function injectFriendButton() {
             }}"
           >
             ${friend
-              ? html`<svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>`
-              : html`<svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>`}
+              ? html`<span
+                  class="size-3.5 flex items-center justify-center"
+                  >${unsafeHTML(CHECK_SVG)}</span
+                >`
+              : html`<span
+                  class="size-3.5 flex items-center justify-center"
+                  >${unsafeHTML(PLUS_SVG)}</span
+                >`}
           </button>
         `,
         wrapper,

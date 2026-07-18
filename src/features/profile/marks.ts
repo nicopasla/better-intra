@@ -1,8 +1,12 @@
 import { html, render } from "lit-html";
+import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { getConfig } from "../../config.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { hashLogin } from "../../utils/crypto.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
+import CHECK_SVG from "../../assets/svg/check.svg?raw";
+import X_SVG from "../../assets/svg/x.svg?raw";
+import CHEVRON_DOWN_SVG from "../../assets/svg/chevron-down.svg?raw";
 
 const WORKER_URL = "https://api.betterintra.com";
 
@@ -254,57 +258,26 @@ export function renderStatusIcon(
   container.className = isValidated ? "text-green-500" : "text-red-500";
   render(
     isValidated
-      ? html`<svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-check"
-        >
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>`
-      : html`<svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-x"
-        >
-          <path d="M18 6 6 18" />
-          <path d="m6 6 12 12" />
-        </svg>`,
+      ? html`<span
+          class="size-6 flex items-center justify-center"
+          >${unsafeHTML(CHECK_SVG)}</span
+        >`
+      : html`<span
+          class="size-6 flex items-center justify-center"
+          >${unsafeHTML(X_SVG)}</span
+        >`,
     container,
   );
 }
 
 export function createChevronElement(): SVGElement {
-  const chevron = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const span = document.createElement("span");
+  span.innerHTML = CHEVRON_DOWN_SVG;
+  const chevron = span.querySelector("svg")! as SVGElement;
   chevron.setAttribute("width", "18");
   chevron.setAttribute("height", "18");
-  chevron.setAttribute("viewBox", "0 0 24 24");
-  chevron.setAttribute("fill", "none");
-  chevron.setAttribute("stroke", "currentColor");
-  chevron.setAttribute("stroke-width", "2");
-  chevron.setAttribute("stroke-linecap", "round");
-  chevron.setAttribute("stroke-linejoin", "round");
   chevron.classList.add("lucide", "lucide-chevron-down");
   chevron.style.transition = "transform 0.2s";
-  const polyline = document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "polyline",
-  );
-  polyline.setAttribute("points", "6 9 12 15 18 9");
-  chevron.appendChild(polyline);
   return chevron;
 }
 

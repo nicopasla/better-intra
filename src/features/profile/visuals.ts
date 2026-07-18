@@ -380,6 +380,17 @@ const attachToggleListener = (avatarEl: HTMLElement) => {
           "important",
         );
       }
+      currentAvatar.style.setProperty("background-size", "cover", "important");
+      currentAvatar.style.setProperty(
+        "background-position",
+        "center",
+        "important",
+      );
+      currentAvatar.style.setProperty(
+        "background-color",
+        "transparent",
+        "important",
+      );
     }
   });
 };

@@ -30,6 +30,7 @@ import CLOUD_SVG from "../../assets/svg/cloud.svg?raw";
 import UPLOAD_SVG from "../../assets/svg/upload.svg?raw";
 import AUTO_SVG from "../../assets/svg/auto.svg?raw";
 import ICON_SVG from "../../assets/svg/icon.svg?raw";
+import GRIP_VERTICAL_SVG from "../../assets/svg/grip-vertical.svg?raw";
 import { renderAboutPanel } from "./hub.about.ts";
 import { renderDiscordPanel } from "../discord/discord.ui.ts";
 import { renderCalendarPanel } from "../calendar/calendar.ui.ts";
@@ -184,6 +185,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
           <div
             class="flex flex-wrap gap-3 items-center p-4 bg-base-300/30 rounded-xl border border-base-300 w-full"
           >
+            <span class="text-xs opacity-50 w-full pb-1">Drag to reorder</span>
             ${currentOrder.map((rawName, idx) => {
               const isDisabled = rawName.startsWith("-");
               const displayName = isDisabled ? rawName.substring(1) : rawName;
@@ -224,6 +226,12 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                   @drop="${(e: DragEvent) =>
                     enabled && handleDrop(e, currentOrder, idx)}"
                 >
+                  ${enabled && !isDisabled
+                    ? html`<span
+                        class="size-4 shrink-0 opacity-40 pointer-events-none flex items-center justify-center"
+                        >${unsafeHTML(GRIP_VERTICAL_SVG)}</span
+                      >`
+                    : ""}
                   ${displayName.toUpperCase().trim() !== "EVALUATIONS" &&
                   displayName.toUpperCase().trim() !== "PENDING EVALUATIONS" &&
                   displayName.toUpperCase().trim() !== "PROJECTS"

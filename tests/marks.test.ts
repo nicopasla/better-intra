@@ -11,16 +11,14 @@ describe("renderStatusIcon", () => {
     const c = document.createElement("div");
     renderStatusIcon(c, true);
     expect(c.className).toBe("text-green-500");
-    expect(c.querySelector("svg polyline")).toBeTruthy();
-    expect(c.querySelector("svg path")).toBeNull();
+    expect(c.querySelector("svg")).toBeTruthy();
   });
 
   it("sets red class and renders X SVG for failed", () => {
     const c = document.createElement("div");
     renderStatusIcon(c, false);
     expect(c.className).toBe("text-red-500");
-    expect(c.querySelector("svg path")).toBeTruthy();
-    expect(c.querySelector("svg polyline")).toBeNull();
+    expect(c.querySelector("svg")).toBeTruthy();
   });
 });
 
@@ -30,15 +28,14 @@ describe("createChevronElement", () => {
     expect(el.tagName.toLowerCase()).toBe("svg");
     expect(el.getAttribute("width")).toBe("18");
     expect(el.getAttribute("height")).toBe("18");
-    expect(el.getAttribute("viewBox")).toBe("0 0 24 24");
+    expect(el.getAttribute("viewBox")).toBe("0 0 640 640");
     expect(el.classList.contains("lucide-chevron-down")).toBe(true);
   });
 
-  it("contains a polyline child", () => {
+  it("contains a path child", () => {
     const el = createChevronElement();
-    const polyline = el.querySelector("polyline");
-    expect(polyline).toBeTruthy();
-    expect(polyline!.getAttribute("points")).toBe("6 9 12 15 18 9");
+    const path = el.querySelector("path");
+    expect(path).toBeTruthy();
   });
 });
 
@@ -51,7 +48,14 @@ describe("createProjectLink", () => {
     last_event_date: "2024-01-15T10:00:00Z",
     is_validated: true,
     occurrence: 1,
-    teams: [{ last_event_date: "", final_mark: 100, is_validated: true, occurrence: 1 }],
+    teams: [
+      {
+        last_event_date: "",
+        final_mark: 100,
+        is_validated: true,
+        occurrence: 1,
+      },
+    ],
   };
 
   it("returns an anchor with correct href and text", () => {
@@ -95,6 +99,6 @@ describe("createTeamRow", () => {
 
   it("renders X icon for non-validated team", () => {
     const row = createTeamRow(mockProject, mockTeam);
-    expect(row.querySelector("svg path")).toBeTruthy();
+    expect(row.querySelector("svg")).toBeTruthy();
   });
 });

@@ -80,6 +80,17 @@ export interface BetterIntraConfig {
   SHOW_FRIENDS_WIDGET: boolean;
   SHOW_CUSTOM_AVATARS_IN_FRIENDS: boolean;
   FRIENDS_DATA_CACHE: { data: unknown[]; timestamp: number } | null;
+  TRACKER_MODE:
+    | "off"
+    | "phoenix-1"
+    | "phoenix-2"
+    | "phoenix-3"
+    | "phoenix-4"
+    | "pegasus-bronze"
+    | "pegasus-silver"
+    | "pegasus-gold"
+    | "pegasus-diamond"
+    | "pegasus-vibranium";
 
   DISCORD_ENABLED: boolean;
   DISCORD_ID: string;
@@ -170,6 +181,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   SHOW_FRIENDS_WIDGET: true,
   SHOW_CUSTOM_AVATARS_IN_FRIENDS: true,
   FRIENDS_DATA_CACHE: null,
+  TRACKER_MODE: "off",
 
   DISCORD_ENABLED: false,
   DISCORD_ID: "",
@@ -251,6 +263,7 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "CALENDAR_EVENTS_HASH",
   "ADVANCED_OPEN_LINKS_NEW_TAB",
   "CLOUD_SYNC_ENABLED",
+  "TRACKER_MODE",
 ];
 
 /**

@@ -166,18 +166,35 @@ export function renderAboutPanel(): ReturnType<typeof html> {
         <div class="divider my-0 opacity-20 shrink-0"></div>
 
         <!-- Footer -->
-        <div class="text-center text-sm opacity-50 mt-auto shrink-0">
-          <p class="font-medium">
-            Made for 42 Belgium ·
-            <a
-              href="${HUB_INFO.author}"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="link link-hover font-semibold opacity-80 hover:opacity-100"
-              >by @nicopasla</a
-            >
-            · ${HUB_INFO.license} License
+        <div class="text-center mt-auto shrink-0">
+          <p class="text-sm opacity-50 font-medium">
+            Made for 42 Belgium · ${HUB_INFO.license} License
           </p>
+          <div class="flex justify-center gap-3 mt-2">
+            <iframe
+              src="https://ghbtns.com/github-btn.html?user=nicopasla&type=follow&count=true&size=large"
+              frameborder="0"
+              scrolling="0"
+              width="230"
+              height="30"
+              title="Follow on GitHub"
+            ></iframe>
+            <iframe
+              src="https://ghbtns.com/github-btn.html?user=nicopasla&repo=better-intra&type=star&count=true&size=large"
+              frameborder="0"
+              scrolling="0"
+              width="170"
+              height="30"
+              title="Star on GitHub"
+            ></iframe>
+            <iframe
+              src="https://github.com/sponsors/nicopasla/button"
+              title="Sponsor nicopasla"
+              height="32"
+              width="114"
+              style="border: 0; border-radius: 6px;"
+            ></iframe>
+          </div>
         </div>
       </div>
     </div>

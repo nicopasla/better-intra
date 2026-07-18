@@ -14,6 +14,7 @@ import {
   renderYearLabel,
 } from "./render.ts";
 import { renderCompactMonthGroup, MonthEntry, chunkMonths } from "./compact.ts";
+import { renderHeatmapCard } from "./heatmap.ts";
 import { getLastSeenFormatted, limit } from "./utils.ts";
 import { getEffectiveTheme } from "../profile/theme/theme-manager.ts";
 import { syncCalendarIcs } from "../calendar/calendar-sync.ts";
@@ -196,9 +197,12 @@ function renderLogtime(
     | typeof renderMonthCard
     | typeof renderYearLabel
     | typeof renderCompactMonthGroup
+    | typeof renderHeatmapCard
   >[] = [];
 
-  if (CONFIG.calendar_view === "compact" && monthKeys.length > 1) {
+  if (CONFIG.calendar_view === "heatmap") {
+    monthCards.push(renderHeatmapCard(stats, CONFIG));
+  } else if (CONFIG.calendar_view === "compact" && monthKeys.length > 1) {
     const lastYm = monthKeys[monthKeys.length - 1];
     const pastMonthEntries: MonthEntry[] = monthKeys
       .slice(0, -1)
@@ -380,6 +384,28 @@ function renderLogtime(
   ) as HTMLElement;
   if (scrollWrapper) {
     setupScrollHandlers(scrollWrapper);
+
+    if (CONFIG.calendar_view === "heatmap") {
+      const yearLabel = shadowHost.shadowRoot!.getElementById(
+        "heatmap-sticky-year",
+      );
+      const handleYearScroll = () => {
+        const cols = shadowHost.shadowRoot!.querySelectorAll(".heatmap-column");
+        const scrollLeft = scrollWrapper.scrollLeft;
+        for (const col of cols) {
+          const rect = (col as HTMLElement).getBoundingClientRect();
+          const parentRect = scrollWrapper.getBoundingClientRect();
+          if (rect.right > parentRect.left + 50) {
+            const year = (col as HTMLElement).dataset.year;
+            if (year && yearLabel) yearLabel.textContent = year;
+            break;
+          }
+        }
+      };
+      scrollWrapper.addEventListener("scroll", handleYearScroll, {
+        passive: true,
+      });
+    }
     if (skipScroll) {
       skipScroll = false;
     } else if (restoreScrollLeft >= 0) {

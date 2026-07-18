@@ -268,6 +268,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       options: [
         { label: "Normal", value: "normal" },
         { label: "Compact", value: "compact" },
+        { label: "Heatmap", value: "heatmap" },
       ],
       grid: true,
       colSpan: 1,

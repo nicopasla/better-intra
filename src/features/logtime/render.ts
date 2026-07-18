@@ -326,6 +326,9 @@ export function renderHeaderContent(
         <option value="compact" ?selected=${calendarView === "compact"}>
           Compact
         </option>
+        <option value="heatmap" ?selected=${calendarView === "heatmap"}>
+          Heatmap
+        </option>
       </select>
       ${lastSeenValue !== "N/A"
         ? html`<span

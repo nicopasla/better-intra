@@ -129,13 +129,70 @@
 }
 
 .compact-month {
-  padding: 22px 5px 14px 5px;
+  padding: 12px 5px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 }
 
 .compact-divider {
   border-top: 2px solid var(--border-color);
+}
+
+.heatmap-card {
+  width: max-content;
+  padding: 10px 12px;
+  overflow: visible;
+}
+
+.heatmap-months-row {
+  width: 100%;
+}
+
+.heatmap-cell {
+  border-radius: 3px;
+  border: 1px solid color-mix(in srgb, var(--color-base-content) 15%, transparent);
+}
+
+.heatmap-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  z-index: 100;
+  white-space: nowrap;
+}
+
+.heatmap-cell:hover .heatmap-tooltip {
+  display: block;
+}
+
+.heatmap-months-row .month-tooltip {
+  display: none;
+  position: absolute;
+  bottom: auto;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  z-index: 100;
+  white-space: nowrap;
+}
+
+.heatmap-months-row .day-cell:hover .month-tooltip {
+  display: block;
 }
 
 .compact-month .day-cell {

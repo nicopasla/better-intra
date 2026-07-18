@@ -56,7 +56,7 @@ function renderCompactMonthCard(
     class="compact-month ${borderTop ? "compact-divider" : ""}"
     data-month="${ym}"
   >
-    <div class="flex justify-between items-center mb-2">
+    <div class="flex justify-between items-center">
       <span class="text-lg font-bold text-base-content">${monthName}</span>
       <span
         class="badge badge-lg font-bold transition-all duration-200 ${isGoalMet
@@ -69,45 +69,47 @@ function renderCompactMonthCard(
       </span>
     </div>
 
-    <div
-      class="flex justify-between items-center text-sm mt-auto"
-      style="color: var(--labels-color); margin-bottom: 6px;"
-    >
+    <div>
       <div
-        class="day-cell"
-        style="background: transparent; width: auto; height: auto; padding: 0; cursor: help; border: none;"
+        class="flex justify-between items-center text-sm"
+        style="color: var(--labels-color); margin-bottom: 6px;"
       >
-        ${config.show_goal ? html`<b>${goalPercent}%</b>` : ""}
-        ${config.show_goal && config.show_tacos
-          ? html`<span class="mx-1.5 text-base-content/30 leading-none"
-              >·</span
-            >`
-          : ""}
-        ${config.show_tacos
-          ? html`${monthTacos}${isMonthCapped ? "+" : ""} ${config.emoji}`
-          : ""}
-        ${config.show_goal
-          ? html`<div class="day-tooltip">
-              Remaining: ${fmtHours(Math.max(0, goalSecs - total))}
-            </div>`
+        <div
+          class="day-cell"
+          style="background: transparent; width: auto; height: auto; padding: 0; cursor: help; border: none;"
+        >
+          ${config.show_goal ? html`<b>${goalPercent}%</b>` : ""}
+          ${config.show_goal && config.show_tacos
+            ? html`<span class="mx-1.5 text-base-content/30 leading-none"
+                >·</span
+              >`
+            : ""}
+          ${config.show_tacos
+            ? html`${monthTacos}${isMonthCapped ? "+" : ""} ${config.emoji}`
+            : ""}
+          ${config.show_goal
+            ? html`<div class="day-tooltip">
+                Remaining: ${fmtHours(Math.max(0, goalSecs - total))}
+              </div>`
+            : ""}
+        </div>
+        ${config.show_average
+          ? html`<span>Avg: <b>${fmtHours(avg)}</b></span>`
           : ""}
       </div>
-      ${config.show_average
-        ? html`<span>Avg: <b>${fmtHours(avg)}</b></span>`
+
+      ${config.show_goal
+        ? html`<div
+            class="w-full h-2 rounded-full overflow-hidden"
+            style="background: var(--color-base-300);"
+          >
+            <div
+              class="h-full transition-all duration-500 ${fillClass}"
+              style="width: ${Math.min(goalPercent, 100)}%;"
+            ></div>
+          </div>`
         : ""}
     </div>
-
-    ${config.show_goal
-      ? html`<div
-          class="w-full h-2 rounded-full overflow-hidden"
-          style="background: var(--color-base-300);"
-        >
-          <div
-            class="h-full transition-all duration-500 ${fillClass}"
-            style="width: ${Math.min(goalPercent, 100)}%;"
-          ></div>
-        </div>`
-      : ""}
   </div>`;
 }
 

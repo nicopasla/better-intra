@@ -14,6 +14,12 @@ To install this extension, click the buttons below or visit the [Releases](https
   <img alt="Install button chrome" src="images/get-the-addon-chrome.svg" height="60"/>
 </a>
 
+---
+
+![Better Intra overview](images/intra.png)
+
+*Better Intra with the lemonade light theme*
+
 ## Features
 
 > ☁️ *marked features require cloud sync / 42 sign-in.*
@@ -182,9 +188,21 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 
 ## Screenshots
 
-| Logtime                                   | Profile                              | Shortcuts                                         |
-|-------------------------------------------|--------------------------------------|---------------------------------------------------|
-| ![Logtime](images-store/logtime-dark.png) | ![Profile](images-store/profile.png) | ![Shortcuts](images-store/shortcuts-settings.png) |
+<img alt="Logtime calendar" src="images/logtime-basic.png" width="800" />
+
+<img alt="Logtime compact" src="images/logtime-compact.png" width="800" />
+
+<img alt="Logtime heatmap" src="images/logtime-heatmap.png" width="800" />
+
+<img alt="Profile customization" src="images/profile-modal.png" width="800" />
+
+<img alt="Achievements" src="images/achievements.png" width="800" />
+
+<img alt="Friends widget" src="images/friends.png" width="800" />
+
+<img alt="Pending evaluations" src="images/pending-evaluations.png" width="800" />
+
+<img alt="Intra overview" src="images/intra.png" width="800" />
 
 ## Uninstall
 

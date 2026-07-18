@@ -288,6 +288,8 @@ export function renderHeaderContent(
   lastSeenValue: string,
   monthsData: Record<string, Record<string, number>>,
   config: LogtimeConfig,
+  calendarView: string,
+  onViewChange: (value: string) => void,
 ) {
   let totalCappedEarnings = 0;
 
@@ -313,6 +315,18 @@ export function renderHeaderContent(
             >${totalTacos} ${config.emoji}</span
           >`
         : ""}
+      <select
+        class="select select-xs ml-2 w-auto text-xs"
+        @change=${(e: Event) =>
+          onViewChange((e.target as HTMLSelectElement).value)}
+      >
+        <option value="normal" ?selected=${calendarView === "normal"}>
+          Normal
+        </option>
+        <option value="compact" ?selected=${calendarView === "compact"}>
+          Compact
+        </option>
+      </select>
       ${lastSeenValue !== "N/A"
         ? html`<span
             class="ml-auto badge badge-success font-bold tracking-tight"

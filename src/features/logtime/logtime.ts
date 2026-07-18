@@ -13,6 +13,7 @@ import {
   renderLoadMoreCard,
   renderYearLabel,
 } from "./render.ts";
+import { renderCompactMonthGroup, MonthEntry, chunkMonths } from "./compact.ts";
 import { getLastSeenFormatted, limit } from "./utils.ts";
 import { getEffectiveTheme } from "../profile/theme/theme-manager.ts";
 import { syncCalendarIcs } from "../calendar/calendar-sync.ts";
@@ -126,6 +127,7 @@ const getConfigs = async () => ({
   labels_color: await getConfig("LOGTIME_LABELS_COLOR"),
   disable_animations: await getConfig("DISABLE_ANIMATIONS"),
   max_earnings: await getConfig("LOGTIME_MAX_EARNINGS"),
+  calendar_view: await getConfig("LOGTIME_CALENDAR_VIEW"),
 });
 
 export type LogtimeConfig = Awaited<ReturnType<typeof getConfigs>>;
@@ -191,24 +193,103 @@ function renderLogtime(
 
   const monthKeys = Object.keys(byMonth).sort();
   const monthCards: ReturnType<
-    typeof renderMonthCard | typeof renderYearLabel
+    | typeof renderMonthCard
+    | typeof renderYearLabel
+    | typeof renderCompactMonthGroup
   >[] = [];
-  let prevYear = "";
-  for (const ym of monthKeys) {
-    const year = ym.slice(0, 4);
-    if (year !== prevYear && prevYear !== "") {
-      monthCards.push(renderYearLabel(year));
+
+  if (CONFIG.calendar_view === "compact" && monthKeys.length > 1) {
+    const lastYm = monthKeys[monthKeys.length - 1];
+    const pastMonthEntries: MonthEntry[] = monthKeys
+      .slice(0, -1)
+      .map((ym) => ({ ym, data: byMonth[ym] }));
+
+    const sections: { year: string; months: MonthEntry[] }[] = [];
+    if (pastMonthEntries.length > 0) {
+      let cy = pastMonthEntries[0].ym.slice(0, 4);
+      let cm: MonthEntry[] = [];
+      for (const entry of pastMonthEntries) {
+        const yr = entry.ym.slice(0, 4);
+        if (yr !== cy) {
+          sections.push({ year: cy, months: cm });
+          cy = yr;
+          cm = [];
+        }
+        cm.push(entry);
+      }
+      sections.push({ year: cy, months: cm });
     }
-    prevYear = year;
+
+    // Build flat list of all groups with year info
+    const allGroups: {
+      group: MonthEntry[];
+      year: string;
+      isFirstInYear: boolean;
+    }[] = [];
+    for (let si = 0; si < sections.length; si++) {
+      const sec = sections[si];
+      const groups = chunkMonths(sec.months);
+      for (let gi = 0; gi < groups.length; gi++) {
+        allGroups.push({
+          group: groups[gi],
+          year: sec.year,
+          isFirstInYear: gi === 0 && si > 0,
+        });
+      }
+    }
+
+    // Fix trailing singleton: if last group is alone, merge with previous
+    if (
+      allGroups.length >= 2 &&
+      allGroups[allGroups.length - 1].group.length === 1
+    ) {
+      const merged = [
+        ...allGroups[allGroups.length - 2].group,
+        ...allGroups[allGroups.length - 1].group,
+      ];
+      const reChunked = chunkMonths(merged);
+      allGroups.splice(allGroups.length - 2, 2);
+      for (const g of reChunked) {
+        allGroups.push({
+          group: g,
+          year:
+            allGroups.length > 0
+              ? allGroups[allGroups.length - 1].year
+              : sections[0].year,
+          isFirstInYear: false,
+        });
+      }
+    }
+
+    // Render with year labels interspersed
+    for (const g of allGroups) {
+      if (g.isFirstInYear) {
+        monthCards.push(renderYearLabel(g.year));
+      }
+      monthCards.push(renderCompactMonthGroup(g.group, CONFIG));
+    }
+
     monthCards.push(
-      renderMonthCard(
-        ym,
-        byMonth[ym],
-        ym === monthKeys[monthKeys.length - 1],
-        CONFIG,
-        eventsByDate,
-      ),
+      renderMonthCard(lastYm, byMonth[lastYm], true, CONFIG, eventsByDate),
     );
+  } else {
+    let prevYear = "";
+    for (const ym of monthKeys) {
+      const year = ym.slice(0, 4);
+      if (year !== prevYear && prevYear !== "") {
+        monthCards.push(renderYearLabel(year));
+      }
+      prevYear = year;
+      monthCards.push(
+        renderMonthCard(
+          ym,
+          byMonth[ym],
+          ym === monthKeys[monthKeys.length - 1],
+          CONFIG,
+          eventsByDate,
+        ),
+      );
+    }
   }
 
   if (loadMoreLogin && monthCards.length > 0) {
@@ -223,11 +304,14 @@ function renderLogtime(
           ".log-slider-fixed",
         ) as HTMLElement | null;
         const hookMonth = before?.slice(0, 7);
-        const anchor = hookMonth
+        let anchor = hookMonth
           ? (root?.querySelector(
               `[data-month="${hookMonth}"]`,
             ) as HTMLElement | null)
           : null;
+        if (anchor && !anchor.classList.contains("month-card")) {
+          anchor = anchor.closest(".month-card") as HTMLElement | null;
+        }
         const anchorOffset = anchor ? anchor.offsetLeft : 0;
         const savedScroll = sw ? sw.scrollLeft : 0;
 
@@ -243,9 +327,12 @@ function renderLogtime(
         skipScroll = true;
         renderLogtime(merged, eventsByDate);
 
-        const newAnchor = root?.querySelector(
+        let newAnchor = root?.querySelector(
           `[data-month="${hookMonth}"]`,
         ) as HTMLElement | null;
+        if (newAnchor && !newAnchor.classList.contains("month-card")) {
+          newAnchor = newAnchor.closest(".month-card") as HTMLElement | null;
+        }
         const shift = (newAnchor?.offsetLeft ?? anchorOffset) - anchorOffset;
         const newSw = root?.querySelector(
           ".log-slider-fixed",
@@ -260,7 +347,18 @@ function renderLogtime(
   }
 
   const lastSeenValue = getLastSeenFormatted(stats, CONFIG.show_days_mode);
-  const header = renderHeaderContent(lastSeenValue, byMonth, CONFIG);
+  const handleViewChange = async (value: string) => {
+    await chrome.storage.local.set({ LOGTIME_CALENDAR_VIEW: value });
+    CONFIG.calendar_view = value;
+    if (lastStats) renderLogtime(lastStats);
+  };
+  const header = renderHeaderContent(
+    lastSeenValue,
+    byMonth,
+    CONFIG,
+    CONFIG.calendar_view,
+    handleViewChange,
+  );
 
   let shadowHost = document.getElementById("logtime-shadow-wrapper");
   if (!shadowHost) {

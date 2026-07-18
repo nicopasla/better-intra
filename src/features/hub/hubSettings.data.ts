@@ -258,6 +258,20 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       grid: true,
       colSpan: 1,
     },
+    {
+      feature: "logtime",
+      key: "LOGTIME_CALENDAR_VIEW",
+      label: "Calendar view",
+      desc: "Choose how months are displayed in the logtime card.",
+      kind: "select",
+      defaultValue: CONFIG_DEFAULT.LOGTIME_CALENDAR_VIEW,
+      options: [
+        { label: "Normal", value: "normal" },
+        { label: "Compact", value: "compact" },
+      ],
+      grid: true,
+      colSpan: 1,
+    },
   ],
   clusters: [
     {

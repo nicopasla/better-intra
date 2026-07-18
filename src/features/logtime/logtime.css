@@ -118,3 +118,31 @@
   animation: rainbow-shift 5s linear infinite;
   width: 100%;
 }
+
+.compact-group {
+  justify-content: center;
+}
+
+.compact-grid {
+  flex: 1;
+  grid-template-rows: 1fr 1fr;
+}
+
+.compact-month {
+  padding: 22px 5px 14px 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.compact-divider {
+  border-top: 2px solid var(--border-color);
+}
+
+.compact-month .day-cell {
+  font-size: inherit;
+}
+
+.compact-month .day-tooltip {
+  font-size: 12px;
+  padding: 4px 10px;
+}

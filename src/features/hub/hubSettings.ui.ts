@@ -394,7 +394,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                     }))
                   : (def.options ?? []);
           return html`<select
-            class="select select-accent w-60"
+            class="select select-accent w-44"
             data-setting-key="${def.key}"
             ?disabled="${!enabled}"
             @change="${(e: Event) =>

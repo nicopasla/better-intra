@@ -5,6 +5,7 @@ import { initHubSettings } from "./features/hub/hubSettings.ts";
 import { initShortcuts } from "./features/shortcuts/shortcuts.ts";
 import { initThemeManager } from "./features/profile/theme/theme-manager.ts";
 import { ensureCampusData } from "./features/campus/campus.ts";
+import { updateNavAvatar } from "./features/profile/visuals.ts";
 import { AVATAR_SELECTOR } from "./features/profile/selectors.ts";
 import { html, render } from "lit-html";
 
@@ -177,6 +178,7 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
         const activeScripts = await initHubSettings();
 
         await ensureCampusData();
+        updateNavAvatar();
 
         // Loop through the user's active scripts and initialize them if they exist in our map.
         for (const scriptId of activeScripts) {

@@ -2,8 +2,20 @@ import { html, render, TemplateResult } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import { getConfig } from "../../config.ts";
-import { CLUSTERS, SCREENS } from "./clusters.data.ts";
+import { CLUSTERS } from "./clusters.data.ts";
 import RELOAD_SVG from "../../assets/svg/reload.svg?raw";
+import { cropSvgViewBox, SeatPos } from "./map-dialog/crop.ts";
+import { sanitizeAndParseSeats, applyMarkers } from "./map-dialog/seats.ts";
+import {
+  getCachedCluster,
+  setCachedCluster,
+  fetchClusterSVGs,
+} from "./map-dialog/cache.ts";
+import {
+  renderSeatOverlays,
+  renderWifiList,
+  OccupancyEntry,
+} from "./map-dialog/render.ts";
 
 interface ClusterInfo {
   id: string;
@@ -11,83 +23,9 @@ interface ClusterInfo {
   svg?: string;
 }
 
-interface OccupancyEntry {
-  host: string;
-  login: string;
-  cdn_uri: string;
-  begin_at: string;
-  end_at: string | null;
-}
-
-interface SeatPos {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
 const WORKER_URL = "https://api.betterintra.com";
 const CLUSTERS_JSON_URL = "https://meta.intra.42.fr/clusters.json";
-const PROFILE_BASE = "https://profile.intra.42.fr/users";
 const POLL_INTERVAL = 60_000;
-const SVG_CACHE_PREFIX = "cluster_svg_";
-
-const CACHE_TTL = 7 * 24 * 60 * 60_000;
-
-interface CachedCluster {
-  svg: string;
-  seats: [string, SeatPos][];
-  viewBox: { w: number; h: number };
-  cachedAt: number;
-}
-
-async function getCachedCluster(id: string): Promise<CachedCluster | null> {
-  const result = (await chrome.storage.local.get(
-    `${SVG_CACHE_PREFIX}${id}`,
-  )) as Record<string, string>;
-  const raw = result[`${SVG_CACHE_PREFIX}${id}`];
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw) as CachedCluster;
-    if (Date.now() - parsed.cachedAt > CACHE_TTL) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-async function setCachedCluster(id: string, data: CachedCluster) {
-  data.cachedAt = Date.now();
-  await chrome.storage.local.set({
-    [`${SVG_CACHE_PREFIX}${id}`]: JSON.stringify(data),
-  });
-}
-
-interface SvgsCacheEntry {
-  data: Record<string, string>;
-  cachedAt: number;
-}
-
-const SVG_URLS_CACHE_KEY = "CLUSTER_SVG_URLS_CACHE";
-
-async function fetchClusterSVGs(): Promise<Record<string, string>> {
-  const cached = (await chrome.storage.local.get(SVG_URLS_CACHE_KEY)) as {
-    [SVG_URLS_CACHE_KEY]?: SvgsCacheEntry;
-  };
-  const entry = cached[SVG_URLS_CACHE_KEY];
-  if (entry && Date.now() - entry.cachedAt <= CACHE_TTL) return entry.data;
-  try {
-    const res = await fetch(`${WORKER_URL}/api/v1/cluster/svgs`);
-    if (res.ok) {
-      const data = (await res.json()) as Record<string, string>;
-      chrome.storage.local.set({
-        [SVG_URLS_CACHE_KEY]: { data, cachedAt: Date.now() },
-      });
-      return data;
-    }
-  } catch {}
-  return {};
-}
 
 export async function openClusterDialog() {
   if (document.getElementById("cluster-map-dialog")) return;
@@ -136,6 +74,19 @@ export async function openClusterDialog() {
   let lastUpdated = 0;
   let showMarkers = showMarkersVal;
   let wifiUsers: OccupancyEntry[] = [];
+  let zoomLevel = 1.0;
+
+  const updateZoom = () => {
+    const wrap = shadow.getElementById("map-area")
+      ?.firstElementChild as HTMLElement | null;
+    if (wrap) {
+      wrap.style.transform = `scale(${zoomLevel})`;
+      wrap.style.transformOrigin = "center center";
+    }
+    const pct = shadow.querySelector(".zoom-pct") as HTMLElement | null;
+    if (pct) pct.textContent = `${Math.round(zoomLevel * 100)}%`;
+    requestAnimationFrame(() => reapplyOccupancy());
+  };
 
   const ensureClusterData = async (
     c: ClusterInfo,
@@ -184,9 +135,9 @@ export async function openClusterDialog() {
     className: "bg-transparent backdrop:bg-black/60",
   });
   Object.assign(dialog.style, {
-    margin: "auto",
+    margin: "2rem auto auto auto",
     width: "min(960px, calc(100dvw - 2rem))",
-    maxHeight: "calc(100dvh - 2rem)",
+    height: "min(88dvh, 1100px)",
     borderRadius: "1rem",
     padding: "0",
     border: "none",
@@ -195,7 +146,7 @@ export async function openClusterDialog() {
 
   const wrapper = document.createElement("div");
   wrapper.style.cssText =
-    "display:flex;flex-direction:column;height:calc(100dvh - 2rem);overflow:hidden;";
+    "display:flex;flex-direction:column;height:100%;overflow:hidden;";
   dialog.appendChild(wrapper);
 
   const shadow = wrapper.attachShadow({ mode: "closed" });
@@ -244,6 +195,7 @@ export async function openClusterDialog() {
           width: 100%;
           height: auto;
           display: block;
+          margin: auto;
         }
         .seat-link {
           position: absolute;
@@ -361,7 +313,30 @@ export async function openClusterDialog() {
             </button>
           </div>
         </div>
-        <div id="map-area" class="mx-3 mb-3 mt-2 rounded-lg"></div>
+        <div class="relative flex-1 min-h-0 mx-3 mb-3 mt-2">
+          <div id="map-area" class="rounded-lg h-full"></div>
+          <div
+            class="absolute top-2 right-2 z-20 flex items-center gap-1 bg-base-100/80 backdrop-blur rounded-lg px-1 py-0.5 border border-base-300"
+          >
+            <button
+              class="btn btn-ghost btn-xs text-xs"
+              id="zoom-out"
+              title="Zoom out"
+            >
+              −
+            </button>
+            <span class="zoom-pct text-xs tabular-nums w-10 text-center"
+              >100%</span
+            >
+            <button
+              class="btn btn-ghost btn-xs text-xs"
+              id="zoom-in"
+              title="Zoom in"
+            >
+              +
+            </button>
+          </div>
+        </div>
       </div>
     `;
   }
@@ -399,12 +374,28 @@ export async function openClusterDialog() {
         mBtn.classList.toggle("btn-ghost", !showMarkers);
         mBtn.style.borderColor = showMarkers ? "var(--color-accent)" : "";
       }
-      const mapArea = shadow.getElementById("map-area");
-      if (mapArea) {
-        mapArea.querySelectorAll<SVGElement>(".custom-screen").forEach((el) => {
+      const mapEl = shadow.getElementById("map-area");
+      if (mapEl) {
+        mapEl.querySelectorAll<SVGElement>(".custom-screen").forEach((el) => {
           el.style.display = showMarkers ? "" : "none";
         });
       }
+      return;
+    }
+    const zoomIn = path.find(
+      (el) => el instanceof HTMLElement && el.id === "zoom-in",
+    );
+    if (zoomIn) {
+      zoomLevel = Math.min(3.0, zoomLevel + 0.1);
+      updateZoom();
+      return;
+    }
+    const zoomOut = path.find(
+      (el) => el instanceof HTMLElement && el.id === "zoom-out",
+    );
+    if (zoomOut) {
+      zoomLevel = Math.max(0.3, zoomLevel - 0.1);
+      updateZoom();
       return;
     }
     const closeBtn = path.find(
@@ -484,6 +475,7 @@ export async function openClusterDialog() {
 
   const loadCluster = async (cluster: ClusterInfo) => {
     activeCluster = cluster;
+    zoomLevel = 1.0;
     const id = ++loadId;
     retryCount = 0;
 
@@ -526,7 +518,13 @@ export async function openClusterDialog() {
 
       mapArea.style.position = "relative";
       const imported = document.importNode(svgDoc.documentElement, true);
-      mapArea.replaceChildren(imported);
+      const centeringWrap = document.createElement("div");
+      centeringWrap.style.cssText =
+        "display:flex;align-items:center;justify-content:center;min-height:100%;transform:scale(1);transform-origin:center center;";
+      centeringWrap.appendChild(imported);
+      mapArea.replaceChildren(centeringWrap);
+      const zp = shadow.querySelector(".zoom-pct") as HTMLElement | null;
+      if (zp) zp.textContent = "100%";
       mapArea.scrollTop = 0;
       mapArea.scrollLeft = 0;
       applyMarkers(mapArea, showMarkers);
@@ -534,6 +532,12 @@ export async function openClusterDialog() {
       await new Promise<void>((resolve) => {
         requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
       });
+
+      const newVB = cropSvgViewBox(mapArea, seatPosCache.get(cluster.id));
+      if (newVB) {
+        svgViewBoxes.set(cluster.id, newVB);
+        void (mapArea.querySelector("svg") as SVGSVGElement)?.getBBox();
+      }
 
       if (id !== loadId) return;
 
@@ -594,279 +598,6 @@ export async function openClusterDialog() {
   }
 }
 
-function renderWifiList(shadow: ShadowRoot, users: OccupancyEntry[]) {
-  const mapArea = shadow.getElementById("map-area");
-  if (!mapArea) return;
-  mapArea.style.position = "";
-
-  if (users.length === 0) {
-    const emptyDiv = document.createElement("div");
-    emptyDiv.className =
-      "flex items-center justify-center p-12 text-base-content/50";
-    emptyDiv.textContent = "No one on Wi-Fi";
-    mapArea.replaceChildren(emptyDiv);
-    return;
-  }
-
-  const list = document.createElement("div");
-  list.style.cssText =
-    "display:flex;flex-direction:column;gap:4px;padding:12px;";
-  mapArea.replaceChildren(list);
-
-  for (const user of users) {
-    const since = new Date(user.begin_at);
-    const timeStr = since.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    const row = document.createElement("div");
-    row.style.cssText =
-      "display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;cursor:pointer;";
-    row.addEventListener("click", () => {
-      window.open(`${PROFILE_BASE}/${user.login}`, "_blank");
-    });
-    row.addEventListener("mouseenter", () => {
-      row.style.background = "var(--color-base-200)";
-    });
-    row.addEventListener("mouseleave", () => {
-      row.style.background = "";
-    });
-
-    const avatar = Object.assign(document.createElement("img"), {
-      src: user.cdn_uri,
-      alt: user.login,
-    });
-    avatar.style.cssText =
-      "width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;";
-
-    const info = document.createElement("div");
-    info.style.cssText = "display:flex;flex-direction:column;min-width:0;";
-
-    const name = document.createElement("span");
-    name.textContent = user.login;
-    name.style.cssText =
-      "font-size:14px;font-weight:600;color:var(--color-base-content);";
-
-    const time = document.createElement("span");
-    time.textContent = `since ${timeStr}`;
-    time.style.cssText = "font-size:12px;opacity:0.6;";
-
-    info.appendChild(name);
-    info.appendChild(time);
-    row.appendChild(avatar);
-    row.appendChild(info);
-    list.appendChild(row);
-  }
-}
-
-function applyMarkers(container: HTMLElement, visible: boolean) {
-  for (const [id, dir] of Object.entries(SCREENS)) {
-    const el = container.querySelector(`[id="${CSS.escape(id)}"]`);
-    if (!el?.parentNode) continue;
-    if (el.parentNode.querySelector(`.custom-screen[data-for="${id}"]`))
-      continue;
-
-    const x = Number(el.getAttribute("x"));
-    const y = Number(el.getAttribute("y"));
-    const w = Number(el.getAttribute("width")) || 30;
-    const h = Number(el.getAttribute("height")) || 30;
-    const dirStr = String(dir).toUpperCase();
-    if (Number.isNaN(x) || Number.isNaN(y) || dirStr === "NONE") continue;
-
-    const chair = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "rect",
-    );
-    chair.setAttribute("class", "custom-screen");
-    chair.dataset.for = id;
-
-    const cw = 22,
-      ch = 4;
-    let cx: number, cy: number, fw: number, fh: number;
-    if (dirStr === "UP" || dirStr === "DOWN") {
-      fw = cw;
-      fh = ch;
-      cx = x + w / 2 - cw / 2;
-      cy = dirStr === "DOWN" ? y - ch : y + h;
-    } else {
-      fw = ch;
-      fh = cw;
-      cx = dirStr === "RIGHT" ? x - ch : x + w;
-      cy = y + h / 2 - cw / 2;
-    }
-    chair.setAttribute("width", String(fw));
-    chair.setAttribute("height", String(fh));
-    chair.setAttribute("x", String(cx));
-    chair.setAttribute("y", String(cy));
-    chair.setAttribute("rx", "1");
-    Object.assign(chair.style, {
-      fill: "var(--color-accent)",
-      opacity: "0.9",
-      pointerEvents: "none",
-      display: visible ? "" : "none",
-    });
-    const t = el.getAttribute("transform");
-    if (t) chair.setAttribute("transform", t);
-    el.parentNode.appendChild(chair);
-  }
-}
-
-const SEAT_ID_PATTERN = /-r\d+-p\d+$|-c\d+-p\d+$/;
-const DANGEROUS_ATTR = /^on/i;
-
-function sanitizeAndParseSeats(svgDoc: Document): Map<string, SeatPos> {
-  const seatMap = new Map<string, SeatPos>();
-  for (const el of svgDoc.querySelectorAll("*")) {
-    const tagName = el.tagName.toLowerCase();
-    if (tagName === "script") {
-      el.remove();
-      continue;
-    }
-    if (tagName === "use") {
-      const href =
-        el.getAttribute("href") || el.getAttribute("xlink:href") || "";
-      if (!href.startsWith("#")) {
-        el.remove();
-        continue;
-      }
-    }
-    for (const attr of [...el.attributes]) {
-      if (DANGEROUS_ATTR.test(attr.name)) el.removeAttribute(attr.name);
-      if (
-        (attr.name === "href" || attr.name === "xlink:href") &&
-        /^\s*javascript:/i.test(attr.value)
-      ) {
-        el.removeAttribute(attr.name);
-      }
-    }
-    const id = el.getAttribute("id");
-    if (id && SEAT_ID_PATTERN.test(id)) {
-      seatMap.set(id, {
-        x: parseFloat(el.getAttribute("x") || "0"),
-        y: parseFloat(el.getAttribute("y") || "0"),
-        w: parseFloat(el.getAttribute("width") || "30"),
-        h: parseFloat(el.getAttribute("height") || "30"),
-      });
-    }
-  }
-  return seatMap;
-}
-
-function renderSeatOverlays(
-  shadow: ShadowRoot,
-  occupancy: Map<string, OccupancyEntry>,
-  seatPosCache: Map<string, SeatPos>,
-  svgViewBox: { w: number; h: number },
-) {
-  const mapArea = shadow.getElementById("map-area");
-  if (!mapArea) return;
-  const svgEl = mapArea.querySelector("svg");
-  if (!svgEl) return;
-
-  const oldOverlay = shadow.getElementById("seat-overlay");
-  if (oldOverlay) oldOverlay.remove();
-
-  const svgRect = svgEl.getBoundingClientRect();
-  if (svgRect.width === 0 || svgRect.height === 0) return;
-  const mapRect = mapArea.getBoundingClientRect();
-  const scrollLeft = mapArea.scrollLeft;
-  const scrollTop = mapArea.scrollTop;
-  const scaleX = svgRect.width / svgViewBox.w;
-  const scaleY = svgRect.height / svgViewBox.h;
-
-  const svgById = new Map<string, Element>();
-  for (const el of svgEl.querySelectorAll("[id]")) {
-    svgById.set(el.getAttribute("id")!, el);
-  }
-
-  interface OverlayEntry {
-    seat: OccupancyEntry;
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-    rotationDeg: number;
-  }
-  const entries: OverlayEntry[] = [];
-
-  for (const [host, seat] of occupancy) {
-    const pos = seatPosCache.get(host);
-    if (!pos) continue;
-
-    let left: number, top: number, width: number, height: number;
-    let rotationDeg = 0;
-    const svgSeat = svgById.get(host);
-    if (svgSeat) {
-      const rect = svgSeat.getBoundingClientRect();
-      const w = pos.w * scaleX;
-      const h = pos.h * scaleY;
-      left = rect.left + rect.width / 2 - mapRect.left - w / 2 + scrollLeft;
-      top = rect.top + rect.height / 2 - mapRect.top - h / 2 + scrollTop;
-      width = w;
-      height = h;
-      let netRotation = 0;
-      let el: Element | null = svgSeat;
-      while (el && el !== svgEl) {
-        const tr = el.getAttribute("transform");
-        if (tr) {
-          const m = tr.match(/rotate\(\s*([\d.-]+)/);
-          if (m) netRotation += parseFloat(m[1]) || 0;
-        }
-        el = el.parentElement;
-      }
-      rotationDeg = netRotation;
-    } else {
-      left = pos.x * scaleX;
-      top = pos.y * scaleY;
-      width = pos.w * scaleX;
-      height = pos.h * scaleY;
-    }
-    entries.push({ seat, left, top, width, height, rotationDeg });
-  }
-
-  const overlay = document.createElement("div");
-  overlay.id = "seat-overlay";
-  overlay.style.cssText =
-    "position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;";
-
-  const frag = document.createDocumentFragment();
-  for (const { seat, left, top, width, height, rotationDeg } of entries) {
-    const since = new Date(seat.begin_at);
-    const timeStr = since.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    const a = Object.assign(document.createElement("a"), {
-      href: `${PROFILE_BASE}/${seat.login}`,
-      target: "_blank",
-      rel: "noopener noreferrer",
-      className: "seat-link",
-    });
-    a.style.cssText = [
-      "pointer-events:auto;",
-      `left:${left}px;top:${top}px;`,
-      `width:${width}px;height:${height}px;`,
-      rotationDeg !== 0 ? `transform:rotate(${rotationDeg}deg);` : "",
-    ].join("");
-
-    const tip = document.createElement("span");
-    tip.className = "seat-tip";
-    tip.textContent = `${seat.login} — since ${timeStr}`;
-    a.appendChild(tip);
-
-    const avatar = Object.assign(document.createElement("img"), {
-      src: seat.cdn_uri,
-      alt: seat.login,
-    });
-    a.appendChild(avatar);
-    frag.appendChild(a);
-  }
-  overlay.appendChild(frag);
-  mapArea.appendChild(overlay);
-}
-
 async function fetchOccupancy(
   signal?: AbortSignal,
 ): Promise<Map<string, OccupancyEntry>> {
@@ -887,12 +618,4 @@ async function fetchOccupancy(
   } catch {
     return new Map();
   }
-}
-
-function formatTimeAgo(ts: number): string {
-  const secs = (Date.now() - ts) / 1000;
-  if (secs < 3) return "now";
-  const mins = Math.round(secs / 60);
-  if (mins < 60) return `${mins}m`;
-  return `${Math.round(mins / 60)}h`;
 }

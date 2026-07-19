@@ -432,26 +432,24 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                   ...dynamicEventTypeOptions,
                 ]
               : (def.options ?? []);
-          return html`<div class="flex flex-wrap gap-2 sm:gap-4">
+          return html`<div class="join">
             ${options.map(
               (o) =>
-                html`<label class="label cursor-pointer gap-2 py-1">
-                  <span class="label-text text-xs sm:text-sm">${o.label}</span>
-                  <input
-                    type="radio"
-                    name="${def.key}"
-                    value="${o.value}"
-                    class="radio radio-accent radio-xs sm:radio-sm"
-                    ?checked="${o.value === value}"
-                    data-setting-key="${def.key}"
-                    ?disabled="${!enabled}"
-                    @change="${(e: Event) =>
-                      saveSetting(
-                        def.key!,
-                        (e.target as HTMLInputElement).value,
-                      )}"
-                  />
-                </label>`,
+                html`<input
+                  type="radio"
+                  name="${def.key}"
+                  class="join-item btn btn-outline border-base-content/20"
+                  aria-label="${o.label}"
+                  value="${o.value}"
+                  ?checked="${o.value === value}"
+                  data-setting-key="${def.key}"
+                  ?disabled="${!enabled}"
+                  @change="${(e: Event) =>
+                    saveSetting(
+                      def.key!,
+                      (e.target as HTMLInputElement).value,
+                    )}"
+                />`,
             )}
           </div>`;
         }
@@ -1109,7 +1107,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
                   <input
                     type="radio"
                     name="hub-auto-push"
-                    class="join-item btn"
+                    class="join-item btn btn-outline border-base-content/20"
                     aria-label="Manual push"
                     value="manual"
                     @change="${() =>
@@ -1120,7 +1118,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
                   <input
                     type="radio"
                     name="hub-auto-push"
-                    class="join-item btn"
+                    class="join-item btn btn-outline border-base-content/20"
                     aria-label="Auto push"
                     value="auto"
                     @change="${() =>

@@ -152,7 +152,7 @@ export function renderDiscordPanel() {
             >
             Connect
           </button>`
-        : html`<span class="text-sm text-success font-medium">Connected</span>`;
+        : html`<span class="text-sm text-green-500 font-medium">Connected</span>`;
 
       const step2Controls = html`<input
         type="checkbox"
@@ -185,7 +185,7 @@ export function renderDiscordPanel() {
             >
             <button
               type="button"
-              class="btn btn-error btn-outline btn-sm"
+              class="btn btn-error btn-sm"
               @click="${async (e: Event) => {
                 const btn = e.target as HTMLButtonElement;
                 btn.disabled = true;
@@ -375,8 +375,8 @@ export function renderDiscordPanel() {
                 ? html`
                     <div
                       class="flex items-center gap-3 px-4 py-3 rounded-xl ${evalActive
-                        ? "bg-success/15 text-success"
-                        : "bg-error/15 text-error"} font-medium"
+                        ? "bg-green-500/15 text-green-500"
+                        : "bg-red-500/15 text-red-500"} font-medium"
                     >
                       <span class="text-xl">${evalActive ? "✓" : "✗"}</span>
                       Evaluations ${evalActive ? "active" : "inactive"}

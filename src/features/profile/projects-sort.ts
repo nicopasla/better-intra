@@ -1,5 +1,6 @@
 import { getConfig } from "../../config.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
+import { getEffectiveTheme } from "./theme/theme-manager.ts";
 
 type SortField = "name" | "date";
 
@@ -138,18 +139,7 @@ export async function initProjectsSort() {
 
   if (titleRow.querySelector(`#${HOST_ID}`)) return;
 
-  const themePref = await getConfig("BETTER_INTRA_THEME");
-  const isDark =
-    themePref === "system"
-      ? window.matchMedia("(prefers-color-scheme: dark)").matches
-      : themePref !== "light";
-  const presetKey = (await getConfig("PROFILE_THEME_PRESET")) || "dark";
-  const currentTheme =
-    presetKey !== "dark" && presetKey !== "light"
-      ? presetKey
-      : isDark
-        ? "dark"
-        : "light";
+  const currentTheme = await getEffectiveTheme();
 
   const host = document.createElement("span");
   host.id = HOST_ID;
@@ -166,7 +156,7 @@ export async function initProjectsSort() {
   wrap.className = "flex items-center gap-1";
 
   const select = document.createElement("select");
-  select.className = "select select-info select-xs";
+  select.className = "select select-xs ml-2 w-auto text-xs";
 
   const rebuildOptions = () => {
     select.replaceChildren();

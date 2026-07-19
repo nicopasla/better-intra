@@ -1108,18 +1108,30 @@ async function createModal(active: FeatureId[]): Promise<void> {
               >Synced at ${dateString}</span
             >
             ${isConnected
-              ? html`<label
-                  class="flex cursor-pointer gap-2 items-center btn btn-accent border border-base-content/20"
-                >
-                  <span class="label-text text-sm font-bold">Manual push</span>
+              ? html`<div class="join">
                   <input
-                    type="checkbox"
-                    class="toggle toggle-accent"
-                    id="hub-auto-push-toggle"
-                    ?checked="${await getConfig("CLOUD_SYNC_ENABLED")}"
+                    type="radio"
+                    name="hub-auto-push"
+                    class="join-item btn"
+                    aria-label="Manual push"
+                    value="manual"
+                    @change="${() =>
+                      chrome.storage.local.set({
+                        CLOUD_SYNC_ENABLED: false,
+                      })}"
                   />
-                  <span class="label-text text-sm font-bold">Auto push</span>
-                </label>`
+                  <input
+                    type="radio"
+                    name="hub-auto-push"
+                    class="join-item btn"
+                    aria-label="Auto push"
+                    value="auto"
+                    @change="${() =>
+                      chrome.storage.local.set({
+                        CLOUD_SYNC_ENABLED: true,
+                      })}"
+                  />
+                </div>`
               : ""}
           </div>
         </div>
@@ -1179,16 +1191,17 @@ async function createModal(active: FeatureId[]): Promise<void> {
   });
 
   const reloadBtn = shadow.querySelector("#hub-reload");
-  const autoPushToggle = shadow.querySelector(
-    "#hub-auto-push-toggle",
-  ) as HTMLInputElement | null;
-
-  autoPushToggle?.addEventListener("change", () => {
-    chrome.storage.local.set({ CLOUD_SYNC_ENABLED: autoPushToggle.checked });
-  });
+  const autoPushRadios = shadow.querySelectorAll(
+    'input[name="hub-auto-push"]',
+  ) as NodeListOf<HTMLInputElement>;
+  const isAutoPush = (await getConfig("CLOUD_SYNC_ENABLED")) === true;
+  autoPushRadios.forEach((r) => (r.checked = r.value === (isAutoPush ? "auto" : "manual")));
 
   reloadBtn?.addEventListener("click", async () => {
-    if (autoPushToggle?.checked) {
+    const checked = shadow.querySelector(
+      'input[name="hub-auto-push"]:checked',
+    ) as HTMLInputElement | null;
+    if (checked?.value === "auto") {
       try {
         await syncToCloud();
       } catch {}

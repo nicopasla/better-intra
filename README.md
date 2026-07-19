@@ -29,8 +29,11 @@ To install this extension, click the buttons below or visit the [Releases](https
 Replaces the default logtime view with a monthly calendar showing your logged hours at a glance.
 
 * **Monthly calendar** — each month shows your hours as a colour-coded grid. Darker means more hours per day. See weekly totals on the right.
+* **Heatmap view** — a GitHub-style contribution heatmap showing your full logtime history. Each day is a cell coloured by intensity. Month labels show totals, and a "today" highlight keeps you oriented.
+* **Compact view** — past months appear as summary cards with progress bars and totals. The current month still uses the full calendar grid. Months are grouped in pairs for a denser layout.
 * **Scroll through months** — click and drag, or use your mouse wheel.
 * **Goal tracking** — set a target (default 140h/month). See a progress bar, your percentage, and remaining hours on hover.
+* **Full historical logtime** — click "Load older months" to fetch complete logtime history. Requires cloud sync.
 * **Daily average** — average hours per active day.
 * **Last active label** — shows when you were last seen. Choose between a date, "2 days ago", or both.
 * **Emoji mode** — pick an emoji and set how much it's "worth". Track your earnings with a monthly cap.
@@ -53,6 +56,7 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 A live interactive cluster map popup accessible from profile quick-link buttons.
 
 * **Real-time seat occupancy** — see user avatars overlaid on occupied seats with login tooltips. Polls every 30 seconds with a "Updated X min ago" indicator.
+* **Zoom controls** — zoom in/out (30%–300%) with + and - buttons. The current zoom percentage is displayed.
 * **Cluster room tabs** — switch between cluster rooms within the dialog.
 * **Wi-Fi users list** — a dedicated tab showing who's currently connected via Wi-Fi, with avatars, logins, and connection time.
 * **Click to visit profile** — click any occupied seat to open that user's profile, optionally in a new tab.
@@ -82,6 +86,9 @@ A live interactive cluster map popup accessible from profile quick-link buttons.
 * **Evaluation stats** — the Thursday Roulette card also shows your monthly evaluation history as a corrector: total evaluations, failures, and success percentage. ☁️
 * **Moulinette robot icons** — on project corrected pages, the default moulinette image is replaced with a robot icon (normal for passed, broken for failed).
 * **Info card badges** — wallet, level, rank, score, and seat shown as coloured badges below the profile header. Can be hidden in settings.
+* **Campus flags** — the campus badge shows a country flag emoji matching your campus location.
+* **Nav bar custom avatar** — your custom avatar also appears in the site navigation bar.
+* **Phoenix/Pegasus tracker** — Hover the Pegasus/Phoenix badges for a progress popover showing days and hours done vs required.
 * **Wallet shop link** — clicking the wallet badge opens the 42 shop in a new tab.
 
 ---
@@ -129,6 +136,7 @@ Discord DM notifications when your evaluations change state.
 * **Discord DMs** — receive alerts in your DMs via the Better Intra bot when an evaluation is booked or when correcteds are revealed. Connect your Discord account from the Discord hub tab — auto-joins **Le Bassin** server to enable direct messages.
 * **Quiet hours** — pause Discord notifications during specified hours (e.g. 22:00 to 08:00) so you're not disturbed at night.
 * **State tracking** — automatically alerts you via Discord DM when an evaluation is booked or when correcteds are revealed.
+* **Feedback sections** — pending evaluations are sorted into "To Feedback", "Evaluator", and "Evaluated" sections with counts for easier browsing.
 * Configure from the **Discord** tab in the Settings Hub.
 
 ---
@@ -174,6 +182,7 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 * Click the **gear icon** on the intra sidebar to open it.
 * Tabs: Logtime, Clusters, Profile, Shortcuts, Discord, Calendar, Advanced, About.
 * Turn features on/off individually, or reset a feature's settings to default.
+* **Drag to reorder dashboard cards** — in the Profile tab, drag and drop cards (Logtime, Agenda, Evaluations, Projects, Achievements, Thursday Roulette) to reorder them on the dashboard. Toggle visibility with the eye icon, or reset to default order.
 * The footer bar shows your theme toggle, cloud connection status, last sync badge, and auto-push toggle.
 * **Backup & Restore** — export all settings to a timestamped JSON file, or import from a previous backup. In the Advanced tab.
 * **Reset all data** — wipe all Better Intra settings and start fresh. In the Advanced tab.

@@ -27,11 +27,8 @@ import RESET_SVG from "../../assets/svg/reset.svg?raw";
 import SUN_SVG from "../../assets/svg/sun.svg?raw";
 import MOON_SVG from "../../assets/svg/moon.svg?raw";
 import CLOUD_SVG from "../../assets/svg/cloud.svg?raw";
-import UPLOAD_SVG from "../../assets/svg/upload.svg?raw";
-import AUTO_SVG from "../../assets/svg/auto.svg?raw";
 import ICON_SVG from "../../assets/svg/icon.svg?raw";
 import GRIP_VERTICAL_SVG from "../../assets/svg/grip-vertical.svg?raw";
-import ROTATE_CCW_SVG from "../../assets/svg/rotate-ccw.svg?raw";
 import LINK_SVG from "../../assets/svg/link.svg?raw";
 import { renderAboutPanel } from "./hub.about.ts";
 import { renderDiscordPanel } from "../discord/discord.ui.ts";
@@ -170,7 +167,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             }}"
           >
             <span class="size-3 flex items-center justify-center"
-              >${unsafeHTML(ROTATE_CCW_SVG)}</span
+              >${unsafeHTML(RESET_SVG)}</span
             >
             Reset
           </button>
@@ -1195,7 +1192,9 @@ async function createModal(active: FeatureId[]): Promise<void> {
     'input[name="hub-auto-push"]',
   ) as NodeListOf<HTMLInputElement>;
   const isAutoPush = (await getConfig("CLOUD_SYNC_ENABLED")) === true;
-  autoPushRadios.forEach((r) => (r.checked = r.value === (isAutoPush ? "auto" : "manual")));
+  autoPushRadios.forEach(
+    (r) => (r.checked = r.value === (isAutoPush ? "auto" : "manual")),
+  );
 
   reloadBtn?.addEventListener("click", async () => {
     const checked = shadow.querySelector(

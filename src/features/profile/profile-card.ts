@@ -370,7 +370,7 @@ function injectProfileCardStyles() {
     .flex.flex-col.justify-center.gap-4 button {
       border: 2px solid var(--user-color, hsl(var(--legacy-main))) !important;
       border-radius: 0.5rem;
-      padding: 0.125rem 0.5rem;
+      padding: 0.125rem 0.75rem;
       color: #fff !important;
       flex-grow: 0 !important;
       width: auto !important;

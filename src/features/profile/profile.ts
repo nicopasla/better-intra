@@ -9,7 +9,7 @@ import { initFreezeCard } from "./freeze.ts";
 import { findProfileCard, initProfileCardStyling } from "./profile-card.ts";
 import { injectFriendsWidget } from "../friends/friends.ui.ts";
 import { injectFriendButton } from "../friends/profile-button.ts";
-import { injectTrackerCard } from "../logtime/tracker-card.ts";
+import { colorTrackerBadge } from "../logtime/tracker-card.ts";
 import { initAchievements } from "./achievements.ts";
 import { initMarks } from "./marks.ts";
 import { initProjectBadges } from "./project-badges.ts";
@@ -78,7 +78,7 @@ export async function initProfile() {
         initFreezeCard();
         injectFriendsWidget();
         injectFriendButton();
-        if (location.pathname === "/") injectTrackerCard();
+        if (location.pathname === "/") colorTrackerBadge();
       }
     } finally {
       isUpdating = false;

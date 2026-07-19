@@ -138,24 +138,34 @@ export async function saveTrackerMode(mode: string): Promise<void> {
   await chrome.storage.local.set({ TRACKER_MODE: mode });
 }
 
-export function detectTrackerBadges(): "phoenix" | "pegasus" | null {
+export function findTrackerBadgeEl(): {
+  type: "phoenix" | "pegasus";
+  element: HTMLElement;
+} | null {
   const candidates = document.querySelectorAll<HTMLElement>(
     '[class*="text-primary-foreground"][class*="inline-flex"], .inline-flex.items-center.rounded.border, [class*="badge"]',
   );
-
   for (const el of candidates) {
     const text = (el.textContent?.trim() ?? "").toLowerCase();
-    if (text === "phoenix") return "phoenix";
-    if (text === "pegasus") return "pegasus";
+    if (text === "phoenix") return { type: "phoenix", element: el };
+    if (text === "pegasus") return { type: "pegasus", element: el };
   }
-
-  const allText = document.body.innerText?.toLowerCase() ?? "";
-  const hasPhoenix = /\bphoenix\b/.test(allText);
-  const hasPegasus = /\bpegasus\b/.test(allText);
-  if (hasPhoenix && !hasPegasus) return "phoenix";
-  if (hasPegasus && !hasPhoenix) return "pegasus";
-
   return null;
+}
+
+export function thresholdsMet(
+  progress: WeekProgress,
+  state: TrackerState,
+): boolean {
+  return (
+    progress.daysDone >= state.thresholds.days &&
+    progress.hoursDone >= state.thresholds.hours
+  );
+}
+
+export function detectTrackerBadges(): "phoenix" | "pegasus" | null {
+  const found = findTrackerBadgeEl();
+  return found ? found.type : null;
 }
 
 export const TRACKER_MODES = Object.keys(THRESHOLDS);

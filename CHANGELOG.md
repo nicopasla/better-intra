@@ -2,7 +2,49 @@
 
 ## [Unreleased]
 
-## [1.5.3] - 2026-07-16
+## [1.6.0] - 2026-07-19
+
+### Features 🎉
+
+- feat(hub): add GitHub star and follower counts with SVG icons ([1c5d8dd](https://github.com/nicopasla/better-intra/commit/1c5d8dd))
+- feat(profile): replace tracker card with hover popover on badge ([5d08bd2](https://github.com/nicopasla/better-intra/commit/5d08bd2))
+- feat(profile): style profile personal info card and add campus flags ([4a335c3](https://github.com/nicopasla/better-intra/commit/4a335c3))
+- feat(tracker): implement tracker card with mode selection and progress display ([1081813](https://github.com/nicopasla/better-intra/commit/1081813))
+- feat(funding): add GitHub username for sponsorship support ([ccb77c3](https://github.com/nicopasla/better-intra/commit/ccb77c3))
+- feat(footer): enhance footer with GitHub follow, star, and sponsor buttons ([e08c3d8](https://github.com/nicopasla/better-intra/commit/e08c3d8))
+- feat: replace inline SVGs with imported SVG files for better maintainability ([eac79eb](https://github.com/nicopasla/better-intra/commit/eac79eb))
+- feat(hub-settings): add drag to reorder functionality with visual cue ([a14d692](https://github.com/nicopasla/better-intra/commit/a14d692))
+- feat(profile): add nav bar custom avatar ([bf51bf3](https://github.com/nicopasla/better-intra/commit/bf51bf3))
+- feat(readme): update README with new images and overview ([3b9f1d2](https://github.com/nicopasla/better-intra/commit/3b9f1d2))
+- feat(images): remove unused image assets from the project ([74f9f4a](https://github.com/nicopasla/better-intra/commit/74f9f4a))
+- feat(map-dialog): refactor cluster dialog with zoom functionality ([649695b](https://github.com/nicopasla/better-intra/commit/649695b))
+- feat(logtime): add heatmap calendar view ([d8cc35b](https://github.com/nicopasla/better-intra/commit/d8cc35b))
+- feat(logtime): add compact calendar view ([b529e4f](https://github.com/nicopasla/better-intra/commit/b529e4f))
+- feat(logtime): add full historical logtime ([c239b0e](https://github.com/nicopasla/better-intra/commit/c239b0e))
+- feat(badges): implement badge fetching and initialization logic ([cb0b528](https://github.com/nicopasla/better-intra/commit/cb0b528))
+- feat(belgium): add badge configuration for various roles ([3ab371b](https://github.com/nicopasla/better-intra/commit/3ab371b))
+- feat(campuses): add Belgium campus configuration ([16ee8a6](https://github.com/nicopasla/better-intra/commit/16ee8a6))
+- feat(evaluations): enhance sorting logic and add feedback section ([6722adf](https://github.com/nicopasla/better-intra/commit/6722adf))
+
+
+### Bug fixes 🐛
+
+- fix(profile): scope align-items center to personal info card only ([2b65232](https://github.com/nicopasla/better-intra/commit/2b65232))
+- fix(roulette): update next draw label for clarity ([0425622](https://github.com/nicopasla/better-intra/commit/0425622))
+- fix(hub): update radio button styles for setting controls ([4aa9cf8](https://github.com/nicopasla/better-intra/commit/4aa9cf8))
+- fix(hub): update reset button icon ([4fb5738](https://github.com/nicopasla/better-intra/commit/4fb5738))
+- fix(hub): refactor auto push toggle to use radio buttons for manual and auto sync options ([9e37bf5](https://github.com/nicopasla/better-intra/commit/9e37bf5))
+- fix(discord): update connected status color and button styles ([5902e95](https://github.com/nicopasla/better-intra/commit/5902e95))
+- fix(hub): replace auto-push swap toggle with clear label-toggle pattern ([4a16fbc](https://github.com/nicopasla/better-intra/commit/4a16fbc))
+- fix(profile): adjust button padding in profile card styling ([ce66be3](https://github.com/nicopasla/better-intra/commit/ce66be3))
+- fix(campus-flags): update flag insertion logic to replace SVG with flag emoji ([c0dbcad](https://github.com/nicopasla/better-intra/commit/c0dbcad))
+- fix(marks): match projects sort select style ([d175613](https://github.com/nicopasla/better-intra/commit/d175613))
+- fix(profile): only inject tracker card on homepage ([44a46db](https://github.com/nicopasla/better-intra/commit/44a46db))
+- fix(profile): navbar avatar distortion ([6f4ac99](https://github.com/nicopasla/better-intra/commit/6f4ac99))
+- fix(heatmap): update tooltip date format ([7d81c9f](https://github.com/nicopasla/better-intra/commit/7d81c9f))
+- fix(profile): reset background-size/position/color when toggling to original avatar ([6758339](https://github.com/nicopasla/better-intra/commit/6758339))
+
+## [1.5.4] - 2026-07-16
 
 ### Features 🎉
 
@@ -819,7 +861,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.5.4...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/nicopasla/better-intra/compare/v1.5.4...v1.6.0
 [1.5.4]: https://github.com/nicopasla/better-intra/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/nicopasla/better-intra/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/nicopasla/better-intra/compare/v1.5.1...v1.5.2

@@ -169,8 +169,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
               if (enabled) resetToDefault();
             }}"
           >
-            <span
-              class="size-3 flex items-center justify-center"
+            <span class="size-3 flex items-center justify-center"
               >${unsafeHTML(ROTATE_CCW_SVG)}</span
             >
             Reset
@@ -542,8 +541,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             <label
               class="input input-accent validator flex items-center gap-2 w-full"
             >
-              <span
-                class="h-[1em] opacity-50 flex items-center justify-center"
+              <span class="h-[1em] opacity-50 flex items-center justify-center"
                 >${unsafeHTML(LINK_SVG)}</span
               >
               <input
@@ -1111,25 +1109,16 @@ async function createModal(active: FeatureId[]): Promise<void> {
             >
             ${isConnected
               ? html`<label
-                  class="swap btn btn-accent border border-base-content/20 text-center items-center"
+                  class="flex cursor-pointer gap-2 items-center btn btn-accent border border-base-content/20"
                 >
+                  <span class="label-text text-sm font-bold">Manual push</span>
                   <input
                     type="checkbox"
+                    class="toggle toggle-accent"
                     id="hub-auto-push-toggle"
                     ?checked="${await getConfig("CLOUD_SYNC_ENABLED")}"
                   />
-                  <span class="swap-on flex items-center justify-center gap-1">
-                    <span class="size-4 inline-flex items-center"
-                      >${unsafeHTML(AUTO_SVG)}</span
-                    >
-                    <span class="text-sm font-bold">Auto push</span>
-                  </span>
-                  <span class="swap-off flex items-center justify-center gap-1">
-                    <span class="size-4 inline-flex items-center"
-                      >${unsafeHTML(UPLOAD_SVG)}</span
-                    >
-                    <span class="text-sm font-bold">Manual push</span>
-                  </span>
+                  <span class="label-text text-sm font-bold">Auto push</span>
                 </label>`
               : ""}
           </div>

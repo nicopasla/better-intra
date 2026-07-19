@@ -549,13 +549,15 @@ let _navAvatarDone = false;
 export async function updateNavAvatar(): Promise<void> {
   if (_navAvatarDone) return;
   const customUrl = await getConfig("PROFILE_IMAGE_URL");
-  if (!customUrl) return;
 
   const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
   for (let i = 0; i < 20; i++) {
     const img = document.querySelector<HTMLImageElement>(NAV_AVATAR_SELECTOR);
     if (img && !img.dataset.ftNavAvatar) {
-      img.src = customUrl;
+      img.style.objectFit = "cover";
+      if (customUrl) {
+        img.src = customUrl;
+      }
       img.dataset.ftNavAvatar = "1";
       _navAvatarDone = true;
       return;

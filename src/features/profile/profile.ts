@@ -78,7 +78,7 @@ export async function initProfile() {
         initFreezeCard();
         injectFriendsWidget();
         injectFriendButton();
-        injectTrackerCard();
+        if (location.pathname === "/") injectTrackerCard();
       }
     } finally {
       isUpdating = false;

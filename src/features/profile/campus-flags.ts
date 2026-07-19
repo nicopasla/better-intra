@@ -85,7 +85,12 @@ export function injectCampusFlag() {
     const text = el.textContent?.trim() || "";
     const flag = CAMPUS_FLAGS[text];
     if (flag) {
-      el.insertAdjacentHTML("beforeend", ` ${flag}`);
+      const row = el.parentElement;
+      const svg = row?.querySelector("svg");
+      if (svg) {
+        svg.insertAdjacentHTML("beforebegin", flag);
+        svg.remove();
+      }
     }
   }
 }

@@ -364,7 +364,7 @@ function injectProfileCardStyles() {
       justify-content: center !important;
       align-items: center !important;
     }
-    .bg-ft-gray\\/50.border.border-ft-gray-border.rounded-xl.flex {
+    .bg-ft-gray\\/50.border.border-ft-gray-border.w-full.h-full.justify-center.rounded-xl.flex.py-6.xl\\:py-0 {
       align-items: center !important;
     }
     .flex.flex-col.justify-center.gap-4 button {

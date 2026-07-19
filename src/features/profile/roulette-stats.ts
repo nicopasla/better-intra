@@ -174,7 +174,7 @@ function buildRouletteSection(
   const nextLabel = document.createElement("span");
   nextLabel.className =
     "text-sm font-semibold opacity-70 uppercase tracking-wide";
-  nextLabel.textContent = "Next draw";
+  nextLabel.textContent = "Next draw in";
   nextRow.appendChild(nextLabel);
   nextRow.appendChild(countdownText);
   nextCol.appendChild(nextRow);

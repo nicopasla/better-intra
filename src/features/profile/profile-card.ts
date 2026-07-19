@@ -1,11 +1,9 @@
 import { getConfig } from "../../config.ts";
 import { CLUSTERS, getClusterData } from "../clusters/clusters.data.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
-import { openClusterDialog } from "../clusters/map-dialog.ts";
 import ARROW_SHARE_SVG from "../../assets/svg/arrow_share.svg?raw";
-import HOLY_GRAPH_SVG from "../../assets/svg/holy-graph.svg?raw";
-import GRIP_VERTICAL_SVG from "../../assets/svg/grip-vertical.svg?raw";
-import USER_COG_SVG from "../../assets/svg/user-cog.svg?raw";
+import { initShortcutButtons } from "./personal-info.ts";
+import { injectCampusFlag } from "./campus-flags.ts";
 
 const PROFILE_CARD_CLASS = "ft-profile-card";
 const SHADOW_HOST_ID = "profile-badges-shadow";
@@ -360,7 +358,35 @@ function injectProfileCardStyles() {
       background-color: var(--user-color, hsl(var(--legacy-main))) !important;
       color: #fff !important;
     }
-
+    .flex.flex-col.justify-center.gap-4 {
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+      justify-content: center !important;
+      align-items: center !important;
+    }
+    .bg-ft-gray\\/50.border.border-ft-gray-border.rounded-xl.flex {
+      align-items: center !important;
+    }
+    .flex.flex-col.justify-center.gap-4 button {
+      border: 2px solid var(--user-color, hsl(var(--legacy-main))) !important;
+      border-radius: 0.5rem;
+      padding: 0.125rem 0.5rem;
+      color: #fff !important;
+      flex-grow: 0 !important;
+      width: auto !important;
+    }
+    .flex.flex-col.justify-center.gap-4 button a {
+      color: #fff !important;
+    }
+    html.dark .flex.flex-col.justify-center.gap-4 button {
+      color: hsl(var(--foreground)) !important;
+    }
+    html.dark .flex.flex-col.justify-center.gap-4 button a {
+      color: hsl(var(--foreground)) !important;
+    }
+    .flex.flex-col.justify-center.gap-4 a {
+      color: var(--user-color, hsl(var(--legacy-main))) !important;
+    }
 
   `;
   document.head.appendChild(style);
@@ -388,108 +414,6 @@ export function findProfileCard(): HTMLElement | null {
     ".flex.flex-col.lg\\:flex-row",
   )?.parentElement;
   return (card as HTMLElement) || null;
-}
-
-function getProfileLogin(): string {
-  const pathParts = location.pathname.split("/").filter(Boolean);
-  if (pathParts[0] === "users" && pathParts[1]) return pathParts[1];
-  const loginEl = document.querySelector<HTMLElement>('p[class="text-sm"]');
-  return loginEl?.textContent?.trim() || "";
-}
-
-async function initShortcutButtons() {
-  const container = document.querySelector<HTMLElement>(
-    ".border.border-ft-gray-border.bg-ft-gray\\/50.rounded-xl.flex.justify-center.items-center.w-full",
-  );
-  if (!container || container.hasAttribute("data-ft-shortcuts")) return;
-
-  const openNewTab = await getConfig("ADVANCED_OPEN_LINKS_NEW_TAB");
-
-  const login = getProfileLogin();
-  if (!login) return;
-
-  container.setAttribute("data-ft-shortcuts", "");
-  while (container.firstChild) container.removeChild(container.firstChild);
-
-  const style = document.createElement("style");
-  style.textContent = `
-    [data-ft-shortcuts] a {
-      border: 3px solid var(--user-color, hsl(var(--legacy-main))) !important;
-      border-radius: 0.5rem;
-      color: inherit;
-      text-decoration: none;
-      font-size: 0.875rem;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 0.75rem;
-    }
-    [data-ft-shortcuts] a svg {
-      width: 20px;
-      height: 20px;
-      fill: var(--user-color, hsl(var(--legacy-main))) !important;
-      stroke: var(--user-color, hsl(var(--legacy-main))) !important;
-    }
-  `;
-  container.appendChild(style);
-
-  const makeButton = (
-    href: string,
-    svg: string,
-    label: string,
-    openNewTab: boolean,
-  ) => {
-    const div = document.createElement("div");
-    div.className = "py-3 px-4 hover:text-legacy-main";
-    const a = document.createElement("a");
-    a.href = href;
-    if (openNewTab) {
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-    }
-    a.insertAdjacentHTML("beforeend", svg);
-    const span = document.createElement("span");
-    span.textContent = label;
-    a.appendChild(span);
-    div.appendChild(a);
-    container.appendChild(div);
-  };
-
-  makeButton(
-    `https://projects.intra.42.fr/projects/graph?login=${login}`,
-    HOLY_GRAPH_SVG,
-    "Holy Graph",
-    openNewTab,
-  );
-  // Clusters — custom button that opens dialog
-  (() => {
-    const div = document.createElement("div");
-    div.className = "py-3 px-4 hover:text-legacy-main";
-    const a = document.createElement("a");
-    a.href = "#";
-    a.addEventListener("click", (e) => {
-      e.preventDefault();
-      try {
-        openClusterDialog();
-      } catch (err) {}
-    });
-    a.insertAdjacentHTML(
-      "beforeend",
-      GRIP_VERTICAL_SVG,
-    );
-    const span = document.createElement("span");
-    span.textContent = "Clusters";
-    a.appendChild(span);
-    div.appendChild(a);
-    container.appendChild(div);
-  })();
-  makeButton(
-    "https://profile.intra.42.fr/users/me/edit",
-    USER_COG_SVG,
-    "Settings",
-    openNewTab,
-  );
 }
 
 export function applyThemeToProfileCard(theme: { profileColor?: string }) {
@@ -568,4 +492,5 @@ export async function initProfileCardStyling() {
   }
 
   void initShortcutButtons();
+  requestAnimationFrame(() => injectCampusFlag());
 }

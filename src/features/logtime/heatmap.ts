@@ -217,9 +217,16 @@ export function renderHeatmapCard(
                 >
                   ${cell.secs
                     ? html`<div class="heatmap-tooltip">
-                        ${cell.date} — ${fmtHours(cell.secs)}
+                        ${String(cell.day).padStart(2, "0")}/${String(
+                          cell.month + 1,
+                        ).padStart(2, "0")}/${cell.date.slice(0, 4)}
+                        - ${fmtHours(cell.secs)}
                       </div>`
-                    : html`<div class="heatmap-tooltip">${cell.date}</div>`}
+                    : html`<div class="heatmap-tooltip">
+                        ${String(cell.day).padStart(2, "0")}/${String(
+                          cell.month + 1,
+                        ).padStart(2, "0")}/${cell.date.slice(0, 4)}
+                      </div>`}
                 </div>`;
               })}
             </div>`,

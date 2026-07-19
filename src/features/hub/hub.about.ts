@@ -1,11 +1,15 @@
 import { html } from "lit-html";
+import { until } from "lit-html/directives/until.js";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { HUB_INFO } from "../hub/hubSettings.data.ts";
 
 import GITHUB_SVG from "../../assets/svg/github.svg?raw";
-import ISSUES_SVG from "../../assets/svg/issues.svg?raw";
-import PR_SVG from "../../assets/svg/pr.svg?raw";
+import HEART_SVG from "../../assets/svg/heart.svg?raw";
 import ICON_SVG from "../../assets/svg/icon.svg?raw";
+import ISSUES_SVG from "../../assets/svg/issues.svg?raw";
+import PERSON_FOLLOW_SVG from "../../assets/svg/person-follow.svg?raw";
+import PR_SVG from "../../assets/svg/pr.svg?raw";
+import STAR_SVG from "../../assets/svg/star.svg?raw";
 
 const ABOUT_STACK = [
   {
@@ -67,6 +71,16 @@ const QUICK_LINKS = [
   },
 ];
 
+const starCount = fetch("https://api.github.com/repos/nicopasla/better-intra")
+  .then((r) => r.json())
+  .then((d) => d.stargazers_count as number)
+  .catch(() => null);
+
+const followerCount = fetch("https://api.github.com/users/nicopasla")
+  .then((r) => r.json())
+  .then((d) => d.followers as number)
+  .catch(() => null);
+
 export function renderAboutPanel(): ReturnType<typeof html> {
   return html`
     <div
@@ -85,7 +99,7 @@ export function renderAboutPanel(): ReturnType<typeof html> {
               >
                 ${unsafeHTML(ICON_SVG)}
               </div>
-              <div class="flex items-baseline gap-2">
+              <div class="flex items-center gap-2">
                 <h1 class="text-2xl font-bold tracking-tight">
                   ${HUB_INFO.name}
                 </h1>
@@ -93,9 +107,31 @@ export function renderAboutPanel(): ReturnType<typeof html> {
                   href="${HUB_INFO.github}/releases"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="badge badge-ghost badge-md font-mono font-bold text-sm px-3 transition-all hover:scale-105 active:scale-95"
+                  class="btn btn-sm font-bold transition-all hover:scale-105 active:scale-95"
                 >
-                  v${HUB_INFO.version}
+                  <span>v${HUB_INFO.version}</span>
+                </a>
+                <a
+                  href="https://github.com/nicopasla/better-intra"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-sm gap-1"
+                >
+                  <span
+                    class="size-4 flex items-center justify-center fill-current"
+                  >
+                    ${unsafeHTML(STAR_SVG)}
+                  </span>
+                  <span>Star</span>
+                  ${until(
+                    starCount.then(
+                      (c) =>
+                        c != null
+                          ? html`<span class="badge badge-sm font-mono">${c}</span>`
+                          : "",
+                    ),
+                    html`<span class="loading loading-spinner loading-xs"></span>`,
+                  )}
                 </a>
               </div>
             </div>
@@ -171,29 +207,41 @@ export function renderAboutPanel(): ReturnType<typeof html> {
             Made for 42 Belgium · ${HUB_INFO.license} License
           </p>
           <div class="flex justify-center gap-3 mt-2">
-            <iframe
-              src="https://ghbtns.com/github-btn.html?user=nicopasla&type=follow&count=true&size=large"
-              frameborder="0"
-              scrolling="0"
-              width="230"
-              height="30"
-              title="Follow on GitHub"
-            ></iframe>
-            <iframe
-              src="https://ghbtns.com/github-btn.html?user=nicopasla&repo=better-intra&type=star&count=true&size=large"
-              frameborder="0"
-              scrolling="0"
-              width="170"
-              height="30"
-              title="Star on GitHub"
-            ></iframe>
-            <iframe
-              src="https://github.com/sponsors/nicopasla/button"
-              title="Sponsor nicopasla"
-              height="32"
-              width="114"
-              style="border: 0; border-radius: 6px;"
-            ></iframe>
+            <a
+              href="https://github.com/nicopasla"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-sm gap-1"
+            >
+              <span
+                class="size-4 flex items-center justify-center fill-current"
+              >
+                ${unsafeHTML(PERSON_FOLLOW_SVG)}
+              </span>
+              <span>Follow</span>
+              ${until(
+                followerCount.then(
+                  (c) =>
+                    c != null
+                      ? html`<span class="badge badge-sm font-mono">${c}</span>`
+                      : "",
+                ),
+                html`<span class="loading loading-spinner loading-xs"></span>`,
+              )}
+            </a>
+            <a
+              href="https://github.com/sponsors/nicopasla"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-sm gap-1"
+            >
+              <span
+                class="size-4 flex items-center justify-center fill-current"
+              >
+                ${unsafeHTML(HEART_SVG)}
+              </span>
+              <span>Sponsor</span>
+            </a>
           </div>
         </div>
       </div>

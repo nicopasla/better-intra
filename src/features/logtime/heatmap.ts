@@ -36,9 +36,17 @@ export function renderHeatmapCard(
   const startDate = new Date(firstDate);
   startDate.setDate(firstDate.getDate() + mondayOffset);
 
-  const daysDiff = Math.floor(
-    (endDate.getTime() - startDate.getTime()) / 86400000,
+  const utcEnd = Date.UTC(
+    endDate.getFullYear(),
+    endDate.getMonth(),
+    endDate.getDate(),
   );
+  const utcStart = Date.UTC(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    startDate.getDate(),
+  );
+  const daysDiff = Math.floor((utcEnd - utcStart) / 86400000);
   const numWeeks = Math.ceil((daysDiff + 1) / 7);
 
   const columns: HeatmapColumn[] = [];

@@ -286,7 +286,8 @@ export function renderShortcutsDisplay(
 
           return html`<a
             href="${isValid ? link.url : "#"}"
-            ${openNewTab ? 'target="_blank" rel="noopener noreferrer"' : ""}
+            target="${openNewTab ? "_blank" : ""}"
+            rel="${openNewTab ? "noopener noreferrer" : ""}"
             class="btn btn-lg h-auto min-h-12 px-4 py-2 rounded-2xl border-none font-bold uppercase tracking-wider shadow-lg hover:shadow-lg no-underline inline-flex items-center gap-3 ${dimmed
               ? "opacity-40 grayscale"
               : ""}"
@@ -340,7 +341,8 @@ export function renderShortcutsDisplay(
 
         return html`<a
           href="${link.url}"
-          ${openNewTab ? 'target="_blank" rel="noopener noreferrer"' : ""}
+          target="${openNewTab ? "_blank" : ""}"
+          rel="${openNewTab ? "noopener noreferrer" : ""}"
           class="btn btn-lg h-auto min-h-12 px-4 py-2 rounded-2xl border-none font-bold uppercase tracking-wider shadow-lg hover:shadow-lg no-underline inline-flex items-center gap-3"
           style="background-color: ${link.color}; color: ${contrast};"
         >

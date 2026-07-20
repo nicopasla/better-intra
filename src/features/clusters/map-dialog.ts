@@ -75,6 +75,7 @@ export async function openClusterDialog() {
   let showMarkers = showMarkersVal;
   let wifiUsers: OccupancyEntry[] = [];
   let zoomLevel = 1.0;
+  const clusterCounts = new Map<string, { taken: number; total: number }>();
 
   const updateZoom = () => {
     const wrap = shadow.getElementById("map-area")
@@ -259,10 +260,11 @@ export async function openClusterDialog() {
             ${clusters.map(
               (c) =>
                 html`<button
-                  class="tab text-xs px-4 ${c.id === cluster.id
+                  class="tab font-bold text-xs px-4 ${c.id === cluster.id
                     ? "tab-active"
                     : ""}"
                   data-cluster-id="${c.id}"
+                  data-cluster-name="${c.name.toUpperCase()}"
                 >
                   ${c.name.toUpperCase()}
                 </button>`,
@@ -316,6 +318,13 @@ export async function openClusterDialog() {
         <div class="relative flex-1 min-h-0 mx-3 mb-3 mt-2">
           <div id="map-area" class="rounded-lg h-full"></div>
           <div
+            id="seat-count-badge"
+            class="absolute top-2 left-2 z-20 text-xs tabular-nums font-medium bg-base-100/80 backdrop-blur rounded-lg px-2 py-1 border border-base-300 text-base-content/70"
+          >
+            — / —
+          </div>
+          <div
+            id="zoom-controls"
             class="absolute top-2 right-2 z-20 flex items-center gap-1 bg-base-100/80 backdrop-blur rounded-lg px-1 py-0.5 border border-base-300"
           >
             <button
@@ -430,6 +439,52 @@ export async function openClusterDialog() {
     if (positions && viewBox) {
       renderSeatOverlays(shadow, workCopy, positions, viewBox);
     }
+    const badge = shadow.getElementById("seat-count-badge");
+    if (badge) {
+      const total = positions?.size ?? 0;
+      const taken = positions
+        ? [...workCopy.keys()].filter((h) => positions.has(h)).length
+        : 0;
+      if (total > 0) {
+        const free = total - taken;
+        badge.textContent = `${taken} / ${total}`;
+        badge.title = `${taken} taken, ${free} free · ${total} total`;
+      } else {
+        badge.textContent = `— / —`;
+      }
+    }
+    clusterCounts.clear();
+    for (const [clusterId, seats] of seatPosCache) {
+      const taken = [...workCopy.keys()].filter((h) => seats.has(h)).length;
+      clusterCounts.set(clusterId, { taken, total: seats.size });
+    }
+    for (const tab of shadow.querySelectorAll<HTMLElement>(
+      "[data-cluster-id]",
+    )) {
+      const id = tab.dataset.clusterId;
+      const name = tab.dataset.clusterName || id?.toUpperCase() || "";
+      if (!id) continue;
+      tab.textContent = name;
+      if (id === "wifi") {
+        if (wifiUsers.length > 0) {
+          const num = document.createElement("span");
+          num.textContent = `${wifiUsers.length}`;
+          num.style.cssText =
+            "font-weight:400;opacity:0.55;font-size:11px;margin-left:6px;";
+          tab.appendChild(num);
+        }
+        continue;
+      }
+      const count = clusterCounts.get(id);
+      tab.textContent = name;
+      if (count && count.total > 0) {
+        const num = document.createElement("span");
+        num.textContent = `${count.taken}/${count.total}`;
+        num.style.cssText =
+          "font-weight:400;opacity:0.55;font-size:11px;margin-left:6px;";
+        tab.appendChild(num);
+      }
+    }
     startCountdown();
   };
 
@@ -476,6 +531,11 @@ export async function openClusterDialog() {
   const loadCluster = async (cluster: ClusterInfo) => {
     activeCluster = cluster;
     zoomLevel = 1.0;
+    const isWifi = cluster.id === "wifi";
+    const badge = shadow.getElementById("seat-count-badge");
+    if (badge) badge.style.display = isWifi ? "none" : "";
+    const zoomCtrls = shadow.getElementById("zoom-controls");
+    if (zoomCtrls) zoomCtrls.style.display = isWifi ? "none" : "";
     const id = ++loadId;
     retryCount = 0;
 

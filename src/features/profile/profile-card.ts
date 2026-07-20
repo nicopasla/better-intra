@@ -166,6 +166,44 @@ async function injectSeatBadge(profileCard: HTMLElement) {
   wrapper.prepend(badge);
 }
 
+function injectGivePointsButton(statsBar: HTMLElement, container: HTMLElement) {
+  const giveBtn = statsBar.querySelector<HTMLElement>(
+    'button[aria-haspopup="dialog"]',
+  );
+  if (!giveBtn) return;
+
+  const svg = giveBtn.querySelector("svg");
+  if (!svg) return;
+
+  const evBadges = container.querySelectorAll<HTMLElement>(
+    "[data-ft-badge]:not([data-ft-seat])",
+  );
+  let evBadge: HTMLElement | null = null;
+  for (const b of evBadges) {
+    const labelEl = b.querySelector(".label");
+    if (labelEl?.textContent?.trim() === "Ev.P") {
+      evBadge = b;
+      break;
+    }
+  }
+  if (!evBadge || evBadge.querySelector("[data-ft-give-points]")) return;
+
+  evBadge.style.cursor = "pointer";
+  evBadge.style.justifyContent = "space-between";
+
+  const wrapper = document.createElement("span");
+  wrapper.setAttribute("data-ft-give-points", "");
+  wrapper.style.cssText =
+    "display:inline-flex;align-items:center;margin-left:auto;cursor:pointer;";
+  wrapper.appendChild(svg.cloneNode(true));
+  wrapper.addEventListener("click", (e) => {
+    e.stopPropagation();
+    giveBtn.click();
+  });
+
+  evBadge.appendChild(wrapper);
+}
+
 function pollForUpdatedStats(attempts = 0) {
   const shadowHost = document.getElementById(SHADOW_HOST_ID);
   if (!shadowHost?.shadowRoot) return;
@@ -176,6 +214,7 @@ function pollForUpdatedStats(attempts = 0) {
   const items = extractItems(statsBar);
   if (items.length >= 3 || (items.length >= 1 && attempts >= 8)) {
     populateMainBadges(wrapper, items);
+    injectGivePointsButton(statsBar, wrapper);
     return;
   }
   if (attempts < 30) {
@@ -253,6 +292,10 @@ function startStatsPolling(profileCard: HTMLElement, attempts: number) {
     if (items.length >= 3 || (items.length >= 1 && attempts >= 5)) {
       createInfoCard(items, profileCard);
       void injectSeatBadge(profileCard);
+      const wrapper = document
+        .getElementById(SHADOW_HOST_ID)
+        ?.shadowRoot?.getElementById(INFO_CARD_ID);
+      if (wrapper) injectGivePointsButton(statsBar, wrapper);
       if (items.length < 3) pollForUpdatedStats();
       return;
     }

@@ -240,6 +240,10 @@ export async function openClusterDialog() {
         rect:not(.custom-screen) {
           fill: var(--color-base-200) !important;
         }
+        #map-area svg text,
+        #map-area svg tspan {
+          fill: var(--color-base-content) !important;
+        }
         .spinning {
           animation: btn-spin 0.8s linear infinite;
         }

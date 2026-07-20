@@ -66,7 +66,7 @@ function renderDayCell(
                     target="_blank"
                     rel="noreferrer"
                     style="color:${color};font-weight:600;text-decoration:none"
-                    >${e.kind === "exam" ? "📚 " : "📅 "}${e.name} —
+                    >${e.kind === "exam" ? "📚 " : "📅 "}${e.name} -
                     ${new Date(
                       e.begin_at.endsWith("Z") ? e.begin_at : e.begin_at + "Z",
                     ).toLocaleTimeString("en-US", {

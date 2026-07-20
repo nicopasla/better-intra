@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-07-20
+
+### Features 🎉
+
+- feat(map-dialog): add seat count display ([6765aec](https://github.com/nicopasla/better-intra/commit/6765aec))
+
+### Bug fixes 🐛
+
+- fix(render-day-cell): update tooltip formatting for event display ([e80dd22](https://github.com/nicopasla/better-intra/commit/e80dd22))
+- fix(render-seat-overlays): update text formatting for seat tip display ([a670951](https://github.com/nicopasla/better-intra/commit/a670951))
+- fix(rankings-dialog): remove rankings dialog implementation ([c6111b3](https://github.com/nicopasla/better-intra/commit/c6111b3))
+- fix(map-dialog): update text color in map area for better visibility ([a31ad0a](https://github.com/nicopasla/better-intra/commit/a31ad0a))
+- fix(heatmap): correct daysDiff calculation using UTC timestamps ([e85d54b](https://github.com/nicopasla/better-intra/commit/e85d54b))
+- fix(profile): improve layout for marks display ([56da1d1](https://github.com/nicopasla/better-intra/commit/56da1d1))
+- fix(profile): show give-points button on modern info card ([28f17be](https://github.com/nicopasla/better-intra/commit/28f17be))
+- fix(shortcuts): shortcuts not opening in new tab ([80b4c7a](https://github.com/nicopasla/better-intra/commit/80b4c7a))
+
 ## [1.6.0] - 2026-07-19
 
 ### Features 🎉
@@ -861,7 +878,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.6.0...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/nicopasla/better-intra/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/nicopasla/better-intra/compare/v1.5.4...v1.6.0
 [1.5.4]: https://github.com/nicopasla/better-intra/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/nicopasla/better-intra/compare/v1.5.2...v1.5.3

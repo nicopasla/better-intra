@@ -56,9 +56,10 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 A live interactive cluster map popup accessible from profile quick-link buttons.
 
 * **Real-time seat occupancy** — see user avatars overlaid on occupied seats with login tooltips. Polls every 30 seconds with a "Updated X min ago" indicator.
+* **Seat counts** — a badge on each cluster tab shows taken/total occupancy (e.g. `C1 14/42`). A smaller badge in the map corner shows the same for the current cluster.
+* **Wi-Fi tab** — a dedicated tab showing who's currently connected via Wi-Fi, with avatars, logins, connection time, and a live user count.
 * **Zoom controls** — zoom in/out (30%–300%) with + and - buttons. The current zoom percentage is displayed.
 * **Cluster room tabs** — switch between cluster rooms within the dialog.
-* **Wi-Fi users list** — a dedicated tab showing who's currently connected via Wi-Fi, with avatars, logins, and connection time.
 * **Click to visit profile** — click any occupied seat to open that user's profile, optionally in a new tab.
 * **In-dialog settings** — toggle directional markers and set your default cluster from within the dialog.
 * **Belgium-only** — full live map for Belgian campuses (campus ID 12). Other campuses get a direct link to the cluster map page.

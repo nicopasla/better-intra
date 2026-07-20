@@ -184,7 +184,7 @@ export function renderSeatOverlays(
 
     const tip = document.createElement("span");
     tip.className = "seat-tip";
-    tip.textContent = `${seat.login} — since ${timeStr}`;
+    tip.textContent = `${seat.login} - since ${timeStr}`;
     a.appendChild(tip);
 
     const avatar = Object.assign(document.createElement("img"), {

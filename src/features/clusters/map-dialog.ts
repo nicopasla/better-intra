@@ -325,7 +325,7 @@ export async function openClusterDialog() {
             id="seat-count-badge"
             class="absolute top-2 left-2 z-20 text-xs tabular-nums font-medium bg-base-100/80 backdrop-blur rounded-lg px-2 py-1 border border-base-300 text-base-content/70"
           >
-            — / —
+            - / -
           </div>
           <div
             id="zoom-controls"
@@ -454,7 +454,7 @@ export async function openClusterDialog() {
         badge.textContent = `${taken} / ${total}`;
         badge.title = `${taken} taken, ${free} free · ${total} total`;
       } else {
-        badge.textContent = `— / —`;
+        badge.textContent = `- / -`;
       }
     }
     clusterCounts.clear();

@@ -10,6 +10,9 @@ import CHEVRON_DOWN_SVG from "../../assets/svg/chevron-down.svg?raw";
 
 const WORKER_URL = "https://api.betterintra.com";
 
+const DATE_COLUMN_WIDTH = "150px";
+const SCORE_COLUMN_WIDTH = "24px";
+
 interface MarkedProject {
   projects_user_id: number;
   project_name: string;
@@ -257,17 +260,17 @@ export function renderStatusIcon(
 ): void {
   container.className = isValidated ? "text-green-500" : "text-red-500";
   render(
-    isValidated
-      ? html`<span
-          class="size-6 flex items-center justify-center"
-          >${unsafeHTML(CHECK_SVG)}</span
-        >`
-      : html`<span
-          class="size-6 flex items-center justify-center"
-          >${unsafeHTML(X_SVG)}</span
-        >`,
+    html`<span class="size-6 flex items-center justify-center"
+      >${unsafeHTML(isValidated ? CHECK_SVG : X_SVG)}</span
+    >`,
     container,
   );
+  const svg = container.querySelector("svg");
+  if (svg) {
+    svg.setAttribute("width", "24");
+    svg.setAttribute("height", "24");
+    svg.style.display = "block";
+  }
 }
 
 export function createChevronElement(): SVGElement {
@@ -322,7 +325,12 @@ export function createTeamRow(
   const icon = document.createElement("div");
   renderStatusIcon(icon, team.is_validated);
   right.appendChild(icon);
-  right.append(String(team.final_mark));
+  const teamScore = document.createElement("span");
+  teamScore.style.display = "inline-block";
+  teamScore.style.minWidth = SCORE_COLUMN_WIDTH;
+  teamScore.style.textAlign = "right";
+  teamScore.textContent = String(team.final_mark);
+  right.appendChild(teamScore);
   row.appendChild(right);
 
   return row;
@@ -402,12 +410,18 @@ function injectFinishedProjects(card: HTMLElement, marks: MarkedProject[]) {
       right.style.minWidth = "52px";
       const time = document.createElement("span");
       time.className = "opacity-50";
+      time.style.display = "inline-block";
+      time.style.minWidth = DATE_COLUMN_WIDTH;
+      time.style.textAlign = "right";
       time.textContent = formatDate(project.last_event_date);
       right.appendChild(time);
       const iconWrap = document.createElement("div");
       renderStatusIcon(iconWrap, project.is_validated);
       right.appendChild(iconWrap);
       const score = document.createElement("span");
+      score.style.display = "inline-block";
+      score.style.minWidth = SCORE_COLUMN_WIDTH;
+      score.style.textAlign = "right";
       score.textContent = String(project.final_mark);
       right.appendChild(score);
       row.appendChild(right);
@@ -464,12 +478,18 @@ function injectFinishedProjects(card: HTMLElement, marks: MarkedProject[]) {
       right.style.minWidth = "52px";
       const time = document.createElement("span");
       time.className = "opacity-50";
+      time.style.display = "inline-block";
+      time.style.minWidth = DATE_COLUMN_WIDTH;
+      time.style.textAlign = "right";
       time.textContent = formatDate(project.last_event_date);
       right.appendChild(time);
       const iconWrap = document.createElement("div");
       renderStatusIcon(iconWrap, project.is_validated);
       right.appendChild(iconWrap);
       const score = document.createElement("span");
+      score.style.display = "inline-block";
+      score.style.minWidth = SCORE_COLUMN_WIDTH;
+      score.style.textAlign = "right";
       score.textContent = String(project.final_mark);
       right.appendChild(score);
       item.appendChild(right);
@@ -727,10 +747,46 @@ async function enhanceExistingMarks(
             const dateSpan = document.createElement("span");
             dateSpan.className = "opacity-50 text-sm";
             dateSpan.style.whiteSpace = "nowrap";
+            dateSpan.style.display = "inline-block";
+            dateSpan.style.minWidth = DATE_COLUMN_WIDTH;
+            dateSpan.style.textAlign = "right";
             dateSpan.textContent = dateNode.textContent?.trim() ?? "";
             (dateNode as ChildNode).replaceWith(dateSpan);
             rightSide.prepend(dateSpan);
             if (!rightSide.style.gap) rightSide.style.gap = "0.25rem";
+          }
+
+          if (rightSide) {
+            let scoreNode: Node | null = null;
+            for (const child of [...rightSide.childNodes]) {
+              if (child instanceof SVGElement) continue;
+              if (
+                child instanceof HTMLElement &&
+                (child.classList.contains("text-green-500") ||
+                  child.classList.contains("text-red-500"))
+              )
+                continue;
+              if (
+                child.nodeType === Node.TEXT_NODE &&
+                child.textContent?.trim()
+              ) {
+                scoreNode = child;
+              } else if (
+                child instanceof HTMLElement &&
+                child.textContent?.trim() &&
+                !child.querySelector("svg")
+              ) {
+                scoreNode = child;
+              }
+            }
+            if (scoreNode) {
+              const scoreSpan = document.createElement("span");
+              scoreSpan.style.display = "inline-block";
+              scoreSpan.style.minWidth = SCORE_COLUMN_WIDTH;
+              scoreSpan.style.textAlign = "right";
+              scoreSpan.textContent = scoreNode.textContent?.trim() ?? "";
+              (scoreNode as ChildNode).replaceWith(scoreSpan);
+            }
           }
 
           let prevSibling: Node = link;

@@ -275,6 +275,13 @@ export async function openClusterDialog() {
             )}
           </div>
           <div class="flex items-center gap-2">
+            <span
+              id="totals-badge"
+              class="badge badge-sm h-8"
+              style="white-space:nowrap;border-radius:var(--radius-field)"
+              title="Total taken / Total seats"
+              >- / -</span
+            >
             <select
               class="select select-accent select-sm"
               id="default-cluster-select"
@@ -489,6 +496,11 @@ export async function openClusterDialog() {
         tab.appendChild(num);
       }
     }
+    const allCounts = [...clusterCounts.values()];
+    const sumTaken = allCounts.reduce((s, c) => s + c.taken, 0);
+    const sumTotal = allCounts.reduce((s, c) => s + c.total, 0);
+    const totalsBadge = shadow.getElementById("totals-badge");
+    if (totalsBadge) totalsBadge.textContent = `${sumTaken} / ${sumTotal}`;
     startCountdown();
   };
 

@@ -8,7 +8,6 @@ import { initMilestones } from "./milestones.ts";
 import { initFreezeCard } from "./freeze.ts";
 import { findProfileCard, initProfileCardStyling } from "./profile-card.ts";
 import { injectFriendsWidget } from "../friends/friends.ui.ts";
-import { injectFriendButton } from "../friends/profile-button.ts";
 import { colorTrackerBadge } from "../logtime/tracker-card.ts";
 import { initAchievements } from "./achievements.ts";
 import { initMarks } from "./marks.ts";
@@ -77,7 +76,6 @@ export async function initProfile() {
         // Fire-and-forget: features with >2s timeouts or slow network fetches
         initFreezeCard();
         injectFriendsWidget();
-        injectFriendButton();
         if (location.pathname === "/") colorTrackerBadge();
       }
     } finally {

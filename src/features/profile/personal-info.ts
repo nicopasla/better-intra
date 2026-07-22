@@ -1,14 +1,91 @@
 import { getConfig } from "../../config.ts";
 import { openClusterDialog } from "../clusters/map-dialog.ts";
+import { addFriend, removeFriend, isFriend } from "../friends/friends.ts";
+import { getCloudLogin, syncToCloud } from "../account/account.ts";
 import HOLY_GRAPH_SVG from "../../assets/svg/holy-graph.svg?raw";
 import GRIP_VERTICAL_SVG from "../../assets/svg/grip-vertical.svg?raw";
 import USER_COG_SVG from "../../assets/svg/user-cog.svg?raw";
+import CHECK_SVG from "../../assets/svg/check.svg?raw";
+import PLUS_SVG from "../../assets/svg/plus.svg?raw";
 
 function getProfileLogin(): string {
   const pathParts = location.pathname.split("/").filter(Boolean);
   if (pathParts[0] === "users" && pathParts[1]) return pathParts[1];
   const loginEl = document.querySelector<HTMLElement>('p[class="text-sm"]');
   return loginEl?.textContent?.trim() || "";
+}
+
+export async function initFriendBadge() {
+  const pathParts = location.pathname.split("/").filter(Boolean);
+  if (pathParts[0] !== "users" || !pathParts[1]) return;
+
+  const targetLogin = pathParts[1];
+  const myLogin = await getCloudLogin();
+  if (!myLogin || targetLogin === myLogin) return;
+
+  const container = document.querySelector<HTMLElement>(
+    ".flex.flex-col.justify-center.gap-4",
+  );
+  if (!container) return;
+  if (container.querySelector("[data-ft-friend]")) return;
+
+  let friendState = false;
+
+  const btn = document.createElement("button");
+  btn.setAttribute("data-ft-friend", "");
+  btn.setAttribute("data-state", "closed");
+  btn.className = "cursor-default py-1.5";
+
+  const row = document.createElement("div");
+  row.className = "flex flex-row items-center gap-1";
+
+  const textDiv = document.createElement("div");
+  textDiv.className = "text-white";
+  textDiv.style.whiteSpace = "nowrap";
+
+  const render = () => {
+    const label = friendState ? "Remove friend" : "Add friend";
+    const svg = friendState ? CHECK_SVG : PLUS_SVG;
+    row.replaceChildren();
+    row.insertAdjacentHTML("beforeend", svg);
+    const svgEl = row.querySelector("svg");
+    if (svgEl) {
+      svgEl.setAttribute("width", "15");
+      svgEl.setAttribute("height", "15");
+    }
+    textDiv.textContent = label;
+    row.appendChild(textDiv);
+    btn.title = `${label} (${targetLogin})`;
+    btn.style.pointerEvents = "";
+    btn.style.opacity = "";
+  };
+
+  btn.addEventListener("click", async () => {
+    btn.style.pointerEvents = "none";
+    btn.style.opacity = "0.5";
+    try {
+      if (friendState) {
+        await removeFriend(targetLogin);
+      } else {
+        await addFriend(targetLogin);
+      }
+      syncToCloud();
+      friendState = !friendState;
+      render();
+    } catch {
+      btn.style.pointerEvents = "";
+      btn.style.opacity = "";
+    }
+  });
+
+  btn.appendChild(row);
+  container.prepend(btn);
+  render();
+
+  isFriend(targetLogin).then((already) => {
+    friendState = already;
+    render();
+  });
 }
 
 export async function initShortcutButtons() {

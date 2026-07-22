@@ -2,7 +2,7 @@ import { getConfig } from "../../config.ts";
 import { CLUSTERS, getClusterData } from "../clusters/clusters.data.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import ARROW_SHARE_SVG from "../../assets/svg/arrow_share.svg?raw";
-import { initShortcutButtons } from "./personal-info.ts";
+import { initShortcutButtons, initFriendBadge } from "./personal-info.ts";
 import { injectCampusFlag } from "./campus-flags.ts";
 
 const PROFILE_CARD_CLASS = "ft-profile-card";
@@ -550,5 +550,6 @@ export async function initProfileCardStyling() {
   }
 
   void initShortcutButtons();
+  void initFriendBadge();
   requestAnimationFrame(() => injectCampusFlag());
 }

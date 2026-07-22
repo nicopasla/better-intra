@@ -270,6 +270,7 @@ export function renderStatusIcon(
     svg.setAttribute("width", "24");
     svg.setAttribute("height", "24");
     svg.style.display = "block";
+    svg.style.fill = isValidated ? "#22c55e" : "#ef4444";
   }
 }
 

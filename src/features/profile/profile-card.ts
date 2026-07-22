@@ -262,8 +262,23 @@ function createInfoCard(
     }
   `;
 
+  const badgeResponsiveStyles = `
+    @media (max-width: 1023px) {
+      #${INFO_CARD_ID} {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+      }
+      #${INFO_CARD_ID} [data-ft-badge] {
+        width: auto !important;
+        height: auto !important;
+      }
+    }
+  `;
+
   const style = document.createElement("style");
-  style.textContent = `${sharedCSS}\n${seatStyles}`;
+  style.textContent = `${sharedCSS}\n${seatStyles}\n${badgeResponsiveStyles}`;
   shadowRoot.appendChild(style);
 
   const wrapper = document.createElement("div");

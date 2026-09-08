@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [1.8.6] - 2026-09-08
+
+### Features 🎉
+
+- feat(cron): update refresh schedule for future students ([7111247](https://github.com/nicopasla/better-intra/commit/7111247))
+- feat(friends): add medal display for friend ranks and update UI accordingly ([f5c3273](https://github.com/nicopasla/better-intra/commit/f5c3273))
+
 ## [1.8.5] - 2026-09-07
 
 ### Features 🎉
@@ -1156,7 +1163,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.8.5...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.8.6...HEAD
+[1.8.6]: https://github.com/nicopasla/better-intra/compare/v1.8.5...v1.8.6
 [1.8.5]: https://github.com/nicopasla/better-intra/compare/v1.8.4...v1.8.5
 [1.8.4]: https://github.com/nicopasla/better-intra/compare/v1.8.3...v1.8.4
 [1.8.3]: https://github.com/nicopasla/better-intra/compare/v1.8.2...v1.8.3

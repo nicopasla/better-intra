@@ -1,7 +1,7 @@
 {
   "name": "better-intra",
   "private": true,
-  "version": "1.8.5",
+  "version": "1.8.6",
   "type": "module",
   "scripts": {
     "dev:firefox": "concurrently \"npm run watch:firefox\" \"npm run web-ext:firefox\"",
@@ -20,7 +20,7 @@
     "generate:description": "node scripts/convert-description.js"
   },
   "devDependencies": {
-    "@types/chrome": "^0.2.8",
+    "@types/chrome": "^0.2.9",
     "@vitest/ui": "^5.0.0",
     "concurrently": "^10.0.5",
     "cross-env": "^10.1.0",

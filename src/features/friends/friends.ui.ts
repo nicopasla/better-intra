@@ -37,6 +37,8 @@ import ARROW_SHARE_SVG from "../../assets/svg/arrow_share.svg?raw";
 
 const HOST_ID = "friends-widget-host";
 
+const MEDALS = ["medal-glow-gold", "medal-glow-silver", "medal-glow-bronze"];
+
 const showingOriginalAvatars = new Map<string, boolean>();
 
 function levelFraction(level: number): number {
@@ -64,13 +66,13 @@ function renderLevelBar(level: number) {
 
 function renderFriendRow(
   friend: FriendData,
+  rank = -1,
   showCustomAvatars = true,
-  copiedLogin: string | null = null,
-  onCopyLogin?: (login: string) => void,
   deleteMode = false,
   selected = false,
   onToggleSelect?: (login: string) => void,
 ) {
+  const medalClass = rank >= 0 && rank < MEDALS.length ? MEDALS[rank] : "";
   const hasCustom = !!(
     showCustomAvatars &&
     friend.customAvatar &&
@@ -110,7 +112,7 @@ function renderFriendRow(
           ? html`<div class="avatar ${friend.isOnline ? "avatar-online" : ""}">
               ${showCustom
                 ? html`<div
-                    class="w-14 h-14 rounded-full cursor-pointer"
+                    class="w-14 h-14 rounded-full cursor-pointer ${medalClass}"
                     style="background-image:url(${currentSrc});background-size:${friend.avatarScale ??
                     100}%;background-position:${friend.avatarPosX ??
                     50}% ${friend.avatarPosY ??
@@ -119,7 +121,7 @@ function renderFriendRow(
                     data-tip="${toggleTitle}"
                     @click="${toggleCustom}"
                   ></div>`
-                : html`<div class="w-14 h-14 rounded-full">
+                : html`<div class="w-14 h-14 rounded-full ${medalClass}">
                     <img
                       src="${currentSrc}"
                       alt="${friend.login}"
@@ -162,7 +164,7 @@ function renderFriendRow(
                 ? "avatar-online"
                 : ""}"
             >
-              <div class="w-14 h-14 rounded-full">
+              <div class="w-14 h-14 rounded-full ${medalClass}">
                 <span class="text-base font-bold"
                   >${friend.login[0].toUpperCase()}</span
                 >
@@ -173,9 +175,9 @@ function renderFriendRow(
 
     <!-- Level badge -->
     <div
-      class="badge badge-md badge-primary gap-1 px-2"
+      class="badge badge-md badge-primary gap-1 px-2 ${medalClass}"
       data-ft-level-badge
-      style="border:3px solid color-mix(in oklab, var(--color-primary) 55%, transparent);border-radius:0.75rem;height:auto;padding-block:0.15rem;font-weight:600;"
+      style="border-radius:0.75rem;height:auto;padding-block:0.15rem;font-weight:600;"
     >
       <span class="text-sm font-bold">${friend.level.toFixed(2)}</span>
     </div>
@@ -191,26 +193,10 @@ function renderFriendRow(
     >
       <!-- Login + display name -->
       <div
-        class="flex items-center gap-1.5 flex-wrap min-w-0 pl-2"
+        class="flex items-center gap-1.5 flex-wrap min-w-0"
         data-ft-row="name"
       >
-        ${onCopyLogin
-          ? html`<span
-              class="font-bold text-lg text-primary cursor-copy rounded hover:underline underline-offset-2 ${friend.login ===
-              copiedLogin
-                ? "text-success"
-                : ""}"
-              data-tip="Copy login"
-              @click="${(e: Event) => {
-                e.stopPropagation();
-                e.preventDefault();
-                onCopyLogin(friend.login);
-              }}"
-              >${friend.login === copiedLogin ? "Copied ✓" : friend.login}</span
-            >`
-          : html`<span class="font-bold text-lg text-primary"
-              >${friend.login}</span
-            >`}
+        <span class="font-bold text-lg text-primary">${friend.login}</span>
         ${friend.displayName && friend.displayName !== friend.login
           ? html`<span class="text-sm opacity-80 truncate"
               >${friend.displayName}</span
@@ -410,7 +396,6 @@ interface WidgetState {
   sortBy: SortMode;
   sortDir: SortDir;
   onlineOnly: boolean;
-  copiedLogin: string | null;
   addInput: string;
   addLoading: boolean;
   addError: string;
@@ -423,7 +408,6 @@ interface WidgetState {
   onRefresh: () => void;
   onSortChange: (mode: SortMode, dir: SortDir) => void;
   onToggleOnline: () => void;
-  onCopyLogin: (login: string) => void;
   deleteMode: boolean;
   selected: string[];
   onDeleteMode: () => void;
@@ -534,6 +518,44 @@ function renderWidget(state: WidgetState) {
         border: none !important;
         color: white !important;
         text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+      }
+
+      .medal-glow-gold,
+      .medal-glow-silver,
+      .medal-glow-bronze {
+        box-sizing: content-box;
+        border-width: 3px;
+        border-style: solid;
+        border-radius: 9999px;
+      }
+      .medal-glow-gold {
+        --ft-medal-color: #ffd700;
+        border-color: #ffd700;
+        box-shadow:
+          0 0 6px 2px rgba(255, 215, 0, 0.85),
+          0 0 22px 8px rgba(255, 215, 0, 0.35);
+      }
+      .medal-glow-silver {
+        --ft-medal-color: #d1d5da;
+        border-color: #d1d5da;
+        box-shadow:
+          0 0 6px 2px rgba(209, 213, 218, 0.85),
+          0 0 22px 8px rgba(209, 213, 218, 0.32);
+      }
+      .medal-glow-bronze {
+        --ft-medal-color: #cd7f32;
+        border-color: #cd7f32;
+        box-shadow:
+          0 0 6px 2px rgba(205, 127, 50, 0.85),
+          0 0 22px 8px rgba(205, 127, 50, 0.32);
+      }
+
+      .friends-list .list-row [data-ft-level-badge] {
+        border: 3px solid
+          var(
+            --ft-medal-color,
+            color-mix(in oklab, var(--color-primary) 55%, transparent)
+          );
       }
 
       .no-scrollbar {
@@ -671,7 +693,7 @@ function renderWidget(state: WidgetState) {
       .friends-list .list-row [data-ft-level-badge] {
         grid-column: 1;
         grid-row: 3;
-        justify-self: start;
+        justify-self: center;
         align-self: center;
       }
 
@@ -958,7 +980,7 @@ function renderWidget(state: WidgetState) {
                         </div>`
                       : html`<ul class="list text-base-content">
                           ${sorted.map(
-                            (f) =>
+                            (f, i) =>
                               html`<li
                                 class="list-row group ${state.selected.includes(
                                   f.login,
@@ -968,9 +990,11 @@ function renderWidget(state: WidgetState) {
                               >
                                 ${renderFriendRow(
                                   f,
+                                  state.sortBy === "level" &&
+                                    state.sortDir === "desc"
+                                    ? i
+                                    : -1,
                                   state.showCustomAvatars,
-                                  state.copiedLogin,
-                                  state.onCopyLogin,
                                   state.deleteMode,
                                   state.selected.includes(f.login),
                                   state.onToggleSelect,
@@ -1096,8 +1120,6 @@ function renderWidget(state: WidgetState) {
 let _host: HTMLElement | null = null;
 let _shadow: ShadowRoot | null = null;
 let _state: WidgetState | null = null;
-let _copyTimeout: number | null = null;
-
 function renderWidgetUI() {
   if (_state && _shadow) render(renderWidget(_state), _shadow);
   debugRowAlignment();
@@ -1185,7 +1207,6 @@ export async function injectFriendsWidget() {
     sortBy,
     sortDir,
     onlineOnly: await getConfig("FRIENDS_ONLINE_ONLY"),
-    copiedLogin: null,
     addInput: "",
     addLoading: false,
     addError: "",
@@ -1237,20 +1258,6 @@ export async function injectFriendsWidget() {
       if (!_state) return;
       _state.onlineOnly = !_state.onlineOnly;
       chrome.storage.local.set({ FRIENDS_ONLINE_ONLY: _state.onlineOnly });
-      renderWidgetUI();
-    },
-    onCopyLogin: (login: string) => {
-      if (!_state) return;
-      void navigator.clipboard.writeText(login);
-      _state.copiedLogin = login;
-      if (_copyTimeout !== null) window.clearTimeout(_copyTimeout);
-      _copyTimeout = window.setTimeout(() => {
-        _copyTimeout = null;
-        if (_state) {
-          _state.copiedLogin = null;
-          renderWidgetUI();
-        }
-      }, 1500);
       renderWidgetUI();
     },
     onDeleteMode: () => {

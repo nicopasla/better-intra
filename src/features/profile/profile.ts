@@ -18,6 +18,7 @@ import { initEvaluations } from "./evaluations.ts";
 import { initBadges, applyTitleBadgeWrap } from "./badges.ts";
 import { initTranscript } from "./transcript.ts";
 import { initPace } from "./pace.ts";
+import { initBlackholeMode } from "./blackhole.ts";
 import { ensureCampusData } from "../clusters/clusters.data.ts";
 
 const waitForBody = () =>
@@ -34,6 +35,7 @@ const waitForBody = () =>
 
 export async function initProfile() {
   injectCustomStyles();
+  void initBlackholeMode();
   await waitForBody();
   if (location.origin === "https://projects.intra.42.fr") {
     await redirectDefenseLinks();

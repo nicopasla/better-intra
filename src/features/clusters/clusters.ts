@@ -72,7 +72,9 @@ export async function initClusters() {
     }
 
     const findAndAttach = () => {
-      const svg = document.querySelector<SVGSVGElement>("svg");
+      const svg =
+        document.querySelector("svg image")?.closest<SVGSVGElement>("svg") ??
+        null;
       if (svg && svg !== observedSvgRoot) {
         if (svgObserver) svgObserver.disconnect();
         observedSvgRoot = svg;
@@ -106,11 +108,14 @@ export async function initClusters() {
       setTimeout(() => clearInterval(checkInterval), 3000);
     }
 
+    let pollAttempts = 0;
+    const MAX_POLL_ATTEMPTS = 60;
     const pollTimer = setInterval(() => {
       findAndAttach();
       injectUI(shadowHost);
       refreshMarkersSoon();
-      if (observedSvgRoot && document.getElementById("ft-cluster-ui")) {
+      const uiReady = !!document.getElementById("cluster-shadow-host");
+      if ((observedSvgRoot && uiReady) || ++pollAttempts >= MAX_POLL_ATTEMPTS) {
         clearInterval(pollTimer);
       }
     }, 500);
@@ -148,5 +153,5 @@ export async function initClusters() {
     }
   }
 
-  start();
+  await start();
 }

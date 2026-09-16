@@ -1,4 +1,5 @@
 import { html, render } from "lit-html";
+import { sanitizeHttpUrl } from "../../utils/safe-url.ts";
 
 const WORKER_URL = "https://api.betterintra.com";
 const CACHE_TTL = 5 * 60 * 1000;
@@ -148,16 +149,19 @@ function renderBanner(
         ${message}
         ${links.length > 0
           ? html`<span class="ft-announcement-links">
-              ${links.map(
-                (l) =>
-                  html`<a
-                    class="ft-announcement-link"
-                    href="${l.url}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >${l.text}</a
-                  >`,
-              )}
+              ${links
+                .map((l) => ({ text: l.text, url: sanitizeHttpUrl(l.url) }))
+                .filter((l) => l.url !== "")
+                .map(
+                  (l) =>
+                    html`<a
+                      class="ft-announcement-link"
+                      href="${l.url}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >${l.text}</a
+                    >`,
+                )}
             </span>`
           : ""}
         <button

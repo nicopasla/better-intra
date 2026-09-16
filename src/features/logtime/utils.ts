@@ -70,7 +70,7 @@ export const getLastSeenFormatted = (
     return `${d}/${m}`;
   }
 
-  const lastDate = new Date(lastDateStr);
+  const lastDate = new Date(lastDateStr + "T00:00:00");
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   lastDate.setHours(0, 0, 0, 0);

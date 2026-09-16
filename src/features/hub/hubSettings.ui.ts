@@ -33,6 +33,7 @@ import GRIP_VERTICAL_SVG from "../../assets/svg/grip-vertical.svg?raw";
 import LINK_SVG from "../../assets/svg/link.svg?raw";
 import CHEVRON_DOWN_SVG from "../../assets/svg/chevron-down.svg?raw";
 import { renderAboutPanel } from "./hub.about.ts";
+import { exportableSettings, sanitizeBackup } from "./backup.ts";
 import { renderDiscordPanel } from "../discord/discord.ui.ts";
 import { renderCalendarPanel } from "../calendar/calendar.ui.ts";
 import {
@@ -762,15 +763,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                 class="btn btn-sm btn-primary font-bold"
                 @click="${() => {
                   chrome.storage.local.get(null, (items) => {
-                    const configKeys = new Set(Object.keys(CONFIG_DEFAULT));
-                    const exclude = new Set([
-                      "FRIENDS_DATA_CACHE",
-                      "CALENDAR_EVENTS_HASH",
-                    ]);
-                    const filtered: Record<string, unknown> = {};
-                    for (const [k, v] of Object.entries(items)) {
-                      if (configKeys.has(k) && !exclude.has(k)) filtered[k] = v;
-                    }
+                    // never write credentials (cloud token, calendar secret...) to disk
+                    const filtered = exportableSettings(items);
                     const blob = new Blob([JSON.stringify(filtered, null, 2)], {
                       type: "application/json",
                     });
@@ -798,7 +792,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                     if (!file) return;
                     try {
                       const text = await file.text();
-                      const data = JSON.parse(text);
+                      // only known, non-sensitive, correctly typed keys are restored
+                      const data = sanitizeBackup(JSON.parse(text));
                       await chrome.storage.local.set(data);
                       location.reload();
                     } catch {

@@ -47,6 +47,7 @@ export async function initProfile() {
 
   let isUpdating = false;
   let needsRerun = false;
+  let initialised = false;
 
   const scheduleUpdate = () => {
     needsRerun = false;
@@ -60,6 +61,7 @@ export async function initProfile() {
       await updateVisuals();
       if (location.pathname === "/" || location.pathname.startsWith("/users")) {
         if (!findProfileCard()) return;
+        initialised = true;
 
         await Promise.allSettled([
           initLayoutManager(),
@@ -89,7 +91,7 @@ export async function initProfile() {
       isUpdating = false;
       if (needsRerun) {
         scheduleUpdate();
-      } else if (location.pathname.startsWith("/users")) {
+      } else if (initialised && location.pathname.startsWith("/users")) {
         observer.disconnect();
       }
     }

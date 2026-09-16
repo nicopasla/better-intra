@@ -352,7 +352,31 @@ export const getConfig = async <T extends ConfigKey>(
   key: T,
 ): Promise<BetterIntraConfig[T]> => {
   const res = await chrome.storage.local.get(key);
-  let value = res && res[key] !== undefined ? res[key] : CONFIG_DEFAULT[key];
+  return normalizeConfigValue(key, res ? res[key] : undefined);
+};
+
+/**
+ * Batched variant of getConfig(): one storage round-trip for several keys.
+ * Prefer it when a feature needs many settings at once; awaiting getConfig()
+ * fifteen times in a row used to add fifteen serial IPC calls on start-up.
+ */
+export const getConfigMany = async <K extends ConfigKey>(
+  keys: readonly K[],
+): Promise<Pick<BetterIntraConfig, K>> => {
+  const res = await chrome.storage.local.get([...keys]);
+  const out = {} as Pick<BetterIntraConfig, K>;
+  for (const key of keys) {
+    out[key] = normalizeConfigValue(key, res ? res[key] : undefined);
+  }
+  return out;
+};
+
+/** Apply defaults, legacy JSON-string parsing and per-key fix-ups to a raw stored value. */
+function normalizeConfigValue<T extends ConfigKey>(
+  key: T,
+  raw: unknown,
+): BetterIntraConfig[T] {
+  let value: unknown = raw !== undefined ? raw : CONFIG_DEFAULT[key];
 
   // Some legacy callers serialize arrays/objects as JSON strings (e.g. hub settings).
   // Parse those back so consumers get the declared type.
@@ -381,4 +405,4 @@ export const getConfig = async <T extends ConfigKey>(
   }
 
   return value as BetterIntraConfig[T];
-};
+}

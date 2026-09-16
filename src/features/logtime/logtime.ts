@@ -1,5 +1,5 @@
 import { render } from "lit-html";
-import { getConfig } from "../../config.ts";
+import { getConfig, getConfigMany } from "../../config.ts";
 import { resolveRainbowColors } from "./rainbow-presets.ts";
 import { hashLogin } from "../../utils/crypto.ts";
 import {
@@ -125,24 +125,40 @@ function mergeHistoryWithHook(
   return merged;
 }
 
-const getConfigs = async () => ({
-  goal_hours: await getConfig("LOGTIME_GOAL_HOURS"),
-  show_average: await getConfig("LOGTIME_SHOW_AVERAGE"),
-  show_goal: await getConfig("LOGTIME_SHOW_GOAL"),
-  show_tacos: await getConfig("LOGTIME_SHOW_TACOS"),
-  emoji: limit(await getConfig("LOGTIME_EMOJI")),
-  divisor: await getConfig("LOGTIME_EMOJI_DIVISOR"),
-  rate: await getConfig("LOGTIME_EMOJI_RATE"),
-  show_days_mode: await getConfig("LOGTIME_SHOW_DAYS_MODE"),
-  calendar_color: await getConfig("LOGTIME_CALENDAR_COLOR"),
-  labels_color: await getConfig("LOGTIME_LABELS_COLOR"),
-  rainbow_colors: resolveRainbowColors(
-    await getConfig("LOGTIME_RAINBOW_PALETTE"),
-  ),
-  disable_animations: await getConfig("DISABLE_ANIMATIONS"),
-  max_earnings: await getConfig("LOGTIME_MAX_EARNINGS"),
-  calendar_view: await getConfig("LOGTIME_CALENDAR_VIEW"),
-});
+const getConfigs = async () => {
+  const c = await getConfigMany([
+    "LOGTIME_GOAL_HOURS",
+    "LOGTIME_SHOW_AVERAGE",
+    "LOGTIME_SHOW_GOAL",
+    "LOGTIME_SHOW_TACOS",
+    "LOGTIME_EMOJI",
+    "LOGTIME_EMOJI_DIVISOR",
+    "LOGTIME_EMOJI_RATE",
+    "LOGTIME_SHOW_DAYS_MODE",
+    "LOGTIME_CALENDAR_COLOR",
+    "LOGTIME_LABELS_COLOR",
+    "LOGTIME_RAINBOW_PALETTE",
+    "DISABLE_ANIMATIONS",
+    "LOGTIME_MAX_EARNINGS",
+    "LOGTIME_CALENDAR_VIEW",
+  ] as const);
+  return {
+    goal_hours: c.LOGTIME_GOAL_HOURS,
+    show_average: c.LOGTIME_SHOW_AVERAGE,
+    show_goal: c.LOGTIME_SHOW_GOAL,
+    show_tacos: c.LOGTIME_SHOW_TACOS,
+    emoji: limit(c.LOGTIME_EMOJI),
+    divisor: c.LOGTIME_EMOJI_DIVISOR,
+    rate: c.LOGTIME_EMOJI_RATE,
+    show_days_mode: c.LOGTIME_SHOW_DAYS_MODE,
+    calendar_color: c.LOGTIME_CALENDAR_COLOR,
+    labels_color: c.LOGTIME_LABELS_COLOR,
+    rainbow_colors: resolveRainbowColors(c.LOGTIME_RAINBOW_PALETTE),
+    disable_animations: c.DISABLE_ANIMATIONS,
+    max_earnings: c.LOGTIME_MAX_EARNINGS,
+    calendar_view: c.LOGTIME_CALENDAR_VIEW,
+  };
+};
 
 export type LogtimeConfig = Awaited<ReturnType<typeof getConfigs>>;
 

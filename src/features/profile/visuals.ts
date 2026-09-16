@@ -1,4 +1,4 @@
-import { getConfig } from "../../config.ts";
+import { getConfig, getConfigMany } from "../../config.ts";
 import { getCloudLogin, fetchUserVisuals } from "../account/account.ts";
 import { createSettingsModal } from "./profile.modal.ts";
 import { applyThemeToProfileCard } from "./profile-card.ts";
@@ -569,20 +569,36 @@ export const updateVisuals = async () => {
 
   if (!isFetching) {
     if (targetLogin === myLogin) {
+      // one storage read instead of thirteen serial ones
+      const c = await getConfigMany([
+        "PROFILE_IMAGE_URL",
+        "PROFILE_BANNER_URL",
+        "PROFILE_BANNER_MODE",
+        "PROFILE_BANNER_COLOR",
+        "PROFILE_BACKGROUND_URL",
+        "PROFILE_BACKGROUND_MODE",
+        "PROFILE_BACKGROUND_COLOR",
+        "PROFILE_AVATAR_BG",
+        "PROFILE_DECORATION",
+        "PROFILE_AVATAR_POSITION_X",
+        "PROFILE_AVATAR_POSITION_Y",
+        "PROFILE_AVATAR_SCALE",
+        "PROFILE_BADGE_BG",
+      ] as const);
       visualCache = {
-        avatar: await getConfig("PROFILE_IMAGE_URL"),
-        banner: await getConfig("PROFILE_BANNER_URL"),
-        bannerMode: (await getConfig("PROFILE_BANNER_MODE")) || "fill",
-        bannerColor: await getConfig("PROFILE_BANNER_COLOR"),
-        background: await getConfig("PROFILE_BACKGROUND_URL"),
-        backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
-        backgroundColor: await getConfig("PROFILE_BACKGROUND_COLOR"),
-        avatarBg: await getConfig("PROFILE_AVATAR_BG"),
-        decoration: await getConfig("PROFILE_DECORATION"),
-        avatarPosX: await getConfig("PROFILE_AVATAR_POSITION_X"),
-        avatarPosY: await getConfig("PROFILE_AVATAR_POSITION_Y"),
-        avatarScale: await getConfig("PROFILE_AVATAR_SCALE"),
-        badgeBg: await getConfig("PROFILE_BADGE_BG"),
+        avatar: c.PROFILE_IMAGE_URL,
+        banner: c.PROFILE_BANNER_URL,
+        bannerMode: c.PROFILE_BANNER_MODE || "fill",
+        bannerColor: c.PROFILE_BANNER_COLOR,
+        background: c.PROFILE_BACKGROUND_URL,
+        backgroundMode: c.PROFILE_BACKGROUND_MODE || "fill",
+        backgroundColor: c.PROFILE_BACKGROUND_COLOR,
+        avatarBg: c.PROFILE_AVATAR_BG,
+        decoration: c.PROFILE_DECORATION,
+        avatarPosX: c.PROFILE_AVATAR_POSITION_X,
+        avatarPosY: c.PROFILE_AVATAR_POSITION_Y,
+        avatarScale: c.PROFILE_AVATAR_SCALE,
+        badgeBg: c.PROFILE_BADGE_BG,
       };
       // sanitise at ingestion so that needsReapply()/getVisualKey() compare
       // exactly what applyImgs() writes (otherwise a normalised URL would

@@ -9,6 +9,10 @@ import { loginWith42, clearAuthFailed } from "../account/account.ts";
 
 const WORKER_URL = "https://api.betterintra.com";
 
+let discordPanelListener:
+  | ((changes: { [key: string]: chrome.storage.StorageChange }) => void)
+  | null = null;
+
 type StepState = "locked" | "active" | "done";
 
 function stepClass(s: StepState) {
@@ -42,13 +46,12 @@ function stepCard(
 
 export function renderDiscordPanel() {
   const renderPanel = (el: Element | undefined) => {
+    if (discordPanelListener) {
+      chrome.storage.onChanged.removeListener(discordPanelListener);
+      discordPanelListener = null;
+    }
     if (!el) return;
     const container = el as HTMLElement;
-
-    const prev = (container as any).__discordPanelListener;
-    if (prev) {
-      chrome.storage.onChanged.removeListener(prev);
-    }
 
     const update = async () => {
       const [store, discordEnabled, quietEnabled, quietStart, quietEnd] =
@@ -405,7 +408,7 @@ export function renderDiscordPanel() {
       }
     };
     chrome.storage.onChanged.addListener(listener);
-    (container as any).__discordPanelListener = listener;
+    discordPanelListener = listener;
 
     update();
   };

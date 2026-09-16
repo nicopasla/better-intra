@@ -282,6 +282,7 @@ This is a personal project. It modifies the appearance of 42 Intra and adds UI i
 * 42 logo from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:42_Logo.svg)
 * Robot icons from Wikimedia Commons ([normal](https://commons.wikimedia.org/wiki/File:Robot_icon.svg) and [broken](https://commons.wikimedia.org/wiki/File:Robot_icon_broken.svg))
 * Intra v2 dark mode from [Improved Intra](https://github.com/FreekBes/improved_intra/tree/main/features/themes)
+* Leak and bug fixes ported from [MaiToxx/BetterIntraRemake](https://github.com/MaiToxx/BetterIntraRemake) (MIT)
 
 ## Compatibility
 

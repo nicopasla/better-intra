@@ -264,8 +264,18 @@ export async function loadCampus(
   state.activeCampusId = campusId;
   state.zoomLevel = 1.0;
   state.loadId++;
-  state.campusExits = (await getCampusExits(campusId)) ?? null;
-  state.clusters = await buildClusters(campusId);
+  // If another campus is selected (or the dialog closed) while this one is
+  // loading, the stale result must not overwrite state nor be cached under the
+  // newer campus id. Keyed on the campus id: loadCluster() bumps loadId itself,
+  // so a generation token on that counter would always look stale here.
+  const stale = () =>
+    state.activeCampusId !== campusId || signal?.aborted === true;
+  const exits = await getCampusExits(campusId);
+  if (stale()) return;
+  state.campusExits = exits ?? null;
+  const clusters = await buildClusters(campusId);
+  if (stale()) return;
+  state.clusters = clusters;
   if (!state.clusters.some((c) => c.svg)) {
     const mapArea = shadow.getElementById("map-area");
     if (mapArea) {
@@ -295,14 +305,17 @@ export async function loadCampus(
   updateDefaultSelect(state);
   updateCampusTime(state);
   await loadCluster(state, state.activeCluster, signal);
+  if (stale()) return;
   await loadOccupancy(state, signal);
+  if (stale()) return;
   (async () => {
     const rest = state.clusters.filter(
       (c) => c.id !== state.activeCluster.id && c.svg,
     );
     for (const c of rest) {
+      if (stale()) return;
       await ensureClusterData(state, c, campusId, signal);
     }
-    reapplyOccupancy(state);
+    if (!stale()) reapplyOccupancy(state);
   })();
 }

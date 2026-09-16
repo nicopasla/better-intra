@@ -3,6 +3,7 @@ import { getCloudLogin, fetchUserVisuals } from "../account/account.ts";
 import { createSettingsModal } from "./profile.modal.ts";
 import { applyThemeToProfileCard } from "./profile-card.ts";
 import { applyPublicLogtimeSettings, initLogtime } from "../logtime/logtime.ts";
+import { sanitizeVisualUrls } from "./visuals-sanitize.ts";
 import {
   AVATAR_SELECTOR,
   BANNER_SELECTOR,
@@ -31,10 +32,15 @@ export interface VisualUrls {
     emoji?: string;
     emojiDivisor?: string | number;
     emojiRate?: string | number;
+    rainbowPalette?: string;
   } | null;
 }
 
 let isFetching = false;
+
+/** Logins known to have no cloud visuals, with the time we learned it. */
+const noVisualsCache = new Map<string, number>();
+const NO_VISUALS_TTL_MS = 10 * 60 * 1000;
 
 let historyListenerInstalled = false;
 
@@ -315,8 +321,11 @@ const modeCss: Record<string, string> = {
   tile: "background-size: auto !important; background-repeat: repeat !important; background-position: top left !important;",
 };
 
-export const applyImgs = (urls: VisualUrls | null) => {
-  if (!urls) return;
+export const applyImgs = (rawUrls: VisualUrls | null) => {
+  if (!rawUrls) return;
+  // Values may come from another user's cloud settings and end up in <style>
+  // text and class names: never trust them as-is.
+  const urls = sanitizeVisualUrls(rawUrls);
 
   const avatar = document.querySelector(AVATAR_SELECTOR) as HTMLElement | null;
 
@@ -421,7 +430,12 @@ export const applyImgs = (urls: VisualUrls | null) => {
 
   if (urls.logtime) {
     const logtime = urls.logtime;
-    initLogtime().then(() => applyPublicLogtimeSettings(logtime));
+    // Respect the user's feature toggle: viewing a profile that publishes
+    // logtime settings must not render the widget for someone who disabled it.
+    getConfig("ACTIVE_SCRIPTS").then((scripts) => {
+      if (!Array.isArray(scripts) || !scripts.includes("logtime")) return;
+      return initLogtime().then(() => applyPublicLogtimeSettings(logtime));
+    });
   }
 };
 
@@ -570,6 +584,10 @@ export const updateVisuals = async () => {
         avatarScale: await getConfig("PROFILE_AVATAR_SCALE"),
         badgeBg: await getConfig("PROFILE_BADGE_BG"),
       };
+      // sanitise at ingestion so that needsReapply()/getVisualKey() compare
+      // exactly what applyImgs() writes (otherwise a normalised URL would
+      // look "not applied" and trigger a re-apply on every mutation pass)
+      visualCache = sanitizeVisualUrls(visualCache);
 
       if (
         !visualCache.avatar &&
@@ -598,13 +616,20 @@ export const updateVisuals = async () => {
           cached.theme ||
           cached.logtime)
       ) {
-        visualCache = cached;
+        visualCache = sanitizeVisualUrls(cached);
         applyImgs(visualCache);
         lastAppliedUser = targetLogin;
         lastAppliedKey = getVisualKey(visualCache);
-        if (cached.avatar) attachToggleListener(avatarEl);
+        if (visualCache.avatar) attachToggleListener(avatarEl);
         revalidateVisuals(targetLogin, cached);
       } else {
+        // Negative cache: a user without cloud visuals used to be re-fetched
+        // on every mutation pass of the profile page.
+        const knownEmptyAt = noVisualsCache.get(targetLogin);
+        if (knownEmptyAt && Date.now() - knownEmptyAt < NO_VISUALS_TTL_MS) {
+          avatarEl.style.setProperty("opacity", "1", "important");
+          return;
+        }
         isFetching = true;
         const fetchForLogin = targetLogin;
         try {
@@ -630,6 +655,7 @@ export const updateVisuals = async () => {
             lastAppliedKey = getVisualKey(visualCache);
             if (cloudUrls.avatar) attachToggleListener(avatarEl);
           } else {
+            if (cloudUrls) noVisualsCache.set(targetLogin, Date.now());
             avatarEl.style.setProperty("opacity", "1", "important");
           }
         } finally {

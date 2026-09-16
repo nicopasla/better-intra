@@ -3,6 +3,7 @@ import type { VisualUrls } from "../profile/visuals.ts";
 import { hashLogin } from "../../utils/crypto.ts";
 import { showConfirmDialog } from "../../utils/confirm-dialog.ts";
 import { markAuthFlowPending } from "./auth-callback.ts";
+import { sanitizeVisualUrls } from "../profile/visuals-sanitize.ts";
 
 export { hashLogin };
 
@@ -256,7 +257,7 @@ export async function fetchUserVisuals(
     if (!response.ok) return null;
     const data = (await response.json()) as Record<string, unknown>;
 
-    return {
+    return sanitizeVisualUrls({
       avatar: String(data.avatar || ""),
       banner: String(data.banner || ""),
       bannerMode: String(data.bannerMode || "fill"),
@@ -272,7 +273,7 @@ export async function fetchUserVisuals(
       badgeBg: String(data.badgeBg || ""),
       theme: (data.theme as { profileColor?: string }) || null,
       logtime: (data.logtime as Record<string, unknown>) || null,
-    };
+    });
   } catch (error) {
     console.error(error);
     return null;

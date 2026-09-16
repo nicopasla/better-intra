@@ -99,7 +99,7 @@ export function getCurrentWeekProgress(
   let hoursDone = 0;
 
   for (const [dateStr, timeStr] of Object.entries(stats)) {
-    const d = new Date(dateStr + "T00:00:00Z");
+    const d = new Date(dateStr + "T00:00:00");
     if (d < weekStart || d > weekEnd) continue;
 
     const [h = 0, m = 0, s = 0] = timeStr.split(":").map(Number);
@@ -129,8 +129,9 @@ export function computeWeekProgress(
 }
 
 export function formatHours(hours: number): string {
-  const h = Math.floor(hours);
-  const m = Math.round((hours - h) * 60);
+  const totalMinutes = Math.round(hours * 60);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
   if (m === 0) return `${h}h`;
   return `${h}h${String(m).padStart(2, "0")}`;
 }

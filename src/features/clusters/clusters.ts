@@ -74,7 +74,7 @@ export async function initClusters() {
     const findAndAttach = () => {
       const svg =
         document.querySelector("svg image")?.closest<SVGSVGElement>("svg") ??
-        null;
+        document.querySelector<SVGSVGElement>("svg");
       if (svg && svg !== observedSvgRoot) {
         if (svgObserver) svgObserver.disconnect();
         observedSvgRoot = svg;

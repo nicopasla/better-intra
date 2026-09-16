@@ -204,7 +204,10 @@ export async function initEvaluations() {
 
   const show = await getConfig("PROFILE_SHOW_EVALUATIONS");
 
+  let attempts = 0;
+  const MAX_ATTEMPTS = 600;
   const check = () => {
+    if (attempts++ > MAX_ATTEMPTS) return;
     const native = findNativeCard();
     if (!native) {
       requestAnimationFrame(check);

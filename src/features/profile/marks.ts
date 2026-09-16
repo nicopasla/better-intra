@@ -84,8 +84,14 @@ function waitForToken(timeout = 15000): Promise<string | null> {
   });
 }
 
+function parseApiDate(dateStr: string): Date {
+  return /(?:Z|[+-]\d{2}:?\d{2})$/i.test(dateStr)
+    ? new Date(dateStr)
+    : new Date(dateStr + "Z");
+}
+
 function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
+  const d = parseApiDate(dateStr);
   const now = new Date();
   const todayMidnight = new Date(
     now.getFullYear(),
@@ -109,7 +115,7 @@ function formatDate(dateStr: string): string {
 }
 
 function formatTooltipDate(dateStr: string): string {
-  const d = new Date(dateStr + "Z");
+  const d = parseApiDate(dateStr);
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yy = String(d.getFullYear() % 100).padStart(2, "0");
@@ -281,7 +287,7 @@ export function renderStatusIcon(
 
 export function createChevronElement(): SVGElement {
   const span = document.createElement("span");
-  span.innerHTML = CHEVRON_DOWN_SVG;
+  render(unsafeHTML(CHEVRON_DOWN_SVG), span);
   const chevron = span.querySelector("svg")! as SVGElement;
   chevron.setAttribute("width", "18");
   chevron.setAttribute("height", "18");

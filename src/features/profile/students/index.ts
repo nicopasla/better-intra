@@ -34,9 +34,21 @@ import type {
   StudentsView,
 } from "./data.ts";
 
-export async function openStudentsDialog() {
+let studentsOpening: Promise<void> | null = null;
+
+export function openStudentsDialog(): Promise<void> {
+  if (document.getElementById("students-dialog")) return Promise.resolve();
+  if (studentsOpening) return studentsOpening;
+  studentsOpening = openStudentsDialogImpl().finally(() => {
+    studentsOpening = null;
+  });
+  return studentsOpening;
+}
+
+async function openStudentsDialogImpl() {
   const campusId = await getConfig("CLUSTERS_CAMPUS");
   if (campusId !== "12") return;
+  if (document.getElementById("students-dialog")) return;
 
   const now = new Date();
   const currentYear = now.getFullYear();

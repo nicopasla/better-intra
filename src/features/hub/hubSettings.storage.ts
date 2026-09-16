@@ -13,13 +13,15 @@ function normalizeActive(raw: unknown): FeatureId[] {
     try {
       parsed = JSON.parse(raw);
     } catch {
-      parsed = [];
+      parsed = null;
     }
   }
 
-  if (!Array.isArray(parsed) || parsed.length === 0) {
+  if (!Array.isArray(parsed)) {
     return FEATURE_DEFS.map((f) => f.id);
   }
+
+  if (parsed.length === 0) return [];
 
   const ids = (parsed as string[]).filter((v): v is FeatureId =>
     FEATURE_IDS.has(v as FeatureId),
@@ -34,7 +36,9 @@ export async function getActiveFeatures(): Promise<FeatureId[]> {
   const raw = await getConfig(STORAGE_KEY);
   const active = normalizeActive(raw);
 
-  await chrome.storage.local.set({ [STORAGE_KEY]: active });
+  if (JSON.stringify(raw) !== JSON.stringify(active)) {
+    await chrome.storage.local.set({ [STORAGE_KEY]: active });
+  }
 
   return active;
 }

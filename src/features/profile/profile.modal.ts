@@ -744,7 +744,8 @@ export const createSettingsModal = async (
   dialog.showModal();
 
   content.addEventListener("click", (e) => e.stopPropagation());
-  dialog.addEventListener("click", () => close());
+  dialog.addEventListener("close", () => dialog.remove());
+  dialog.addEventListener("click", () => dialog.close());
 
   if (isConnected) {
     const cloudSettings = await fetchMySettings();

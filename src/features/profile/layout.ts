@@ -3,8 +3,11 @@ import { getConfig } from "../../config.ts";
 let cachedCards: HTMLElement[] | null = null;
 let cachedGrid: HTMLElement | null = null;
 
+// The card layout only applies to the user's own dashboard ("/").
+const isDashboardPath = () => location.pathname === "/";
+
 function getCards(): HTMLElement[] {
-  if (!/^\/(\??.*)?$/.test(location.pathname)) {
+  if (!isDashboardPath()) {
     cachedCards = [];
     cachedGrid = null;
     return [];
@@ -109,7 +112,7 @@ function reorderCards(
 
 export async function optimizeLayout() {
   if (location.hostname !== "profile-v3.intra.42.fr") return;
-  if (!/^\/(\??.*)?$/.test(location.pathname)) return;
+  if (!isDashboardPath()) return;
 
   const cardOrder = (await getConfig("PROFILE_CARD_ORDER")) as string[] | null;
   const hideCardByText = (searchText: string, shouldHide: boolean) => {
@@ -147,12 +150,16 @@ export async function optimizeLayout() {
   }
 }
 
+let layoutInitialised = false;
+
 export async function initLayoutManager() {
   const isOwnProfile =
-    location.hostname === "profile-v3.intra.42.fr" &&
-    /^\/(\??.*)?$/.test(location.pathname);
+    location.hostname === "profile-v3.intra.42.fr" && isDashboardPath();
 
   if (!isOwnProfile) return;
+
+  if (layoutInitialised) return;
+  layoutInitialised = true;
 
   void optimizeLayout();
   window.addEventListener("resize", () => void optimizeLayout());
@@ -174,11 +181,13 @@ export async function initLayoutManager() {
     observer.observe(parent, { childList: true, subtree: false });
   };
 
+  let pollAttempts = 0;
+  const MAX_POLL_ATTEMPTS = 600;
   const poll = () => {
     const cards = getCards();
     if (cards.length && cachedGrid) {
       setupObserver(cachedGrid);
-    } else {
+    } else if (pollAttempts++ < MAX_POLL_ATTEMPTS) {
       requestAnimationFrame(poll);
     }
   };

@@ -1,4 +1,4 @@
-﻿import { hashLogin } from "./utils/crypto";
+import { hashLogin } from "./utils/crypto";
 
 const WORKER_URL = "https://api.betterintra.com";
 

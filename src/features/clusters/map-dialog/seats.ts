@@ -12,10 +12,32 @@ export function getSvgTitle(svgDoc: Document): string {
   return svgDoc.querySelector("svg > title")?.textContent?.trim() || "";
 }
 
+// Elements that can embed active or remote content inside the intra page once
+// the SVG is imported into the document.
+const FORBIDDEN_TAGS = new Set([
+  "script",
+  "foreignobject",
+  "iframe",
+  "object",
+  "embed",
+  "link",
+  "meta",
+  "form",
+]);
+
+/** url(...) whose target is not a local fragment reference (#id). */
+const REMOTE_URL_RE = /url\s*\(\s*(?!['"]?#)[^)]*\)/gi;
+
+/** True for hrefs that stay inside the document or the data itself. */
+function isLocalHref(href: string): boolean {
+  const v = href.trim();
+  return v === "" || v.startsWith("#") || /^data:image\//i.test(v);
+}
+
 export function sanitizeAndParseSeats(svgDoc: Document): Map<string, SeatPos> {
   for (const el of svgDoc.querySelectorAll("*")) {
     const tagName = el.tagName.toLowerCase();
-    if (tagName === "script") {
+    if (FORBIDDEN_TAGS.has(tagName)) {
       el.remove();
       continue;
     }
@@ -27,13 +49,33 @@ export function sanitizeAndParseSeats(svgDoc: Document): Map<string, SeatPos> {
         continue;
       }
     }
+    if (tagName === "style") {
+      // keep local styling (url(#gradient) etc.) but strip remote loads
+      const css = el.textContent || "";
+      if (/@import|url\s*\(/i.test(css)) {
+        el.textContent = css
+          .replace(/@import[^;]*;?/gi, "")
+          .replace(REMOTE_URL_RE, "none");
+      }
+      continue;
+    }
     for (const attr of [...el.attributes]) {
       if (DANGEROUS_ATTR.test(attr.name)) el.removeAttribute(attr.name);
+      if (attr.name === "href" || attr.name === "xlink:href") {
+        if (/^\s*javascript:/i.test(attr.value)) {
+          el.removeAttribute(attr.name);
+        } else if (tagName === "image" && !isLocalHref(attr.value)) {
+          // seat <image> elements are kept (their ids matter) but must not
+          // load remote resources on the viewer's behalf
+          el.removeAttribute(attr.name);
+        }
+      }
       if (
-        (attr.name === "href" || attr.name === "xlink:href") &&
-        /^\s*javascript:/i.test(attr.value)
+        attr.name === "style" &&
+        (REMOTE_URL_RE.test(attr.value) || /expression\s*\(/i.test(attr.value))
       ) {
-        el.removeAttribute(attr.name);
+        // fill:url(#grad) is fine; url(https://...) is not
+        el.setAttribute(attr.name, attr.value.replace(REMOTE_URL_RE, "none"));
       }
     }
   }

@@ -22,6 +22,7 @@ interface CellData {
 
 interface HeatmapColumn {
   cells: CellData[];
+  year: number;
 }
 
 export function renderHeatmapCard(
@@ -104,11 +105,14 @@ export function renderHeatmapCard(
       lastLabelYear = colLatestYear;
     }
 
+    const colYear =
+      colLatestYear !== -1 ? colLatestYear : Number(cells[0].date.slice(0, 4));
+
     if (colLatestMonth !== -1 && colLatestMonth !== lastLabelMonth) {
-      const labelYm = `${cells[0].date.slice(0, 4)}-${String(colLatestMonth + 1).padStart(2, "0")}`;
+      const labelYm = `${colYear}-${String(colLatestMonth + 1).padStart(2, "0")}`;
       monthLabels.push({
         label: new Intl.DateTimeFormat("en-US", { month: "long" }).format(
-          new Date(Number(cells[0].date.slice(0, 4)), colLatestMonth),
+          new Date(colYear, colLatestMonth),
         ),
         col: w,
         ym: labelYm,
@@ -116,7 +120,7 @@ export function renderHeatmapCard(
       lastLabelMonth = colLatestMonth;
     }
 
-    columns.push({ cells });
+    columns.push({ cells, year: colYear });
   }
 
   const cellW = 32;
@@ -144,7 +148,7 @@ export function renderHeatmapCard(
     monthTotals[ym] = (monthTotals[ym] || 0) + h * 3600 + m * 60 + s;
   }
 
-  const displayYear = columns[columns.length - 1].cells[0].date.slice(0, 4);
+  const displayYear = String(columns[columns.length - 1].year);
 
   const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -201,7 +205,7 @@ export function renderHeatmapCard(
           (col) =>
             html`<div
               class="heatmap-column"
-              data-year="${col.cells[0].date.slice(0, 4)}"
+              data-year="${col.year}"
               style="display:flex; flex-direction:column; gap:${gap}px;"
             >
               ${col.cells.map((cell) => {

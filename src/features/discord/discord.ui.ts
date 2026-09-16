@@ -6,6 +6,7 @@ import DISCORD_SVG from "../../assets/svg/discord.svg?raw";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 import { hashLogin } from "../../utils/crypto";
 import { loginWith42, clearAuthFailed } from "../account/account.ts";
+import { markAuthFlowPending } from "../account/auth-callback.ts";
 
 const WORKER_URL = "https://api.betterintra.com";
 
@@ -160,6 +161,7 @@ export function renderDiscordPanel() {
             type="button"
             class="btn bg-[#5865F2] text-white border-none hover:bg-[#4752C4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
             @click="${() => {
+              void markAuthFlowPending("discord");
               window.open(authUrl, "_blank");
             }}"
           >

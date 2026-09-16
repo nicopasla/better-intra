@@ -14,6 +14,7 @@ import { ensureCampusData } from "./features/campus/campus.ts";
 import { updateNavAvatar } from "./features/profile/visuals.ts";
 import { AVATAR_SELECTOR } from "./features/profile/selectors.ts";
 import { initAnnouncementBanner } from "./features/announcement/announcement.ts";
+import { consumeAuthFlow } from "./features/account/auth-callback.ts";
 import { html, render } from "lit-html";
 
 initThemeManager();
@@ -143,10 +144,23 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
 })();
 
 (async function runBetterIntra() {
+  // The worker currently returns the result in the query string. Also accept
+  // it in the URL fragment (#token=...&login=...): fragments never reach the
+  // intra servers or their logs, so the worker can switch to them at any time.
   const oauthParams = new URLSearchParams(window.location.search);
-  const oauthToken = oauthParams.get("token");
-  const oauthLogin = oauthParams.get("login");
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const oauthToken = oauthParams.get("token") ?? hashParams.get("token");
+  const oauthLogin = oauthParams.get("login") ?? hashParams.get("login");
   if (oauthToken && oauthLogin) {
+    // Only trust the callback if this extension started a login recently.
+    // Otherwise any intra link with ?token=&login= could hijack the account.
+    if (!(await consumeAuthFlow("cloud"))) {
+      console.warn(
+        "Better Intra: ignoring unexpected auth callback (no login in progress).",
+      );
+      history.replaceState(null, "", window.location.pathname);
+      return;
+    }
     await chrome.storage.local.set({
       CLOUD_TOKEN: oauthToken,
       CLOUD_LOGIN: oauthLogin,
@@ -162,9 +176,18 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
     return;
   }
 
-  const discordId = oauthParams.get("discord_id");
-  const discordUsername = oauthParams.get("discord_username");
+  const discordId =
+    oauthParams.get("discord_id") ?? hashParams.get("discord_id");
+  const discordUsername =
+    oauthParams.get("discord_username") ?? hashParams.get("discord_username");
   if (discordId) {
+    if (!(await consumeAuthFlow("discord"))) {
+      console.warn(
+        "Better Intra: ignoring unexpected Discord callback (no link in progress).",
+      );
+      history.replaceState(null, "", window.location.pathname);
+      return;
+    }
     await chrome.storage.local.set({
       DISCORD_ID: discordId,
       DISCORD_ENABLED: true,

@@ -373,5 +373,5 @@ export async function colorTrackerBadge(): Promise<void> {
 
   updateBadgeIndicator();
 
-  document.addEventListener("42_LOGTIME_DATA", updateBadgeIndicator);
+  document.addEventListener("42_LOGTIME_RENDERED", updateBadgeIndicator);
 }

@@ -26,6 +26,19 @@
     return null;
   };
 
+  // Keep the last logtime payload so that the extension can ask for it if
+  // its listener was attached after the page already fetched the stats.
+  var lastLogtimeStats = null;
+  var dispatchLogtime = function (stats) {
+    lastLogtimeStats = stats;
+    document.dispatchEvent(
+      new CustomEvent("42_LOGTIME_DATA", { detail: stats }),
+    );
+  };
+  document.addEventListener("42_LOGTIME_REQUEST", function () {
+    if (lastLogtimeStats) dispatchLogtime(lastLogtimeStats);
+  });
+
   var dispatchToken = function (token) {
     document.dispatchEvent(
       new CustomEvent("42_INTRAPY_TOKEN", { detail: token }),
@@ -58,7 +71,7 @@
       }
     }
 
-    if (url.indexOf("/locations_stats") !== -1) {
+    if (url.indexOf("/locations_stats") !== -1 && response.ok) {
       response
         .clone()
         .json()
@@ -68,11 +81,11 @@
               ? json.locations_stats
               : json && json.data && json.data.locations_stats
                 ? json.data.locations_stats
-                : json;
+                : json && typeof json === "object" && !Array.isArray(json)
+                  ? json
+                  : null;
           if (stats) {
-            document.dispatchEvent(
-              new CustomEvent("42_LOGTIME_DATA", { detail: stats }),
-            );
+            dispatchLogtime(stats);
           }
         })
         .catch(function () {});

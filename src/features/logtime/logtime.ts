@@ -287,6 +287,10 @@ function renderLogtime(
 ): void {
   if (!stats || !CONFIG) return;
   lastStats = stats;
+  // Let other modules (tracker badge) react to the *current* stats: a plain
+  // 42_LOGTIME_DATA listener would run before this assignment and read the
+  // previous value.
+  document.dispatchEvent(new CustomEvent("42_LOGTIME_RENDERED"));
 
   const byMonth: Record<string, Record<string, number>> = {};
   Object.keys(stats)
@@ -558,8 +562,17 @@ function isProfileV3TargetPage() {
 
 function installFetchHook() {
   document.addEventListener("42_LOGTIME_DATA", async (event: Event) => {
-    const detail = (event as CustomEvent<Record<string, string>>).detail;
-    if (!detail) return;
+    const raw = (event as CustomEvent<Record<string, string>>).detail;
+    if (!raw || typeof raw !== "object") return;
+
+    // Keep only "YYYY-MM-DD": "HH:MM:SS" entries. An error payload such as
+    // {"error": "..."} used to reach renderLogtime, throw on an invalid date
+    // and poison lastStats for every later re-render.
+    const detail: Record<string, string> = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(k) && typeof v === "string") detail[k] = v;
+    }
+    if (Object.keys(detail).length === 0) return;
 
     const hookDates = Object.keys(detail).sort();
     const before =
@@ -619,15 +632,30 @@ export function applyPublicLogtimeSettings(logtime: {
 }) {
   if (!isLoaded || !logtime) return;
 
-  CONFIG.calendar_color = logtime.calendarColor ?? CONFIG.calendar_color;
-  CONFIG.labels_color = logtime.labelsColor ?? CONFIG.labels_color;
+  // These values belong to the viewed user and are interpolated into <style>
+  // text: only accept plain hex colours and finite, positive numbers.
+  const isHex = (v: unknown): v is string =>
+    typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v.trim());
+  const positive = (v: unknown, fallback: number): number => {
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  };
+
+  CONFIG.calendar_color = isHex(logtime.calendarColor)
+    ? logtime.calendarColor.trim()
+    : CONFIG.calendar_color;
+  CONFIG.labels_color = isHex(logtime.labelsColor)
+    ? logtime.labelsColor.trim()
+    : CONFIG.labels_color;
   CONFIG.emoji = logtime.emoji ? limit(logtime.emoji) : CONFIG.emoji;
   CONFIG.divisor =
     logtime.emojiDivisor !== undefined
-      ? Number(logtime.emojiDivisor)
+      ? positive(logtime.emojiDivisor, CONFIG.divisor)
       : CONFIG.divisor;
   CONFIG.rate =
-    logtime.emojiRate !== undefined ? Number(logtime.emojiRate) : CONFIG.rate;
+    logtime.emojiRate !== undefined
+      ? positive(logtime.emojiRate, CONFIG.rate)
+      : CONFIG.rate;
   if (logtime.rainbowPalette !== undefined) {
     CONFIG.rainbow_colors = resolveRainbowColors(logtime.rainbowPalette);
   }
@@ -637,21 +665,40 @@ export function applyPublicLogtimeSettings(logtime: {
   }
 }
 
-export async function initLogtime() {
-  if (isLoaded) return;
-  if ("scrollRestoration" in history) {
-    history.scrollRestoration = "manual";
-  }
+let initPromise: Promise<void> | null = null;
+let hookInstalled = false;
 
-  CONFIG = await getConfigs();
-  currentTheme = await getEffectiveTheme();
-  const presetKey = await getConfig("PROFILE_THEME_PRESET");
-  const preset = THEMES[presetKey] ?? THEMES["dark"];
-  primaryColor = `hsl(${preset.primary})`;
-  primaryContent = `hsl(${preset.primaryForeground})`;
-  installFetchHook();
+export function initLogtime(): Promise<void> {
+  if (isLoaded) return Promise.resolve();
+  if (initPromise) return initPromise;
+  initPromise = (async () => {
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
 
-  if (isProfileV3TargetPage()) {
-    isLoaded = true;
-  }
+    CONFIG = await getConfigs();
+    currentTheme = await getEffectiveTheme();
+    const presetKey = await getConfig("PROFILE_THEME_PRESET");
+    const preset = THEMES[presetKey] ?? THEMES["dark"];
+    primaryColor = `hsl(${preset.primary})`;
+    primaryContent = `hsl(${preset.primaryForeground})`;
+
+    // isLoaded stays false on non-target pages, so init can legitimately run
+    // again later: never install the data listener twice.
+    if (!hookInstalled) {
+      installFetchHook();
+      hookInstalled = true;
+    }
+
+    if (isProfileV3TargetPage()) {
+      isLoaded = true;
+    }
+    // The page may have fetched /locations_stats before this listener existed
+    // (the hook runs at document_start, we run after DOMContentLoaded and
+    // several storage reads). Ask the hook to replay the last payload.
+    document.dispatchEvent(new CustomEvent("42_LOGTIME_REQUEST"));
+  })().finally(() => {
+    initPromise = null;
+  });
+  return initPromise;
 }

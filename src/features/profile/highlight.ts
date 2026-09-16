@@ -61,7 +61,7 @@ function clearExistingHighlight() {
  */
 function getSeatElements(seatId: string): SVGGraphicsElement[] {
   const exact = document.querySelectorAll<SVGGraphicsElement>(
-    `[id="${seatId}"]`,
+    `[id="${CSS.escape(seatId)}"]`,
   );
   if (exact.length > 0) return Array.from(exact);
 
@@ -151,9 +151,14 @@ function checkRouteAndHighlight() {
       return;
     }
 
-    if (getSeatElements(targetSeat).length > 0) {
-      highlightSeatFromURL();
+    try {
+      if (getSeatElements(targetSeat).length > 0) {
+        highlightSeatFromURL();
+        clearInterval(interval);
+      }
+    } catch (err) {
       clearInterval(interval);
+      console.warn("Better Intra: could not highlight seat", err);
     }
   }, 500);
 }

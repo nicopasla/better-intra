@@ -1122,45 +1122,6 @@ let _shadow: ShadowRoot | null = null;
 let _state: WidgetState | null = null;
 function renderWidgetUI() {
   if (_state && _shadow) render(renderWidget(_state), _shadow);
-  debugRowAlignment();
-}
-
-function debugRowAlignment() {
-  if (!_shadow) return;
-  const row = _shadow.querySelector<HTMLElement>(".friends-list .list-row");
-  if (!row) return;
-  const rr = row.getBoundingClientRect();
-  const meas = (el: Element | null) => {
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    return {
-      offsetLeft: Math.round(r.left - rr.left),
-      width: Math.round(r.width),
-      tag: el.tagName.toLowerCase(),
-    };
-  };
-  const firstText = (el: Element | null) => {
-    if (!el) return null;
-    const t = el.querySelector("span, a, progress");
-    return meas(t ?? el);
-  };
-  const name = row.querySelector('[data-ft-row="name"]');
-  const meta = row.querySelector('[data-ft-row="meta"]');
-  const level = row.querySelector('[data-ft-row="level"]');
-  const progress = row.querySelector("progress");
-  console.debug(
-    "[friends] row alignment",
-    {
-      avatar: meas(row.querySelector("[data-ft-avatar-col]")),
-      name: meas(name),
-      nameText: firstText(name),
-      meta: meas(meta),
-      metaText: firstText(meta),
-      level: meas(level),
-      progress: meas(progress),
-    },
-    { rowCss: getComputedStyle(row).gridTemplateColumns },
-  );
 }
 
 export async function injectFriendsWidget() {

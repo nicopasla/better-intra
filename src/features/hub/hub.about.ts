@@ -4,7 +4,6 @@ import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { HUB_INFO } from "../hub/hubSettings.data.ts";
 
 import GITHUB_SVG from "../../assets/svg/github.svg?raw";
-import HEART_SVG from "../../assets/svg/heart.svg?raw";
 import ICON_SVG from "../../assets/svg/icon.svg?raw";
 import ISSUES_SVG from "../../assets/svg/issues.svg?raw";
 import PERSON_FOLLOW_SVG from "../../assets/svg/person-follow.svg?raw";
@@ -302,19 +301,6 @@ export function renderAboutPanel(): ReturnType<typeof html> {
                 ),
                 html`<span class="loading loading-spinner loading-xs"></span>`,
               )}
-            </a>
-            <a
-              href="https://github.com/sponsors/nicopasla"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="btn btn-sm gap-1"
-            >
-              <span
-                class="size-4 flex items-center justify-center fill-current"
-              >
-                ${unsafeHTML(HEART_SVG)}
-              </span>
-              <span>Sponsor</span>
             </a>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { getCloudLogin, fetchUserVisuals } from "../account/account.ts";
 import { createSettingsModal } from "./profile.modal.ts";
 import { applyThemeToProfileCard } from "./profile-card.ts";
 import { applyPublicLogtimeSettings, initLogtime } from "../logtime/logtime.ts";
+import { applyProfileLook, clearProfileLook } from "./theme/theme-manager.ts";
 import { sanitizeVisualUrls } from "./visuals-sanitize.ts";
 import {
   AVATAR_SELECTOR,
@@ -26,6 +27,7 @@ export interface VisualUrls {
   avatarScale?: number;
   badgeBg?: string;
   theme?: { profileColor?: string } | null;
+  look?: { preset?: string; theme?: string } | null;
   logtime?: {
     calendarColor?: string;
     labelsColor?: string;
@@ -106,6 +108,7 @@ const getVisualKey = (urls: VisualUrls) =>
     avatarScale: urls.avatarScale ?? 100,
     badgeBg: urls.badgeBg || "",
     theme: urls.theme || null,
+    look: urls.look || null,
     logtime: urls.logtime || null,
   });
 
@@ -503,6 +506,17 @@ const attachToggleListener = (avatarEl: HTMLElement) => {
 };
 
 export const updateVisuals = async () => {
+  await runUpdateVisuals();
+  if (activeLogin) {
+    applyProfileLook(activeLogin, visualCache?.look ?? null);
+  } else {
+    clearProfileLook();
+  }
+};
+
+let activeLogin: string | null = null;
+
+const runUpdateVisuals = async () => {
   const pathParts = location.pathname.split("/").filter((p) => p);
   injectCustomStyles();
   installHistoryListener();
@@ -514,6 +528,8 @@ export const updateVisuals = async () => {
 
   const targetLogin =
     pathParts[0] === "users" && pathParts[1] ? pathParts[1] : myLogin;
+
+  activeLogin = targetLogin === myLogin ? null : targetLogin;
 
   if (targetLogin !== lastUser) {
     visualCache = null;

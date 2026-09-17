@@ -27,7 +27,9 @@ describe("sanitizeCssUrl", () => {
 
   it("rejects CSS breakout attempts and other schemes", () => {
     expect(
-      sanitizeCssUrl('x") } * { display:none !important } .z { background:url("'),
+      sanitizeCssUrl(
+        'x") } * { display:none !important } .z { background:url("',
+      ),
     ).toBe("");
     expect(sanitizeCssUrl("javascript:alert(1)")).toBe("");
     expect(sanitizeCssUrl("data:image/png;base64,AAAA")).toBe("");
@@ -36,8 +38,12 @@ describe("sanitizeCssUrl", () => {
   });
 
   it("normalises rather than rejects unusual but legitimate URLs", () => {
-    expect(sanitizeCssUrl("https://a.com/x y.png")).toBe("https://a.com/x%20y.png");
-    expect(sanitizeCssUrl('https://a.com/x"y.png')).toBe("https://a.com/x%22y.png");
+    expect(sanitizeCssUrl("https://a.com/x y.png")).toBe(
+      "https://a.com/x%20y.png",
+    );
+    expect(sanitizeCssUrl('https://a.com/x"y.png')).toBe(
+      "https://a.com/x%22y.png",
+    );
     expect(sanitizeCssUrl("https://upload.wikimedia.org/a_(b).png")).toBe(
       "https://upload.wikimedia.org/a_(b).png",
     );
@@ -58,7 +64,9 @@ describe("sanitizeCssColor", () => {
   });
 
   it("rejects declarations smuggled into a colour", () => {
-    expect(sanitizeCssColor("red; } body { display:none } .a { color: red")).toBe("");
+    expect(
+      sanitizeCssColor("red; } body { display:none } .a { color: red"),
+    ).toBe("");
     expect(sanitizeCssColor("url(https://evil/x)")).toBe("");
     expect(sanitizeCssColor("red")).toBe("");
     expect(sanitizeCssColor("transparent", new Set(["transparent"]))).toBe(
@@ -124,6 +132,7 @@ describe("sanitizeVisualUrls", () => {
       avatarScale: 120,
       badgeBg: "#abcdef",
       theme: { profileColor: "#00bcba" },
+      look: { preset: "dracula", theme: "dark" },
       logtime: {
         calendarColor: "#00bcba",
         labelsColor: "#26a641",

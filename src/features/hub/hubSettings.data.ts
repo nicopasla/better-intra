@@ -419,6 +419,16 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "profile",
+      key: "SHARE_LOOK",
+      label: "Share my theme on my profile",
+      desc: "Visitors running Better Intra see your theme on your profile while they are there.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.SHARE_LOOK,
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "profile",
       key: "PROFILE_CARD_ORDER",
       label: "Dashboard Cards Order",
       desc: "Drag and drop the colored cards to prioritize your dashboard sections.",

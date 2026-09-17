@@ -34,7 +34,10 @@ export function sanitizeCssUrl(value: unknown): string {
 }
 
 /** #rgb, #rgba, #rrggbb, #rrggbbaa, rgb()/rgba()/hsl()/hsla() with numeric args, or a keyword. */
-export function sanitizeCssColor(value: unknown, keywords?: Set<string>): string {
+export function sanitizeCssColor(
+  value: unknown,
+  keywords?: Set<string>,
+): string {
   if (typeof value !== "string") return "";
   const raw = value.trim();
   if (!raw) return "";
@@ -51,7 +54,12 @@ export function sanitizeHexColor(value: unknown): string {
   return /^#[0-9a-f]{6}$/i.test(raw) ? raw : "";
 }
 
-function clampNumber(value: unknown, min: number, max: number, fallback: number): number {
+function clampNumber(
+  value: unknown,
+  min: number,
+  max: number,
+  fallback: number,
+): number {
   const n = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(n)) return fallback;
   return Math.min(max, Math.max(min, n));
@@ -67,7 +75,8 @@ export function sanitizeVisualUrls(urls: VisualUrls): VisualUrls {
       ? { profileColor: sanitizeHexColor(urls.theme.profileColor) || undefined }
       : null;
 
-  const lt = urls.logtime && typeof urls.logtime === "object" ? urls.logtime : null;
+  const lt =
+    urls.logtime && typeof urls.logtime === "object" ? urls.logtime : null;
   const logtime = lt
     ? {
         calendarColor: sanitizeHexColor(lt.calendarColor) || undefined,
@@ -88,6 +97,22 @@ export function sanitizeVisualUrls(urls: VisualUrls): VisualUrls {
       }
     : null;
 
+  const look =
+    urls.look && typeof urls.look === "object"
+      ? {
+          preset:
+            typeof urls.look.preset === "string"
+              ? urls.look.preset.slice(0, 64)
+              : undefined,
+          theme:
+            urls.look.theme === "dark" ||
+            urls.look.theme === "light" ||
+            urls.look.theme === "system"
+              ? urls.look.theme
+              : undefined,
+        }
+      : null;
+
   return {
     avatar: sanitizeCssUrl(urls.avatar),
     banner: sanitizeCssUrl(urls.banner),
@@ -96,7 +121,8 @@ export function sanitizeVisualUrls(urls: VisualUrls): VisualUrls {
     background: sanitizeCssUrl(urls.background),
     backgroundMode: sanitizeMode(urls.backgroundMode),
     backgroundColor: sanitizeCssColor(urls.backgroundColor),
-    avatarBg: sanitizeCssColor(urls.avatarBg, AVATAR_BG_KEYWORDS) || "transparent",
+    avatarBg:
+      sanitizeCssColor(urls.avatarBg, AVATAR_BG_KEYWORDS) || "transparent",
     decoration:
       typeof urls.decoration === "string" && DECORATIONS.has(urls.decoration)
         ? urls.decoration
@@ -106,6 +132,7 @@ export function sanitizeVisualUrls(urls: VisualUrls): VisualUrls {
     avatarScale: clampNumber(urls.avatarScale, 10, 500, 100),
     badgeBg: sanitizeCssColor(urls.badgeBg),
     theme,
+    look,
     logtime,
   };
 }

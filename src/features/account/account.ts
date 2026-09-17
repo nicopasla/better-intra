@@ -272,6 +272,7 @@ export async function fetchUserVisuals(
       avatarScale: Number(data.avatarScale ?? 100),
       badgeBg: String(data.badgeBg || ""),
       theme: (data.theme as { profileColor?: string }) || null,
+      look: (data.look as { preset?: string; theme?: string }) || null,
       logtime: (data.logtime as Record<string, unknown>) || null,
     });
   } catch (error) {

@@ -22,6 +22,12 @@ To install this extension, click the buttons below or visit the [Releases](https
 
 *Better Intra with the lemonade light theme*
 
+## Support
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/L8S22311GA)
+
+> Donations help cover the cost of the **Cloudflare Workers Pro** plan ($5/month) and the **domain name**, which power the cloud sync backend, the 42 API used, evaluation notifications, friends feature,...
+>
 ## Features
 
 > ☁️ *marked features require cloud sync / 42 sign-in.*
@@ -233,12 +239,6 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 * **Auto-detected campus** — shown as a badge in the Advanced tab.
 * **Open links in new tab** — external links from Better Intra open in a new tab. In the Advanced tab.
 * **Custom tooltips** — Better Intra's own styled tooltips replace native ones across the extension for a consistent look.
-
-## Support
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/L8S22311GA)
-
-> Donations help cover the cost of the **Cloudflare Workers Pro** plan ($5/month) and the **domain name**, which power the cloud sync backend, evaluation notifications, and friends feature,...
 
 ## Screenshots
 

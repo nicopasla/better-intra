@@ -47,7 +47,11 @@ type Stats = {
   newLast30Days: number;
   newLast14Days: number;
   newLast7Days: number;
-  countries: { country: string; count: number }[];
+  countries: {
+    country: string;
+    count: number;
+    campuses: { name: string; count: number }[];
+  }[];
 };
 
 const communityStats = fetch("https://api.betterintra.com/api/v1/public/stats")
@@ -78,6 +82,21 @@ function countryName(code: string): string {
   } catch {
     return code;
   }
+}
+
+const MAX_CAMPUSES_IN_TOOLTIP = 5;
+
+function countryTooltip(c: {
+  country: string;
+  count: number;
+  campuses: { name: string; count: number }[];
+}): string {
+  const name = countryName(c.country);
+  if (!c.campuses || c.campuses.length === 0) return name;
+  const shown = c.campuses.slice(0, MAX_CAMPUSES_IN_TOOLTIP);
+  const parts = shown.map((cp) => `${cp.name} (${cp.count})`);
+  if (c.campuses.length > MAX_CAMPUSES_IN_TOOLTIP) parts.push("…");
+  return `${name} · ${parts.join(", ")}`;
 }
 
 export function renderAboutPanel(): ReturnType<typeof html> {
@@ -221,7 +240,7 @@ export function renderAboutPanel(): ReturnType<typeof html> {
                                   <span
                                     class="badge badge-lg font-mono gap-2 px-4 py-4 bg-base-100"
                                     style="border: 2px solid var(--color-info)"
-                                    data-tip="${countryName(c.country)}"
+                                    data-tip="${countryTooltip(c)}"
                                   >
                                     <span class="text-2xl"
                                       >${countryFlag(c.country)}</span

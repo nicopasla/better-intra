@@ -133,7 +133,7 @@ export function renderShortcutsSettings(
       <div class="flex gap-2">
         <button
           type="button"
-          class="btn btn-success flex-1"
+          class="btn btn-success flex-1 font-mono"
           @click="${onAddRow}"
           ?disabled="${isFull}"
         >

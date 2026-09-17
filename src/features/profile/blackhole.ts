@@ -32,6 +32,7 @@ const STYLES = `
   font-size: 1.75rem;
   font-weight: 700;
   line-height: 1.1;
+  font-family: var(--font-sans);
 }
 #${WRAPPER_ID}.ultimate .coalition-span,
 #${WRAPPER_ID}.ultimate .milestone .end-goal {
@@ -42,6 +43,7 @@ const STYLES = `
   font-size: 1.25rem;
   font-weight: 500;
   opacity: 0.7;
+  font-family: var(--font-sans);
 }
 `;
 

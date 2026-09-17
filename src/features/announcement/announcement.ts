@@ -101,10 +101,12 @@ function renderBanner(
           color: ${style.fg};
           padding: 10px 20px;
           text-align: center;
-          font-family:
+          font-family: var(
+            --font-sans,
             system-ui,
             -apple-system,
-            sans-serif;
+            sans-serif
+          );
           font-size: 14px;
           font-weight: 500;
           line-height: 1.4;

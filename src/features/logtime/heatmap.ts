@@ -156,7 +156,7 @@ export function renderHeatmapCard(
     <div class="heatmap-months-row" style="display:flex; height:18px;">
       <span
         id="heatmap-sticky-year"
-        class="text-[10px] font-extrabold tracking-wider flex items-center"
+        class="text-[10px] font-extrabold font-mono tracking-wider flex items-center"
         style="position:sticky; left:0; width:${dayLabelsW}px; z-index:10; background:hsl(var(--card)); color:var(--labels-color); justify-content:flex-end; padding-right:6px;"
       >
         ${displayYear}
@@ -235,7 +235,9 @@ export function renderHeatmapCard(
                     : ""}"
                   data-month="${cell.date.slice(0, 7)}"
                   style="width:${cellW}px; height:${cellW}px; background:${bgColor};"
-                  data-tip="${dateLabel}${cell.secs ? ` - ${fmtHours(cell.secs)}` : ""}"
+                  data-tip="${dateLabel}${cell.secs
+                    ? ` - ${fmtHours(cell.secs)}`
+                    : ""}"
                   data-tip-size="14px"
                 ></div>`;
               })}

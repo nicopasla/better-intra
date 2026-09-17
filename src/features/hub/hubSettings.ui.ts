@@ -715,6 +715,43 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             })}
           </div>`;
 
+        case "font-preset":
+          return html`<div class="flex flex-wrap gap-1 w-full">
+            ${(def.options ?? []).map((o) => {
+              const selected = String(o.value) === String(value);
+              const fontFamily = o.font
+                ? `"${o.font}", system-ui, sans-serif`
+                : "system-ui, sans-serif";
+              return html`<button
+                type="button"
+                class="btn btn-sm flex-none"
+                data-font-option="${o.value}"
+                ?disabled="${!enabled}"
+                style="font-family: ${fontFamily}; font-size: 0.95rem; border: 2px solid ${selected
+                  ? "var(--color-primary)"
+                  : "transparent"};"
+                @mousedown="${(e: Event) => e.stopPropagation()}"
+                @click="${(e: Event) => {
+                  e.stopPropagation();
+                  const btn = e.currentTarget as HTMLButtonElement;
+                  saveSetting(def.key!, o.value!);
+                  btn
+                    .closest(".flex")!
+                    .querySelectorAll("[data-font-option]")
+                    .forEach((b) => {
+                      const el = b as HTMLButtonElement;
+                      el.style.border =
+                        el.dataset.fontOption === o.value
+                          ? "2px solid var(--color-primary)"
+                          : "2px solid transparent";
+                    });
+                }}"
+              >
+                ${o.label}
+              </button>`;
+            })}
+          </div>`;
+
         case "url":
           return html`<div class="w-full">
             <label
@@ -1218,7 +1255,9 @@ async function createModal(active: FeatureId[]): Promise<void> {
           </div>
           <div class="flex items-baseline gap-2">
             <h3 class="font-bold text-xl tracking-tight">${HUB_INFO.name}</h3>
-            <p class="text-[14px] opacity-60 font-bold tracking-widest">
+            <p
+              class="text-[14px] opacity-60 font-bold tracking-widest font-mono"
+            >
               v${HUB_INFO.version}
             </p>
           </div>
@@ -1293,7 +1332,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
               : html`<span class="btn btn-error border border-base-content/20"
                   >Offline</span
                 >`}
-            <span class="btn btn-info border border-base-content/20"
+            <span class="btn btn-info border border-base-content/20 font-mono"
               >Synced at ${dateString}</span
             >
             ${isConnected

@@ -44,6 +44,9 @@ function applyDaysView(
   circumference: number,
   timeLeft: boolean,
 ) {
+  const monoFont = "var(--font-sans)";
+  countText.style.fontFamily = monoFont;
+  totalText.style.fontFamily = monoFont;
   if (timeLeft) {
     const remaining = Math.max(0, total - elapsed);
     titleEl.textContent = "Time left";
@@ -193,6 +196,7 @@ function updatePaceBars() {
           return;
         }
         if (outer.textContent?.trim() === tipTexts[i]) return;
+        outer.style.fontFamily = "var(--font-sans)";
         outer.childNodes.forEach((n) => {
           if (n.nodeType === Node.TEXT_NODE) n.textContent = ` ${tipTexts[i]} `;
         });

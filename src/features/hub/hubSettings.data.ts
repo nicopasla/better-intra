@@ -10,6 +10,7 @@ import GRID_SVG from "../../assets/svg/grid.svg?raw";
 import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
 import { CLUSTERS as CLUSTER_OPTIONS } from "../clusters/clusters.data.ts";
 import { RAINBOW_PALETTES } from "../logtime/rainbow-presets.ts";
+import { SANS_FONTS } from "../../utils/fonts.ts";
 
 export const HUB_INFO = {
   name: "Better Intra",
@@ -107,6 +108,7 @@ export type SettingKind =
   | "theme-preset"
   | "rainbow-palette"
   | "campus-info"
+  | "font-preset"
   | "feature-cards";
 
 export { INTRA_FONT } from "../logtime/constants.ts";
@@ -115,6 +117,7 @@ export type FeatureCardOption = {
   label?: string;
   value?: string;
   color?: string;
+  font?: string;
   desc?: string;
   divider?: boolean;
   dependsOn?: ConfigKey;
@@ -389,6 +392,20 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
         { label: "Soap", value: "soap", color: "4 68% 66%" },
         { label: "Citrus", value: "citrus", color: "51 100% 50%" },
       ],
+    },
+    {
+      feature: "profile",
+      key: "GENERAL_FONT",
+      label: "Intra font",
+      desc: "Font applied to the whole Intra interface, including Better Intra.",
+      kind: "font-preset",
+      fullWidth: true,
+      defaultValue: CONFIG_DEFAULT.GENERAL_FONT,
+      options: SANS_FONTS.map((f) => ({
+        label: f.label,
+        value: f.id,
+        font: f.family,
+      })),
     },
     {
       feature: "profile",

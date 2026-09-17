@@ -341,6 +341,7 @@ export function createTeamRow(
   teamScore.style.display = "inline-block";
   teamScore.style.minWidth = SCORE_COLUMN_WIDTH;
   teamScore.style.textAlign = "right";
+  teamScore.style.fontFamily = "var(--font-sans)";
   teamScore.textContent = String(team.final_mark);
   right.appendChild(teamScore);
   row.appendChild(right);
@@ -474,6 +475,7 @@ function injectFinishedProjects(card: HTMLElement, marks: MarkedProject[]) {
       time.style.display = "inline-block";
       time.style.minWidth = DATE_COLUMN_WIDTH;
       time.style.textAlign = "right";
+      time.style.fontFamily = "var(--font-sans)";
       time.textContent = formatDate(project.last_event_date);
       right.appendChild(time);
       const iconWrap = document.createElement("div");
@@ -483,6 +485,7 @@ function injectFinishedProjects(card: HTMLElement, marks: MarkedProject[]) {
       score.style.display = "inline-block";
       score.style.minWidth = SCORE_COLUMN_WIDTH;
       score.style.textAlign = "right";
+      score.style.fontFamily = "var(--font-sans)";
       score.textContent = String(project.final_mark);
       right.appendChild(score);
       row.appendChild(right);
@@ -542,6 +545,7 @@ function injectFinishedProjects(card: HTMLElement, marks: MarkedProject[]) {
       time.style.display = "inline-block";
       time.style.minWidth = DATE_COLUMN_WIDTH;
       time.style.textAlign = "right";
+      time.style.fontFamily = "var(--font-sans)";
       time.textContent = formatDate(project.last_event_date);
       right.appendChild(time);
       const iconWrap = document.createElement("div");
@@ -551,6 +555,7 @@ function injectFinishedProjects(card: HTMLElement, marks: MarkedProject[]) {
       score.style.display = "inline-block";
       score.style.minWidth = SCORE_COLUMN_WIDTH;
       score.style.textAlign = "right";
+      score.style.fontFamily = "var(--font-sans)";
       score.textContent = String(project.final_mark);
       right.appendChild(score);
       item.appendChild(right);
@@ -633,6 +638,7 @@ async function injectStarTotalBadge(
   pill.style.borderColor =
     "color-mix(in oklab, var(--color-base-content) 20%, transparent)";
   pill.style.color = "var(--color-base-content)";
+  pill.style.fontFamily = "var(--font-sans)";
   pill.textContent = `${total} ⭐`;
   wrap.appendChild(pill);
   if (title === "Projects") {
@@ -881,6 +887,7 @@ async function enhanceExistingMarks(
             dateSpan.style.display = "inline-block";
             dateSpan.style.minWidth = DATE_COLUMN_WIDTH;
             dateSpan.style.textAlign = "right";
+            dateSpan.style.fontFamily = "var(--font-sans)";
             dateSpan.textContent = dateNode.textContent?.trim() ?? "";
             (dateNode as ChildNode).replaceWith(dateSpan);
             rightSide.prepend(dateSpan);
@@ -915,6 +922,7 @@ async function enhanceExistingMarks(
               scoreSpan.style.display = "inline-block";
               scoreSpan.style.minWidth = SCORE_COLUMN_WIDTH;
               scoreSpan.style.textAlign = "right";
+              scoreSpan.style.fontFamily = "var(--font-sans)";
               scoreSpan.textContent = scoreNode.textContent?.trim() ?? "";
               (scoreNode as ChildNode).replaceWith(scoreSpan);
             }

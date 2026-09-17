@@ -49,7 +49,7 @@ function styleTooltip(
     "border-radius: 8px",
     size ? `font-size: ${size}` : "font-size: 12px",
     "font-weight: 500",
-    "font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    "font-family: var(--font-sans, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif)",
     "line-height: 1.3",
     "white-space: normal",
     "max-width: 260px",
@@ -133,7 +133,9 @@ export const TOOLTIP_SHOW_DELAY = 200;
 const boundRoots = new WeakSet<EventTarget>();
 
 function isTip(el: Element): el is HTMLElement {
-  return el instanceof HTMLElement && (!!el.dataset.tip || !!el.dataset.tipHtml);
+  return (
+    el instanceof HTMLElement && (!!el.dataset.tip || !!el.dataset.tipHtml)
+  );
 }
 
 function findTooltipContainer(tip: Element): HTMLElement {

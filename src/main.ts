@@ -15,11 +15,13 @@ import { updateNavAvatar } from "./features/profile/visuals.ts";
 import { AVATAR_SELECTOR } from "./features/profile/selectors.ts";
 import { initAnnouncementBanner } from "./features/announcement/announcement.ts";
 import { consumeAuthFlow } from "./features/account/auth-callback.ts";
+import { initFontManager } from "./utils/font-manager.ts";
 import { html, render } from "lit-html";
 
 initThemeManager();
 void initAnnouncementBanner();
 initGlobalTooltips(getIsLight);
+void initFontManager();
 
 {
   const s = document.createElement("script");
@@ -90,10 +92,7 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
           color: #fff;
           padding: 10px 20px;
           text-align: center;
-          font-family:
-            system-ui,
-            -apple-system,
-            sans-serif;
+          font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
           font-size: 14px;
           font-weight: 500;
           line-height: 1.4;
@@ -148,7 +147,9 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
   // it in the URL fragment (#token=...&login=...): fragments never reach the
   // intra servers or their logs, so the worker can switch to them at any time.
   const oauthParams = new URLSearchParams(window.location.search);
-  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const hashParams = new URLSearchParams(
+    window.location.hash.replace(/^#/, ""),
+  );
   const oauthToken = oauthParams.get("token") ?? hashParams.get("token");
   const oauthLogin = oauthParams.get("login") ?? hashParams.get("login");
   if (oauthToken && oauthLogin) {

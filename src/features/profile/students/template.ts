@@ -540,6 +540,7 @@ export function renderStudentsDialogTemplate(
         line-height: normal;
         font-size: 0.7rem;
         font-weight: 600;
+        font-family: var(--font-sans);
         white-space: nowrap;
       }
       .freeze-badge {
@@ -612,6 +613,7 @@ export function renderStudentsDialogTemplate(
         height: 1.8rem;
         font-size: 0.8rem;
         font-weight: 600;
+        font-family: var(--font-sans);
         color: var(--color-base-content);
         background: var(--color-base-200);
         border-radius: var(--radius-field);
@@ -651,12 +653,14 @@ export function renderStudentsDialogTemplate(
       .piscine-card__year {
         font-size: 0.8rem;
         opacity: 0.6;
+        font-family: var(--font-sans);
       }
       .piscine-card__count {
         margin-top: 0.25rem;
         font-size: 0.7rem;
         font-weight: 600;
         white-space: nowrap;
+        font-family: var(--font-sans);
         color: var(--color-accent-content);
         background: color-mix(in oklch, var(--color-accent) 40%, transparent);
         border-radius: var(--radius-field);
@@ -689,6 +693,7 @@ export function renderStudentsDialogTemplate(
         justify-content: center;
         font-size: 0.85rem;
         font-weight: 700;
+        font-family: var(--font-sans);
         padding: 0.4rem 0.75rem;
         border-radius: var(--radius-field);
         background: var(--color-accent);
@@ -827,14 +832,14 @@ export function renderStudentsDialogTemplate(
                 <div class="mx-0.5 h-6 w-px bg-base-content/20"></div>`
             : ""}
           <span
-            class="badge badge-sm badge-accent h-8 flex-shrink-0 font-bold"
+            class="badge badge-sm badge-accent h-8 flex-shrink-0 font-bold font-mono"
             style="white-space:nowrap;border-radius:var(--radius-field)"
             data-tip="${cursusLabel} — ${dateLabel}"
             >${countValue} ${countLabel}</span
           >
           ${tab === "students"
             ? html`<span
-                class="badge badge-sm badge-success h-8 flex-shrink-0 font-bold"
+                class="badge badge-sm badge-success h-8 flex-shrink-0 font-bold font-mono"
                 style="white-space:nowrap;border-radius:var(--radius-field)"
                 data-tip="Active students"
                 >${activeCount} active students</span
@@ -987,7 +992,7 @@ export function renderStudentsDialogTemplate(
                                 ${i.label}
                               </span>
                               <span
-                                class="badge badge-sm"
+                                class="badge badge-sm font-mono"
                                 style="border-radius:var(--radius-field)"
                                 >${rows.length}</span
                               >

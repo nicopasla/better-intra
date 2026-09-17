@@ -46,7 +46,7 @@ function measureTabsOverflow(state: DialogState): boolean {
       const num = document.createElement("span");
       num.textContent = count;
       num.style.cssText =
-        "font-weight:400;opacity:0.55;font-size:11px;margin-left:6px;";
+        "font-weight:400;opacity:0.55;font-size:11px;margin-left:6px;font-family:var(--font-sans);";
       item.appendChild(num);
     }
     probe.appendChild(item);

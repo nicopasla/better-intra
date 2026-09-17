@@ -95,7 +95,7 @@ function renderDayCell(
   const showTooltip = hasData || hasEvent;
 
   return html`<div
-    class="day-cell aspect-square flex items-center justify-center text-[11px] font-bold ${dKey ===
+    class="day-cell aspect-square flex items-center justify-center text-[11px] font-bold font-mono ${dKey ===
     todayStr
       ? "today-highlight"
       : ""}"
@@ -223,7 +223,7 @@ export function renderMonthCard(
     <div class="flex justify-between items-center mb-3">
       <span class="text-xl font-bold text-base-content">${monthName}</span>
       <span
-        class="badge badge-lg font-bold transition-all duration-200 ${isGoalMet
+        class="badge badge-lg font-bold font-mono transition-all duration-200 ${isGoalMet
           ? "badge-rainbow"
           : "badge-outline badge-success"}"
       >
@@ -253,7 +253,7 @@ export function renderMonthCard(
           : ""}
       </div>
       ${config.show_average
-        ? html`<span>Avg: <b>${fmtHours(avg)}</b></span>`
+        ? html`<span>Avg: <b class="font-mono">${fmtHours(avg)}</b></span>`
         : ""}
     </div>
 
@@ -386,7 +386,7 @@ export function renderHeaderContent(
       <span class="lt-title">Logtime</span>
       ${config.show_tacos
         ? html`<span
-            class="badge badge-dash badge-success badge-lg font-bold ml-2 lt-tacos-badge"
+            class="badge badge-dash badge-success badge-lg font-bold font-mono ml-2 lt-tacos-badge"
             >${totalTacos} ${config.emoji}</span
           >`
         : ""}
@@ -462,7 +462,7 @@ export function renderHeaderContent(
       </div>
       ${lastSeenValue !== "N/A"
         ? html`<span
-            class="ml-auto badge badge-success font-bold tracking-tight lt-active-badge"
+            class="ml-auto badge badge-success font-bold font-mono tracking-tight lt-active-badge"
             >Active ${lastSeenValue}</span
           >`
         : ""}

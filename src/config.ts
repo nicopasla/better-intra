@@ -13,6 +13,7 @@ export interface BetterIntraConfig {
   // General Settings
   ACTIVE_SCRIPTS: string[];
   BETTER_INTRA_THEME: "dark" | "light" | "system";
+  GENERAL_FONT: string;
   DISABLE_ANIMATIONS: boolean;
 
   // Cloud Sync Settings
@@ -205,6 +206,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   PROFILE_BACKGROUND_HISTORY: [],
 
   BETTER_INTRA_THEME: "dark",
+  GENERAL_FONT: "noto-sans",
   SHORTCUTS_LINKS: [],
   SHORTCUTS_HIDE_IMPORTANT_LINKS: false,
   SHORTCUTS_ALIGNMENT: "left",
@@ -243,6 +245,7 @@ export type ConfigKey = keyof BetterIntraConfig;
 export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "ACTIVE_SCRIPTS",
   "BETTER_INTRA_THEME",
+  "GENERAL_FONT",
   "DISABLE_ANIMATIONS",
   "LOGTIME_GOAL_HOURS",
   "LOGTIME_SHOW_AVERAGE",

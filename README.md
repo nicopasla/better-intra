@@ -279,7 +279,7 @@ This is a personal project. It modifies the appearance of 42 Intra and adds UI i
 * Discord API (Bot for evaluation notifications)
 * [OpenCode](https://opencode.ai) + DeepSeek V4 Pro (AI coding agent)
 * [Font Awesome](https://fontawesome.com/icons) & [Lucide](https://lucide.dev/) (SVG icons)
-* JetBrains Mono font from [JetBrainsMono](https://github.com/JetBrains/JetBrainsMono) (OFL)
+* Fonts from [Google Fonts](https://fonts.google.com/) (Noto Sans, Inter, Roboto, Open Sans, Source Sans 3, Work Sans, Manrope, Atkinson Hyperlegible Next, Ubuntu)
 * 42 logo from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:42_Logo.svg)
 * Robot icons from Wikimedia Commons ([normal](https://commons.wikimedia.org/wiki/File:Robot_icon.svg) and [broken](https://commons.wikimedia.org/wiki/File:Robot_icon_broken.svg))
 * Intra v2 dark mode from [Improved Intra](https://github.com/FreekBes/improved_intra/tree/main/features/themes)

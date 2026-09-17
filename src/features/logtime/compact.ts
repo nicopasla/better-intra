@@ -59,7 +59,7 @@ function renderCompactMonthCard(
     <div class="flex justify-between items-center">
       <span class="text-lg font-bold text-base-content">${monthName}</span>
       <span
-        class="badge badge-lg font-bold transition-all duration-200 ${isGoalMet
+        class="badge badge-lg font-bold font-mono transition-all duration-200 ${isGoalMet
           ? "badge-rainbow"
           : "badge-outline badge-success"}"
       >
@@ -81,7 +81,9 @@ function renderCompactMonthCard(
             ? `Remaining: ${fmtHours(Math.max(0, goalSecs - total))}`
             : ""}"
         >
-          ${config.show_goal ? html`<b>${goalPercent}%</b>` : ""}
+          ${config.show_goal
+            ? html`<b class="font-mono">${goalPercent}%</b>`
+            : ""}
           ${config.show_goal && config.show_tacos
             ? html`<span class="mx-1.5 text-base-content/30 leading-none"
                 >·</span
@@ -92,7 +94,7 @@ function renderCompactMonthCard(
             : ""}
         </div>
         ${config.show_average
-          ? html`<span>Avg: <b>${fmtHours(avg)}</b></span>`
+          ? html`<span>Avg: <b class="font-mono">${fmtHours(avg)}</b></span>`
           : ""}
       </div>
 

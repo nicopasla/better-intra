@@ -133,7 +133,7 @@ export function applyOccupancy(
         const num = document.createElement("span");
         num.textContent = `${state.activeUsers.length}`;
         num.style.cssText =
-          "font-weight:400;opacity:0.55;font-size:11px;margin-left:6px;";
+          "font-weight:400;opacity:0.55;font-size:11px;margin-left:6px;font-family:var(--font-sans);";
         tab.appendChild(num);
       }
       continue;
@@ -143,7 +143,7 @@ export function applyOccupancy(
       const num = document.createElement("span");
       num.textContent = `${count.taken}/${count.total}`;
       num.style.cssText =
-        "font-weight:400;opacity:0.55;font-size:11px;margin-left:6px;";
+        "font-weight:400;opacity:0.55;font-size:11px;margin-left:6px;font-family:var(--font-sans);";
       tab.appendChild(num);
     }
   }

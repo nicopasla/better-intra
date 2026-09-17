@@ -126,7 +126,7 @@ export function renderTemplate(state: DialogState): TemplateResult {
       #map-area .ft-exit-sign text {
         fill: var(--color-base-content) !important;
         font-weight: 700;
-        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-family: var(--font-sans, "Helvetica Neue", Arial, sans-serif);
         letter-spacing: 0.08em;
         dominant-baseline: middle;
       }
@@ -422,7 +422,11 @@ export function renderTemplate(state: DialogState): TemplateResult {
           <span id="reload-icon" class="size-4 flex items-center justify-center"
             >${unsafeHTML(RELOAD_SVG)}</span
           >
-          <span id="badge-text" style="flex:1;text-align:center"></span>
+          <span
+            id="badge-text"
+            class="font-mono"
+            style="flex:1;text-align:center"
+          ></span>
         </button>
         <div
           id="top-left-badges"

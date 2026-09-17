@@ -158,7 +158,7 @@ function buildRouletteSection(
   winCol.appendChild(winLabel);
   const winValue = document.createElement("span");
   winValue.style.cssText =
-    "font-size: 26px; font-weight: 700; margin-left: 6px;";
+    "font-size: 26px; font-weight: 700; margin-left: 6px; font-family: var(--font-sans);";
   if (loading) {
     winValue.appendChild(createSkeleton({ width: "28px", height: "20px" }));
   } else {
@@ -177,7 +177,7 @@ function buildRouletteSection(
   ptsCol.appendChild(ptsLabel);
   const ptsValue = document.createElement("span");
   ptsValue.style.cssText =
-    "font-size: 26px; font-weight: 700; margin-left: 6px;";
+    "font-size: 26px; font-weight: 700; margin-left: 6px; font-family: var(--font-sans);";
   if (loading) {
     ptsValue.appendChild(createSkeleton({ width: "36px", height: "20px" }));
   } else {
@@ -243,7 +243,7 @@ function buildRouletteSection(
     for (const [dateStr, totalSum] of grouped) {
       const badge = document.createElement("span");
       badge.style.cssText =
-        "display: inline-flex; align-items: center; gap: 8px; background: rgba(34,197,94,0.1); color: rgb(34,197,94); font-size: 14px; font-weight: 600; padding: 6px 16px; border-radius: 999px; white-space: nowrap;";
+        "display: inline-flex; align-items: center; gap: 8px; background: rgba(34,197,94,0.1); color: rgb(34,197,94); font-size: 14px; font-weight: 600; padding: 6px 16px; border-radius: 999px; white-space: nowrap; font-family: var(--font-sans);";
       const datePart = document.createElement("span");
       datePart.style.cssText =
         "opacity: 0.65; font-size: 13px; font-weight: 600;";
@@ -320,7 +320,7 @@ function buildEvalStatsSection(data: EvalStatsData): HTMLElement {
     badge.appendChild(labelEl);
     const valueEl = document.createElement("span");
     valueEl.style.cssText =
-      "font-size: 20px; font-weight: 700; margin-left: 6px;";
+      "font-size: 20px; font-weight: 700; margin-left: 6px; font-family: var(--font-sans);";
     valueEl.textContent = value;
     badge.appendChild(valueEl);
     return badge;
@@ -330,7 +330,7 @@ function buildEvalStatsSection(data: EvalStatsData): HTMLElement {
     const color =
       data.global.successPercentage >= 67 ? "rgb(34,197,94)" : "rgb(239,68,68)";
     const badge = document.createElement("span");
-    badge.style.cssText = `font-size: 20px; font-weight: 700; padding: 10px 20px; border-radius: 10px; color: ${color}; background: rgba(${data.global.successPercentage >= 67 ? "34,197,94" : "239,68,68"},0.1);`;
+    badge.style.cssText = `font-size: 20px; font-weight: 700; padding: 10px 20px; border-radius: 10px; font-family: var(--font-sans); color: ${color}; background: rgba(${data.global.successPercentage >= 67 ? "34,197,94" : "239,68,68"},0.1);`;
     badge.textContent = `${data.global.successPercentage}%`;
     badgesWrap.appendChild(badge);
   }
@@ -386,27 +386,27 @@ function buildEvalStatsSection(data: EvalStatsData): HTMLElement {
 
     const dateTd = document.createElement("td");
     dateTd.style.cssText =
-      "padding: 4px 4px !important; color: hsl(var(--primary) / 0.5) !important;";
+      "padding: 4px 4px !important; color: hsl(var(--primary) / 0.5) !important; font-family: var(--font-sans);";
     const [yearNum, monthNum] = month.split("-");
     dateTd.textContent = `${monthNum}/${yearNum}`;
     tr.appendChild(dateTd);
 
     const totalTd = document.createElement("td");
     totalTd.style.cssText =
-      "padding: 4px 4px !important; font-weight: 500 !important; color: inherit !important;";
+      "padding: 4px 4px !important; font-weight: 500 !important; color: inherit !important; font-family: var(--font-sans);";
     totalTd.textContent = String(m.total);
     tr.appendChild(totalTd);
 
     const failedTd = document.createElement("td");
     failedTd.style.cssText =
-      "padding: 4px 4px !important; color: inherit !important;";
+      "padding: 4px 4px !important; color: inherit !important; font-family: var(--font-sans);";
     if (m.failed > 0) failedTd.style.color = "rgb(239,68,68) !important";
     failedTd.textContent = String(m.failed);
     tr.appendChild(failedTd);
 
     const pctTd = document.createElement("td");
     pctTd.style.cssText =
-      "padding: 4px 4px !important; font-weight: 500 !important;";
+      "padding: 4px 4px !important; font-weight: 500 !important; font-family: var(--font-sans);";
     if (m.successPercentage !== null) {
       pctTd.style.color =
         m.successPercentage >= 80

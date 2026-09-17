@@ -84,8 +84,7 @@ function startCountdown(
   const countdown = createCountdown(getCountdownParts(endIso), {
     digits: 2,
   });
-  countdown.el.style.cssText =
-    `font-size: 1.5rem; font-weight: 700; color: ${color};`;
+  countdown.el.style.cssText = `font-size: 1.5rem; font-weight: 700; color: ${color};`;
   container.appendChild(countdown.el);
 
   if (_intervalId !== null) clearInterval(_intervalId);
@@ -208,7 +207,7 @@ function buildFreezeCard(profileCard: HTMLElement, freezeUntil: string) {
   title.textContent = "Freeze";
 
   const until = document.createElement("div");
-  until.style.cssText = `font-size: 1rem; font-weight: 700; opacity: 0.7;`;
+  until.style.cssText = `font-size: 1rem; font-weight: 700; opacity: 0.7; font-family: var(--font-sans);`;
   until.textContent = `Until ${formatDate(freezeUntil)}`;
 
   const countdownContainer = document.createElement("div");

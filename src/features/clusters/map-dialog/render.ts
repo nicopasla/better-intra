@@ -252,7 +252,7 @@ export function renderActiveList(shadow: ShadowRoot, users: OccupancyEntry[]) {
     since.textContent = formatTimeAgo(new Date(user.begin_at).getTime());
     since.style.cssText = [
       "max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;",
-      "background:#fff;color:#000;border-color:#fff;",
+      "background:#fff;color:#000;border-color:#fff;font-family:var(--font-sans);",
     ].join("");
     since.setAttribute(
       "data-tip",

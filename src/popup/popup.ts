@@ -1,12 +1,15 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { initAccountSettings } from "../features/account/account.ui";
+import { initFontManager } from "../utils/font-manager.ts";
 import CSS from "../assets/style.css?inline";
 import ICON_SVG from "../assets/svg/icon.svg?raw";
 
 const style = document.createElement("style");
 style.textContent = CSS;
 document.head.appendChild(style);
+
+void initFontManager();
 
 function isIntraUrl(url: string | undefined): boolean {
   if (!url) return false;

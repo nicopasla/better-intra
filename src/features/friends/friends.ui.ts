@@ -57,7 +57,7 @@ function renderLevelBar(level: number) {
         style="height:1rem"
         aria-label="Level progress to level ${whole + 1}"
       ></progress>
-      <span class="text-lg font-bold opacity-60 w-8 shrink-0"
+      <span class="text-lg font-bold font-mono opacity-60 w-8 shrink-0"
         >${whole + 1}</span
       >
     </div>
@@ -179,7 +179,9 @@ function renderFriendRow(
       data-ft-level-badge
       style="border-radius:0.75rem;height:auto;padding-block:0.15rem;font-weight:600;"
     >
-      <span class="text-sm font-bold">${friend.level.toFixed(2)}</span>
+      <span class="text-sm font-bold font-mono"
+        >${friend.level.toFixed(2)}</span
+      >
     </div>
 
     <!-- Main info -->
@@ -247,7 +249,7 @@ function renderFriendRow(
                   </a>`
                 : !friend.isOnline && friend.lastOnlineTimestamp
                   ? html`<span
-                      class="badge badge-md gap-1 px-2"
+                      class="badge badge-md gap-1 px-2 font-mono"
                       style="border:3px solid color-mix(in oklab, var(--color-accent) 40%, transparent);background-color:color-mix(in oklab, var(--color-accent) 10%, transparent);border-radius:0.75rem;height:auto;padding-block:0.15rem;"
                       >${formatTimeAgo(friend.lastOnlineTimestamp)}</span
                     >`
@@ -283,7 +285,8 @@ function renderFriendRow(
           class="w-5 h-5 shrink-0 opacity-40 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
           >${unsafeHTML(svgIcon(WALLET_SVG))}</span
         >
-        <span class="text-base font-bold opacity-80 w-14 text-right shrink-0"
+        <span
+          class="text-base font-bold font-mono opacity-80 w-14 text-right shrink-0"
           >${friend.wallet}</span
         >
       </div>
@@ -292,7 +295,8 @@ function renderFriendRow(
           class="w-5 h-5 shrink-0 opacity-40 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
           >${unsafeHTML(svgIcon(EVAL_SVG))}</span
         >
-        <span class="text-base font-bold opacity-80 w-14 text-right shrink-0"
+        <span
+          class="text-base font-bold font-mono opacity-80 w-14 text-right shrink-0"
           >${friend.correctionPoints}</span
         >
       </div>
@@ -792,7 +796,7 @@ function renderWidget(state: WidgetState) {
         <div class="indicator">
           ${onlineCount > 0 && !state.needsReconnect
             ? html`<span
-                class="indicator-item badge badge-success badge-sm font-bold min-w-6 px-1.5"
+                class="indicator-item badge badge-success badge-sm font-bold font-mono min-w-6 px-1.5"
                 >${onlineCount}</span
               >`
             : ""}
@@ -846,7 +850,7 @@ function renderWidget(state: WidgetState) {
             <span class="font-bold text-lg text-base-content">Friends</span>
             ${state.friends.length > 0
               ? html`<span
-                  class="badge badge-primary badge-md font-bold"
+                  class="badge badge-primary badge-md font-bold font-mono"
                   style="border:3px solid color-mix(in oklab, var(--color-primary) 55%, transparent);border-radius:0.75rem;height:auto;padding-block:0.15rem;font-weight:600;"
                   >${state.friends.length}</span
                 >`
@@ -869,7 +873,7 @@ function renderWidget(state: WidgetState) {
                   aria-pressed="${state.onlineOnly}"
                 >
                   ${onlineCount > 0
-                    ? html`<span class="text-sm font-bold"
+                    ? html`<span class="text-sm font-bold font-mono"
                         >${onlineCount}</span
                       >`
                     : ""}
@@ -1010,7 +1014,7 @@ function renderWidget(state: WidgetState) {
                 ${state.deleteMode
                   ? html`<div class="friends-delete-bar">
                       <span
-                        class="badge badge-error badge-md font-bold shrink-0"
+                        class="badge badge-error badge-md font-bold font-mono shrink-0"
                         style="border:3px solid color-mix(in oklab, var(--color-error) 55%, transparent);border-radius:0.75rem;height:auto;padding-block:0.15rem;font-weight:600;"
                         >${state.selected.length} selected</span
                       >

@@ -73,7 +73,7 @@ function populateMainBadges(
     label.textContent = item.label;
 
     const value = document.createElement("span");
-    value.className = "value text-lg font-semibold";
+    value.className = "value text-lg font-semibold font-mono";
     value.textContent = item.value;
 
     if (item.label.includes("₳")) {
@@ -168,7 +168,7 @@ async function injectSeatBadge(profileCard: HTMLElement) {
   }
 
   const value = document.createElement("span");
-  value.className = "value text-lg font-semibold";
+  value.className = "value text-lg font-semibold font-mono";
   value.textContent = seatText;
   badge.appendChild(value);
 
@@ -384,6 +384,7 @@ function injectProfileCardStyles() {
       font-size: 2.5rem !important;
       line-height: 1 !important;
       height: auto !important;
+      font-family: var(--font-sans) !important;
       color: var(--user-color, hsl(var(--legacy-main)));
     }
 

@@ -66,7 +66,7 @@ function sortRows(nativeCard: HTMLElement) {
     const fdbLabel = document.createElement("div");
     fdbLabel.className = "ft-ev-label";
     fdbLabel.style.cssText =
-      "font-weight:600;font-size:1rem;color:hsl(var(--foreground));margin:0 0 4px 4px;flex-shrink:0";
+      "font-weight:600;font-size:1rem;color:hsl(var(--foreground));margin:0 0 4px 4px;flex-shrink:0;font-family:var(--font-sans)";
     fdbLabel.textContent = `To Feedback (${feedbackRows.length})`;
     fdbWrap.insertBefore(fdbLabel, fdbWrap.firstChild);
 
@@ -93,14 +93,14 @@ function sortRows(nativeCard: HTMLElement) {
   const evLabel = document.createElement("div");
   evLabel.className = "ft-ev-label";
   evLabel.style.cssText =
-    "font-weight:600;font-size:1rem;color:hsl(var(--foreground));margin:0 0 4px 4px;flex-shrink:0";
+    "font-weight:600;font-size:1rem;color:hsl(var(--foreground));margin:0 0 4px 4px;flex-shrink:0;font-family:var(--font-sans)";
   evLabel.textContent = `Evaluator (${evaluatorRows.length})`;
   topWrap.insertBefore(evLabel, topWrap.firstChild);
 
   const edLabel = document.createElement("div");
   edLabel.className = "ft-ev-label";
   edLabel.style.cssText =
-    "font-weight:600;font-size:1rem;color:hsl(var(--foreground));margin:4px 0 4px 4px;flex-shrink:0";
+    "font-weight:600;font-size:1rem;color:hsl(var(--foreground));margin:4px 0 4px 4px;flex-shrink:0;font-family:var(--font-sans)";
   edLabel.textContent = `Evaluated (${evaluatedRows.length})`;
   botWrap.insertBefore(edLabel, botWrap.firstChild);
 

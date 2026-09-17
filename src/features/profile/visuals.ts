@@ -226,7 +226,7 @@ export const injectCustomStyles = () => {
   style.id = "ft-profile-host-styles";
   style.textContent = `
     .bg-ft-gray b,
-      .bg-ft-gray span {font-size: 1.2rem !important;font-weight: bold !important;font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;}
+      .bg-ft-gray span {font-size: 1.2rem !important;font-weight: bold !important;font-family: var(--font-sans);}
       p.text-sm:nth-child(2) {font-size: 1.3rem !important;}
     #profile-modal-host { 
       position: fixed; inset: 0; z-index: 999999; 
@@ -254,7 +254,7 @@ export const injectCustomStyles = () => {
       color: #fff;
       font-size: 15px;
       font-weight: 600;
-      font-family: system-ui, sans-serif;
+      font-family: var(--font-sans, system-ui, sans-serif);
       opacity: 0;
       transition: opacity 0.2s;
       pointer-events: none;

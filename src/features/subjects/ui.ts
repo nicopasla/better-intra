@@ -62,7 +62,7 @@ export function renderSubjectBadge(
           >${label}</span
         >
         <span
-          style="font-size: 1.6rem; font-weight: 800; line-height: 1; white-space: nowrap;"
+          style="font-size: 1.6rem; font-weight: 800; line-height: 1; white-space: nowrap; font-family: var(--font-sans);"
           >${when}</span
         >
       </span>

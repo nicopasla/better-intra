@@ -21,15 +21,21 @@ export const SANS_FONTS: readonly FontOption[] = [
     family: "Atkinson Hyperlegible Next",
   },
   { id: "ubuntu", label: "Ubuntu", family: "Ubuntu" },
+  { id: "file", label: "Imported font" },
   { id: "system", label: "System default" },
 ] as const;
 
 export const DEFAULT_GENERAL_FONT = "noto-sans";
 
+export const IMPORTED_FONT_FAMILY = "BI Custom";
+
+export const IMPORTED_FONT_MAX_BYTES = 4 * 1024 * 1024;
+
 export const GENERAL_FONT_IMPORT_URL =
   "https://fonts.googleapis.com/css2?family=Noto+Sans:wght@100..900&family=Inter:wght@100..900&family=Roboto:wght@100..900&family=Open+Sans:wght@300..800&family=Source+Sans+3:wght@200..900&family=Work+Sans:wght@100..900&family=Manrope:wght@200..800&family=Atkinson+Hyperlegible+Next:wght@200..800&family=Ubuntu:wght@300;400;500;700&display=swap";
 
 export function resolveSansStack(id: string): string {
+  if (id === "file") return `"${IMPORTED_FONT_FAMILY}", ${SYSTEM_SANS_STACK}`;
   const option = SANS_FONTS.find((f) => f.id === id);
   if (!option?.family) return SYSTEM_SANS_STACK;
   return `"${option.family}", ${SYSTEM_SANS_STACK}`;

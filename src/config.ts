@@ -14,6 +14,8 @@ export interface BetterIntraConfig {
   ACTIVE_SCRIPTS: string[];
   BETTER_INTRA_THEME: "dark" | "light" | "system";
   GENERAL_FONT: string;
+  GENERAL_FONT_FILE: string;
+  GENERAL_FONT_FILE_NAME: string;
   DISABLE_ANIMATIONS: boolean;
 
   // Cloud Sync Settings
@@ -207,6 +209,8 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
 
   BETTER_INTRA_THEME: "dark",
   GENERAL_FONT: "noto-sans",
+  GENERAL_FONT_FILE: "",
+  GENERAL_FONT_FILE_NAME: "",
   SHORTCUTS_LINKS: [],
   SHORTCUTS_HIDE_IMPORTANT_LINKS: false,
   SHORTCUTS_ALIGNMENT: "left",

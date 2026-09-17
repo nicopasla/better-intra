@@ -13,6 +13,8 @@ export const BACKUP_EXCLUDED_KEYS: ReadonlySet<string> = new Set<ConfigKey>([
   "CALENDAR_SYNC_TOKEN",
   "CALENDAR_EVENTS_HASH",
   "FRIENDS_DATA_CACHE",
+  "GENERAL_FONT_FILE",
+  "GENERAL_FONT_FILE_NAME",
 ]);
 
 /**

@@ -1,7 +1,12 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { until } from "lit-html/directives/until.js";
+import { ref } from "lit-html/directives/ref.js";
 import { getConfig, CONFIG_DEFAULT, type ConfigKey } from "../../config.ts";
+import {
+  DEFAULT_GENERAL_FONT,
+  IMPORTED_FONT_MAX_BYTES,
+} from "../../utils/fonts.ts";
 import {
   FEATURE_DEFS,
   HUB_INFO,
@@ -158,6 +163,109 @@ function renderFeatureCard(params: {
         : ""}
     </div>
   `;
+}
+
+function renderFontImportControl(
+  container: HTMLElement,
+  fileName: string,
+  enabled: boolean,
+): void {
+  const refresh = (name: string) =>
+    renderFontImportControl(container, name, enabled);
+
+  const highlightPicker = (id: string) => {
+    const root = container.getRootNode() as ShadowRoot;
+    root
+      .querySelectorAll<HTMLButtonElement>("[data-font-option]")
+      .forEach((b) => {
+        b.style.border =
+          b.dataset.fontOption === id
+            ? "2px solid var(--color-primary)"
+            : "2px solid transparent";
+      });
+  };
+
+  const importFile = (el: EventTarget | null) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".woff2,.woff,.ttf,.otf";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      if (file.size > IMPORTED_FONT_MAX_BYTES) {
+        alert(
+          `Font file too large. Maximum size is ${Math.round(
+            IMPORTED_FONT_MAX_BYTES / (1024 * 1024),
+          )} MB.`,
+        );
+        return;
+      }
+      if (!/\.(woff2?|ttf|otf)$/i.test(file.name)) {
+        alert("Only .woff2, .woff, .ttf or .otf font files are allowed.");
+        return;
+      }
+      const dataUri = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => resolve("");
+        reader.readAsDataURL(file);
+      });
+      if (!dataUri) return;
+      await chrome.storage.local.set({
+        GENERAL_FONT_FILE: dataUri,
+        GENERAL_FONT_FILE_NAME: file.name,
+        GENERAL_FONT: "file",
+      });
+      highlightPicker("file");
+      refresh(file.name);
+    };
+    input.click();
+  };
+
+  const removeFile = async () => {
+    await chrome.storage.local.remove([
+      "GENERAL_FONT_FILE",
+      "GENERAL_FONT_FILE_NAME",
+    ]);
+    if ((await getConfig("GENERAL_FONT")) === "file") {
+      await chrome.storage.local.set({ GENERAL_FONT: DEFAULT_GENERAL_FONT });
+      highlightPicker(DEFAULT_GENERAL_FONT);
+    }
+    refresh("");
+  };
+
+  render(
+    html`<div class="flex items-center gap-3 flex-wrap">
+      <button
+        type="button"
+        class="btn btn-sm btn-primary font-bold"
+        ?disabled="${!enabled}"
+        @mousedown="${(e: Event) => e.stopPropagation()}"
+        @click="${(e: Event) => {
+          e.stopPropagation();
+          importFile(e.currentTarget);
+        }}"
+      >
+        Import font file
+      </button>
+      ${fileName
+        ? html`<span class="text-sm opacity-70">${fileName}</span>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline"
+              ?disabled="${!enabled}"
+              @mousedown="${(e: Event) => e.stopPropagation()}"
+              @click="${(e: Event) => {
+                e.stopPropagation();
+                void removeFile();
+              }}"
+            >
+              Remove
+            </button>`
+        : html`<span class="text-sm opacity-50">No file imported</span>`}
+    </div>`,
+    container,
+  );
 }
 
 function renderSettingControl(def: HubSettingDef, enabled: boolean) {
@@ -751,6 +859,20 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
               </button>`;
             })}
           </div>`;
+
+        case "font-import":
+          return html`<div
+            ${ref((el) => {
+              if (el)
+                queueMicrotask(() =>
+                  renderFontImportControl(
+                    el as HTMLElement,
+                    String(value || ""),
+                    enabled,
+                  ),
+                );
+            })}
+          ></div>`;
 
         case "url":
           return html`<div class="w-full">

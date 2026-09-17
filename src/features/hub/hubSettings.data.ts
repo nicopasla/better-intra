@@ -109,6 +109,7 @@ export type SettingKind =
   | "rainbow-palette"
   | "campus-info"
   | "font-preset"
+  | "font-import"
   | "feature-cards";
 
 export { INTRA_FONT } from "../logtime/constants.ts";
@@ -406,6 +407,15 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
         value: f.id,
         font: f.family,
       })),
+    },
+    {
+      feature: "profile",
+      key: "GENERAL_FONT_FILE_NAME",
+      label: "Imported font",
+      desc: "Use a font file from your computer (.woff2, .woff, .ttf, .otf). Maximum 4 MB, stored locally only.",
+      kind: "font-import",
+      fullWidth: true,
+      defaultValue: CONFIG_DEFAULT.GENERAL_FONT_FILE_NAME,
     },
     {
       feature: "profile",

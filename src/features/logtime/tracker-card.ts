@@ -112,7 +112,7 @@ function renderCard(
                     ? html`
                         <tr>
                           <td class="font-medium">Days</td>
-                          <td class="tabular-nums">
+                          <td class="tabular-nums font-mono">
                             ${progress.daysDone} / ${thresholds.days}
                           </td>
                           <td class="text-center">
@@ -121,7 +121,7 @@ function renderCard(
                         </tr>
                         <tr>
                           <td class="font-medium">Hours</td>
-                          <td class="tabular-nums">
+                          <td class="tabular-nums font-mono">
                             ${formatHours(progress.hoursDone)} /
                             ${formatHours(thresholds.hours)}
                           </td>
@@ -285,7 +285,7 @@ function renderPopover() {
                       >
                         <div class="card-body p-2 items-center text-center">
                           <span class="text-xs opacity-60">Days</span>
-                          <span class="font-bold tabular-nums"
+                          <span class="font-bold tabular-nums font-mono"
                             >${progress.daysDone}/${t.days}</span
                           >
                         </div>
@@ -298,7 +298,7 @@ function renderPopover() {
                       >
                         <div class="card-body p-2 items-center text-center">
                           <span class="text-xs opacity-60">Hours</span>
-                          <span class="font-bold tabular-nums"
+                          <span class="font-bold tabular-nums font-mono"
                             >${formatHours(progress.hoursDone)}/${formatHours(
                               t.hours,
                             )}</span

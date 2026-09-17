@@ -285,7 +285,7 @@ export function renderTemplate(state: DialogState): TemplateResult {
               >
               <span
                 id="totals-badge"
-                class="text-xs font-medium opacity-70 whitespace-nowrap tabular-nums"
+                class="text-xs font-medium opacity-70 whitespace-nowrap tabular-nums font-mono"
                 style="display:none"
                 data-tip="Total taken / Total seats"
                 data-tip-size="14px"
@@ -430,13 +430,13 @@ export function renderTemplate(state: DialogState): TemplateResult {
         >
           <div
             id="seat-count-badge"
-            class="text-xs tabular-nums font-medium bg-accent text-accent-content rounded-lg px-2 py-1 border border-accent"
+            class="text-xs tabular-nums font-mono font-medium bg-accent text-accent-content rounded-lg px-2 py-1 border border-accent"
           >
             - / -
           </div>
           <div
             id="campus-time"
-            class="flex items-center gap-1 whitespace-nowrap text-xs tabular-nums font-medium bg-accent text-accent-content rounded-lg px-2 py-1 border border-accent"
+            class="flex items-center gap-1 whitespace-nowrap text-xs tabular-nums font-mono font-medium bg-accent text-accent-content rounded-lg px-2 py-1 border border-accent"
             style="display:none"
           >
             <span
@@ -506,7 +506,7 @@ export function renderTemplate(state: DialogState): TemplateResult {
           >
             −
           </button>
-          <span class="zoom-pct text-xs tabular-nums w-10 text-center"
+          <span class="zoom-pct text-xs tabular-nums font-mono w-10 text-center"
             >100%</span
           >
           <button

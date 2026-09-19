@@ -18,6 +18,7 @@ import CHECK_SVG from "../../../assets/svg/check.svg?raw";
 import FORTY_TWO_SVG from "../../../assets/svg/42_Logo.svg?raw";
 import MAXIMIZE_SVG from "../../../assets/svg/maximize.svg?raw";
 import MINIMIZE_SVG from "../../../assets/svg/minimize.svg?raw";
+import CHEVRON_DOWN_SVG from "../../../assets/svg/chevron-down.svg?raw";
 import {
   formatAlumniDate,
   formatBlackholeDate,
@@ -69,7 +70,16 @@ export interface StudentsTemplateState {
   currentYear: number;
   copiedLogin: string | null;
   isMaximized: boolean;
+  tabsOverflowing: boolean;
 }
+
+export const STUDENTS_TAB_LABELS: Record<StudentsTab, string> = {
+  students: "Students",
+  new: "Future students",
+  pisciners: "Pisciners",
+};
+
+const STUDENTS_TAB_ORDER: StudentsTab[] = ["students", "new", "pisciners"];
 
 export interface StudentsTemplateHandlers {
   onSwitchTab: (tab: StudentsTab) => void;
@@ -239,6 +249,7 @@ export function renderStudentsDialogTemplate(
     currentYear,
     copiedLogin,
     isMaximized,
+    tabsOverflowing,
   } = state;
 
   const hasActiveFilters =
@@ -687,6 +698,12 @@ export function renderStudentsDialogTemplate(
         background: var(--color-primary);
         color: var(--color-primary-content);
       }
+      .students-tabs-host {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+      }
       .updated-badge {
         display: inline-flex;
         align-items: center;
@@ -722,28 +739,77 @@ export function renderStudentsDialogTemplate(
     >
       <div class="sticky top-0 z-10 bg-base-100 rounded-t-xl">
         <div class="flex items-center gap-2 p-3">
-          <div
-            class="flex flex-1 gap-1 rounded-lg bg-base-200 p-1"
-            style="border-radius:var(--radius-field)"
-          >
-            <button
-              class="tab-btn ${tab === "students" ? "active" : ""}"
-              @click="${() => handlers.onSwitchTab("students")}"
-            >
-              Students
-            </button>
-            <button
-              class="tab-btn ${tab === "new" ? "active" : ""}"
-              @click="${() => handlers.onSwitchTab("new")}"
-            >
-              Future students
-            </button>
-            <button
-              class="tab-btn ${tab === "pisciners" ? "active" : ""}"
-              @click="${() => handlers.onSwitchTab("pisciners")}"
-            >
-              Pisciners
-            </button>
+          <div class="students-tabs-host">
+            ${tabsOverflowing
+              ? html`
+                  <details class="dropdown dropdown-start">
+                    <summary
+                      class="btn btn-sm btn-ghost gap-1.5 list-none"
+                      data-tip="Select tab"
+                      data-tip-size="14px"
+                    >
+                      <span
+                        class="text-xs font-semibold uppercase tracking-wide whitespace-nowrap"
+                        >${STUDENTS_TAB_LABELS[tab]}</span
+                      >
+                      <span
+                        class="size-3 flex-shrink-0 flex items-center justify-center"
+                      >
+                        ${unsafeHTML(
+                          CHEVRON_DOWN_SVG.replace(
+                            "<svg",
+                            '<svg width="12" height="12"',
+                          ),
+                        )}
+                      </span>
+                    </summary>
+                    <ul
+                      class="menu menu-sm dropdown-content z-50 mt-2 max-h-72 overflow-auto rounded-box bg-base-100 p-1 shadow-xl"
+                      style="width:max-content;min-width:12rem;"
+                    >
+                      ${STUDENTS_TAB_ORDER.map(
+                        (t) => html`
+                          <li>
+                            <button
+                              type="button"
+                              class="${t === tab
+                                ? "menu-active"
+                                : ""} whitespace-nowrap"
+                              @click="${() => handlers.onSwitchTab(t)}"
+                            >
+                              ${STUDENTS_TAB_LABELS[t]}
+                            </button>
+                          </li>
+                        `,
+                      )}
+                    </ul>
+                  </details>
+                `
+              : html`
+                  <div
+                    class="flex flex-1 gap-1 rounded-lg bg-base-200 p-1"
+                    style="border-radius:var(--radius-field)"
+                  >
+                    <button
+                      class="tab-btn ${tab === "students" ? "active" : ""}"
+                      @click="${() => handlers.onSwitchTab("students")}"
+                    >
+                      Students
+                    </button>
+                    <button
+                      class="tab-btn ${tab === "new" ? "active" : ""}"
+                      @click="${() => handlers.onSwitchTab("new")}"
+                    >
+                      Future students
+                    </button>
+                    <button
+                      class="tab-btn ${tab === "pisciners" ? "active" : ""}"
+                      @click="${() => handlers.onSwitchTab("pisciners")}"
+                    >
+                      Pisciners
+                    </button>
+                  </div>
+                `}
           </div>
           ${ago
             ? html`<span class="updated-badge"

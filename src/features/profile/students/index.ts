@@ -19,6 +19,7 @@ import {
   sortEntries,
 } from "./data.ts";
 import {
+  STUDENTS_TAB_LABELS,
   renderStudentsDialogTemplate,
   StudentsTemplateHandlers,
   StudentsTemplateState,
@@ -35,6 +36,32 @@ import type {
 } from "./data.ts";
 
 let studentsOpening: Promise<void> | null = null;
+
+const TABS_OVERFLOW_TOLERANCE = 1;
+
+/**
+ * Measure whether the inline tab strip would overflow its host. Uses an
+ * absolutely-positioned probe so it never affects the host's flex width and
+ * therefore cannot feed back into the ResizeObserver.
+ */
+function measureTabsOverflow(host: HTMLElement): boolean {
+  if (host.clientWidth === 0) return false;
+  const probe = document.createElement("div");
+  probe.style.cssText =
+    "position:absolute;top:0;left:-9999px;visibility:hidden;display:flex;gap:4px;padding:4px;width:max-content;white-space:nowrap;";
+  for (const label of Object.values(STUDENTS_TAB_LABELS)) {
+    const item = document.createElement("span");
+    item.className = "tab-btn";
+    item.style.cssText = "flex:0 0 auto;white-space:nowrap;";
+    item.textContent = label;
+    probe.appendChild(item);
+  }
+  host.appendChild(probe);
+  const overflows =
+    probe.scrollWidth - host.clientWidth > TABS_OVERFLOW_TOLERANCE;
+  probe.remove();
+  return overflows;
+}
 
 export function openStudentsDialog(): Promise<void> {
   if (document.getElementById("students-dialog")) return Promise.resolve();
@@ -138,6 +165,8 @@ async function openStudentsDialogImpl() {
   let copiedLoginTimeout: number | null = null;
   let sentinelObserver: IntersectionObserver | null = null;
   let isMaximized = false;
+  let tabsOverflowing = false;
+  let tabsResizeObserver: ResizeObserver | null = null;
 
   const dialog = Object.assign(document.createElement("dialog"), {
     id: "students-dialog",
@@ -179,6 +208,10 @@ async function openStudentsDialogImpl() {
     if (sentinelObserver) {
       sentinelObserver.disconnect();
       sentinelObserver = null;
+    }
+    if (tabsResizeObserver) {
+      tabsResizeObserver.disconnect();
+      tabsResizeObserver = null;
     }
     if (searchTimeout !== null) window.clearTimeout(searchTimeout);
     if (copiedLoginTimeout !== null) window.clearTimeout(copiedLoginTimeout);
@@ -405,6 +438,7 @@ async function openStudentsDialogImpl() {
     currentYear,
     copiedLogin,
     isMaximized,
+    tabsOverflowing,
   });
 
   const rerender = () => {
@@ -435,6 +469,23 @@ async function openStudentsDialogImpl() {
         { root, rootMargin: "400px" },
       );
       sentinelObserver.observe(sentinel);
+    }
+
+    if (tabsResizeObserver) {
+      tabsResizeObserver.disconnect();
+      tabsResizeObserver = null;
+    }
+    const tabsHost = shadow.querySelector<HTMLElement>(".students-tabs-host");
+    if (tabsHost) {
+      tabsResizeObserver = new ResizeObserver(() => {
+        requestAnimationFrame(() => {
+          const overflowing = measureTabsOverflow(tabsHost);
+          if (overflowing === tabsOverflowing) return;
+          tabsOverflowing = overflowing;
+          rerender();
+        });
+      });
+      tabsResizeObserver.observe(tabsHost);
     }
   };
 

@@ -1,9 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import {
   AUTH_FLOW_TTL_MS,
+  clearAuthFlow,
   consumeAuthFlow,
   isAuthFlowFresh,
   markAuthFlowPending,
+  peekAuthFlow,
 } from "../src/features/account/auth-callback";
 
 beforeEach(() => {
@@ -31,6 +33,46 @@ describe("isAuthFlowFresh", () => {
   });
 });
 
+describe("markAuthFlowPending", () => {
+  it("resolves once the marker has been committed", async () => {
+    await markAuthFlowPending("cloud");
+    expect(await peekAuthFlow("cloud")).toBe(true);
+  });
+});
+
+describe("peekAuthFlow / clearAuthFlow", () => {
+  it("peek does not clear the marker", async () => {
+    await markAuthFlowPending("cloud");
+    expect(await peekAuthFlow("cloud")).toBe(true);
+    expect(await peekAuthFlow("cloud")).toBe(true);
+    await clearAuthFlow("cloud");
+    expect(await peekAuthFlow("cloud")).toBe(false);
+  });
+
+  it("rejects when no flow was started", async () => {
+    expect(await peekAuthFlow("cloud")).toBe(false);
+    expect(await peekAuthFlow("discord")).toBe(false);
+  });
+
+  it("keeps the marker if a save fails and only clears on success", async () => {
+    await markAuthFlowPending("cloud");
+
+    // Simulate a callback that fails before it can clear the marker.
+    expect(await peekAuthFlow("cloud")).toBe(true);
+
+    // The marker survives, so a retry is still accepted.
+    expect(await peekAuthFlow("cloud")).toBe(true);
+    await clearAuthFlow("cloud");
+    expect(await peekAuthFlow("cloud")).toBe(false);
+  });
+
+  it("does not let a cloud login authorise a discord callback", async () => {
+    await markAuthFlowPending("cloud");
+    expect(await peekAuthFlow("discord")).toBe(false);
+    expect(await consumeAuthFlow("discord")).toBe(false);
+  });
+});
+
 describe("consumeAuthFlow", () => {
   it("returns false when no flow was started (crafted callback link)", async () => {
     expect(await consumeAuthFlow("cloud")).toBe(false);
@@ -41,11 +83,6 @@ describe("consumeAuthFlow", () => {
     await markAuthFlowPending("cloud");
     expect(await consumeAuthFlow("cloud")).toBe(true);
     expect(await consumeAuthFlow("cloud")).toBe(false);
-  });
-
-  it("does not let a cloud login authorise a discord callback", async () => {
-    await markAuthFlowPending("cloud");
-    expect(await consumeAuthFlow("discord")).toBe(false);
   });
 
   it("rejects a marker older than the TTL", async () => {

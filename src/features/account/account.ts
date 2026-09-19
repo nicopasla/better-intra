@@ -1,7 +1,10 @@
 import { BetterIntraConfig, getConfig, CLOUD_SYNC_KEYS } from "../../config.ts";
 import type { VisualUrls } from "../profile/visuals.ts";
 import { hashLogin } from "../../utils/crypto.ts";
-import { showConfirmDialog } from "../../utils/confirm-dialog.ts";
+import {
+  showAlertDialog,
+  showConfirmDialog,
+} from "../../utils/confirm-dialog.ts";
 import { markAuthFlowPending } from "./auth-callback.ts";
 import { sanitizeVisualUrls } from "../profile/visuals-sanitize.ts";
 
@@ -33,9 +36,15 @@ export async function loginWith42(
   const authUrl = `${WORKER_URL}/login?redirect_uri=${encodeURIComponent(extensionFakeCallback)}`;
 
   // Record that a login is in progress so that main.ts accepts the callback.
-  // Started before, awaited after window.open(): an await in between would
-  // leave the click's transient activation and get the popup blocked.
-  const marked = markAuthFlowPending("cloud");
+  // This must complete before window.open(): on Firefox the toolbar popup is
+  // torn down as soon as the auth window takes focus, which cancels an
+  // in-flight storage write. A marker failure must never abort the
+  // postMessage flow below, so it is swallowed.
+  try {
+    await markAuthFlowPending("cloud");
+  } catch (e) {
+    console.warn("Better Intra: could not record login flow", e);
+  }
 
   const popup = window.open(
     authUrl,
@@ -43,10 +52,10 @@ export async function loginWith42(
     "width=600,height=700",
   );
 
-  await marked;
-
   if (!popup) {
-    alert("Popup blocked! Please allow popups for this site.");
+    void showAlertDialog({
+      message: "Popup blocked! Please allow popups for this site.",
+    });
     return;
   }
 
@@ -427,6 +436,7 @@ export async function maybePromptRestore(): Promise<void> {
   if (
     hasData &&
     (await showConfirmDialog({
+      title: "Restore cloud settings",
       message: "Cloud backup found. Restore your settings?",
       confirmLabel: "Restore",
       cancelLabel: "Cancel",

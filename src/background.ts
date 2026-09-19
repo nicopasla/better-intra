@@ -24,7 +24,7 @@ chrome.storage.onChanged.addListener((changes) => {
   ) {
     syncDiscordQuiet();
   }
-  if ("CLOUD_TOKEN" in changes && changes.CLOUD_TOKEN.newValue) {
+  if ("CLOUD_TOKEN" in changes) {
     reloadIntraTabs();
   }
 });

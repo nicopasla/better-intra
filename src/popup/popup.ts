@@ -58,8 +58,9 @@ async function main() {
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
-    const token = changes.CLOUD_TOKEN?.newValue;
-    if (typeof token === "string" && token) {
+    // Close on login (token set) and on disconnect/wipe (token removed), so the
+    // popup can't keep showing a stale connected state.
+    if ("CLOUD_TOKEN" in changes) {
       window.close();
     }
   });

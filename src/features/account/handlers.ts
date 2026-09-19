@@ -8,6 +8,10 @@ import {
   testCloudConnection,
   wipeAllCloudData,
 } from "./account";
+import {
+  showAlertDialog,
+  showConfirmDialog,
+} from "../../utils/confirm-dialog.ts";
 import { AccountState, resetButtonState } from "./state";
 
 export function createHandlers(state: AccountState, updateUI: () => void) {
@@ -38,27 +42,38 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
   };
 
   const handleDelete = async () => {
-    if (confirm("Disconnect and clear your cloud session data locally?")) {
-      await logoutCloud();
-      await reloadTab();
-    }
+    const confirmed = await showConfirmDialog({
+      title: "Disconnect",
+      message: "Disconnect and clear your cloud session data locally?",
+      confirmLabel: "Disconnect",
+      cancelLabel: "Cancel",
+    });
+    if (!confirmed) return;
+    // Clearing CLOUD_TOKEN closes the popup and makes the background reload
+    // the intra tabs, so no explicit reload is needed here.
+    await logoutCloud();
   };
 
   const handleWipe = async () => {
-    if (
-      !confirm(
+    const confirmed = await showConfirmDialog({
+      title: "Wipe all cloud data",
+      message:
         "This will permanently delete ALL your saved settings and sessions from the cloud. Are you sure?",
-      )
-    )
-      return;
+      confirmLabel: "Wipe",
+      cancelLabel: "Cancel",
+    });
+    if (!confirmed) return;
 
     const success = await wipeAllCloudData();
     if (success) {
-      alert("All cloud data successfully wiped.");
-      await reloadTab();
-    } else {
-      alert("Failed to delete cloud data. Please try again.");
+      // The popup closes automatically when the token is cleared and the
+      // background reloads the intra tabs.
+      return;
     }
+    await showAlertDialog({
+      title: "Wipe failed",
+      message: "Failed to delete cloud data. Please try again.",
+    });
   };
 
   const handlePush = async () => {
@@ -106,7 +121,13 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
 
   const handlePull = async () => {
     if (state.buttons.pull.loading) return;
-    if (!confirm("Overwrite current local settings with cloud backup?")) return;
+    const confirmed = await showConfirmDialog({
+      title: "Pull settings",
+      message: "Overwrite current local settings with cloud backup?",
+      confirmLabel: "Pull",
+      cancelLabel: "Cancel",
+    });
+    if (!confirmed) return;
 
     state.buttons.pull = { loading: true, text: "Connecting..." } as any;
     updateUI();

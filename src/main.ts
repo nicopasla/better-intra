@@ -14,7 +14,10 @@ import { ensureCampusData } from "./features/campus/campus.ts";
 import { updateNavAvatar } from "./features/profile/visuals.ts";
 import { AVATAR_SELECTOR } from "./features/profile/selectors.ts";
 import { initAnnouncementBanner } from "./features/announcement/announcement.ts";
-import { consumeAuthFlow } from "./features/account/auth-callback.ts";
+import {
+  clearAuthFlow,
+  peekAuthFlow,
+} from "./features/account/auth-callback.ts";
 import { initFontManager } from "./utils/font-manager.ts";
 import { html, render } from "lit-html";
 
@@ -155,7 +158,7 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
   if (oauthToken && oauthLogin) {
     // Only trust the callback if this extension started a login recently.
     // Otherwise any intra link with ?token=&login= could hijack the account.
-    if (!(await consumeAuthFlow("cloud"))) {
+    if (!(await peekAuthFlow("cloud"))) {
       console.warn(
         "Better Intra: ignoring unexpected auth callback (no login in progress).",
       );
@@ -168,6 +171,7 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
       PENDING_SETTINGS_RESTORE: true,
     });
     await chrome.storage.local.remove("CLOUD_AUTH_FAILED");
+    await clearAuthFlow("cloud");
     history.replaceState(null, "", window.location.pathname);
     window.opener?.postMessage(
       { type: "42_AUTH_SUCCESS", token: oauthToken, login: oauthLogin },
@@ -182,7 +186,7 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
   const discordUsername =
     oauthParams.get("discord_username") ?? hashParams.get("discord_username");
   if (discordId) {
-    if (!(await consumeAuthFlow("discord"))) {
+    if (!(await peekAuthFlow("discord"))) {
       console.warn(
         "Better Intra: ignoring unexpected Discord callback (no link in progress).",
       );
@@ -194,6 +198,7 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
       DISCORD_ENABLED: true,
       DISCORD_USERNAME: discordUsername || "",
     });
+    await clearAuthFlow("discord");
     history.replaceState(null, "", window.location.pathname);
     window.close();
     return;

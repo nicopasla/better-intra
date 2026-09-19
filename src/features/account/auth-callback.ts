@@ -21,9 +21,18 @@ const PENDING_KEYS: Record<AuthFlow, string> = {
   discord: "DISCORD_AUTH_PENDING_AT",
 };
 
-/** Call right before opening the authentication window. */
+/**
+ * Call right before opening the authentication window. Resolves only once the
+ * write has been committed: the extension popup is torn down when the auth
+ * window takes focus, and Firefox cancels an in-flight storage write when that
+ * happens, which would leave the callback without a marker.
+ */
 export async function markAuthFlowPending(flow: AuthFlow): Promise<void> {
-  await chrome.storage.local.set({ [PENDING_KEYS[flow]]: Date.now() });
+  await new Promise<void>((resolve) => {
+    chrome.storage.local.set({ [PENDING_KEYS[flow]]: Date.now() }, () =>
+      resolve(),
+    );
+  });
 }
 
 /** Pure check, exported for tests. */
@@ -31,9 +40,29 @@ export function isAuthFlowFresh(
   pendingAt: unknown,
   now: number = Date.now(),
 ): boolean {
-  if (typeof pendingAt !== "number" || !Number.isFinite(pendingAt)) return false;
+  if (typeof pendingAt !== "number" || !Number.isFinite(pendingAt))
+    return false;
   const age = now - pendingAt;
   return age >= 0 && age <= AUTH_FLOW_TTL_MS;
+}
+
+/**
+ * Read the pending marker for a flow without clearing it. Returns true when a
+ * matching flow was started recently. Callers should clear it once the callback
+ * has been fully processed so a failed handling can be retried.
+ */
+export async function peekAuthFlow(
+  flow: AuthFlow,
+  now: number = Date.now(),
+): Promise<boolean> {
+  const key = PENDING_KEYS[flow];
+  const store = await chrome.storage.local.get(key);
+  return isAuthFlowFresh(store?.[key], now);
+}
+
+/** Clear the pending marker for a flow. */
+export async function clearAuthFlow(flow: AuthFlow): Promise<void> {
+  await chrome.storage.local.remove(PENDING_KEYS[flow]);
 }
 
 /**
@@ -44,8 +73,7 @@ export async function consumeAuthFlow(
   flow: AuthFlow,
   now: number = Date.now(),
 ): Promise<boolean> {
-  const key = PENDING_KEYS[flow];
-  const store = await chrome.storage.local.get(key);
-  await chrome.storage.local.remove(key);
-  return isAuthFlowFresh(store?.[key], now);
+  const fresh = await peekAuthFlow(flow, now);
+  await clearAuthFlow(flow);
+  return fresh;
 }

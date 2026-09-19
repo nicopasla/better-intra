@@ -18,10 +18,12 @@ const store = new Map<string, unknown>();
         }
         return result;
       }),
-      set: vi.fn(async (items: Record<string, unknown>) => {
+      set: vi.fn((items: Record<string, unknown>, callback?: () => void) => {
         for (const [key, value] of Object.entries(items)) {
           store.set(key, value);
         }
+        callback?.();
+        return Promise.resolve();
       }),
       remove: vi.fn(async (keys: string | string[]) => {
         const list = Array.isArray(keys) ? keys : [keys];

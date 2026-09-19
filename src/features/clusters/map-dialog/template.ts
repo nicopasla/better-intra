@@ -8,6 +8,7 @@ import CLOCK_SVG from "../../../assets/svg/clock.svg?raw";
 import MAXIMIZE_SVG from "../../../assets/svg/maximize.svg?raw";
 import MINIMIZE_SVG from "../../../assets/svg/minimize.svg?raw";
 import SETTINGS_SVG from "../../../assets/svg/settings_gear.svg?raw";
+import X_SVG from "../../../assets/svg/x.svg?raw";
 import RESET_SVG from "../../../assets/svg/reset.svg?raw";
 
 export function renderTemplate(state: DialogState): TemplateResult {
@@ -400,11 +401,8 @@ export function renderTemplate(state: DialogState): TemplateResult {
               )}
             </span>
           </button>
-          <button
-            class="btn btn-circle btn-ghost btn-sm text-xl"
-            id="close-btn"
-          >
-            ✕
+          <button class="btn btn-circle btn-ghost btn-sm" id="close-btn">
+            ${unsafeHTML(X_SVG.replace("<svg", '<svg width="16" height="16"'))}
           </button>
         </div>
       </div>

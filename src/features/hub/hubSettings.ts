@@ -23,6 +23,67 @@ function findSidebarMainGroup(): HTMLDivElement | null {
   );
 }
 
+const SIDEBAR_STYLE_ID = "ft-sidebar-buttons-style";
+
+/**
+ * Sidebar button animations: the gear spins continuously, and the students
+ * icon cycles 1 -> 2 -> 3 -> 2 users. Kept idempotent like skeleton.ts and
+ * disabled by the extension-wide animation switch / reduced-motion.
+ */
+function ensureSidebarButtonStyles(): void {
+  if (!document.getElementById(SIDEBAR_STYLE_ID)) {
+    const style = document.createElement("style");
+    style.id = SIDEBAR_STYLE_ID;
+    style.textContent = `
+      #hub-gear-btn svg {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: ft-gear-turn 6s linear infinite;
+      }
+      @keyframes ft-gear-turn {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      #ft-students-btn .ft-user-2 {
+        animation: ft-user-2 4s ease-in-out infinite;
+      }
+      #ft-students-btn .ft-user-3 {
+        animation: ft-user-3 4s ease-in-out infinite;
+      }
+      @keyframes ft-user-2 {
+        0% { opacity: 0; }
+        20% { opacity: 1; }
+        80% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+      @keyframes ft-user-3 {
+        0%, 35% { opacity: 0; }
+        50%, 65% { opacity: 1; }
+        80%, 100% { opacity: 0; }
+      }
+
+      html.ft-no-anim #hub-gear-btn svg,
+      html.ft-no-anim #ft-students-btn .ft-user-2,
+      html.ft-no-anim #ft-students-btn .ft-user-3 {
+        animation: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #hub-gear-btn svg,
+        #ft-students-btn .ft-user-2,
+        #ft-students-btn .ft-user-3 {
+          animation: none;
+        }
+      }
+    `;
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  void getConfig("DISABLE_ANIMATIONS").then((disabled) => {
+    document.documentElement.classList.toggle("ft-no-anim", disabled);
+  });
+}
+
 function renderGearButton(
   onClick: (e: Event) => void,
 ): ReturnType<typeof html> {
@@ -41,10 +102,12 @@ function renderGearButton(
 
 function renderStudentsButton(
   onClick: (e: Event) => void,
+  color: string,
 ): ReturnType<typeof html> {
   return html`<a
     id="ft-students-btn"
     class="py-5 w-full flex justify-center hover:opacity-100 opacity-40"
+    style="color:${color};"
     href="#"
     data-tip="Students"
     data-tip-pos="right"
@@ -54,7 +117,10 @@ function renderStudentsButton(
     }}"
   >
     ${unsafeHTML(
-      USERS_SVG.replace("<svg", '<svg width="25" height="25" stroke="#fff"'),
+      USERS_SVG.replace(
+        "<svg",
+        `<svg width="25" height="25" stroke="${color}"`,
+      ),
     )}
   </a>`;
 }
@@ -84,6 +150,8 @@ function renderClustersButton(
 }
 
 export function mountGearButton(): void {
+  ensureSidebarButtonStyles();
+
   const open = async () => {
     const { openHubModal } = await import("./hubSettings.ui.ts");
 
@@ -115,9 +183,12 @@ export function mountGearButton(): void {
     if ((await getConfig("CLUSTERS_CAMPUS")) !== "12") return;
     if (!sidebar) return;
 
+    const isLight = await getIsLight();
+    const color = isLight ? "#1a1d24" : "#fff";
+
     if (!document.getElementById("ft-students-btn")) {
       const container = document.createElement("div");
-      render(renderStudentsButton(openStudents), container);
+      render(renderStudentsButton(openStudents, color), container);
       const anchor = sidebar.children[1] ?? sidebar.firstElementChild;
       if (anchor) {
         anchor.after(container.firstElementChild!);
@@ -128,8 +199,6 @@ export function mountGearButton(): void {
 
     const studentsBtn = document.getElementById("ft-students-btn");
     if (studentsBtn && !document.getElementById("ft-clusters-btn")) {
-      const isLight = await getIsLight();
-      const color = isLight ? "#1a1d24" : "#fff";
       const container = document.createElement("div");
       render(renderClustersButton(openClusters, color), container);
       studentsBtn.after(container.firstElementChild!);

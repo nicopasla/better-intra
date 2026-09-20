@@ -19,6 +19,7 @@ import FORTY_TWO_SVG from "../../../assets/svg/42_Logo.svg?raw";
 import MAXIMIZE_SVG from "../../../assets/svg/maximize.svg?raw";
 import MINIMIZE_SVG from "../../../assets/svg/minimize.svg?raw";
 import CHEVRON_DOWN_SVG from "../../../assets/svg/chevron-down.svg?raw";
+import X_SVG from "../../../assets/svg/x.svg?raw";
 import {
   formatAlumniDate,
   formatBlackholeDate,
@@ -829,10 +830,10 @@ export function renderStudentsDialogTemplate(
             )}
           </button>
           <button
-            class="btn btn-circle btn-ghost btn-sm text-xl ml-auto"
+            class="btn btn-circle btn-ghost btn-sm ml-auto"
             @click="${handlers.onClose}"
           >
-            ✕
+            ${unsafeHTML(X_SVG.replace("<svg", '<svg width="22" height="22"'))}
           </button>
         </div>
         <div class="flex flex-wrap items-center gap-2 px-3 pb-3">

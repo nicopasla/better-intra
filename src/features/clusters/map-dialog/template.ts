@@ -402,7 +402,7 @@ export function renderTemplate(state: DialogState): TemplateResult {
             </span>
           </button>
           <button class="btn btn-circle btn-ghost btn-sm" id="close-btn">
-            ${unsafeHTML(X_SVG.replace("<svg", '<svg width="16" height="16"'))}
+            ${unsafeHTML(X_SVG.replace("<svg", '<svg width="22" height="22"'))}
           </button>
         </div>
       </div>

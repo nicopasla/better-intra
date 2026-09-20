@@ -5,6 +5,7 @@ import { getCloudLogin } from "../account/account.ts";
 import { getEffectiveTheme, THEMES } from "./theme/theme-manager.ts";
 import { loadCampusData, TranscriptEntry } from "../campus/campus.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
+import X_SVG from "../../assets/svg/x.svg?raw";
 
 async function openTranscriptDialog(
   login: string,
@@ -107,7 +108,7 @@ async function openTranscriptDialog(
               class="btn btn-circle btn-ghost btn-sm"
               @click=${close}
             >
-              ✕
+              ${unsafeHTML(X_SVG.replace("<svg", '<svg width="22" height="22"'))}
             </button>
           </div>
 

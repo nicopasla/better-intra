@@ -14,6 +14,7 @@ import { sharedCSS } from "../../assets/shared-styles.ts";
 import LINK_SVG from "../../assets/svg/link.svg?raw";
 import GRIP_VERTICAL_SVG from "../../assets/svg/grip-vertical.svg?raw";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
+import X_SVG from "../../assets/svg/x.svg?raw";
 import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
 import { renderAvatarEditor } from "./avatar-editor.ts";
 import { uploadImage } from "./image-upload.ts";
@@ -609,7 +610,7 @@ function renderPanelContent(
           Reset
         </button>
         <button class="btn btn-circle btn-ghost btn-sm" id="profile-close-btn">
-          ✕
+          ${unsafeHTML(X_SVG.replace("<svg", '<svg width="22" height="22"'))}
         </button>
       </div>
 

@@ -27,6 +27,7 @@ import { loginWith42, syncToCloud } from "../account/account.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
 import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
+import X_SVG from "../../assets/svg/x.svg?raw";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 import RELOAD_SVG from "../../assets/svg/reload.svg?raw";
 import RESET_SVG from "../../assets/svg/reset.svg?raw";
@@ -1385,10 +1386,10 @@ async function createModal(active: FeatureId[]): Promise<void> {
           </div>
         </div>
         <button
-          class="btn btn-circle btn-ghost"
+          class="btn btn-circle btn-ghost btn-sm"
           @click="${() => dialog.close()}"
         >
-          ✕
+          ${unsafeHTML(X_SVG.replace("<svg", '<svg width="22" height="22"'))}
         </button>
       </div>
 

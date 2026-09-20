@@ -77,7 +77,7 @@ Tests use Vitest with `jsdom` environment and global API. Run `npm test` (single
 cd better-intra-worker
 npm install
 npm run dev       # wrangler dev
-npm run deploy    # wrangler deploy --remote
+npm run deploy    # wrangler deploy
 npx wrangler kv:namespace create EVAL_KV       # first time, paste id into wrangler.json
 npx wrangler secret put DISCORD_BOT_TOKEN       # set Discord bot token
 ```

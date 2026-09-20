@@ -66,7 +66,7 @@ The Cloudflare Worker (`better-intra-worker/`) handles cloud settings sync, frie
 cd better-intra-worker
 npm install
 npm run dev       # wrangler dev
-npm run deploy    # wrangler deploy --remote
+npm run deploy    # wrangler deploy
 ```
 
 ### KV namespaces

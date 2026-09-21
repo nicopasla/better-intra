@@ -33,15 +33,27 @@ const QUICK_LINKS = [
   },
 ];
 
-const starCount = fetch("https://api.github.com/repos/nicopasla/better-intra")
-  .then((r) => r.json())
-  .then((d) => d.stargazers_count as number)
-  .catch(() => null);
+let starCountPromise: Promise<number | null> | null = null;
 
-const followerCount = fetch("https://api.github.com/users/nicopasla")
-  .then((r) => r.json())
-  .then((d) => d.followers as number)
-  .catch(() => null);
+function getStarCount(): Promise<number | null> {
+  return (starCountPromise ??= fetch(
+    "https://api.github.com/repos/nicopasla/better-intra",
+  )
+    .then((r) => r.json())
+    .then((d) => d.stargazers_count as number)
+    .catch(() => null));
+}
+
+let followerCountPromise: Promise<number | null> | null = null;
+
+function getFollowerCount(): Promise<number | null> {
+  return (followerCountPromise ??= fetch(
+    "https://api.github.com/users/nicopasla",
+  )
+    .then((r) => r.json())
+    .then((d) => d.followers as number)
+    .catch(() => null));
+}
 
 type HistoryPoint = { date: string; total: number };
 
@@ -59,10 +71,16 @@ type Stats = {
   }[];
 };
 
-const communityStats = fetch("https://api.betterintra.com/api/v1/public/stats")
-  .then((r) => r.json())
-  .then((d) => d as Stats)
-  .catch(() => null);
+let communityStatsPromise: Promise<Stats | null> | null = null;
+
+function getCommunityStats(): Promise<Stats | null> {
+  return (communityStatsPromise ??= fetch(
+    "https://api.betterintra.com/api/v1/public/stats",
+  )
+    .then((r) => r.json())
+    .then((d) => d as Stats)
+    .catch(() => null));
+}
 
 function countryFlag(code: string): string {
   if (!code || code.length !== 2) return "🌍";
@@ -376,7 +394,7 @@ export function renderAboutPanel(): ReturnType<typeof html> {
                   </span>
                   <span>Star</span>
                   ${until(
-                    starCount.then((c) =>
+                    getStarCount().then((c) =>
                       c != null
                         ? html`<span class="badge badge-sm font-mono"
                             >${c}</span
@@ -406,7 +424,7 @@ export function renderAboutPanel(): ReturnType<typeof html> {
             <div class="flex-1 h-px bg-base-300/40"></div>
           </div>
           ${until(
-            communityStats.then((s) =>
+            getCommunityStats().then((s) =>
               s && s.total > 0
                 ? html`
                     <div
@@ -554,7 +572,7 @@ export function renderAboutPanel(): ReturnType<typeof html> {
               </span>
               <span>Follow</span>
               ${until(
-                followerCount.then((c) =>
+                getFollowerCount().then((c) =>
                   c != null
                     ? html`<span class="badge badge-sm font-mono">${c}</span>`
                     : "",

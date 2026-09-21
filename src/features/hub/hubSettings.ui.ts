@@ -330,7 +330,12 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
   }
 
   if (def.kind === "about") {
-    return renderAboutPanel();
+    return html`<div
+      class="flex items-center justify-center w-full h-full min-h-40"
+      data-about-placeholder
+    >
+      <span class="loading loading-spinner loading-sm"></span>
+    </div>`;
   }
   if (def.kind === "card-order") {
     const container = document.createElement("div");
@@ -1127,7 +1132,12 @@ function renderTabsContent(
         : "md:grid-cols-3";
 
     return html`<label class="tab flex items-center gap-2">
-        <input type="radio" name="hub_tabs" ?checked="${idx === 0}" />
+        <input
+          type="radio"
+          name="hub_tabs"
+          ?checked="${idx === 0}"
+          data-hub-tab="${f.id}"
+        />
         <span class="size-4 flex items-center justify-center">
           ${unsafeHTML(f.icon)}
         </span>
@@ -1214,6 +1224,40 @@ function renderTabsContent(
         </div>
       </div>`;
   });
+}
+
+function loadAboutPanel(shadow: ShadowRoot): void {
+  const placeholder = shadow.querySelector<HTMLElement>(
+    "[data-about-placeholder]",
+  );
+  if (!placeholder) return;
+  const target = placeholder.parentElement;
+  if (!target) return;
+  const slot = document.createElement("div");
+  slot.className = "w-full h-full";
+  render(renderAboutPanel(), slot);
+  placeholder.remove();
+  target.appendChild(slot);
+}
+
+function setupLazyAbout(shadow: ShadowRoot): void {
+  const radio = shadow.querySelector<HTMLInputElement>(
+    '[data-hub-tab="about"]',
+  );
+  if (!radio) return;
+
+  const activate = () => loadAboutPanel(shadow);
+  if (radio.checked) {
+    activate();
+    return;
+  }
+
+  const listener = () => {
+    if (!radio.checked) return;
+    activate();
+    radio.removeEventListener("change", listener);
+  };
+  radio.addEventListener("change", listener);
 }
 
 function renderDialogShell(): ReturnType<typeof html> {
@@ -1501,6 +1545,8 @@ async function createModal(active: FeatureId[]): Promise<void> {
   render(modalTemplate, shadow);
 
   bindTooltips(shadow, getIsLight);
+
+  setupLazyAbout(shadow);
 
   const themeToggle = shadow.querySelector(
     "#hub-theme-toggle",

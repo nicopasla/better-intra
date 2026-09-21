@@ -1,6 +1,8 @@
 import { html } from "lit-html";
 import { until } from "lit-html/directives/until.js";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
+import { directive, Directive } from "lit-html/directive.js";
+import type { PartInfo } from "lit-html/directive.js";
 import { HUB_INFO } from "../hub/hubSettings.data.ts";
 
 import GITHUB_SVG from "../../assets/svg/github.svg?raw";
@@ -41,12 +43,15 @@ const followerCount = fetch("https://api.github.com/users/nicopasla")
   .then((d) => d.followers as number)
   .catch(() => null);
 
+type HistoryPoint = { date: string; total: number };
+
 type Stats = {
   total: number;
   newToday: number;
   newLast30Days: number;
   newLast14Days: number;
   newLast7Days: number;
+  history?: HistoryPoint[];
   countries: {
     country: string;
     count: number;
@@ -97,6 +102,235 @@ function countryTooltip(c: {
   const parts = shown.map((cp) => `${cp.name} (${cp.count})`);
   if (c.campuses.length > MAX_CAMPUSES_IN_TOOLTIP) parts.push("…");
   return `${name} · ${parts.join(", ")}`;
+}
+
+const MAX_GROWTH_POINTS = 120;
+
+function downsample(history: HistoryPoint[]): HistoryPoint[] {
+  if (history.length <= MAX_GROWTH_POINTS) return history;
+  const step = history.length / MAX_GROWTH_POINTS;
+  const out: HistoryPoint[] = [];
+  for (let i = 0; i < MAX_GROWTH_POINTS; i++) {
+    out.push(history[Math.floor(i * step)]);
+  }
+  out[out.length - 1] = history[history.length - 1];
+  return out.filter((p, i, a) => i === 0 || p.date !== a[i - 1].date);
+}
+
+const GROWTH_MONTHS = 3;
+
+function lastMonths(history: HistoryPoint[]): HistoryPoint[] {
+  if (history.length === 0) return history;
+  const latest = new Date(`${history[history.length - 1].date}T00:00:00Z`);
+  if (Number.isNaN(latest.getTime())) return history;
+
+  const cutoff = new Date(latest);
+  cutoff.setUTCMonth(cutoff.getUTCMonth() - GROWTH_MONTHS);
+  const cutoffKey = cutoff.toISOString().slice(0, 10);
+
+  const recent = history.filter((p) => p.date >= cutoffKey);
+  if (recent.length >= 2) return recent;
+
+  const tail = history.slice(-GROWTH_MONTHS * 31);
+  return tail.length >= 2 ? tail : history;
+}
+
+function formatGrowthDate(date: string): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return date;
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+const W = 200;
+const H = 40;
+const PAD_TOP = 4;
+const PAD_BOTTOM = 4;
+
+type ChartPoint = { x: number; y: number; date: string; total: number };
+
+type GrowthLayout = {
+  points: ChartPoint[];
+  polyline: string;
+  area: string;
+  plotW: number;
+  baseY: number;
+};
+
+const growthLayouts = new WeakMap<SVGSVGElement, GrowthLayout>();
+
+function buildGrowthLayout(history: HistoryPoint[]): GrowthLayout {
+  const n = history.length;
+  const plotW = W;
+  const baseY = H - PAD_BOTTOM;
+  const topY = PAD_TOP;
+  const scaleMax = Math.max(...history.map((p) => p.total), 1);
+
+  const xAt = (i: number) => (n <= 1 ? plotW / 2 : (i / (n - 1)) * plotW);
+  const yAt = (total: number) =>
+    baseY - (Math.max(total, 0) / scaleMax) * (baseY - topY);
+
+  const points: ChartPoint[] = history.map((p, i) => ({
+    x: xAt(i),
+    y: yAt(p.total),
+    date: p.date,
+    total: p.total,
+  }));
+
+  const polyline = points
+    .map((p) => `${round2(p.x)} ${round2(p.y)}`)
+    .join(" L ");
+  const area = `M${round2(points[0].x)} ${baseY} L ${polyline} L ${round2(
+    points[n - 1].x,
+  )} ${baseY} Z`;
+
+  return { points, polyline, area, plotW, baseY };
+}
+
+function round2(v: number): number {
+  return Math.round(v * 100) / 100;
+}
+
+function growthAnchor(layout: GrowthLayout, clientX: number): ChartPoint {
+  const { points, plotW } = layout;
+  let nearest = points[0];
+  let best = Infinity;
+  for (const p of points) {
+    const d = Math.abs(p.x - clientX * plotW);
+    if (d < best) {
+      best = d;
+      nearest = p;
+    }
+  }
+  return nearest;
+}
+
+function hideGrowthHint(el: Element): void {
+  const svg = el.closest("svg");
+  if (!svg) return;
+  svg.querySelector(".bi-growth-cursor")?.setAttribute("opacity", "0");
+  svg.querySelector(".bi-growth-spot")?.setAttribute("opacity", "0");
+  const hint = el.parentElement?.querySelector<HTMLElement>(".bi-growth-hint");
+  hint?.classList.add("hidden");
+}
+
+function showGrowthHint(el: Element, e: PointerEvent): void {
+  const svg = el.closest<SVGSVGElement>("svg");
+  if (!svg) return;
+  const layout = growthLayouts.get(svg);
+  if (!layout) return;
+
+  const rect = svg.getBoundingClientRect();
+  if (rect.width === 0) return;
+  const fraction = (e.clientX - rect.left) / rect.width;
+  const anchor = growthAnchor(layout, Math.min(Math.max(fraction, 0), 1));
+
+  svg.querySelector(".bi-growth-cursor")?.setAttribute("opacity", "1");
+  const cursor = svg.querySelector<SVGLineElement>(".bi-growth-cursor");
+  cursor?.setAttribute("x1", `${anchor.x}`);
+  cursor?.setAttribute("x2", `${anchor.x}`);
+
+  const spot = svg.querySelector<SVGCircleElement>(".bi-growth-spot");
+  spot?.setAttribute("cx", `${anchor.x}`);
+  spot?.setAttribute("cy", `${anchor.y}`);
+  spot?.setAttribute("opacity", "1");
+
+  const hint = el.parentElement?.querySelector<HTMLElement>(".bi-growth-hint");
+  if (!hint) return;
+  hint.textContent = `${formatGrowthDate(anchor.date)} · ${anchor.total}`;
+  hint.classList.remove("hidden");
+
+  const leftPct = (anchor.x / W) * 100;
+  hint.style.left = `${leftPct}%`;
+}
+
+function registerGrowthLayout(el: Element, layout: GrowthLayout): void {
+  growthLayouts.set(el as SVGSVGElement, layout);
+}
+
+class RegisterGrowthChart extends Directive {
+  constructor(part: PartInfo) {
+    super(part);
+  }
+  render(layout: GrowthLayout): unknown {
+    void layout;
+    return undefined;
+  }
+  update(part: unknown, [layout]: [GrowthLayout]): unknown {
+    const el = (part as { element?: Element }).element;
+    if (el) registerGrowthLayout(el, layout);
+    return undefined;
+  }
+}
+
+const registerGrowthChartDirective = directive(RegisterGrowthChart);
+
+function renderGrowthChart(
+  rawHistory: HistoryPoint[],
+): ReturnType<typeof html> {
+  const history = downsample(lastMonths(rawHistory));
+  const layout = buildGrowthLayout(history);
+  const { area, polyline } = layout;
+
+  return html`
+    <div
+      class="relative flex items-center justify-center rounded-xl bg-base-100 px-4 min-w-32"
+      style="border: 2px solid #8956ff"
+    >
+      <svg
+        viewBox="0 0 ${W} ${H}"
+        class="w-full h-full text-[#8956ff]"
+        preserveAspectRatio="none"
+        ${registerGrowthChartDirective(layout)}
+        @pointermove=${(e: PointerEvent) =>
+          showGrowthHint(e.currentTarget as Element, e)}
+        @pointerleave=${(e: PointerEvent) =>
+          hideGrowthHint(e.currentTarget as Element)}
+      >
+        <path
+          d="${area}"
+          fill="currentColor"
+          fill-opacity="0.2"
+          stroke="none"
+        />
+        <path
+          d="M ${polyline}"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          vector-effect="non-scaling-stroke"
+          stroke-linejoin="round"
+          stroke-linecap="round"
+        />
+        <line
+          class="bi-growth-cursor"
+          x1="0"
+          x2="0"
+          y1="0"
+          y2="${H}"
+          stroke="currentColor"
+          stroke-width="1"
+          opacity="0"
+          pointer-events="none"
+        />
+        <circle
+          class="bi-growth-spot"
+          cx="0"
+          cy="0"
+          r="2"
+          fill="currentColor"
+          opacity="0"
+          pointer-events="none"
+        />
+      </svg>
+      <span
+        class="bi-growth-hint hidden absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full rounded bg-base-300 px-1.5 py-0.5 text-[11px] font-mono whitespace-nowrap pointer-events-none"
+      ></span>
+    </div>
+  `;
 }
 
 export function renderAboutPanel(): ReturnType<typeof html> {
@@ -184,13 +418,20 @@ export function renderAboutPanel(): ReturnType<typeof html> {
                           style="border: 2px solid #00babc"
                         >
                           <span
-                            class="text-4xl font-bold font-mono leading-none"
+                            class="text-3xl font-bold font-mono leading-none"
                             >${s.total}</span
                           >
                           <span class="text-sm opacity-60 font-semibold"
                             >users</span
                           >
                         </div>
+                        ${s.history && s.history.length > 1
+                          ? html`<div
+                              class="self-stretch shrink-0 flex min-w-40"
+                            >
+                              ${renderGrowthChart(s.history)}
+                            </div>`
+                          : ""}
                         <div class="flex items-start justify-end gap-6">
                           ${[
                             {

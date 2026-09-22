@@ -79,8 +79,10 @@ function renderBanner(
   const dismiss = () => {
     const el = document.getElementById("ft-announcement-banner");
     if (el) el.remove();
+    // localStorage, not sessionStorage: a dismissed banner must stay
+    // dismissed across tabs and restarts.
     try {
-      sessionStorage.setItem(getDismissedKey(message, level, links), "1");
+      localStorage.setItem(getDismissedKey(message, level, links), "1");
     } catch {
       /* ignore */
     }
@@ -101,12 +103,7 @@ function renderBanner(
           color: ${style.fg};
           padding: 10px 20px;
           text-align: center;
-          font-family: var(
-            --font-sans,
-            system-ui,
-            -apple-system,
-            sans-serif
-          );
+          font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
           font-size: 14px;
           font-weight: 500;
           line-height: 1.4;
@@ -198,7 +195,7 @@ export async function initAnnouncementBanner(): Promise<void> {
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       if (cached.data.message) {
         if (
-          sessionStorage.getItem(
+          localStorage.getItem(
             getDismissedKey(
               cached.data.message,
               cached.data.level,
@@ -223,7 +220,7 @@ export async function initAnnouncementBanner(): Promise<void> {
 
     if (
       data.message &&
-      sessionStorage.getItem(
+      localStorage.getItem(
         getDismissedKey(data.message, data.level, data.links ?? []),
       ) !== "1"
     ) {

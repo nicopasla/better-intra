@@ -688,10 +688,6 @@ export function initLogtime(): Promise<void> {
   if (isLoaded) return Promise.resolve();
   if (initPromise) return initPromise;
   initPromise = (async () => {
-    if ("scrollRestoration" in history) {
-      history.scrollRestoration = "manual";
-    }
-
     CONFIG = await getConfigs();
     currentTheme = await getEffectiveTheme();
     const presetKey = await getConfig("PROFILE_THEME_PRESET");

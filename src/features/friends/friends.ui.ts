@@ -349,6 +349,28 @@ function renderEmpty() {
   `;
 }
 
+function renderLoadError(onRefresh: () => void) {
+  return html`
+    <div class="flex flex-col items-center gap-2 py-16 px-6 text-center">
+      <span
+        class="w-16 h-16 opacity-40 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
+        >${unsafeHTML(FRIENDS_SVG)}</span
+      >
+      <p class="text-sm font-bold">Couldn't load your friends</p>
+      <p class="text-xs opacity-60">
+        Your list is saved — the server didn't answer.
+      </p>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm font-bold mt-2"
+        @click="${onRefresh}"
+      >
+        Retry
+      </button>
+    </div>
+  `;
+}
+
 type SortMode = "name" | "level" | "wallet" | "correction";
 type SortDir = "asc" | "desc";
 
@@ -967,45 +989,47 @@ function renderWidget(state: WidgetState) {
                   ? html`<div class="flex justify-center py-12">
                       <span class="loading loading-spinner loading-md"></span>
                     </div>`
-                  : state.friends.length === 0
-                    ? renderEmpty()
-                    : sorted.length === 0
-                      ? html`<div
-                          class="flex flex-col items-center gap-2 py-16 opacity-40"
-                        >
-                          <span
-                            class="w-16 h-16 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
-                            >${unsafeHTML(GLOBE_SVG)}</span
+                  : state.loadError && state.friends.length === 0
+                    ? renderLoadError(state.onRefresh)
+                    : state.friends.length === 0
+                      ? renderEmpty()
+                      : sorted.length === 0
+                        ? html`<div
+                            class="flex flex-col items-center gap-2 py-16 opacity-40"
                           >
-                          <p class="text-sm font-bold">No friends online</p>
-                          <p class="text-xs">
-                            Turn off the online filter to see everyone
-                          </p>
-                        </div>`
-                      : html`<ul class="list text-base-content">
-                          ${sorted.map(
-                            (f, i) =>
-                              html`<li
-                                class="list-row group ${state.selected.includes(
-                                  f.login,
-                                )
-                                  ? "bg-base-200/50"
-                                  : ""}"
-                              >
-                                ${renderFriendRow(
-                                  f,
-                                  state.sortBy === "level" &&
-                                    state.sortDir === "desc"
-                                    ? i
-                                    : -1,
-                                  state.showCustomAvatars,
-                                  state.deleteMode,
-                                  state.selected.includes(f.login),
-                                  state.onToggleSelect,
-                                )}
-                              </li>`,
-                          )}
-                        </ul>`}
+                            <span
+                              class="w-16 h-16 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
+                              >${unsafeHTML(GLOBE_SVG)}</span
+                            >
+                            <p class="text-sm font-bold">No friends online</p>
+                            <p class="text-xs">
+                              Turn off the online filter to see everyone
+                            </p>
+                          </div>`
+                        : html`<ul class="list text-base-content">
+                            ${sorted.map(
+                              (f, i) =>
+                                html`<li
+                                  class="list-row group ${state.selected.includes(
+                                    f.login,
+                                  )
+                                    ? "bg-base-200/50"
+                                    : ""}"
+                                >
+                                  ${renderFriendRow(
+                                    f,
+                                    state.sortBy === "level" &&
+                                      state.sortDir === "desc"
+                                      ? i
+                                      : -1,
+                                    state.showCustomAvatars,
+                                    state.deleteMode,
+                                    state.selected.includes(f.login),
+                                    state.onToggleSelect,
+                                  )}
+                                </li>`,
+                            )}
+                          </ul>`}
           </div>
 
           <!-- Floating actions (add / delete, only when connected) -->
@@ -1345,6 +1369,9 @@ export async function injectFriendsWidget() {
     _state.loadError = list.length > 0 && _state.friends.length === 0;
     _state.lastFetch = Date.now();
     _state.loading = false;
+    if (_state.needsReconnect) {
+      _state.needsReconnect = !!(await getConfig("CLOUD_AUTH_FAILED"));
+    }
   }
 
   renderWidgetUI();

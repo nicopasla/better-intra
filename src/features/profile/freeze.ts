@@ -2,6 +2,7 @@ import { render, html } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import FREEZE_SVG from "../../assets/svg/freeze.svg?raw";
 import { createCountdown } from "../../utils/countdown.ts";
+import { parseIntraDate } from "../../utils/dates.ts";
 
 const INJECTED_ID = "ft-freeze-card";
 
@@ -58,7 +59,7 @@ async function fetchCursusData(login: string, token: string): Promise<any[]> {
 }
 
 function formatDate(iso: string): string {
-  const d = new Date(iso);
+  const d = parseIntraDate(iso);
   return d.toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -67,7 +68,7 @@ function formatDate(iso: string): string {
 }
 
 function getCountdownParts(endIso: string): number[] {
-  const diff = new Date(endIso).getTime() - Date.now();
+  const diff = parseIntraDate(endIso).getTime() - Date.now();
   if (diff <= 0) return [0, 0, 0, 0];
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
@@ -89,7 +90,7 @@ function startCountdown(
 
   if (_intervalId !== null) clearInterval(_intervalId);
   _intervalId = setInterval(() => {
-    if (new Date(endIso).getTime() - Date.now() <= 0) {
+    if (parseIntraDate(endIso).getTime() - Date.now() <= 0) {
       if (_intervalId !== null) {
         clearInterval(_intervalId);
         _intervalId = null;
@@ -124,7 +125,8 @@ async function readFreezeCache(login: string): Promise<string | null> {
     const raw = stored[FREEZE_CACHE_KEY];
     const map = (typeof raw === "string" ? JSON.parse(raw) : raw) || {};
     const until = map[login];
-    return typeof until === "string" && new Date(until).getTime() > Date.now()
+    return typeof until === "string" &&
+      parseIntraDate(until).getTime() > Date.now()
       ? until
       : null;
   } catch {
@@ -256,7 +258,7 @@ export async function initFreezeCard() {
 
     const frozen = cursusList.find(
       (c: any) =>
-        c.freeze_until && new Date(c.freeze_until).getTime() > Date.now(),
+        c.freeze_until && parseIntraDate(c.freeze_until).getTime() > Date.now(),
     );
     const freezeUntil: string | null = frozen?.freeze_until ?? null;
     await writeFreezeCache(targetLogin, freezeUntil);

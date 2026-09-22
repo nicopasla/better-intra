@@ -4,6 +4,7 @@ import { getConfig } from "../../config.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { hashLogin } from "../../utils/crypto.ts";
 import { getLoginFromPage } from "../../utils/profile-login.ts";
+import { parseIntraDate } from "../../utils/dates.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import { getEffectiveTheme } from "./theme/theme-manager.ts";
@@ -84,14 +85,8 @@ function waitForToken(timeout = 15000): Promise<string | null> {
   });
 }
 
-function parseApiDate(dateStr: string): Date {
-  return /(?:Z|[+-]\d{2}:?\d{2})$/i.test(dateStr)
-    ? new Date(dateStr)
-    : new Date(dateStr + "Z");
-}
-
 function formatDate(dateStr: string): string {
-  const d = parseApiDate(dateStr);
+  const d = parseIntraDate(dateStr);
   const now = new Date();
   const todayMidnight = new Date(
     now.getFullYear(),
@@ -115,7 +110,7 @@ function formatDate(dateStr: string): string {
 }
 
 function formatTooltipDate(dateStr: string): string {
-  const d = parseApiDate(dateStr);
+  const d = parseIntraDate(dateStr);
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yy = String(d.getFullYear() % 100).padStart(2, "0");

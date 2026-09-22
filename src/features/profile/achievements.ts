@@ -3,6 +3,7 @@ import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { getConfig } from "../../config.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { getLoginFromPage } from "../../utils/profile-login.ts";
+import { parseIntraDate } from "../../utils/dates.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
 import CHECK_CIRCLE_SVG from "../../assets/svg/check-circle.svg?raw";
 
@@ -66,7 +67,7 @@ async function fetchAchievements(
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
+  return parseIntraDate(dateStr).toLocaleDateString("en-US", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -188,7 +189,8 @@ function inject(achievements: Achievement[]) {
 async function tryInject(achievements: Achievement[]) {
   const sorted = [...achievements].sort(
     (a, b) =>
-      new Date(b.achieved_at).getTime() - new Date(a.achieved_at).getTime(),
+      parseIntraDate(b.achieved_at).getTime() -
+      parseIntraDate(a.achieved_at).getTime(),
   );
   let attempts = 0;
   const poll = () => {

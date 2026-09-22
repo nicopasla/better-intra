@@ -11,7 +11,12 @@ import {
 import { maybePromptRestore } from "./features/account/account.ts";
 import { initGlobalTooltips } from "./utils/tooltip.ts";
 import { ensureCampusData } from "./features/campus/campus.ts";
-import { updateNavAvatar } from "./features/profile/visuals.ts";
+import {
+  holdAvatar,
+  injectAvatarPendingRule,
+  releaseAvatar,
+  updateNavAvatar,
+} from "./features/profile/visuals.ts";
 import { AVATAR_SELECTOR } from "./features/profile/selectors.ts";
 import { initAnnouncementBanner } from "./features/announcement/announcement.ts";
 import {
@@ -33,29 +38,10 @@ void initFontManager();
   s.remove();
 }
 
-{
-  const obs = new MutationObserver((mutations) => {
-    for (const m of mutations) {
-      for (const node of m.addedNodes) {
-        if (!(node instanceof HTMLElement)) continue;
-        let target: HTMLElement | null = null;
-        if (node.matches?.(AVATAR_SELECTOR)) target = node;
-        else target = node.querySelector?.(AVATAR_SELECTOR);
-        if (target) {
-          target.style.setProperty("opacity", "0", "important");
-          obs.disconnect();
-          return;
-        }
-      }
-    }
-  });
-  obs.observe(document.documentElement, { childList: true, subtree: true });
-}
-
-setTimeout(() => {
-  const el = document.querySelector<HTMLElement>(AVATAR_SELECTOR);
-  if (el) el.style.setProperty("opacity", "1", "important");
-}, 5000);
+// Hold the avatar before React paints, so the Intra picture cannot flash
+// before the visuals are applied. Released below when profile is off.
+injectAvatarPendingRule();
+holdAvatar();
 
 /**
  * A map that links feature ID strings to their initialization functions.
@@ -220,6 +206,9 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
         // initHubSettings returns the active feature list.
         const activeScripts = await initHubSettings();
 
+        // Only the profile feature reveals the avatar; otherwise show the Intra one.
+        if (!activeScripts.includes("profile")) releaseAvatar();
+
         await ensureCampusData();
         updateNavAvatar();
 
@@ -237,6 +226,7 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
 
         await maybePromptRestore();
       } catch (error) {
+        releaseAvatar();
         console.error("Error during init of Better Intra :", error);
       }
     } else {

@@ -1,7 +1,12 @@
 import { updateEventFilters, injectEventsSelect } from "./events/events.ts";
 import { findSlotsButton, redirectDefenseLinks } from "./shortcuts.ts";
 import { replaceMoulinetteImage } from "./moulinette.ts";
-import { injectCustomStyles, updateVisuals } from "./visuals.ts";
+import {
+  holdAvatar,
+  injectCustomStyles,
+  releaseAvatar,
+  updateVisuals,
+} from "./visuals.ts";
 import { handleProfileRedirect } from "./highlight.ts";
 import { initLayoutManager } from "./layout.ts";
 import { initMilestones } from "./milestones.ts";
@@ -93,9 +98,12 @@ export async function initProfile() {
         scheduleUpdate();
       } else if (initialised && location.pathname.startsWith("/users")) {
         observer.disconnect();
+        releaseAvatar();
       }
     }
   };
+
+  holdAvatar();
 
   const observer = new MutationObserver(() => {
     if (isUpdating) {
@@ -111,11 +119,22 @@ export async function initProfile() {
   scheduleUpdate();
 
   if (location.pathname !== "/") {
-    setTimeout(() => observer.disconnect(), 10000);
+    setTimeout(() => {
+      observer.disconnect();
+      releaseAvatar();
+    }, 10000);
   } else {
-    setTimeout(() => observer.disconnect(), 30000);
-    window.addEventListener("pagehide", () => observer.disconnect(), {
-      once: true,
-    });
+    setTimeout(() => {
+      observer.disconnect();
+      releaseAvatar();
+    }, 30000);
+    window.addEventListener(
+      "pagehide",
+      () => {
+        observer.disconnect();
+        releaseAvatar();
+      },
+      { once: true },
+    );
   }
 }

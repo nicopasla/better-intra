@@ -38,6 +38,30 @@ export interface VisualUrls {
   } | null;
 }
 
+// The avatar is hidden only while this class is on <html>: once the watcher
+// stops, a re-mounted avatar must show the Intra picture instead of nothing.
+export const AVATAR_PENDING_CLASS = "ft-avatar-pending";
+
+export const holdAvatar = (): void => {
+  document.documentElement.classList.add(AVATAR_PENDING_CLASS);
+};
+
+export const releaseAvatar = (): void => {
+  document.documentElement.classList.remove(AVATAR_PENDING_CLASS);
+};
+
+const AVATAR_PENDING_STYLE_ID = "ft-avatar-pending-style";
+
+export const injectAvatarPendingRule = (): void => {
+  if (document.getElementById(AVATAR_PENDING_STYLE_ID)) return;
+  const host = document.head || document.documentElement;
+  if (!host) return;
+  const style = document.createElement("style");
+  style.id = AVATAR_PENDING_STYLE_ID;
+  style.textContent = `html.${AVATAR_PENDING_CLASS} ${AVATAR_SELECTOR} { opacity: 0 !important; }`;
+  host.appendChild(style);
+};
+
 let isFetching = false;
 
 /** Logins known to have no cloud visuals, with the time we learned it. */
@@ -170,13 +194,20 @@ export const badgeColorCss = (badgeBg?: string): string => {
   return `background-color: ${badgeBg} !important; border-color: ${badgeBg} !important;`;
 };
 
-const needsReapply = (urls: VisualUrls) => {
+export const needsReapply = (urls: VisualUrls) => {
   const avatar = document.querySelector(AVATAR_SELECTOR) as HTMLElement | null;
   const banner = document.querySelector(BANNER_SELECTOR) as HTMLElement | null;
   const background = document.querySelector(
     BACKGROUND_SELECTOR,
   ) as HTMLElement | null;
 
+  // While the profile watcher holds the avatar (holdAvatar), the page sheet
+  // keeps it at opacity 0 until we have applied the visuals, and applyImgs()
+  // is what reveals it. React handing us a freshly rendered element (no inline
+  // opacity) therefore always needs a re-apply - this check is what makes the
+  // cheaper checks below safe to trust.
+  if (avatar && !showingOriginalAvatar && avatar.style.opacity !== "1")
+    return true;
   if (
     urls?.avatar &&
     !showingOriginalAvatar &&
@@ -224,6 +255,7 @@ const needsReapply = (urls: VisualUrls) => {
 };
 
 export const injectCustomStyles = () => {
+  injectAvatarPendingRule();
   if (document.getElementById("ft-profile-host-styles")) return;
   const style = document.createElement("style");
   style.id = "ft-profile-host-styles";
@@ -240,7 +272,6 @@ export const injectCustomStyles = () => {
       will-change: background-image, transform;
       transform: translate3d(0, 0, 0);
       backface-visibility: hidden;
-      opacity: 0 !important;
     }
     ${AVATAR_SELECTOR}[data-modal-listener] {
       position: relative !important;

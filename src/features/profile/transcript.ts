@@ -108,7 +108,9 @@ async function openTranscriptDialog(
               class="btn btn-circle btn-ghost btn-sm"
               @click=${close}
             >
-              ${unsafeHTML(X_SVG.replace("<svg", '<svg width="22" height="22"'))}
+              ${unsafeHTML(
+                X_SVG.replace("<svg", '<svg width="22" height="22"'),
+              )}
             </button>
           </div>
 
@@ -194,6 +196,61 @@ async function openTranscriptDialog(
   renderFormContent(0);
 }
 
+// Resolved once per page; cleared on rejection so the next pass retries.
+let transcriptsPromise: Promise<TranscriptEntry[]> | null = null;
+
+function loadTranscripts(campusId: string): Promise<TranscriptEntry[]> {
+  if (transcriptsPromise) return transcriptsPromise;
+  transcriptsPromise = loadCampusData(campusId).then(
+    (data) => data.transcripts ?? [],
+    (e) => {
+      transcriptsPromise = null;
+      throw e;
+    },
+  );
+  return transcriptsPromise;
+}
+
+const findProjectsCard = () => {
+  const cards = document.querySelectorAll<HTMLElement>(".bg-white.md\\:h-96");
+  return [...cards].find((c) => {
+    const titleEl = c.querySelector("[class*='uppercase']");
+    return titleEl?.textContent?.trim().toUpperCase() === "PROJECTS";
+  });
+};
+
+function injectTranscriptButton(
+  cloudLogin: string,
+  transcripts: TranscriptEntry[],
+): void {
+  const projectsCard = findProjectsCard();
+  if (!projectsCard) return;
+  if (projectsCard.querySelector("[data-ft-transcript]")) return;
+
+  const inner = projectsCard.querySelector<HTMLElement>(
+    ".flex.flex-col.w-full.h-full",
+  );
+  if (!inner) return;
+
+  const transcriptBtn = document.createElement("a");
+  transcriptBtn.setAttribute("data-ft-transcript", "");
+  transcriptBtn.className =
+    "text-center text-legacy-main bg-transparent border border-legacy-main py-1.5 px-2 cursor-pointer text-xs uppercase hover:opacity-80";
+  transcriptBtn.style.cursor = "pointer";
+  transcriptBtn.textContent = "Transcript";
+  transcriptBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    openTranscriptDialog(cloudLogin, transcripts);
+  });
+
+  const actionRow = inner.querySelector<HTMLElement>(".flex.flex-row.gap-2");
+  if (actionRow) {
+    actionRow.insertBefore(transcriptBtn, actionRow.firstChild);
+  } else {
+    inner.insertBefore(transcriptBtn, inner.firstChild);
+  }
+}
+
 export async function initTranscript() {
   if (
     location.hostname !== "profile-v3.intra.42.fr" ||
@@ -210,54 +267,11 @@ export async function initTranscript() {
 
   let transcripts: TranscriptEntry[];
   try {
-    let data = await loadCampusData(campusId);
-    if (!data.transcripts || data.transcripts.length === 0) {
-      data = await loadCampusData(campusId, true);
-      if (!data.transcripts || data.transcripts.length === 0) return;
-    }
-    transcripts = data.transcripts;
+    transcripts = await loadTranscripts(campusId);
   } catch {
     return;
   }
+  if (transcripts.length === 0) return;
 
-  const tryInject = () => {
-    const cards = document.querySelectorAll<HTMLElement>(".bg-white.md\\:h-96");
-    const projectsCard = [...cards].find((c) => {
-      const titleEl = c.querySelector("[class*='uppercase']");
-      return titleEl?.textContent?.trim().toUpperCase() === "PROJECTS";
-    });
-    if (!projectsCard) {
-      requestAnimationFrame(tryInject);
-      return;
-    }
-    if (projectsCard.querySelector("[data-ft-transcript]")) return;
-
-    const inner = projectsCard.querySelector<HTMLElement>(
-      ".flex.flex-col.w-full.h-full",
-    );
-    if (!inner) {
-      requestAnimationFrame(tryInject);
-      return;
-    }
-
-    const transcriptBtn = document.createElement("a");
-    transcriptBtn.setAttribute("data-ft-transcript", "");
-    transcriptBtn.className =
-      "text-center text-legacy-main bg-transparent border border-legacy-main py-1.5 px-2 cursor-pointer text-xs uppercase hover:opacity-80";
-    transcriptBtn.style.cursor = "pointer";
-    transcriptBtn.textContent = "Transcript";
-    transcriptBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      openTranscriptDialog(cloudLogin, transcripts);
-    });
-
-    const actionRow = inner.querySelector<HTMLElement>(".flex.flex-row.gap-2");
-    if (actionRow) {
-      actionRow.insertBefore(transcriptBtn, actionRow.firstChild);
-    } else {
-      inner.insertBefore(transcriptBtn, inner.firstChild);
-    }
-  };
-
-  requestAnimationFrame(tryInject);
+  injectTranscriptButton(cloudLogin, transcripts);
 }

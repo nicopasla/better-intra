@@ -31,7 +31,12 @@ interface CampusManifest {
   campuses: { id: string; name: string; timezone?: string }[];
 }
 
-export let CLUSTERS: { id: string; name: string; svg?: string }[] = [];
+export const CLUSTERS: { id: string; name: string; svg?: string }[] = [];
+
+function setClusters(clusters: { id: string; name: string; svg?: string }[]) {
+  CLUSTERS.length = 0;
+  CLUSTERS.push(...clusters);
+}
 
 const CAMPUS_BASE = "https://api.betterintra.com/gh/campuses";
 const CACHE_PREFIX = "CAMPUS_DATA_";
@@ -66,21 +71,34 @@ async function resolveCampusId(
 }
 
 let campusListenerInstalled = false;
+let knownCampusId: string | null = null;
 
 function installCampusDetectedListener(): void {
   if (campusListenerInstalled) return;
   campusListenerInstalled = true;
 
+  chrome.storage.onChanged?.addListener((changes, area) => {
+    if (area !== "local" || !("CLUSTERS_CAMPUS" in changes)) return;
+    knownCampusId = String(changes.CLUSTERS_CAMPUS.newValue ?? "");
+  });
+
   document.addEventListener("42_CAMPUS_DETECTED", async (e) => {
     if (location.pathname.includes("/users/")) return;
     const campusId = (e as CustomEvent).detail as string;
-    await chrome.storage.local.set({
-      CLUSTERS_CAMPUS: campusId,
-    });
+    // Skip writing the id the page announces on every load.
+    if (knownCampusId === null) {
+      knownCampusId = await getConfig("CLUSTERS_CAMPUS");
+    }
+    if (knownCampusId !== campusId) {
+      knownCampusId = campusId;
+      await chrome.storage.local.set({
+        CLUSTERS_CAMPUS: campusId,
+      });
+    }
     if (CLUSTERS.length === 0) {
       try {
         const data = await loadCampusData(campusId);
-        CLUSTERS = data.clusters;
+        setClusters(data.clusters);
       } catch {}
     }
   });
@@ -96,11 +114,18 @@ export async function fetchCampusList(
   if (!force && cachedData && Date.now() - cachedData.timestamp < CACHE_TTL) {
     return cachedData.manifest;
   }
-  const res = await fetch(`${CAMPUS_BASE}/campuses.json`, {
-    cache: force ? "no-store" : undefined,
-  });
-  if (!res.ok) throw new Error("Failed to fetch campus list");
-  const manifest = (await res.json()) as CampusManifest;
+  let manifest: CampusManifest;
+  try {
+    const res = await fetch(`${CAMPUS_BASE}/campuses.json`, {
+      cache: force ? "no-store" : undefined,
+    });
+    if (!res.ok) throw new Error("Failed to fetch campus list");
+    manifest = (await res.json()) as CampusManifest;
+  } catch (e) {
+    // Stale-if-error; a forced load still reports the failure.
+    if (!force && cachedData) return cachedData.manifest;
+    throw e;
+  }
   await chrome.storage.local.set({
     [MANIFEST_CACHE_KEY]: { manifest, timestamp: Date.now() },
   });
@@ -114,25 +139,31 @@ export async function loadCampusData(
   const resolvedId = await resolveCampusId(campusId, force);
   if (!resolvedId) throw new Error("No campus data available");
   const cacheKey = `${CACHE_PREFIX}${resolvedId}`;
+  // Also the stale-if-error fallback below. A forced load never reads it.
+  let cachedData: { data: ClusterDataFile; timestamp: number } | undefined;
   if (!force) {
     const cached = await chrome.storage.local.get(cacheKey);
-    const cachedData = cached[cacheKey] as
-      | { data: ClusterDataFile; timestamp: number }
-      | undefined;
+    cachedData = cached[cacheKey] as typeof cachedData;
     if (cachedData && Date.now() - cachedData.timestamp < CACHE_TTL) {
       return cachedData.data;
     }
   }
   const existing = force ? undefined : inFlightLoads.get(cacheKey);
-  if (existing) return existing;
+  if (existing) return cachedData ? cachedData.data : existing;
   const load = (async () => {
-    const prefix = await resolveCampusFolder(resolvedId, force);
-    const res = await fetch(`${CAMPUS_BASE}/${prefix}.json`, {
-      cache: force ? "no-store" : undefined,
-    });
-    if (!res.ok)
-      throw new Error(`Failed to fetch campus data for ${resolvedId}`);
-    const data = (await res.json()) as ClusterDataFile;
+    let data: ClusterDataFile;
+    try {
+      const prefix = await resolveCampusFolder(resolvedId, force);
+      const res = await fetch(`${CAMPUS_BASE}/${prefix}.json`, {
+        cache: force ? "no-store" : undefined,
+      });
+      if (!res.ok)
+        throw new Error(`Failed to fetch campus data for ${resolvedId}`);
+      data = (await res.json()) as ClusterDataFile;
+    } catch (e) {
+      if (cachedData) return cachedData.data;
+      throw e;
+    }
     await chrome.storage.local.set({
       [cacheKey]: { data, timestamp: Date.now() },
     });
@@ -141,7 +172,21 @@ export async function loadCampusData(
     if (!force) inFlightLoads.delete(cacheKey);
   });
   if (!force) inFlightLoads.set(cacheKey, load);
-  return force ? await load : load;
+  if (force) return await load;
+  // Stale-while-revalidate: an expired file is served at once and refreshed
+  // behind the caller. Only a cold install waits for the network.
+  if (cachedData) {
+    load.catch(() => {});
+    return cachedData.data;
+  }
+  return load;
+}
+
+/** The refresh started by a stale loadCampusData(), if one is running. */
+function pendingRefresh(
+  campusId: string,
+): Promise<ClusterDataFile> | undefined {
+  return inFlightLoads.get(`${CACHE_PREFIX}${campusId}`);
 }
 
 export async function clearCampusConfigCache(campusId: string): Promise<void> {
@@ -151,16 +196,34 @@ export async function clearCampusConfigCache(campusId: string): Promise<void> {
   ]);
 }
 
+let ensurePromise: Promise<void> | null = null;
+
+/** Load the campus cluster list once per page (main.ts, profile.ts, clusters.ts). */
 export async function ensureCampusData(): Promise<void> {
   installCampusDetectedListener();
+  if (CLUSTERS.length > 0) return;
+  if (ensurePromise) return ensurePromise;
 
-  const campus = await getConfig("CLUSTERS_CAMPUS");
-  if (campus && campus !== "") {
-    if (CLUSTERS.length === 0) {
-      try {
-        const data = await loadCampusData(campus);
-        CLUSTERS = data.clusters;
-      } catch {}
+  ensurePromise = (async () => {
+    if (knownCampusId === null) {
+      knownCampusId = await getConfig("CLUSTERS_CAMPUS");
     }
-  }
+    const campus = knownCampusId;
+    if (campus && campus !== "") {
+      if (CLUSTERS.length === 0) {
+        try {
+          const data = await loadCampusData(campus);
+          setClusters(data.clusters);
+          pendingRefresh(campus)?.then(
+            (fresh) => setClusters(fresh.clusters),
+            () => {},
+          );
+        } catch {}
+      }
+    }
+  })().finally(() => {
+    // Cleared so a failed load can be retried by the next caller.
+    ensurePromise = null;
+  });
+  return ensurePromise;
 }

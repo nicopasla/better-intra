@@ -24,7 +24,7 @@ import { initBadges, applyTitleBadgeWrap } from "./badges.ts";
 import { initTranscript } from "./transcript.ts";
 import { initPace } from "./pace.ts";
 import { initBlackholeMode } from "./blackhole.ts";
-import { ensureCampusData } from "../clusters/clusters.data.ts";
+import { ensureCampusData } from "../campus/campus.ts";
 
 const waitForBody = () =>
   document.body
@@ -48,7 +48,7 @@ export async function initProfile() {
   }
   if (location.origin !== "https://profile-v3.intra.42.fr") return;
 
-  void ensureCampusData();
+  await ensureCampusData();
 
   let isUpdating = false;
   let needsRerun = false;

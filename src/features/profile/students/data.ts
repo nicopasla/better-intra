@@ -35,8 +35,6 @@ export interface StudentsResponse {
 export interface PiscineEntry {
   year: number;
   month: number;
-  count: number;
-  cursus: number;
 }
 
 export interface PiscinesResponse {
@@ -272,7 +270,6 @@ export async function fetchStudents(): Promise<{
 export async function fetchPisciners(
   year: number,
   month: number,
-  cursus?: number,
 ): Promise<{
   data?: StudentsResponse;
   unauthorized?: boolean;
@@ -281,7 +278,6 @@ export async function fetchPisciners(
     year: String(year),
     month: String(month),
   });
-  if (cursus) params.set("cursus", String(cursus));
   return fetchEndpoint("pisciners", params);
 }
 

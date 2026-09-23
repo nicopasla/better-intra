@@ -94,8 +94,7 @@ async function openStudentsDialogImpl() {
   let filter: StudentsFilter = "none";
   let poolIntake: { month: number; year: number } | null = null;
   let poolYear: number | null = null;
-  let selectedPiscine: { year: number; month: number; cursus: number } | null =
-    null;
+  let selectedPiscine: { year: number; month: number } | null = null;
 
   const toggleFilter = (key: FilterKey) => {
     filter = filter === key ? "none" : key;
@@ -262,11 +261,7 @@ async function openStudentsDialogImpl() {
     rerender();
     let res: Awaited<ReturnType<typeof fetchStudents>>;
     if (tab === "pisciners" && selectedPiscine) {
-      res = await fetchPisciners(
-        selectedPiscine.year,
-        selectedPiscine.month,
-        selectedPiscine.cursus,
-      );
+      res = await fetchPisciners(selectedPiscine.year, selectedPiscine.month);
     } else if (tab === "pisciners") {
       res = null;
     } else if (tab === "new") {
@@ -365,8 +360,8 @@ async function openStudentsDialogImpl() {
       if (searchTimeout !== null) window.clearTimeout(searchTimeout);
       searchTimeout = window.setTimeout(() => rerender(), 150);
     },
-    onSelectPiscine: (year, month, cursus) => {
-      selectedPiscine = { year, month, cursus };
+    onSelectPiscine: (year, month) => {
+      selectedPiscine = { year, month };
       visibleCount = INITIAL_VISIBLE_COUNT;
       void load();
     },

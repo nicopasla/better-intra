@@ -61,7 +61,7 @@ export interface StudentsTemplateState {
   poolYear: number | null;
   piscineList: PiscineEntry[];
   piscineListLoading: boolean;
-  selectedPiscine: { year: number; month: number; cursus: number } | null;
+  selectedPiscine: { year: number; month: number } | null;
   entries: StudentEntry[];
   loading: boolean;
   lastFetched: number;
@@ -89,7 +89,7 @@ export interface StudentsTemplateHandlers {
   onToggleFilter: (key: FilterKey) => void;
   onClose: () => void;
   onSearchInput: (value: string) => void;
-  onSelectPiscine: (year: number, month: number, cursus: number) => void;
+  onSelectPiscine: (year: number, month: number) => void;
   onBackToPiscines: () => void;
   onPoolIntake: (value: number) => void;
   onPoolYear: (value: number) => void;
@@ -229,6 +229,57 @@ function renderConnectBanner(onConnect: () => void): TemplateResult {
   `;
 }
 
+function renderPiscineCalendar(
+  state: StudentsTemplateState,
+  handlers: StudentsTemplateHandlers,
+): TemplateResult {
+  const { piscineList } = state;
+  const years = [...new Set(piscineList.map((p) => p.year))].sort(
+    (a, b) => b - a,
+  );
+
+  if (years.length === 0) {
+    return html`<div class="text-center p-6 text-base-content/50">
+      No piscine data
+    </div>`;
+  }
+
+  return html`
+    <div class="flex flex-col gap-5">
+      ${years.map((year) => {
+        const months = piscineList
+          .filter((p) => p.year === year)
+          .map((p) => p.month)
+          .sort((a, b) => a - b);
+        return html`<div>
+          <div class="flex items-center gap-2 mb-2 px-1">
+            <span class="badge badge-lg badge-ghost font-mono font-bold">
+              ${year}
+            </span>
+            <span class="badge badge-lg badge-ghost font-mono"
+              >${months.length} piscines</span
+            >
+          </div>
+          <div class="grid">
+            ${months.map(
+              (m) =>
+                html`<div
+                  class="row piscine-card"
+                  @click="${() => handlers.onSelectPiscine(year, m)}"
+                >
+                  <span class="piscine-card__month"
+                    >${piscineMonthName(m)}</span
+                  >
+                  <span class="piscine-card__year">${year}</span>
+                </div>`,
+            )}
+          </div>
+        </div>`;
+      })}
+    </div>
+  `;
+}
+
 export function renderStudentsDialogTemplate(
   state: StudentsTemplateState,
   handlers: StudentsTemplateHandlers,
@@ -304,12 +355,7 @@ export function renderStudentsDialogTemplate(
   const windowed = display.slice(0, visibleCount);
   const hasMore = display.length > windowed.length;
   const showPiscineGrid = tab === "pisciners" && selectedPiscine == null;
-  const piscineListFiltered = showPiscineGrid
-    ? piscineList.filter((p) => {
-        if (!q) return true;
-        return normalize(`${piscineMonthName(p.month)} ${p.year}`).includes(q);
-      })
-    : [];
+  const piscineCount = showPiscineGrid ? piscineList.length : 0;
   const cursusLabel =
     tab === "pisciners"
       ? "Piscine Brussels"
@@ -324,9 +370,7 @@ export function renderStudentsDialogTemplate(
       : tab === "new"
         ? "future students"
         : "students";
-  const countValue = showPiscineGrid
-    ? piscineListFiltered.length
-    : intakeFiltered.length;
+  const countValue = showPiscineGrid ? piscineCount : intakeFiltered.length;
   const dateLabel =
     tab === "pisciners"
       ? selectedPiscine
@@ -657,26 +701,25 @@ export function renderStudentsDialogTemplate(
       .grid .piscine-card {
         padding: 0.9rem 0.5rem;
         gap: 0.15rem;
+        background: color-mix(in oklch, var(--color-primary) 12%, transparent);
+        border: 1px solid
+          color-mix(in oklch, var(--color-primary) 35%, transparent);
+      }
+      .grid .piscine-card:hover {
+        background: color-mix(in oklch, var(--color-primary) 25%, transparent);
+        border-color: var(--color-primary);
       }
       .piscine-card__month {
         font-size: 0.9rem;
         font-weight: 700;
+        color: var(--color-accent-content);
+        background: color-mix(in oklch, var(--color-accent) 70%, transparent);
+        border-radius: var(--radius-field);
+        padding: 0.1rem 0.6rem;
       }
       .piscine-card__year {
         font-size: 0.8rem;
-        opacity: 0.6;
         font-family: var(--font-sans);
-      }
-      .piscine-card__count {
-        margin-top: 0.25rem;
-        font-size: 0.7rem;
-        font-weight: 600;
-        white-space: nowrap;
-        font-family: var(--font-sans);
-        color: var(--color-accent-content);
-        background: color-mix(in oklch, var(--color-accent) 40%, transparent);
-        border-radius: var(--radius-field);
-        padding: 0.1rem 0.5rem;
       }
       .list {
         display: flex;
@@ -999,35 +1042,7 @@ export function renderStudentsDialogTemplate(
               </div>`
             : authError
               ? renderConnectBanner(handlers.onConnect)
-              : piscineListFiltered.length === 0
-                ? html`<div class="text-center p-6 text-base-content/50">
-                    ${piscineList.length === 0
-                      ? "No piscine data"
-                      : "No results"}
-                  </div>`
-                : html`<div class="grid">
-                    ${piscineListFiltered.map(
-                      (p) =>
-                        html`<div
-                          class="row piscine-card"
-                          @click="${() =>
-                            handlers.onSelectPiscine(
-                              p.year,
-                              p.month,
-                              p.cursus,
-                            )}"
-                        >
-                          <span class="piscine-card__month"
-                            >${piscineMonthName(p.month)}</span
-                          >
-                          <span class="piscine-card__year">${p.year}</span>
-                          <span class="piscine-card__count"
-                            >${p.count}
-                            ${p.count === 1 ? "pisciner" : "pisciners"}</span
-                          >
-                        </div>`,
-                    )}
-                  </div>`
+              : renderPiscineCalendar(state, handlers)
           : loading
             ? html`<div class="flex items-center justify-center p-8">
                 <span class="loading loading-spinner loading-lg"></span>

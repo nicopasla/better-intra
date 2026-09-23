@@ -98,6 +98,10 @@ Worker cron (`*/5 * * * *`) fetches 42 API `/v2/me/scale_teams` for each user, d
 
 ## NEVER deploy the worker without explicit user consent
 
+## NEVER delete from remote D1
+
+Never run destructive commands against the remote D1 database (`DELETE`, `DROP`, `TRUNCATE`, `wrangler d1 execute --remote` with destructive SQL, etc.). Remote data is not reproducible. To change stored state, rely on the application's own `INSERT OR REPLACE` writes or non-destructive updates; ask the user before any statement that removes rows or schema.
+
 ## No linter; Prettier for formatting
 
 Prettier is used for formatting (editor-level; no committed config). No ESLint or similar configured.

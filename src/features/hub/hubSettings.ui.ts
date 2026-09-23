@@ -49,6 +49,7 @@ import {
   getIsLight,
 } from "../profile/theme/theme-manager.ts";
 import { bindTooltips } from "../../utils/tooltip.ts";
+import { showConfirmDialog } from "../../utils/confirm-dialog.ts";
 
 async function saveSetting(key: string, value: unknown): Promise<void> {
   await chrome.storage.local.set({ [key]: value });
@@ -996,16 +997,18 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             type="button"
             class="btn btn-sm btn-error font-bold"
             @click="${() => {
-              if (
-                confirm(
-                  "This will clear ALL Better Intra settings and reload. Continue?",
-                )
-              ) {
-                void (async () => {
+              void (async () => {
+                const ok = await showConfirmDialog({
+                  title: "Reset all data",
+                  message:
+                    "This will clear ALL Better Intra settings and reload. Continue?",
+                  confirmLabel: "Reset",
+                });
+                if (ok) {
                   await chrome.storage.local.clear();
                   location.reload();
-                })();
-              }
+                }
+              })();
             }}"
           >
             ${actionLabel || "Reset"}
@@ -1425,10 +1428,13 @@ function setupSearch(shadow: ShadowRoot): void {
 
   let activeBeforeSearch: HTMLInputElement | null = null;
 
+  const emptyState = shadow.querySelector<HTMLElement>("#hub-search-empty");
+
   const apply = () => {
     const term = normalizeTerm(input.value.trim());
     const searching = term.length > 0;
     let firstMatch: HTMLInputElement | null = null;
+    let totalMatches = 0;
 
     for (const panel of panels) {
       panel
@@ -1442,6 +1448,7 @@ function setupSearch(shadow: ShadowRoot): void {
         card.classList.toggle("hidden", !match);
         if (match) visible++;
       });
+      totalMatches += visible;
 
       const tabId = panel.dataset.featurePanel;
       const radio = shadow.querySelector<HTMLInputElement>(
@@ -1494,6 +1501,20 @@ function setupSearch(shadow: ShadowRoot): void {
         firstMatch = radio;
       }
     }
+
+    const noResults = searching && totalMatches === 0;
+    if (emptyState) {
+      emptyState.classList.toggle("hidden", !noResults);
+      emptyState.classList.toggle("flex", noResults);
+      const msg = emptyState.querySelector("span");
+      if (msg) {
+        msg.textContent = noResults
+          ? `No settings match "${input.value.trim()}"`
+          : "";
+      }
+    }
+    const tabsHost = shadow.querySelector<HTMLElement>('[role="tablist"].tabs');
+    tabsHost?.classList.toggle("hidden", noResults);
 
     if (searching && firstMatch) {
       const current = shadow.querySelector<HTMLInputElement>(
@@ -1769,6 +1790,12 @@ async function createModal(active: FeatureId[]): Promise<void> {
       >
         ${tabsContent}
       </div>
+      <div
+        id="hub-search-empty"
+        class="hidden flex-1 items-center justify-center p-10 text-center text-base-content/50"
+      >
+        <span class="text-sm"></span>
+      </div>
 
       <div
         class="flex-none p-4 border-t border-base-200 bg-base-200/50 flex justify-between items-center"
@@ -1922,7 +1949,9 @@ async function createModal(active: FeatureId[]): Promise<void> {
       const id = toggle.dataset.id;
       const isEnabled = toggle.checked;
 
-      const panel = shadow.querySelector(`[data-feature-panel="${id}"]`);
+      const panel =
+        shadow.querySelector(`[data-feature-panel="${id}"]`) ??
+        (toggle as HTMLElement).closest(".sub-panel");
       panel?.classList.toggle("opacity-40", !isEnabled);
       panel?.classList.toggle("grayscale", !isEnabled);
       panel
@@ -1948,7 +1977,17 @@ async function createModal(active: FeatureId[]): Promise<void> {
 
   shadow.querySelectorAll("[data-reset-feature]").forEach((btn: any) => {
     btn.addEventListener("click", async () => {
-      await resetFeatureSettings(shadow, btn.dataset.resetFeature);
+      const id = btn.dataset.resetFeature;
+      const name =
+        FEATURE_DEFS.find((f) => f.id === id)?.name ??
+        (id ? String(id) : "this section");
+      const ok = await showConfirmDialog({
+        title: `Reset ${name}`,
+        message: `Reset all ${name} settings? This can't be undone.`,
+        confirmLabel: "Reset",
+      });
+      if (!ok) return;
+      await resetFeatureSettings(shadow, id);
     });
   });
 

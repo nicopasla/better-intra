@@ -172,7 +172,9 @@ export function renderDiscordPanel() {
             Link
           </button>`
         : html`<div class="flex items-center gap-3">
-            <span class="badge badge-success gap-2 text-sm py-1.5"
+            <span
+              class="badge badge-info font-mono font-bold text-info-content"
+              style="border-radius: var(--radius-field); height: 2rem"
               >@${discordUsername || discordId}</span
             >
             <button
@@ -204,7 +206,6 @@ export function renderDiscordPanel() {
             class="${validated
               ? "btn bg-[#22c55e] text-white border-none btn-sm"
               : "btn btn-accent btn-sm"}"
-            ?disabled="${validated}"
             @click="${async (e: Event) => {
               const btn = e.target as HTMLButtonElement;
               const outerDiv = btn.closest(".flex.items-start") as HTMLElement;
@@ -217,6 +218,8 @@ export function renderDiscordPanel() {
               btn.disabled = true;
               btn.className = "btn btn-accent btn-sm";
               try {
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 15000);
                 const res = await fetch(
                   `${WORKER_URL}/api/v1/private/discord/test`,
                   {
@@ -226,33 +229,36 @@ export function renderDiscordPanel() {
                       "Content-Type": "application/json",
                     },
                     body: JSON.stringify({ login, discordId }),
+                    signal: controller.signal,
                   },
                 );
+                clearTimeout(timer);
                 if (res.ok) {
                   await chrome.storage.local.set({ DISCORD_TEST_OK: true });
+                  statusEl.textContent = "✓ Works";
+                  statusEl.className = "text-xs text-green-500 status-text";
                   update();
-                } else {
-                  const err = await res.text();
-                  statusEl.textContent = `✗ ${err}`;
-                  statusEl.className = "text-xs text-[#ef4444] status-text";
-                  btn.className =
-                    "btn bg-[#ef4444] text-white border-none btn-sm";
-                  setTimeout(() => {
-                    update();
-                  }, 6000);
+                  return;
                 }
+                const err = await res.text();
+                statusEl.textContent = `✗ ${err}`;
+                statusEl.className = "text-xs text-[#ef4444] status-text";
+                btn.className =
+                  "btn bg-[#ef4444] text-white border-none btn-sm";
               } catch {
                 statusEl.textContent = "✗ Network error";
                 statusEl.className = "text-xs text-[#ef4444] status-text";
                 btn.className =
                   "btn bg-[#ef4444] text-white border-none btn-sm";
+              } finally {
+                btn.disabled = false;
                 setTimeout(() => {
-                  update();
+                  statusEl.style.display = "none";
                 }, 6000);
               }
             }}"
           >
-            ${validated ? "Validated" : "Test"}
+            ${validated ? "Test again" : "Test"}
           </button>
         </div>
       </div>`;

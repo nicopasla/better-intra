@@ -118,14 +118,14 @@ A live interactive cluster map popup accessible from profile quick-link buttons.
 A students directory for the **Belgium** campus, opened from the **users icon** in the intra sidebar.
 
 * **Students / Future students / Pisciners tabs** — browse all 42 cursus students, the upcoming April/October intakes, or a specific piscine session (by month + year).
-* **Piscine cards** — when no specific piscine is chosen, the Pisciners tab shows a grid of month/year cards (e.g. "March 2026 · 243 pisciners") to pick a session.
+* **Piscine calendar** — when no specific piscine is chosen, the Pisciners tab shows every year grouped with the months that have piscines; pick one to fetch that session.
 * **Grid & list views** — toggle between a 4-per-row card grid and a compact list.
 * **Sort** — by name or cursus start date, with click-to-invert direction.
 * **Search** — filter by name or login.
 * **Click to copy login** — click any student's login to copy it to the clipboard.
 * **Filters** — a filter menu lets you narrow by pool month, pool year, and status (active, inactive, blackholed, frozen, alumni).
 * **Status badges** — blackholed (skull), frozen (snowflake), and alumni (graduation cap) indicators; inactive students are dimmed.
-* **Level display** — levels are shown for current students as well as past pisciners.
+* **Level display** — levels are shown for 42 cursus students.
 * **Infinite scroll** — the list loads more entries automatically as you scroll.
 * **Counts** — a totals badge (e.g. "1,075 students") plus an "active students" count.
 * **Pool & entry dates** — per-student badges showing piscine pool (e.g. `02/26`) and cursus entry date.
@@ -183,6 +183,7 @@ Discord DM notifications when your evaluations change state.
 
 * **Dark / Light** — swap between modes from the hub footer using the sun/moon toggle button.
 * **30+ theme presets** — pick from light themes (garden, cupcake, retro, emerald, etc.) and dark themes (synthwave, dracula, cyberpunk, forest, neon, soap, citrus, and more). Recolours profile badges, sidebar, progress bars, and accents across the intra.
+* **Fonts** — apply a preset font to all of Intra, or import your own font file.
 
 ---
 
@@ -230,7 +231,8 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 
 * All extension settings in one place.
 * Click the **gear icon** on the intra sidebar to open it.
-* Tabs: Logtime, Clusters, Profile, Shortcuts, Discord, Calendar, Advanced, About.
+* **Search settings** — a search box in the hub header filters settings across all tabs and jumps to the first match.
+* Tabs: Appearance (Theme + Logtime), Add-ons, Profile, Clusters, Shortcuts, Discord, Calendar, Advanced, About.
 * Turn features on/off individually, or reset a feature's settings to default.
 * **Drag to reorder dashboard cards** — in the Profile tab, drag and drop cards (Logtime, Agenda, Evaluations, Projects, Achievements, Thursday Roulette) to reorder them on the dashboard. Toggle visibility with the eye icon, or reset to default order.
 * The footer bar shows your theme toggle, cloud connection status, last sync badge, and auto-push toggle.

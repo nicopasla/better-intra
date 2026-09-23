@@ -2,6 +2,81 @@
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-09-23
+
+### Features 🎉
+
+- feat(hub): use confirm dialog, search empty state, and sub-tab toggle scoping ([204a858](https://github.com/nicopasla/better-intra/commit/204a858))
+- feat(hub): add Appearance tab with Logtime sub-tab, search, and settings reorg ([8a47776](https://github.com/nicopasla/better-intra/commit/8a47776))
+- feat(students): polish piscine calendar and future-student sorting ([afb1350](https://github.com/nicopasla/better-intra/commit/afb1350))
+- feat(students): rework piscine picker into a multi-year calendar ([9ea37da](https://github.com/nicopasla/better-intra/commit/9ea37da))
+- feat(hub): refactor star and follower count fetching to use promises and add lazy loading for about panel ([e489dc1](https://github.com/nicopasla/better-intra/commit/e489dc1))
+- feat(hub): implement growth chart rendering ([c986b3b](https://github.com/nicopasla/better-intra/commit/c986b3b))
+- feat(ui): add sidebar button animations and update students button color ([f7f75c4](https://github.com/nicopasla/better-intra/commit/f7f75c4))
+- feat(worker): implement encryptBytes and decryptBytes functions for secure data handling ([28750a1](https://github.com/nicopasla/better-intra/commit/28750a1))
+- feat(students): implement tab overflow handling and dropdown for tab selection ([9ca211e](https://github.com/nicopasla/better-intra/commit/9ca211e))
+- feat(profile): add SHARE_LOOK option and implement profile theme sharing ([9f50eac](https://github.com/nicopasla/better-intra/commit/9f50eac))
+- feat(hub): import a local font file for the Intra font ([3d2e986](https://github.com/nicopasla/better-intra/commit/3d2e986))
+- feat(fonts): configurable Intra font applied across the whole site ([57c7811](https://github.com/nicopasla/better-intra/commit/57c7811))
+- feat: add JetBrains Mono font for improved typography ([4996279](https://github.com/nicopasla/better-intra/commit/4996279))
+- feat(hub): enhance country stats with campuses ([8eaac63](https://github.com/nicopasla/better-intra/commit/8eaac63))
+- feat(blackhole): implement V2 blackhole mode with countdown option ([99dd49b](https://github.com/nicopasla/better-intra/commit/99dd49b))
+
+### Bug fixes 🐛
+
+- fix(discord): match user badge to button size and make test button reliable ([6496e84](https://github.com/nicopasla/better-intra/commit/6496e84))
+- fix(hub): make about footer license clickable and campus-agnostic ([a274b3d](https://github.com/nicopasla/better-intra/commit/a274b3d))
+- fix(tests): ensure test environment uses thread pool and isolation settings ([fd3f33c](https://github.com/nicopasla/better-intra/commit/fd3f33c))
+- fix(ci): pass commit list via env to avoid shell quoting errors in release drafter ([378ea5b](https://github.com/nicopasla/better-intra/commit/378ea5b))
+- fix(friends): show a load error instead of "No friends yet" on failure ([606ff21](https://github.com/nicopasla/better-intra/commit/606ff21))
+- fix(logtime): stop forcing manual scroll restoration on every page ([ff4dc98](https://github.com/nicopasla/better-intra/commit/ff4dc98))
+- fix(announcement): keep a dismissed banner dismissed across restarts ([1750bd9](https://github.com/nicopasla/better-intra/commit/1750bd9))
+- fix(profile): stop hiding the avatar after the watcher stops ([7b624e1](https://github.com/nicopasla/better-intra/commit/7b624e1))
+- fix(profile): parse Intra dates as UTC in achievements and freeze ([5e9a632](https://github.com/nicopasla/better-intra/commit/5e9a632))
+- fix(ui): update close button SVG size across multiple components ([f90b592](https://github.com/nicopasla/better-intra/commit/f90b592))
+- fix(package): remove unnecessary --remote flag from deploy script ([b916bd0](https://github.com/nicopasla/better-intra/commit/b916bd0))
+- fix(map-dialog): add close button SVG icon ([5c48b7d](https://github.com/nicopasla/better-intra/commit/5c48b7d))
+- fix(account): make cloud login reliable and repair toolbar popup ([867d180](https://github.com/nicopasla/better-intra/commit/867d180))
+- fix(readme): update support section for donations and remove duplicate content ([4cbde45](https://github.com/nicopasla/better-intra/commit/4cbde45))
+- fix(clusters): fall back to the first SVG when no seats exist ([0deea7c](https://github.com/nicopasla/better-intra/commit/0deea7c))
+- fix(clusters): key campus staleness on the campus id ([dfb4bee](https://github.com/nicopasla/better-intra/commit/dfb4bee))
+- fix(announcement): only allow http(s) links ([d8b0296](https://github.com/nicopasla/better-intra/commit/d8b0296))
+- fix(logtime): ignore error payloads and replay stats ([65902e7](https://github.com/nicopasla/better-intra/commit/65902e7))
+- fix(clusters): harden the cluster SVG sanitizer ([e0c0cec](https://github.com/nicopasla/better-intra/commit/e0c0cec))
+- fix(hub): never export or restore credentials in backups ([922e00d](https://github.com/nicopasla/better-intra/commit/922e00d))
+- fix(profile): sanitize visuals coming from other users ([87fa789](https://github.com/nicopasla/better-intra/commit/87fa789))
+- fix(account): ignore unsolicited auth callbacks ([c673275](https://github.com/nicopasla/better-intra/commit/c673275))
+- fix(profile): remove transcript dialog from DOM on Escape ([574fa3c](https://github.com/nicopasla/better-intra/commit/574fa3c))
+- fix(profile): remove visuals dialog from DOM on Escape ([145c3bf](https://github.com/nicopasla/better-intra/commit/145c3bf))
+- fix(profile): escape seat id in selector and stop poll on error ([5bf806a](https://github.com/nicopasla/better-intra/commit/5bf806a))
+- fix(logtime): label heatmap columns by their latest year ([5ec9577](https://github.com/nicopasla/better-intra/commit/5ec9577))
+- fix(profile): parse marks dates as UTC and drop innerHTML usage ([e2b9b2e](https://github.com/nicopasla/better-intra/commit/e2b9b2e))
+- fix(logtime): parse last-seen date as local time ([e4e4e76](https://github.com/nicopasla/better-intra/commit/e4e4e76))
+- fix(logtime): never render "4h60" and parse week days as local time ([eda6979](https://github.com/nicopasla/better-intra/commit/eda6979))
+- fix(hub): keep an explicitly empty feature list and write only on change ([3076b2e](https://github.com/nicopasla/better-intra/commit/3076b2e))
+- fix(clusters): guard cluster dialog and skip timers when closed mid-load ([0748ef9](https://github.com/nicopasla/better-intra/commit/0748ef9))
+- fix(profile): guard students dialog against double opening ([5fb88d2](https://github.com/nicopasla/better-intra/commit/5fb88d2))
+- fix(discord): drop storage listener when panel unmounts ([faf97e9](https://github.com/nicopasla/better-intra/commit/faf97e9))
+- fix(profile): keep mutation observer alive until profile card exists ([5904282](https://github.com/nicopasla/better-intra/commit/5904282))
+- fix(profile): run dashboard layout manager once, on the dashboard only ([e1277d3](https://github.com/nicopasla/better-intra/commit/e1277d3))
+- fix(profile): cap pending-evaluations scan to ~10s ([da3f715](https://github.com/nicopasla/better-intra/commit/da3f715))
+- fix(clusters): stop infinite map poll and target the real map SVG ([17677b0](https://github.com/nicopasla/better-intra/commit/17677b0))
+
+### Maintenance 🧹
+
+- chore(package): update devDependencies to latest versions ([1d74461](https://github.com/nicopasla/better-intra/commit/1d74461))
+- chore(package): update devDependencies to latest versions ([09186da](https://github.com/nicopasla/better-intra/commit/09186da))
+- chore(hub): remove sponsor button from about panel ([4da3f1f](https://github.com/nicopasla/better-intra/commit/4da3f1f))
+- chore(background): remove stray BOM ([9e74602](https://github.com/nicopasla/better-intra/commit/9e74602))
+
+### Other Changes 🔄
+
+- perf(campus): serve cached campus file and refresh behind ([44a88e1](https://github.com/nicopasla/better-intra/commit/44a88e1))
+- refactor(friends): remove debugRowAlignment function to clean up code ([4eaca5b](https://github.com/nicopasla/better-intra/commit/4eaca5b))
+- test: add vitest defines and tests for the new helpers ([31449d9](https://github.com/nicopasla/better-intra/commit/31449d9))
+- perf(config): batch storage reads with getConfigMany ([bbc358e](https://github.com/nicopasla/better-intra/commit/bbc358e))
+- docs: credit BetterIntraRemake for ported leak and bug fixes ([64184a5](https://github.com/nicopasla/better-intra/commit/64184a5))
+
 ## [1.8.6] - 2026-09-08
 
 ### Features 🎉
@@ -1163,7 +1238,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.8.6...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/nicopasla/better-intra/compare/v1.8.6...v1.9.0
 [1.8.6]: https://github.com/nicopasla/better-intra/compare/v1.8.5...v1.8.6
 [1.8.5]: https://github.com/nicopasla/better-intra/compare/v1.8.4...v1.8.5
 [1.8.4]: https://github.com/nicopasla/better-intra/compare/v1.8.3...v1.8.4

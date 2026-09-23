@@ -192,6 +192,16 @@ export function beginAtIntake(
   return { month: d.getMonth() + 1, year: d.getFullYear(), label: "" };
 }
 
+function beginTimestamp(e: StudentEntry): number {
+  return e.begin_at ? new Date(e.begin_at).getTime() : 0;
+}
+
+function poolTimestamp(e: StudentEntry): number {
+  if (!e.pool_year || !e.pool_month) return 0;
+  const d = new Date(Date.parse(`${e.pool_month} 1, ${e.pool_year}`));
+  return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
 export function sortEntries(
   list: StudentEntry[],
   tab: StudentsTab,
@@ -201,8 +211,8 @@ export function sortEntries(
 ): StudentEntry[] {
   return [...list].sort((a, b) => {
     if (tab !== "pisciners" && sortField === "date") {
-      const at = a.begin_at ? new Date(a.begin_at).getTime() : 0;
-      const bt = b.begin_at ? new Date(b.begin_at).getTime() : 0;
+      const at = tab === "new" ? poolTimestamp(a) : beginTimestamp(a);
+      const bt = tab === "new" ? poolTimestamp(b) : beginTimestamp(b);
       const diff = bt - at;
       const result = dateDir === "desc" ? diff : -diff;
       return result || a.login.localeCompare(b.login);
@@ -216,7 +226,7 @@ export function sortEntries(
 
 export function yearOptions(currentYear: number): number[] {
   const years: number[] = [];
-  for (let y = 2023; y <= currentYear; y++) {
+  for (let y = currentYear; y >= 2023; y--) {
     years.push(y);
   }
   return years;
@@ -231,7 +241,7 @@ export function poolYearOptions(
     const y = Number(e.pool_year);
     if (Number.isInteger(y) && y > 0 && y <= currentYear) years.add(y);
   }
-  const list = [...years].sort((a, b) => a - b);
+  const list = [...years].sort((a, b) => b - a);
   return list.length > 0 ? list : yearOptions(currentYear);
 }
 

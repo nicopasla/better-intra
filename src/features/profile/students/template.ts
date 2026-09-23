@@ -701,21 +701,10 @@ export function renderStudentsDialogTemplate(
       .grid .piscine-card {
         padding: 0.9rem 0.5rem;
         gap: 0.15rem;
-        background: color-mix(in oklch, var(--color-primary) 12%, transparent);
-        border: 1px solid
-          color-mix(in oklch, var(--color-primary) 35%, transparent);
-      }
-      .grid .piscine-card:hover {
-        background: color-mix(in oklch, var(--color-primary) 25%, transparent);
-        border-color: var(--color-primary);
       }
       .piscine-card__month {
         font-size: 0.9rem;
         font-weight: 700;
-        color: var(--color-accent-content);
-        background: color-mix(in oklch, var(--color-accent) 70%, transparent);
-        border-radius: var(--radius-field);
-        padding: 0.1rem 0.6rem;
       }
       .piscine-card__year {
         font-size: 0.8rem;
@@ -1056,28 +1045,28 @@ export function renderStudentsDialogTemplate(
                 : html`${tab === "new"
                     ? html`<div class="flex flex-col gap-5">
                         ${futureGroups.map((i) => {
-                          const rows = windowed.filter((e) => {
-                            if (!isFutureStudent(e) || !e.begin_at)
-                              return false;
+                          const inGroup = (e: StudentEntry) => {
+                            if (!isFutureStudent(e) || !e.begin_at) return false;
                             const d = new Date(e.begin_at);
                             return (
                               d.getMonth() + 1 === i.month &&
                               d.getFullYear() === i.year
                             );
-                          });
+                          };
+                          const groupCount = display.filter(inGroup).length;
+                          const rows = windowed.filter(inGroup);
                           if (rows.length === 0) return html``;
                           return html`<div>
                             <div class="flex items-center gap-2 mb-2 px-1">
                               <span
-                                class="text-xs opacity-50 font-semibold uppercase tracking-wider"
+                                class="badge badge-lg badge-ghost font-mono font-bold"
                               >
-                                ${i.label}
+                                ${piscineMonthName(i.month)} ${i.year}
                               </span>
-                              <span
-                                class="badge badge-sm font-mono"
-                                style="border-radius:var(--radius-field)"
-                                >${rows.length}</span
-                              >
+                              <span class="badge badge-lg badge-ghost font-mono"
+                                >${groupCount}
+                                ${groupCount === 1 ? "student" : "students"}
+                              </span>
                             </div>
                             ${renderRows(rows)}
                           </div>`;

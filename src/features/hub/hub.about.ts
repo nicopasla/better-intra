@@ -556,7 +556,15 @@ export function renderAboutPanel(): ReturnType<typeof html> {
         <!-- Footer -->
         <div class="text-center mt-auto shrink-0">
           <p class="text-sm opacity-50 font-medium">
-            Made for 42 Belgium · ${HUB_INFO.license} License
+            Made for 42 students ·
+            <a
+              href="${HUB_INFO.github}/blob/main/LICENSE"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="link"
+            >
+              ${HUB_INFO.license} License
+            </a>
           </p>
           <div class="flex justify-center gap-3 mt-2">
             <a

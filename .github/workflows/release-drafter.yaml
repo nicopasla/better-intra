@@ -34,6 +34,8 @@ jobs:
 
       - name: Categorize Changes
         id: categorize
+        env:
+          COMMITS: ${{ steps.commits.outputs.commits }}
         run: |
           BREAKING=""
           FEATURES=""
@@ -58,7 +60,7 @@ jobs:
               OTHER+=$'\n'"$ENTRY"
             fi
 
-          done <<< "${{ steps.commits.outputs.commits }}"
+          done <<< "$COMMITS"
           
           {
             echo "changelog<<EOF"

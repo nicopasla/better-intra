@@ -7,6 +7,7 @@ import ABOUT from "../../assets/svg/about.svg?raw";
 import DISCORD_SVG from "../../assets/svg/discord.svg?raw";
 import ADVANCED_SVG from "../../assets/svg/advanced.svg?raw";
 import GRID_SVG from "../../assets/svg/grid.svg?raw";
+import PALETTE_SVG from "../../assets/svg/palette.svg?raw";
 import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
 import { CLUSTERS as CLUSTER_OPTIONS } from "../clusters/clusters.data.ts";
 import { RAINBOW_PALETTES } from "../logtime/rainbow-presets.ts";
@@ -23,25 +24,29 @@ export const HUB_INFO = {
 
 export const FEATURE_DEFS = [
   {
+    id: "appearance",
+    name: "Appearance",
+    icon: PALETTE_SVG,
+    desc: "Theme, accent color, fonts, and profile look sharing.",
+    cols: 2,
+    subTabs: [
+      { id: "theme", name: "Theme" },
+      { id: "logtime", name: "Logtime", icon: CLOCK },
+    ],
+  },
+  {
     id: "profile",
     name: "Profile",
     icon: USER,
-    desc: "Improves readability and allows local profile/background image customization.",
+    desc: "Dashboard card order, achievements, marks, and events.",
     cols: 2,
   },
   {
     id: "extras",
-    name: "Extras",
+    name: "Add-ons",
     icon: GRID_SVG,
     desc: "Enable or disable optional add-ons. More can be added later.",
     cols: 3,
-  },
-  {
-    id: "clusters",
-    name: "Clusters",
-    icon: CLUSTERS,
-    desc: "Adds 'chair' direction markers and a default cluster picker with saved preference.",
-    cols: 2,
   },
   {
     id: "logtime",
@@ -49,6 +54,14 @@ export const FEATURE_DEFS = [
     icon: CLOCK,
     desc: "Redesign the logtime to show weekly and total hours.",
     cols: 3,
+    hideFromTopLevel: true,
+  },
+  {
+    id: "clusters",
+    name: "Clusters",
+    icon: CLUSTERS,
+    desc: "Direction markers, new-tab links, and a saved default cluster.",
+    cols: 2,
   },
   {
     id: "shortcuts",
@@ -133,8 +146,15 @@ export type FeatureCardOption = {
   };
 };
 
+export type SubTabDef = {
+  id: string;
+  name: string;
+  icon?: string;
+};
+
 export type HubSettingDef = {
   feature: FeatureId;
+  subTab?: string;
   label: string;
   key?: ConfigKey;
   desc?: string;
@@ -261,48 +281,9 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       colSpan: 1,
       dependsOn: "LOGTIME_SHOW_TACOS",
     },
-
-    { feature: "logtime", label: "Appearance", kind: "divider" },
-
-    {
-      feature: "logtime",
-      key: "LOGTIME_CALENDAR_COLOR",
-      label: "Calendar color",
-      desc: "Accent color used for the calendar.",
-      kind: "color",
-      placeholder: "#00BCBA",
-      defaultValue: CONFIG_DEFAULT.LOGTIME_CALENDAR_COLOR,
-      grid: true,
-      colSpan: 1,
-    },
-    {
-      feature: "logtime",
-      key: "LOGTIME_LABELS_COLOR",
-      label: "Labels color",
-      desc: "Accent color used for labels and totals.",
-      kind: "color",
-      placeholder: "#26a641",
-      defaultValue: CONFIG_DEFAULT.LOGTIME_LABELS_COLOR,
-      grid: true,
-      colSpan: 1,
-    },
-    {
-      feature: "logtime",
-      key: "LOGTIME_RAINBOW_PALETTE",
-      label: "Rainbow colors",
-      desc: "Gradient shown when you reach your monthly goal.",
-      kind: "rainbow-palette",
-      defaultValue: CONFIG_DEFAULT.LOGTIME_RAINBOW_PALETTE,
-      options: Object.entries(RAINBOW_PALETTES).map(([id, p]) => ({
-        value: id,
-        label: p.label,
-        color: p.colors.join(", "),
-      })),
-      grid: true,
-      colSpan: 1,
-    },
   ],
   clusters: [
+    { feature: "clusters", label: "Behavior", kind: "divider" },
     {
       feature: "clusters",
       key: "CLUSTERS_SHOW_MARKERS",
@@ -323,6 +304,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       grid: true,
       colSpan: 1,
     },
+    { feature: "clusters", label: "Defaults", kind: "divider" },
     {
       feature: "clusters",
       key: "CLUSTERS_DEFAULT_ID",
@@ -338,14 +320,10 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       colSpan: 1,
     },
   ],
-  profile: [
+  appearance: [
     {
-      feature: "profile",
-      label: "Appearance",
-      kind: "divider",
-    },
-    {
-      feature: "profile",
+      feature: "appearance",
+      subTab: "theme",
       key: "PROFILE_THEME_PRESET",
       label: "Theme accent",
       desc: "Change the accent color used across the intranet.",
@@ -395,7 +373,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       ],
     },
     {
-      feature: "profile",
+      feature: "appearance",
+      subTab: "theme",
       key: "GENERAL_FONT",
       label: "Intra font",
       desc: "Font applied to the whole Intra interface, including Better Intra.",
@@ -409,7 +388,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       })),
     },
     {
-      feature: "profile",
+      feature: "appearance",
+      subTab: "theme",
       key: "GENERAL_FONT_FILE_NAME",
       label: "Imported font",
       desc: "Use a font file from your computer (.woff2, .woff, .ttf, .otf). Maximum 4 MB, stored locally only.",
@@ -418,7 +398,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       defaultValue: CONFIG_DEFAULT.GENERAL_FONT_FILE_NAME,
     },
     {
-      feature: "profile",
+      feature: "appearance",
+      subTab: "theme",
       key: "SHARE_LOOK",
       label: "Share my theme on my profile",
       desc: "Visitors running Better Intra see your theme on your profile while they are there.",
@@ -426,6 +407,53 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       defaultValue: CONFIG_DEFAULT.SHARE_LOOK,
       grid: true,
       colSpan: 1,
+    },
+    {
+      feature: "appearance",
+      subTab: "theme",
+      key: "LOGTIME_CALENDAR_COLOR",
+      label: "Logtime calendar color",
+      desc: "Accent color used for the logtime calendar.",
+      kind: "color",
+      placeholder: "#00BCBA",
+      defaultValue: CONFIG_DEFAULT.LOGTIME_CALENDAR_COLOR,
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "appearance",
+      subTab: "theme",
+      key: "LOGTIME_LABELS_COLOR",
+      label: "Logtime labels color",
+      desc: "Accent color used for logtime labels and totals.",
+      kind: "color",
+      placeholder: "#26a641",
+      defaultValue: CONFIG_DEFAULT.LOGTIME_LABELS_COLOR,
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "appearance",
+      subTab: "theme",
+      key: "LOGTIME_RAINBOW_PALETTE",
+      label: "Logtime rainbow colors",
+      desc: "Gradient shown when you reach your monthly goal.",
+      kind: "rainbow-palette",
+      defaultValue: CONFIG_DEFAULT.LOGTIME_RAINBOW_PALETTE,
+      options: Object.entries(RAINBOW_PALETTES).map(([id, p]) => ({
+        value: id,
+        label: p.label,
+        color: p.colors.join(", "),
+      })),
+      grid: true,
+      colSpan: 1,
+    },
+  ],
+  profile: [
+    {
+      feature: "profile",
+      label: "Dashboard",
+      kind: "divider",
     },
     {
       feature: "profile",
@@ -539,6 +567,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
   ],
   shortcuts: [
+    { feature: "shortcuts", label: "Links", kind: "divider" },
     {
       feature: "shortcuts",
       key: "SHORTCUTS_LINKS",
@@ -546,6 +575,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "shortcuts",
       fullWidth: true,
     },
+    { feature: "shortcuts", label: "Layout", kind: "divider" },
     {
       feature: "shortcuts",
       key: "SHORTCUTS_HIDE_IMPORTANT_LINKS",
@@ -583,6 +613,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
   ],
   extras: [
+    { feature: "extras", label: "Features", kind: "divider" },
     {
       feature: "extras",
       label: "",
@@ -671,6 +702,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
   ],
   advanced: [
+    { feature: "advanced", label: "Behavior", kind: "divider" },
     {
       feature: "advanced",
       key: "ADVANCED_OPEN_LINKS_NEW_TAB",
@@ -691,6 +723,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       grid: true,
       colSpan: 1,
     },
+    { feature: "advanced", label: "Maintenance", kind: "divider" },
     {
       feature: "advanced",
       label: "Auto-detected campus",
@@ -720,7 +753,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       grid: true,
       colSpan: 1,
     },
-    { feature: "advanced", label: "Reset", kind: "divider" },
+    { feature: "advanced", label: "Danger zone", kind: "divider" },
     {
       feature: "advanced",
       label: "Reset all data",

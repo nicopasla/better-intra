@@ -38,6 +38,7 @@ import ICON_SVG from "../../assets/svg/icon.svg?raw";
 import GRIP_VERTICAL_SVG from "../../assets/svg/grip-vertical.svg?raw";
 import LINK_SVG from "../../assets/svg/link.svg?raw";
 import CHEVRON_DOWN_SVG from "../../assets/svg/chevron-down.svg?raw";
+import SEARCH_SVG from "../../assets/svg/search.svg?raw";
 import { renderAboutPanel } from "./hub.about.ts";
 import { exportableSettings, sanitizeBackup } from "./backup.ts";
 import { renderDiscordPanel } from "../discord/discord.ui.ts";
@@ -1041,6 +1042,13 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
   );
 }
 
+function searchHaystack(def: HubSettingDef): string {
+  return `${def.label ?? ""} ${def.desc ?? ""}`
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
 function renderSetting(def: HubSettingDef, enabled: boolean, hidden?: boolean) {
   if (def.kind === "divider") {
     return html`<div class="divider font-bold my-2 col-span-full opacity-70">
@@ -1071,6 +1079,7 @@ function renderSetting(def: HubSettingDef, enabled: boolean, hidden?: boolean) {
       : enabled
         ? ""
         : "opacity-40 grayscale"}"
+    data-search="${searchHaystack(def)}"
   >
     <div
       class="flex ${isFullWidth
@@ -1098,34 +1107,60 @@ async function getInitialTheme() {
 
 const GRID_COLS_CLASSES = ["", "", "md:grid-cols-2", "md:grid-cols-3"] as const;
 
+function isAlwaysEnabledFeature(f: (typeof FEATURE_DEFS)[number]): boolean {
+  return (
+    f.id === "about" ||
+    f.id === "appearance" ||
+    f.id === "discord" ||
+    f.id === "calendar" ||
+    f.id === "advanced" ||
+    f.id === "extras"
+  );
+}
+
+function renderSettingList(
+  defs: readonly HubSettingDef[],
+  isAlwaysEnabled: boolean,
+  enabled: boolean,
+  disabledDeps: Set<string>,
+  hiddenDeps: Set<string>,
+) {
+  return defs.map((def) => {
+    const hidden = !!(def.key && hiddenDeps.has(def.key));
+    return renderSetting(
+      def,
+      isAlwaysEnabled ||
+        (enabled &&
+          !(def.key && disabledDeps.has(def.key)) &&
+          !(def.requiresCloud && disabledDeps.has("__CLOUD__"))),
+      hidden,
+    );
+  });
+}
+
 function renderTabsContent(
   active: FeatureId[],
   disabledDeps: Set<string>,
   hiddenDeps: Set<string>,
 ) {
-  return FEATURE_DEFS.map((f, idx) => {
-    const isAlwaysEnabled =
-      f.id === "about" ||
-      f.id === "discord" ||
-      f.id === "calendar" ||
-      f.id === "advanced" ||
-      f.id === "extras";
+  const visibleDefs = FEATURE_DEFS.filter(
+    (f) => !("hideFromTopLevel" in f && f.hideFromTopLevel),
+  );
+
+  return visibleDefs.map((f, idx) => {
+    const isAlwaysEnabled = isAlwaysEnabledFeature(f);
     const enabled = active.includes(f.id) || isAlwaysEnabled;
     const cloudDisabled =
       "requiresCloud" in f &&
       (f as { requiresCloud?: boolean }).requiresCloud &&
       disabledDeps.has("__CLOUD__");
-    const settings = (HUB_SETTING_DEFS[f.id] || []).map((def) => {
-      const hidden = !!(def.key && hiddenDeps.has(def.key));
-      return renderSetting(
-        def,
-        isAlwaysEnabled ||
-          (enabled &&
-            !(def.key && disabledDeps.has(def.key)) &&
-            !(def.requiresCloud && disabledDeps.has("__CLOUD__"))),
-        hidden,
-      );
-    });
+    const settings = renderSettingList(
+      HUB_SETTING_DEFS[f.id] || [],
+      isAlwaysEnabled,
+      enabled,
+      disabledDeps,
+      hiddenDeps,
+    );
     const gridColsClass =
       "cols" in f && f.cols != null
         ? (GRID_COLS_CLASSES[f.cols] ?? "md:grid-cols-3")
@@ -1214,16 +1249,132 @@ function renderTabsContent(
                   </span>
                 </button>
               </div>`
-            : html`<div
-                class="${f.id === "about"
-                  ? "p-6 w-full"
-                  : `grid grid-cols-1 ${gridColsClass} gap-4 p-6`}"
-              >
-                ${settings}
-              </div>`}
+            : "subTabs" in f && f.subTabs
+              ? renderSubTabs(
+                  f,
+                  enabled,
+                  !!cloudDisabled,
+                  disabledDeps,
+                  hiddenDeps,
+                  gridColsClass,
+                )
+              : html`<div
+                  class="${f.id === "about"
+                    ? "p-6 w-full"
+                    : `grid grid-cols-1 ${gridColsClass} gap-4 p-6`}"
+                >
+                  ${settings}
+                </div>`}
         </div>
       </div>`;
   });
+}
+
+function renderSubTabs(
+  f: (typeof FEATURE_DEFS)[number] & {
+    subTabs?: readonly { id: string; name: string; icon?: string }[];
+  },
+  enabled: boolean,
+  cloudDisabled: boolean,
+  disabledDeps: Set<string>,
+  hiddenDeps: Set<string>,
+  gridColsClass: string,
+) {
+  const subTabs = f.subTabs ?? [];
+  const content = (subTabId: string) => {
+    const parentDefs = (HUB_SETTING_DEFS[f.id] || []).filter(
+      (d) => d.subTab === subTabId,
+    );
+    if (parentDefs.length > 0) {
+      return html`<div class="grid grid-cols-1 ${gridColsClass} gap-4 p-6">
+        ${renderSettingList(
+          parentDefs,
+          true,
+          enabled,
+          disabledDeps,
+          hiddenDeps,
+        )}
+      </div>`;
+    }
+    const childDefs = HUB_SETTING_DEFS[subTabId as FeatureId] || [];
+    const childFeature = FEATURE_DEFS.find((fd) => fd.id === subTabId);
+    const childName = childFeature?.name ?? subTabId;
+    const childDesc = childFeature?.desc ?? "";
+    const childEnabled = enabled && !cloudDisabled;
+    return html`<div class="flex flex-col h-full">
+      <div
+        class="flex items-center justify-between px-6 py-4 border-b border-base-300 bg-base-200 shadow-sm"
+      >
+        <div class="flex flex-col">
+          <h2 class="text-lg font-bold leading-tight">${childName}</h2>
+          <p class="text-xs opacity-70">${childDesc}</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button
+            class="btn btn-sm btn-outline btn-error flex items-center gap-2"
+            data-reset-feature="${subTabId}"
+          >
+            <span class="size-3.5 flex items-center justify-center"
+              >${unsafeHTML(RESET_SVG)}</span
+            >
+            Reset
+          </button>
+          <input
+            type="checkbox"
+            class="toggle toggle-xl toggle-primary hub-feature-toggle"
+            data-id="${subTabId}"
+            ?checked="${childEnabled}"
+            ?disabled="${cloudDisabled}"
+          />
+        </div>
+      </div>
+      <div class="grid grid-cols-1 ${gridColsClass} gap-4 p-6">
+        ${renderSettingList(
+          childDefs,
+          false,
+          childEnabled,
+          disabledDeps,
+          hiddenDeps,
+        )}
+      </div>
+    </div>`;
+  };
+
+  return html`<div class="flex flex-col h-full" data-sub-tabs-group="${f.id}">
+    <div
+      role="tablist"
+      class="sub-tabs tabs tabs-lg tabs-border flex-none flex items-center gap-1 border-b border-base-300 bg-base-200 px-6 overflow-x-auto"
+    >
+      ${subTabs.map(
+        (s, i) =>
+          html`<label class="tab flex items-center gap-2 whitespace-nowrap">
+            <input
+              type="radio"
+              name="hub_subtabs_${f.id}"
+              ?checked="${i === 0}"
+              data-sub-tab="${s.id}"
+            />
+            ${s.icon
+              ? html`<span class="size-4 flex items-center justify-center"
+                  >${unsafeHTML(s.icon)}</span
+                >`
+              : ""}
+            ${s.name}
+          </label>`,
+      )}
+    </div>
+    <div class="flex-1 min-h-0 overflow-hidden">
+      ${subTabs.map(
+        (s, i) =>
+          html`<div
+            class="sub-panel h-full overflow-y-auto ${i === 0 ? "" : "hidden"}"
+            data-sub-panel="${s.id}"
+          >
+            ${content(s.id)}
+          </div>`,
+      )}
+    </div>
+  </div>`;
 }
 
 function loadAboutPanel(shadow: ShadowRoot): void {
@@ -1258,6 +1409,141 @@ function setupLazyAbout(shadow: ShadowRoot): void {
     radio.removeEventListener("change", listener);
   };
   radio.addEventListener("change", listener);
+}
+
+const normalizeTerm = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+function setupSearch(shadow: ShadowRoot): void {
+  const input = shadow.querySelector<HTMLInputElement>("#hub-search");
+  if (!input) return;
+
+  const panels = shadow.querySelectorAll<HTMLElement>("[data-feature-panel]");
+
+  let activeBeforeSearch: HTMLInputElement | null = null;
+
+  const apply = () => {
+    const term = normalizeTerm(input.value.trim());
+    const searching = term.length > 0;
+    let firstMatch: HTMLInputElement | null = null;
+
+    for (const panel of panels) {
+      panel
+        .querySelectorAll<HTMLElement>(".divider")
+        .forEach((d) => d.classList.toggle("hidden", searching));
+
+      const cards = panel.querySelectorAll<HTMLElement>("[data-search]");
+      let visible = 0;
+      cards.forEach((card) => {
+        const match = !searching || (card.dataset.search ?? "").includes(term);
+        card.classList.toggle("hidden", !match);
+        if (match) visible++;
+      });
+
+      const tabId = panel.dataset.featurePanel;
+      const radio = shadow.querySelector<HTMLInputElement>(
+        `[data-hub-tab="${tabId}"]`,
+      );
+      const label = radio?.closest<HTMLElement>(".tab");
+      if (label) {
+        label.classList.toggle("hidden", searching && visible === 0);
+      }
+
+      const subGroups = panel.querySelectorAll<HTMLElement>(
+        "[data-sub-tabs-group]",
+      );
+      for (const group of subGroups) {
+        const subRadios = group.querySelectorAll<HTMLInputElement>(
+          'input[name^="hub_subtabs_"]',
+        );
+        let firstSubMatch: HTMLInputElement | null = null;
+        for (const sr of subRadios) {
+          const subPanel = group.querySelector<HTMLElement>(
+            `[data-sub-panel="${sr.dataset.subTab}"]`,
+          );
+          if (!subPanel) continue;
+          const subCards =
+            subPanel.querySelectorAll<HTMLElement>("[data-search]");
+          const subVisible = [...subCards].filter(
+            (c) => !c.classList.contains("hidden"),
+          ).length;
+          sr.closest(".tab")?.classList.toggle(
+            "hidden",
+            searching && subVisible === 0,
+          );
+          if (searching && subVisible > 0 && !firstSubMatch) {
+            firstSubMatch = sr;
+          }
+        }
+        if (searching && firstSubMatch && visible > 0) {
+          const checked = group.querySelector<HTMLInputElement>(
+            'input[name^="hub_subtabs_"]:checked',
+          );
+          if (checked && checked !== firstSubMatch) {
+            checked.checked = false;
+            firstSubMatch.checked = true;
+            firstSubMatch.dispatchEvent(new Event("change"));
+          }
+        }
+      }
+
+      if (searching && visible > 0 && !firstMatch && radio) {
+        firstMatch = radio;
+      }
+    }
+
+    if (searching && firstMatch) {
+      const current = shadow.querySelector<HTMLInputElement>(
+        'input[name="hub_tabs"]:checked',
+      );
+      if (current && current !== firstMatch) {
+        activeBeforeSearch = current;
+        firstMatch.checked = true;
+      }
+    } else if (!searching && activeBeforeSearch) {
+      activeBeforeSearch.checked = true;
+      activeBeforeSearch = null;
+    }
+  };
+
+  let timer: number | null = null;
+  input.addEventListener("input", () => {
+    if (timer !== null) window.clearTimeout(timer);
+    timer = window.setTimeout(apply, 120);
+  });
+
+  shadow
+    .querySelectorAll<HTMLInputElement>('input[name="hub_tabs"]')
+    .forEach((radio) => radio.addEventListener("change", apply));
+}
+
+function setupSubTabs(shadow: ShadowRoot): void {
+  shadow
+    .querySelectorAll<HTMLInputElement>('input[name^="hub_subtabs_"]')
+    .forEach((radio) => {
+      radio.addEventListener("change", () => {
+        if (!radio.checked) return;
+        const group = radio.dataset.subTab ?? "";
+        const container = radio.closest<HTMLElement>("[data-sub-tabs-group]");
+        if (!container) return;
+        container
+          .querySelectorAll<HTMLInputElement>('input[name^="hub_subtabs_"]')
+          .forEach((r) => {
+            r.closest(".tab")?.classList.toggle(
+              "tab-active",
+              r.dataset.subTab === group,
+            );
+          });
+        container
+          .querySelectorAll<HTMLElement>("[data-sub-panel]")
+          .forEach((p) => {
+            p.classList.toggle("hidden", p.dataset.subPanel !== group);
+          });
+      });
+    });
 }
 
 function renderDialogShell(): ReturnType<typeof html> {
@@ -1391,7 +1677,9 @@ async function createModal(active: FeatureId[]): Promise<void> {
         height: 100%;
         width: 100%;
       }
-      font-family: ${INTRA_FONT};
+      :host {
+        font-family: ${INTRA_FONT};
+      }
       input,
       button,
       select,
@@ -1429,12 +1717,27 @@ async function createModal(active: FeatureId[]): Promise<void> {
             </p>
           </div>
         </div>
-        <button
-          class="btn btn-circle btn-ghost btn-sm"
-          @click="${() => dialog.close()}"
-        >
-          ${unsafeHTML(X_SVG.replace("<svg", '<svg width="22" height="22"'))}
-        </button>
+        <div class="flex items-center gap-2">
+          <label
+            class="input input-sm input-accent w-56 flex items-center gap-2"
+          >
+            <span class="h-[1em] opacity-50 flex items-center justify-center"
+              >${unsafeHTML(SEARCH_SVG)}</span
+            >
+            <input
+              id="hub-search"
+              type="search"
+              placeholder="Search settings..."
+              class="grow"
+            />
+          </label>
+          <button
+            class="btn btn-circle btn-ghost btn-sm"
+            @click="${() => dialog.close()}"
+          >
+            ${unsafeHTML(X_SVG.replace("<svg", '<svg width="22" height="22"'))}
+          </button>
+        </div>
       </div>
 
       ${authFailed
@@ -1548,6 +1851,10 @@ async function createModal(active: FeatureId[]): Promise<void> {
 
   setupLazyAbout(shadow);
 
+  setupSearch(shadow);
+
+  setupSubTabs(shadow);
+
   const themeToggle = shadow.querySelector(
     "#hub-theme-toggle",
   ) as HTMLInputElement;
@@ -1555,7 +1862,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
   const ghIcon = shadow.querySelector('img[alt="GitHub"]') as HTMLElement;
 
   const presetKey = (await getConfig("PROFILE_THEME_PRESET")) || "dark";
-  const validPreset = HUB_SETTING_DEFS.profile
+  const validPreset = HUB_SETTING_DEFS.appearance
     .find((s) => s.key === "PROFILE_THEME_PRESET")
     ?.options?.some((o) => o.value === presetKey)
     ? presetKey

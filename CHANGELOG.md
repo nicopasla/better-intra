@@ -2,6 +2,44 @@
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-09-24
+
+### Features 🎉
+
+- feat(theme): always share the profile theme ([df59c93](https://github.com/nicopasla/better-intra/commit/df59c93))
+- feat(hub): add history for imported custom fonts ([4c6b007](https://github.com/nicopasla/better-intra/commit/4c6b007))
+
+### Bug fixes 🐛
+
+- fix(logtime): keep phoenix hover working across badge re-renders ([5ac53de](https://github.com/nicopasla/better-intra/commit/5ac53de))
+- fix(ui): use theme-aware self-test for adopted sheets ([b2b90f1](https://github.com/nicopasla/better-intra/commit/b2b90f1))
+- fix: restore daisyUI badges and fix marks sort panel detection ([50d7712](https://github.com/nicopasla/better-intra/commit/50d7712))
+- fix: re-apply project badges after card re-renders ([08cc59f](https://github.com/nicopasla/better-intra/commit/08cc59f))
+- fix: self-style project badges and wait for marks panel ([5d4f766](https://github.com/nicopasla/better-intra/commit/5d4f766))
+- fix: restore shared CSS injection and profile re-init ([7f3952d](https://github.com/nicopasla/better-intra/commit/7f3952d))
+- fix: fall back when shared CSS cannot be adopted ([de05d95](https://github.com/nicopasla/better-intra/commit/de05d95))
+- fix(theme): remove theme revert button ([58edbc3](https://github.com/nicopasla/better-intra/commit/58edbc3))
+- fix(profile): re-apply shared theme on background revalidation ([e63b287](https://github.com/nicopasla/better-intra/commit/e63b287))
+
+### Maintenance 🧹
+
+- chore(manifest): add author ([59d7564](https://github.com/nicopasla/better-intra/commit/59d7564))
+
+### Other Changes 🔄
+
+- revert(ui): use simple shared CSS injection and fix hub scroll ([51e4171](https://github.com/nicopasla/better-intra/commit/51e4171))
+- perf(ui): self-verifying shared CSS via adopted stylesheets ([48be293](https://github.com/nicopasla/better-intra/commit/48be293))
+- perf(ui): self-verifying shared CSS via adopted stylesheets ([0769409](https://github.com/nicopasla/better-intra/commit/0769409))
+- perf: consolidate startup DOM polling ([c6ff8f2](https://github.com/nicopasla/better-intra/commit/c6ff8f2))
+- perf(tooltip): fast-path hover handling ([6f1b42e](https://github.com/nicopasla/better-intra/commit/6f1b42e))
+- perf(visuals): prune profile visuals cache ([f362f19](https://github.com/nicopasla/better-intra/commit/f362f19))
+- perf: pause background polling when tab hidden ([7fdaffe](https://github.com/nicopasla/better-intra/commit/7fdaffe))
+- perf(ui): share shadow CSS via adopted stylesheets ([873990c](https://github.com/nicopasla/better-intra/commit/873990c))
+- perf: cut idle work in layout, shortcuts, and theme watcher ([e6b55ca](https://github.com/nicopasla/better-intra/commit/e6b55ca))
+- perf(ui): respect reduced-motion and disable-animations ([f1fddf3](https://github.com/nicopasla/better-intra/commit/f1fddf3))
+- perf(hub): lazy-render panels and load options in parallel ([d810397](https://github.com/nicopasla/better-intra/commit/d810397))
+- perf(profile): stop perpetual milestone animation and tame observers ([1db33bd](https://github.com/nicopasla/better-intra/commit/1db33bd))
+
 ## [1.9.0] - 2026-09-23
 
 ### Features 🎉
@@ -1238,7 +1276,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.9.0...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.9.1...HEAD
+[1.9.1]: https://github.com/nicopasla/better-intra/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/nicopasla/better-intra/compare/v1.8.6...v1.9.0
 [1.8.6]: https://github.com/nicopasla/better-intra/compare/v1.8.5...v1.8.6
 [1.8.5]: https://github.com/nicopasla/better-intra/compare/v1.8.4...v1.8.5

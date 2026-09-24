@@ -2,6 +2,7 @@ import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import { adoptShadowCss } from "../../utils/shadow-styles.ts";
+import { waitFor } from "../../utils/wait-for.ts";
 import { getEffectiveTheme } from "../profile/theme/theme-manager.ts";
 import {
   getTrackerState,
@@ -345,26 +346,21 @@ function closePopover() {
 export async function colorTrackerBadge(): Promise<void> {
   if (_badgeEl) return;
 
-  const found = findTrackerBadgeEl();
-  if (!found) return;
+  const found = await waitFor(() => findTrackerBadgeEl() != null, 5000);
+  const badge = found ? findTrackerBadgeEl() : null;
+  if (!badge) return;
 
-  _badgeEl = found.element;
-  _badgeType = found.type;
+  _badgeEl = badge.element;
+  _badgeType = badge.type;
   _badgeEl.style.cursor = "pointer";
   _badgeEl.title = "";
 
-  _badgeEl.addEventListener("mouseenter", () => {
-    if (_popoverTimer) clearTimeout(_popoverTimer);
-    renderPopover();
-  });
-  _badgeEl.addEventListener("mouseleave", () => {
-    _popoverTimer = setTimeout(closePopover, 100);
-  });
+  bindBadgeHover();
 
   let state = await getTrackerState();
   if (!state) {
     const defaultMode =
-      found.type === "phoenix" ? "phoenix-1" : "pegasus-bronze";
+      badge.type === "phoenix" ? "phoenix-1" : "pegasus-bronze";
     await saveTrackerMode(defaultMode);
     state = await getTrackerState();
   }
@@ -374,4 +370,34 @@ export async function colorTrackerBadge(): Promise<void> {
   updateBadgeIndicator();
 
   document.addEventListener("42_LOGTIME_RENDERED", updateBadgeIndicator);
+}
+
+let badgeHoverBound = false;
+
+function refreshBadgeEl(): void {
+  const found = findTrackerBadgeEl();
+  _badgeEl = found ? found.element : null;
+  _badgeType = found ? found.type : null;
+}
+
+function bindBadgeHover(): void {
+  if (badgeHoverBound) return;
+  badgeHoverBound = true;
+  document.addEventListener("mouseover", (e) => {
+    const target = e.target as Element;
+    if (_badgeEl && !_badgeEl.isConnected) refreshBadgeEl();
+    if (!_badgeEl || !_badgeType) return;
+    if (target === _badgeEl || _badgeEl.contains(target)) {
+      if (_popoverTimer) clearTimeout(_popoverTimer);
+      renderPopover();
+    }
+  });
+  document.addEventListener("mouseout", (e) => {
+    const target = e.target as Element;
+    if (_badgeEl && !_badgeEl.isConnected) refreshBadgeEl();
+    if (!_badgeEl) return;
+    if (target === _badgeEl || _badgeEl.contains(target)) {
+      _popoverTimer = setTimeout(closePopover, 100);
+    }
+  });
 }

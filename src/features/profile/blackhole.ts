@@ -1,5 +1,6 @@
 import { html, render } from "lit-html";
 import { getConfig } from "../../config.ts";
+import { waitFor } from "../../utils/wait-for.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
 
 let initialized = false;
@@ -166,12 +167,6 @@ function applyV2Mode(): boolean {
   return true;
 }
 
-function poll(attempts = 0) {
-  if (applyV2Mode()) return;
-  if (attempts > 300) return;
-  requestAnimationFrame(() => poll(attempts + 1));
-}
-
 export async function initBlackholeMode() {
   if (initialized) return;
   if (location.hostname !== "profile-v3.intra.42.fr") return;
@@ -186,7 +181,7 @@ export async function initBlackholeMode() {
   if (!enabled) return;
   initialized = true;
 
-  poll();
+  void waitFor(() => applyV2Mode());
 
   let pending = false;
   let lastMiss = 0;

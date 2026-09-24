@@ -1,10 +1,24 @@
+import { waitFor } from "../../utils/wait-for.ts";
+
+let milestonesStarted = false;
+
 export function initMilestones() {
   injectMilestoneStyles();
-  enhanceMilestones();
+  if (milestonesStarted) return;
+  milestonesStarted = true;
+  const hasMilestones = () => {
+    const validated = document.querySelectorAll<HTMLElement>(
+      ".bg-legacy-main.h-10[data-state]",
+    );
+    const muted = document.querySelectorAll<HTMLElement>(
+      ".bg-legacy-main-muted.h-10[data-state]",
+    );
+    return validated.length > 0 || muted.length > 0;
+  };
+  void waitFor(hasMilestones).then((ok) => {
+    if (ok) enhanceMilestones();
+  });
 }
-
-let _milestoneAttempts = 0;
-let _milestonePolling = false;
 
 function enhanceMilestones() {
   const validated = document.querySelectorAll<HTMLElement>(
@@ -13,17 +27,6 @@ function enhanceMilestones() {
   const muted = document.querySelectorAll<HTMLElement>(
     ".bg-legacy-main-muted.h-10[data-state]",
   );
-
-  if (validated.length === 0 && muted.length === 0) {
-    if (_milestonePolling || ++_milestoneAttempts > 300) return;
-    _milestonePolling = true;
-    requestAnimationFrame(() => {
-      _milestonePolling = false;
-      enhanceMilestones();
-    });
-    return;
-  }
-  _milestoneAttempts = 0;
 
   validated.forEach((el) => {
     if (el.dataset.fireBg) return;

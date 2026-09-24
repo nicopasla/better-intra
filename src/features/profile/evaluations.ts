@@ -1,4 +1,5 @@
 import { getConfig } from "../../config.ts";
+import { waitFor } from "../../utils/wait-for.ts";
 
 const CARD_TITLE = "PENDING EVALUATIONS";
 
@@ -204,22 +205,19 @@ export async function initEvaluations() {
 
   const show = await getConfig("PROFILE_SHOW_EVALUATIONS");
 
-  let attempts = 0;
-  const MAX_ATTEMPTS = 600;
-  const check = () => {
-    if (attempts++ > MAX_ATTEMPTS) return;
+  const ready = () => {
     const native = findNativeCard();
-    if (!native) {
-      requestAnimationFrame(check);
-      return;
-    }
+    if (!native) return false;
     const rows = native.querySelectorAll(
       ".flex.justify-between.w-full.items-center, .flex.flex-row.justify-between",
     );
-    if (rows.length === 0) {
-      requestAnimationFrame(check);
-      return;
-    }
+    return rows.length > 0;
+  };
+
+  await waitFor(ready).then((ok) => {
+    if (!ok) return;
+    const native = findNativeCard();
+    if (!native) return;
     if (show) {
       sortRows(native);
     } else {
@@ -227,7 +225,5 @@ export async function initEvaluations() {
       if (btn) btn.textContent = "Hide";
     }
     hookToggleButton(native);
-  };
-
-  requestAnimationFrame(check);
+  });
 }

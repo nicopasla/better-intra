@@ -1,7 +1,7 @@
 import { getMondayWeekStart } from "../logtime/heatmap.ts";
+import { waitFor } from "../../utils/wait-for.ts";
 
 let paceData: Record<string, string> | null = null;
-let pacePollAttempts = 0;
 let paceInitialized = false;
 
 function getWeekKey(date: Date): string {
@@ -108,39 +108,38 @@ function setupDaysToggle(barsContainer: HTMLElement) {
   });
 }
 
+function paceReady(): boolean {
+  const barsContainer = document.querySelector<HTMLElement>(
+    ".flex.flex-wrap-reverse",
+  );
+  if (!barsContainer) return false;
+  if (barsContainer.querySelectorAll<HTMLElement>(".rounded-3xl").length !== 4)
+    return false;
+  const labelsContainer =
+    barsContainer.parentElement?.querySelector<HTMLElement>(".h-8.flex");
+  if (!labelsContainer) return false;
+  return labelsContainer.querySelectorAll(":scope > div").length === 4;
+}
+
 function updatePaceBars() {
   if (!paceData) return;
-  if (pacePollAttempts > 300) return;
-  pacePollAttempts++;
+  void waitFor(paceReady).then((ok) => {
+    if (ok) applyPaceBars();
+  });
+}
+
+function applyPaceBars() {
+  if (!paceData) return;
 
   const barsContainer = document.querySelector<HTMLElement>(
     ".flex.flex-wrap-reverse",
   );
-  if (!barsContainer) {
-    requestAnimationFrame(updatePaceBars);
-    return;
-  }
+  const labelsContainer =
+    barsContainer?.parentElement?.querySelector<HTMLElement>(".h-8.flex");
+  if (!barsContainer || !labelsContainer) return;
 
   const bars = barsContainer.querySelectorAll<HTMLElement>(".rounded-3xl");
-  if (bars.length !== 4) {
-    requestAnimationFrame(updatePaceBars);
-    return;
-  }
-
-  const labelsContainer =
-    barsContainer.parentElement?.querySelector<HTMLElement>(".h-8.flex");
-  if (!labelsContainer) {
-    requestAnimationFrame(updatePaceBars);
-    return;
-  }
-
   const labelEls = labelsContainer.querySelectorAll(":scope > div");
-  if (labelEls.length !== 4) {
-    requestAnimationFrame(updatePaceBars);
-    return;
-  }
-
-  pacePollAttempts = 0;
   setupDaysToggle(barsContainer);
 
   const currentMonday = getMondayWeekStart(new Date());

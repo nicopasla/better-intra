@@ -1,4 +1,5 @@
 import { getConfig } from "../../config.ts";
+import { waitFor } from "../../utils/wait-for.ts";
 
 let cachedCards: HTMLElement[] | null = null;
 let cachedGrid: HTMLElement | null = null;
@@ -194,15 +195,9 @@ export async function initLayoutManager() {
     observer.observe(parent, { childList: true, subtree: false });
   };
 
-  let pollAttempts = 0;
-  const MAX_POLL_ATTEMPTS = 600;
-  const poll = () => {
-    const cards = getCards();
-    if (cards.length && cachedGrid) {
-      setupObserver(cachedGrid);
-    } else if (pollAttempts++ < MAX_POLL_ATTEMPTS) {
-      requestAnimationFrame(poll);
-    }
-  };
-  requestAnimationFrame(poll);
+  void waitFor(() => getCards().length > 0 && cachedGrid != null).then(
+    (ok) => {
+      if (ok && cachedGrid) setupObserver(cachedGrid);
+    },
+  );
 }

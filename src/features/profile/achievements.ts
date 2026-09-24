@@ -1,6 +1,7 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { getConfig } from "../../config.ts";
+import { waitFor } from "../../utils/wait-for.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { getLoginFromPage } from "../../utils/profile-login.ts";
 import { parseIntraDate } from "../../utils/dates.ts";
@@ -192,16 +193,9 @@ async function tryInject(achievements: Achievement[]) {
       parseIntraDate(b.achieved_at).getTime() -
       parseIntraDate(a.achieved_at).getTime(),
   );
-  let attempts = 0;
-  const poll = () => {
-    if (++attempts > 50) return;
-    if (!findCard()) {
-      requestAnimationFrame(poll);
-      return;
-    }
-    inject(sorted);
-  };
-  requestAnimationFrame(poll);
+  await waitFor(() => findCard() !== null, 1000).then((ok) => {
+    if (ok) inject(sorted);
+  });
 }
 
 export async function initAchievements() {

@@ -110,11 +110,24 @@ function reorderCards(
   return hasMoved;
 }
 
+let cachedOrder: string[] | null | undefined;
+
+chrome.storage.onChanged?.addListener((changes, area) => {
+  if (area === "local" && changes.PROFILE_CARD_ORDER) cachedOrder = undefined;
+});
+
+async function getCardOrder(): Promise<string[] | null> {
+  if (cachedOrder === undefined) {
+    cachedOrder = (await getConfig("PROFILE_CARD_ORDER")) as string[] | null;
+  }
+  return cachedOrder;
+}
+
 export async function optimizeLayout() {
   if (location.hostname !== "profile-v3.intra.42.fr") return;
   if (!isDashboardPath()) return;
 
-  const cardOrder = (await getConfig("PROFILE_CARD_ORDER")) as string[] | null;
+  const cardOrder = await getCardOrder();
   const hideCardByText = (searchText: string, shouldHide: boolean) => {
     const cleanSearch = searchText.toUpperCase().trim();
 

@@ -106,15 +106,18 @@ export async function injectShortcutsDisplay() {
   }
 }
 
+let shortcutsObserver: MutationObserver | null = null;
+
 export function setupShortcutsObserver() {
   if (!document.body) {
     setTimeout(setupShortcutsObserver, 100);
     return;
   }
+  if (shortcutsObserver) return;
 
   let timer: ReturnType<typeof setTimeout> | undefined;
 
-  const observer = new MutationObserver(() => {
+  shortcutsObserver = new MutationObserver(() => {
     if (timer) return;
     timer = setTimeout(() => {
       timer = undefined;
@@ -124,11 +127,16 @@ export function setupShortcutsObserver() {
     }, 300);
   });
 
-  observer.observe(document.body, { childList: true, subtree: true });
+  shortcutsObserver.observe(document.body, { childList: true, subtree: true });
 
-  window.addEventListener("pagehide", () => observer.disconnect(), {
-    once: true,
-  });
+  window.addEventListener(
+    "pagehide",
+    () => {
+      shortcutsObserver?.disconnect();
+      shortcutsObserver = null;
+    },
+    { once: true },
+  );
 }
 
 export async function initShortcuts() {

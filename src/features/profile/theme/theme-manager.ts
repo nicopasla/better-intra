@@ -251,6 +251,7 @@ let lookRouteWatcher: number | null = null;
 let lookRouteListenersBound = false;
 
 function handleLookRouteChange(): void {
+  if (document.hidden) return;
   if (isViewingProfileLook() && !isProfilePath()) clearProfileLook();
 }
 

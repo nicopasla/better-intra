@@ -188,12 +188,29 @@ export async function initBlackholeMode() {
 
   poll();
 
+  let pending = false;
+  let lastMiss = 0;
   observer = new MutationObserver(() => {
+    if (pending) return;
     if (document.getElementById(WRAPPER_ID)) return;
-    applyV2Mode();
+    pending = true;
+    requestAnimationFrame(() => {
+      pending = false;
+      if (document.getElementById(WRAPPER_ID)) return;
+      if (Date.now() - lastMiss < 1000) return;
+      if (!applyV2Mode()) lastMiss = Date.now();
+    });
   });
   observer.observe(document.documentElement, {
     childList: true,
     subtree: true,
   });
+  window.addEventListener(
+    "pagehide",
+    () => {
+      observer?.disconnect();
+      observer = null;
+    },
+    { once: true },
+  );
 }

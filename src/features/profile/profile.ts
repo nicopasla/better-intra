@@ -53,6 +53,7 @@ export async function initProfile() {
   let isUpdating = false;
   let needsRerun = false;
   let initialised = false;
+  let initedPath: string | null = null;
 
   const scheduleUpdate = () => {
     needsRerun = false;
@@ -68,29 +69,32 @@ export async function initProfile() {
         if (!findProfileCard()) return;
         initialised = true;
 
-        await Promise.allSettled([
-          initLayoutManager(),
-          initProfileCardStyling(),
-          initAchievements(),
-          initMarks(),
-          initProjectBadges(),
-          initProjectsSort(),
-          initRouletteStats(),
-          initEvaluations(),
-          findSlotsButton(),
-          injectEventsSelect(),
-          updateEventFilters(),
-          handleProfileRedirect(),
-          initMilestones(),
-          initBadges(),
-          applyTitleBadgeWrap(),
-          initTranscript(),
-          initPace(),
-        ]);
-        // Fire-and-forget: features with >2s timeouts or slow network fetches
-        initFreezeCard();
-        injectFriendsWidget();
-        if (location.pathname === "/") colorTrackerBadge();
+        if (initedPath !== location.pathname) {
+          initedPath = location.pathname;
+          await Promise.allSettled([
+            initLayoutManager(),
+            initProfileCardStyling(),
+            initAchievements(),
+            initMarks(),
+            initProjectBadges(),
+            initProjectsSort(),
+            initRouletteStats(),
+            initEvaluations(),
+            findSlotsButton(),
+            injectEventsSelect(),
+            updateEventFilters(),
+            handleProfileRedirect(),
+            initMilestones(),
+            initBadges(),
+            applyTitleBadgeWrap(),
+            initTranscript(),
+            initPace(),
+          ]);
+          // Fire-and-forget: features with >2s timeouts or slow network fetches
+          initFreezeCard();
+          injectFriendsWidget();
+          if (location.pathname === "/") colorTrackerBadge();
+        }
       }
     } finally {
       isUpdating = false;
@@ -105,7 +109,26 @@ export async function initProfile() {
 
   holdAvatar();
 
-  const observer = new MutationObserver(() => {
+  const OWN_SELECTOR =
+    "#hub-dialog,#logtime-shadow-wrapper,#shortcuts-shadow-wrapper,#friends-widget-host,#ft-floating-tooltip,#profile-modal-host,#ft-blackhole-v2,#ft-announcement-banner,#ft-v2-warning";
+
+  const isOwnNode = (node: Node): boolean => {
+    if (!(node instanceof Element)) return false;
+    return (
+      node.matches(OWN_SELECTOR) ||
+      !!node.closest(OWN_SELECTOR) ||
+      !!node.querySelector(OWN_SELECTOR)
+    );
+  };
+
+  const isOwnMutation = (m: MutationRecord): boolean => {
+    const nodes = [...m.addedNodes, ...m.removedNodes];
+    if (nodes.length > 0) return nodes.every(isOwnNode);
+    return isOwnNode(m.target);
+  };
+
+  const observer = new MutationObserver((mutations) => {
+    if (mutations.every(isOwnMutation)) return;
     if (isUpdating) {
       needsRerun = true;
     } else {

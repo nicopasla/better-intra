@@ -4,6 +4,7 @@ export function initMilestones() {
 }
 
 let _milestoneAttempts = 0;
+let _milestonePolling = false;
 
 function enhanceMilestones() {
   const validated = document.querySelectorAll<HTMLElement>(
@@ -14,8 +15,12 @@ function enhanceMilestones() {
   );
 
   if (validated.length === 0 && muted.length === 0) {
-    if (++_milestoneAttempts > 300) return;
-    requestAnimationFrame(enhanceMilestones);
+    if (_milestonePolling || ++_milestoneAttempts > 300) return;
+    _milestonePolling = true;
+    requestAnimationFrame(() => {
+      _milestonePolling = false;
+      enhanceMilestones();
+    });
     return;
   }
   _milestoneAttempts = 0;
@@ -31,15 +36,6 @@ function enhanceMilestones() {
     if (!current.dataset.fireAnimated) {
       current.dataset.fireAnimated = "true";
       current.classList.add("fire-animated");
-
-      let angle = 0;
-      function animate() {
-        if (!current.isConnected) return;
-        angle = (angle + 2.4) % 360;
-        current.style.setProperty("--angle", `${angle}deg`);
-        requestAnimationFrame(animate);
-      }
-      animate();
     }
   }
 }
@@ -49,6 +45,17 @@ function injectMilestoneStyles() {
   const style = document.createElement("style");
   style.id = "fire-milestone-style";
   style.textContent = `
+    @property --ft-angle {
+      syntax: "<angle>";
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    @keyframes ft-fire-turn {
+      from { --ft-angle: 0deg; }
+      to { --ft-angle: 360deg; }
+    }
+
     .fire-bg.h-10 {
       position: relative;
       overflow: hidden;
@@ -81,7 +88,7 @@ function injectMilestoneStyles() {
       border-radius: inherit;
       background:
         conic-gradient(
-          from var(--angle, 0deg),
+          from var(--ft-angle, 0deg),
           #ff3c00,
           #ff7b00,
           #ffd000,
@@ -95,6 +102,18 @@ function injectMilestoneStyles() {
       mask-composite: exclude;
       z-index: 3;
       pointer-events: none;
+      will-change: background;
+      animation: ft-fire-turn 3s linear infinite;
+    }
+
+    html.ft-no-anim .fire-animated::before {
+      animation: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fire-animated::before {
+        animation: none;
+      }
     }
 
     .fire-animated > * {

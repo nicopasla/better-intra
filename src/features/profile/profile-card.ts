@@ -1,7 +1,7 @@
 import { getConfig } from "../../config.ts";
 import { CLUSTERS, getClusterData } from "../clusters/clusters.data.ts";
 import { openClusterDialog } from "../clusters/map-dialog.ts";
-import { sharedCSS } from "../../assets/shared-styles.ts";
+import { adoptShadowCss } from "../../utils/shadow-styles.ts";
 import { bindTooltips } from "../../utils/tooltip.ts";
 import { getIsLight } from "./theme/theme-manager.ts";
 import ARROW_SHARE_SVG from "../../assets/svg/arrow_share.svg?raw";
@@ -293,9 +293,7 @@ function createInfoCard(
     }
   `;
 
-  const style = document.createElement("style");
-  style.textContent = `${sharedCSS}\n${seatStyles}\n${badgeResponsiveStyles}`;
-  shadowRoot.appendChild(style);
+  adoptShadowCss(shadowRoot, `${seatStyles}\n${badgeResponsiveStyles}`);
 
   const wrapper = document.createElement("div");
   wrapper.id = INFO_CARD_ID;

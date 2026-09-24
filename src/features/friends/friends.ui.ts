@@ -1,6 +1,6 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
-import { sharedCSS } from "../../assets/shared-styles.ts";
+import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
 import {
   FriendData,
   addFriend,
@@ -512,7 +512,7 @@ function renderWidget(state: WidgetState) {
 
   return html`
     <style>
-      ${sharedCSS} :host {
+      :host {
         display: block;
       }
 
@@ -1155,7 +1155,10 @@ let _host: HTMLElement | null = null;
 let _shadow: ShadowRoot | null = null;
 let _state: WidgetState | null = null;
 function renderWidgetUI() {
-  if (_state && _shadow) render(renderWidget(_state), _shadow);
+  if (_state && _shadow) {
+    render(renderWidget(_state), _shadow);
+    adoptShadowStyles(_shadow);
+  }
 }
 
 export async function injectFriendsWidget() {

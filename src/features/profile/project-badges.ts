@@ -1,5 +1,6 @@
 import { html, render } from "lit-html";
-import { sharedCSS } from "../../assets/shared-styles.ts";
+import { adoptSharedStyles } from "../../utils/shadow-styles.ts";
+import { waitFor } from "../../utils/wait-for.ts";
 
 const SHADOW_ID = "project-badges-shadow";
 
@@ -32,9 +33,7 @@ function insertBadges(
   const isDark = document.documentElement.classList.contains("dark");
   const theme = isDark ? "dark" : "light";
 
-  const style = document.createElement("style");
-  style.textContent = sharedCSS;
-  shadow.appendChild(style);
+  adoptSharedStyles(shadow);
 
   const wrapper = document.createElement("div");
   wrapper.setAttribute("data-theme", theme);
@@ -77,17 +76,17 @@ export async function initProjectBadges() {
   )
     return;
 
-  for (let i = 0; i < 100; i++) {
+  const findCard = () => {
     const cards = document.querySelectorAll<HTMLElement>(".bg-white.md\\:h-96");
-    const card = [...cards].find((c) => {
+    return [...cards].find((c) => {
       const titleEl = c.querySelector("[class*='uppercase']");
       return titleEl?.textContent?.trim().toUpperCase() === "PROJECTS";
     });
-    if (!card) {
-      await new Promise((r) => requestAnimationFrame(r));
-      continue;
-    }
+  };
 
+  await waitFor(() => findCard() !== null, 2000).then((ok) => {
+    if (!ok) return;
+    const card = findCard()!;
     const ul = card.querySelector(".h-full ul");
     const lis = ul?.querySelectorAll("li");
     if (lis && lis.length > 0) {
@@ -111,10 +110,6 @@ export async function initProjectBadges() {
         items.push({ name: a.textContent?.trim() || "", href: a.href });
       }
       insertBadges(card, items);
-      return;
     }
-
-    if (i >= 90) return;
-    await new Promise((r) => requestAnimationFrame(r));
-  }
+  });
 }

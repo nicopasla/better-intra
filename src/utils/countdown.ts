@@ -1,4 +1,4 @@
-import { sharedCSS } from "../assets/shared-styles.ts";
+import { adoptSharedStyles } from "./shadow-styles.ts";
 
 export interface CountdownOptions {
   digits?: number;
@@ -16,9 +16,7 @@ export function createCountdown(
 ): CountdownInstance {
   const host = document.createElement("span");
   const root = host.attachShadow({ mode: "open" });
-  const style = document.createElement("style");
-  style.textContent = sharedCSS;
-  root.appendChild(style);
+  adoptSharedStyles(root);
 
   const countdownEl = document.createElement("span");
   countdownEl.className = "countdown font-mono";

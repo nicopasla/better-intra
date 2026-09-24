@@ -1,5 +1,6 @@
 import { render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
+import { adoptShadowStyles } from "../../../utils/shadow-styles.ts";
 import { clusterLabel, type DialogState } from "./context";
 import { renderTemplate } from "./template";
 import { normalizeSeatId } from "./seats";
@@ -152,6 +153,7 @@ export function updateTabsOverflow(state: DialogState) {
 
 export function rerender(state: DialogState) {
   render(renderTemplate(state), state.shadow);
+  adoptShadowStyles(state.shadow);
   wireTabs(state);
   renderTabsRegion(state);
   updateTabsOverflow(state);

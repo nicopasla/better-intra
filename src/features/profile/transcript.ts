@@ -4,7 +4,7 @@ import { getConfig } from "../../config.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { getEffectiveTheme, THEMES } from "./theme/theme-manager.ts";
 import { loadCampusData, TranscriptEntry } from "../campus/campus.ts";
-import { sharedCSS } from "../../assets/shared-styles.ts";
+import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
 import X_SVG from "../../assets/svg/x.svg?raw";
 
 async function openTranscriptDialog(
@@ -95,7 +95,6 @@ async function openTranscriptDialog(
       html`
         <style>
           :host { display: block; }
-          ${unsafeHTML(sharedCSS)}
         </style>
         <div
           data-theme="${currentTheme}"
@@ -186,6 +185,7 @@ async function openTranscriptDialog(
       `,
       shadow,
     );
+    adoptShadowStyles(shadow);
   };
 
   content.addEventListener("click", (e) => e.stopPropagation());

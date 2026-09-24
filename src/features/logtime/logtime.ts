@@ -1,5 +1,6 @@
 import { render } from "lit-html";
 import { getConfig, getConfigMany } from "../../config.ts";
+import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
 import { resolveRainbowColors } from "./rainbow-presets.ts";
 import { hashLogin } from "../../utils/crypto.ts";
 import {
@@ -501,6 +502,7 @@ function renderLogtime(
     renderContainer(header, monthCards, currentTheme, CONFIG),
     shadowHost.shadowRoot!,
   );
+  adoptShadowStyles(shadowHost.shadowRoot!);
   wireHeaderOverflow(shadowHost);
 
   const scrollWrapper = shadowHost.shadowRoot!.querySelector(

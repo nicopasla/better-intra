@@ -1,6 +1,5 @@
 import { html, render } from "lit-html";
-import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
-import { sharedCSS } from "../assets/shared-styles.ts";
+import { adoptShadowStyles } from "./shadow-styles.ts";
 
 const DIALOG_ID = "ft-confirm-dialog";
 
@@ -58,9 +57,6 @@ export async function showConfirmDialog(
 
   render(
     html`
-      <style>
-        ${unsafeHTML(sharedCSS)}
-      </style>
       <div
         data-theme="light"
         class="alert items-center shadow-2xl"
@@ -98,6 +94,7 @@ export async function showConfirmDialog(
     `,
     shadow,
   );
+  adoptShadowStyles(shadow);
 
   dialog.appendChild(host);
   document.body.appendChild(dialog);
@@ -129,9 +126,6 @@ export async function showAlertDialog(
 
     render(
       html`
-        <style>
-          ${unsafeHTML(sharedCSS)}
-        </style>
         <div
           data-theme="light"
           class="alert items-center shadow-2xl"
@@ -166,6 +160,7 @@ export async function showAlertDialog(
       `,
       shadow,
     );
+    adoptShadowStyles(shadow);
 
     dialog.appendChild(host);
     document.body.appendChild(dialog);

@@ -1,5 +1,5 @@
 import { html, render } from "lit-html";
-import { sharedCSS } from "../../assets/shared-styles.ts";
+import { adoptSharedStyles } from "../../utils/shadow-styles.ts";
 
 const BADGE_ID = "ft-subject-update-host";
 
@@ -17,8 +17,6 @@ export function renderSubjectBadge(
   host.style.cssText = "width:100%; min-width:100%; box-sizing:border-box;";
 
   const shadow = host.attachShadow({ mode: "open" });
-  const style = document.createElement("style");
-  style.textContent = sharedCSS;
 
   const wrap = document.createElement("div");
   wrap.setAttribute(
@@ -70,7 +68,7 @@ export function renderSubjectBadge(
     wrap,
   );
 
-  shadow.appendChild(style);
+  adoptSharedStyles(shadow);
   shadow.appendChild(wrap);
 
   const summary = button.closest(".project-summary");

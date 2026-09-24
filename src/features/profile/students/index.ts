@@ -7,6 +7,7 @@ import {
   showFloatingTooltip,
 } from "../../../utils/tooltip.ts";
 import { makeResizable } from "../../../utils/resizable-dialog.ts";
+import { adoptShadowStyles } from "../../../utils/shadow-styles.ts";
 import { getEffectiveTheme } from "../theme/theme-manager.ts";
 import {
   INITIAL_VISIBLE_COUNT,
@@ -438,6 +439,7 @@ async function openStudentsDialogImpl() {
 
   const rerender = () => {
     render(renderStudentsDialogTemplate(buildState(), handlers), shadow);
+    adoptShadowStyles(shadow);
 
     const scrollArea = shadow.querySelector<HTMLElement>(".scroll-area");
     if (scrollArea && !scrollArea.dataset.ftTooltipScroll) {

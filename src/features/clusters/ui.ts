@@ -1,6 +1,6 @@
 import { html, render } from "lit-html";
 import { CLUSTERS } from "./clusters.data.ts";
-import { sharedCSS } from "../../assets/shared-styles.ts";
+import { adoptShadowCss } from "../../utils/shadow-styles.ts";
 import { bindTooltips } from "../../utils/tooltip.ts";
 import { getIsLight } from "../profile/theme/theme-manager.ts";
 
@@ -95,12 +95,10 @@ export function createShadowUI(
   const shadowRoot = shadowHost.attachShadow({ mode: "open" });
   bindTooltips(shadowRoot, getIsLight);
 
-  const style = document.createElement("style");
-  style.textContent = `
-    ${sharedCSS}
-    :host { display: inline-flex !important; align-items: center !important; }
-  `;
-  shadowRoot.appendChild(style);
+  adoptShadowCss(
+    shadowRoot,
+    ":host { display: inline-flex !important; align-items: center !important; }",
+  );
 
   const wrapper = document.createElement("div");
   wrapper.id = "cluster-li-container";

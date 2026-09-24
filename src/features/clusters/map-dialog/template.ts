@@ -1,6 +1,5 @@
 import { html, TemplateResult } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
-import { sharedCSS } from "../../../assets/shared-styles.ts";
 import { getCampusFlag } from "../../profile/campus-flags.ts";
 import { type DialogState } from "./context";
 import RELOAD_SVG from "../../../assets/svg/reload.svg?raw";
@@ -43,10 +42,10 @@ export function renderTemplate(state: DialogState): TemplateResult {
       #maximize-btn.is-maximized .minimize-icon {
         display: inline-flex;
       }
-      ${sharedCSS} #map-area-clip {
+      #map-area-clip {
         background: var(--color-base-300);
       }
-      ${sharedCSS} #map-area {
+      #map-area {
         position: relative;
         flex: 1;
         min-height: 0;

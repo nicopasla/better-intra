@@ -1,5 +1,5 @@
 import { getConfig } from "../../config.ts";
-import { sharedCSS } from "../../assets/shared-styles.ts";
+import { adoptSharedStyles } from "../../utils/shadow-styles.ts";
 import { THEMES, getEffectiveTheme } from "./theme/theme-manager.ts";
 import SORT_AZ_SVG from "../../assets/svg/sort-az.svg?raw";
 import SORT_ZA_SVG from "../../assets/svg/sort-za.svg?raw";
@@ -156,9 +156,6 @@ export async function initProjectsSort() {
   let field: SortField = "date";
   let asc = false;
 
-  const style = document.createElement("style");
-  style.textContent = sharedCSS;
-
   const wrap = document.createElement("div");
   wrap.setAttribute("data-theme", currentTheme);
   wrap.className = "flex items-center gap-1";
@@ -236,7 +233,7 @@ export async function initProjectsSort() {
   };
 
   wrap.appendChild(join);
-  root.appendChild(style);
+  adoptSharedStyles(root);
   root.appendChild(wrap);
   const starBadge = titleRow.querySelector<HTMLElement>("#ft-star-total-host");
   if (starBadge) {

@@ -1,6 +1,6 @@
 import { html, render } from "lit-html";
 import { getConfig } from "../../../config.ts";
-import { sharedCSS } from "../../../assets/shared-styles.ts";
+import { adoptShadowCss } from "../../../utils/shadow-styles.ts";
 import { THEMES, getEffectiveTheme } from "../theme/theme-manager.ts";
 
 const DATA_BASE = "https://api.betterintra.com/gh/data";
@@ -177,10 +177,9 @@ export async function injectEventsSelect() {
     : effectiveTheme === "light"
       ? "hsl(0 0% 10%)"
       : "hsl(210 20% 98%)";
-  const style = document.createElement("style");
-  style.textContent = `
-    ${sharedCSS}
-    select {
+  adoptShadowCss(
+    shadowRoot,
+    `select {
       background-color: var(--color-base-100) !important;
       color: var(--color-primary) !important;
       border-color: var(--color-primary) !important;
@@ -188,9 +187,8 @@ export async function injectEventsSelect() {
     select > option {
       background-color: var(--color-base-100) !important;
       color: var(--color-base-content) !important;
-    }
-  `;
-  shadowRoot.appendChild(style);
+    }`,
+  );
 
   const wrapper = document.createElement("div");
   wrapper.id = "events-shadow-wrapper";

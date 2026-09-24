@@ -1,7 +1,7 @@
 import { getConfig } from "../../config.ts";
 import { getStoredLinks, renderShortcutsDisplay } from "./shortcuts.ui.ts";
 import { render, html } from "lit-html";
-import { sharedCSS } from "../../assets/shared-styles.ts";
+import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
 
 const CONTAINER_ID = "shortcuts-shadow-wrapper";
 
@@ -90,7 +90,7 @@ export async function injectShortcutsDisplay() {
     render(
       html`
         <style>
-          ${sharedCSS} .separator {
+          .separator {
             width: 3px;
             height: 100px;
             background-color: var(--base-300, #cbd5e1);
@@ -103,6 +103,7 @@ export async function injectShortcutsDisplay() {
       `,
       shadowRoot,
     );
+    adoptShadowStyles(shadowRoot);
   }
 }
 

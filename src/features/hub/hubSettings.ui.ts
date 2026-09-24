@@ -26,7 +26,7 @@ import {
 } from "../shortcuts/shortcuts.ui.ts";
 import { clearAuthFailed } from "../account/account.ts";
 import { loginWith42, syncToCloud } from "../account/account.ts";
-import { sharedCSS } from "../../assets/shared-styles.ts";
+import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
 import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
 import X_SVG from "../../assets/svg/x.svg?raw";
@@ -1840,7 +1840,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
       h3 {
         font-family: ${INTRA_FONT} !important;
       }
-      ${unsafeHTML(sharedCSS)} .tab-content {
+      .tab-content {
         height: 100%;
         overflow-y: auto;
       }
@@ -2003,6 +2003,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
     </div>`;
 
   render(modalTemplate, shadow);
+  adoptShadowStyles(shadow);
 
   bindTooltips(shadow, getIsLight);
 

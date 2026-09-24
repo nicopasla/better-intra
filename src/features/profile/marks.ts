@@ -6,7 +6,7 @@ import { hashLogin } from "../../utils/crypto.ts";
 import { getLoginFromPage } from "../../utils/profile-login.ts";
 import { parseIntraDate } from "../../utils/dates.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
-import { sharedCSS } from "../../assets/shared-styles.ts";
+import { adoptSharedStyles } from "../../utils/shadow-styles.ts";
 import { getEffectiveTheme } from "./theme/theme-manager.ts";
 import CHECK_SVG from "../../assets/svg/check.svg?raw";
 import X_SVG from "../../assets/svg/x.svg?raw";
@@ -618,8 +618,6 @@ async function injectStarTotalBadge(
   badge.dataset.ftStarTotal = "true";
   badge.style.cssText = "display:inline-flex;vertical-align:middle;";
   const root = badge.attachShadow({ mode: "open" });
-  const style = document.createElement("style");
-  style.textContent = sharedCSS;
   const wrap = document.createElement("div");
   wrap.setAttribute("data-theme", theme);
   wrap.style.cssText = "display:flex;align-items:center;";
@@ -643,7 +641,7 @@ async function injectStarTotalBadge(
       "width:1px;height:1.25rem;background:var(--color-base-content);opacity:0.25;margin:0 0.5rem;";
     wrap.appendChild(sep);
   }
-  root.appendChild(style);
+  adoptSharedStyles(root);
   root.appendChild(wrap);
 
   if (sortHost) {

@@ -49,27 +49,31 @@ function detect(): void {
       "position:absolute;left:-99999px;top:-99999px;width:1px;height:1px;overflow:hidden;";
     const root = host.attachShadow({ mode: "open" });
     root.adoptedStyleSheets = [sheet];
+    const wrapper = document.createElement("div");
+    wrapper.setAttribute("data-theme", "dark");
     const probe = document.createElement("span");
     probe.className = "badge";
-    root.appendChild(probe);
+    wrapper.appendChild(probe);
+    root.appendChild(wrapper);
     (document.documentElement || document.body).appendChild(host);
     const cs = getComputedStyle(probe);
+    const display = cs.display;
+    const align = cs.alignItems;
     const radius = cs.borderRadius;
     const padding = cs.paddingLeft;
     host.remove();
 
-    const worked =
-      radius !== "0px" && radius !== "" && padding !== "0px" && padding !== "";
+    const worked = display === "inline-flex" && align === "center";
     if (worked) {
       sharedSheet = sheet;
       mode = "sheet";
       logDebug(
-        `sheet mode (self-test ok, rules=${sheet.cssRules.length}, radius=${radius}, padding=${padding})`,
+        `sheet mode (self-test ok, rules=${sheet.cssRules.length}, display=${display}, align=${align}, radius=${radius}, padding=${padding})`,
       );
     } else {
       mode = "style";
       logDebug(
-        `style mode (self-test failed, rules=${sheet.cssRules.length}, radius=${radius}, padding=${padding})`,
+        `style mode (self-test failed, rules=${sheet.cssRules.length}, display=${display}, align=${align}, radius=${radius}, padding=${padding})`,
       );
     }
   } catch {

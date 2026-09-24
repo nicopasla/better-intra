@@ -1216,11 +1216,111 @@ function renderSettingList(
   });
 }
 
+type PanelBuilder = () => unknown;
+let panelBuilders = new Map<string, PanelBuilder>();
+
+function buildPanelBody(
+  f: (typeof FEATURE_DEFS)[number],
+  enabled: boolean,
+  cloudDisabled: boolean,
+  isAlwaysEnabled: boolean,
+  gridColsClass: string,
+  disabledDeps: Set<string>,
+  hiddenDeps: Set<string>,
+) {
+  const settings = renderSettingList(
+    HUB_SETTING_DEFS[f.id] || [],
+    isAlwaysEnabled,
+    enabled,
+    disabledDeps,
+    hiddenDeps,
+  );
+
+  return html`
+    ${!isAlwaysEnabled
+      ? html`
+          <div
+            class="sticky top-0 z-20 flex items-center justify-between bg-base-200 px-6 py-4 border-b border-base-300 shadow-sm"
+          >
+            <div class="flex flex-col">
+              <h2 class="text-lg font-bold leading-tight">${f.name}</h2>
+              <p class="text-xs opacity-70">${f.desc}</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button
+                class="btn btn-sm btn-outline btn-error flex items-center gap-2"
+                data-reset-feature="${f.id}"
+              >
+                <span class="size-3.5 flex items-center justify-center"
+                  >${unsafeHTML(RESET_SVG)}</span
+                >
+                Reset
+              </button>
+              <input
+                type="checkbox"
+                class="toggle toggle-xl toggle-primary hub-feature-toggle"
+                data-id="${f.id}"
+                ?checked="${enabled && !cloudDisabled}"
+                ?disabled="${cloudDisabled}"
+              />
+            </div>
+          </div>
+        `
+      : ""}
+    ${cloudDisabled
+      ? html`<div
+          class="flex flex-col items-center justify-center gap-4 py-16 px-6 text-center"
+        >
+          <span
+            class="size-14 opacity-40 flex items-center justify-center [&_path]:fill-current"
+            >${unsafeHTML(FORTY_TWO_SVG)}</span
+          >
+          <p class="opacity-50 max-w-72 text-sm">
+            Connect your 42 account to unlock this feature.
+          </p>
+          <button
+            type="button"
+            class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
+            @click="${async () => {
+              loginWith42(async () => {
+                await clearAuthFailed();
+                window.location.reload();
+              });
+            }}"
+          >
+            <span class="font-bold tracking-wide">Connect with</span>
+            <span
+              class="size-8 flex items-center justify-center [&_path]:fill-current"
+            >
+              ${unsafeHTML(FORTY_TWO_SVG)}
+            </span>
+          </button>
+        </div>`
+      : "subTabs" in f && f.subTabs
+        ? renderSubTabs(
+            f,
+            enabled,
+            !!cloudDisabled,
+            disabledDeps,
+            hiddenDeps,
+            gridColsClass,
+          )
+        : html`<div
+            class="${f.id === "about"
+              ? "p-6 w-full"
+              : `grid grid-cols-1 ${gridColsClass} gap-4 p-6`}"
+          >
+            ${settings}
+          </div>`}
+  `;
+}
+
 function renderTabsContent(
   active: FeatureId[],
   disabledDeps: Set<string>,
   hiddenDeps: Set<string>,
 ) {
+  panelBuilders = new Map();
   const visibleDefs = FEATURE_DEFS.filter(
     (f) => !("hideFromTopLevel" in f && f.hideFromTopLevel),
   );
@@ -1232,17 +1332,22 @@ function renderTabsContent(
       "requiresCloud" in f &&
       (f as { requiresCloud?: boolean }).requiresCloud &&
       disabledDeps.has("__CLOUD__");
-    const settings = renderSettingList(
-      HUB_SETTING_DEFS[f.id] || [],
-      isAlwaysEnabled,
-      enabled,
-      disabledDeps,
-      hiddenDeps,
-    );
     const gridColsClass =
       "cols" in f && f.cols != null
         ? (GRID_COLS_CLASSES[f.cols] ?? "md:grid-cols-3")
         : "md:grid-cols-3";
+
+    panelBuilders.set(f.id, () =>
+      buildPanelBody(
+        f,
+        enabled,
+        !!cloudDisabled,
+        isAlwaysEnabled,
+        gridColsClass,
+        disabledDeps,
+        hiddenDeps,
+      ),
+    );
 
     return html`<label class="tab flex items-center gap-2">
         <input
@@ -1268,81 +1373,7 @@ function renderTabsContent(
             : "opacity-40 grayscale"}"
           data-feature-panel="${f.id}"
         >
-          ${!isAlwaysEnabled
-            ? html`
-                <div
-                  class="sticky top-0 z-20 flex items-center justify-between bg-base-200 px-6 py-4 border-b border-base-300 shadow-sm"
-                >
-                  <div class="flex flex-col">
-                    <h2 class="text-lg font-bold leading-tight">${f.name}</h2>
-                    <p class="text-xs opacity-70">${f.desc}</p>
-                  </div>
-                  <div class="flex items-center gap-3">
-                    <button
-                      class="btn btn-sm btn-outline btn-error flex items-center gap-2"
-                      data-reset-feature="${f.id}"
-                    >
-                      <span class="size-3.5 flex items-center justify-center"
-                        >${unsafeHTML(RESET_SVG)}</span
-                      >
-                      Reset
-                    </button>
-                    <input
-                      type="checkbox"
-                      class="toggle toggle-xl toggle-primary hub-feature-toggle"
-                      data-id="${f.id}"
-                      ?checked="${enabled && !cloudDisabled}"
-                      ?disabled="${cloudDisabled}"
-                    />
-                  </div>
-                </div>
-              `
-            : ""}
-          ${cloudDisabled
-            ? html`<div
-                class="flex flex-col items-center justify-center gap-4 py-16 px-6 text-center"
-              >
-                <span
-                  class="size-14 opacity-40 flex items-center justify-center [&_path]:fill-current"
-                  >${unsafeHTML(FORTY_TWO_SVG)}</span
-                >
-                <p class="opacity-50 max-w-72 text-sm">
-                  Connect your 42 account to unlock this feature.
-                </p>
-                <button
-                  type="button"
-                  class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
-                  @click="${async () => {
-                    loginWith42(async () => {
-                      await clearAuthFailed();
-                      window.location.reload();
-                    });
-                  }}"
-                >
-                  <span class="font-bold tracking-wide">Connect with</span>
-                  <span
-                    class="size-8 flex items-center justify-center [&_path]:fill-current"
-                  >
-                    ${unsafeHTML(FORTY_TWO_SVG)}
-                  </span>
-                </button>
-              </div>`
-            : "subTabs" in f && f.subTabs
-              ? renderSubTabs(
-                  f,
-                  enabled,
-                  !!cloudDisabled,
-                  disabledDeps,
-                  hiddenDeps,
-                  gridColsClass,
-                )
-              : html`<div
-                  class="${f.id === "about"
-                    ? "p-6 w-full"
-                    : `grid grid-cols-1 ${gridColsClass} gap-4 p-6`}"
-                >
-                  ${settings}
-                </div>`}
+          <div data-lazy-panel="${f.id}"></div>
         </div>
       </div>`;
   });
@@ -1469,43 +1500,22 @@ function loadAboutPanel(shadow: ShadowRoot): void {
   target.appendChild(slot);
 }
 
-function setupLazyAbout(shadow: ShadowRoot): void {
-  const radio = shadow.querySelector<HTMLInputElement>(
-    '[data-hub-tab="about"]',
-  );
-  if (!radio) return;
-
-  const activate = () => loadAboutPanel(shadow);
-  if (radio.checked) {
-    activate();
-    return;
-  }
-
-  const listener = () => {
-    if (!radio.checked) return;
-    activate();
-    radio.removeEventListener("change", listener);
-  };
-  radio.addEventListener("change", listener);
-}
-
 const normalizeTerm = (s: string) =>
   s
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 
-function setupSearch(shadow: ShadowRoot): void {
+function setupSearch(shadow: ShadowRoot, ensureAllPanels: () => void): void {
   const input = shadow.querySelector<HTMLInputElement>("#hub-search");
   if (!input) return;
-
-  const panels = shadow.querySelectorAll<HTMLElement>("[data-feature-panel]");
 
   let activeBeforeSearch: HTMLInputElement | null = null;
 
   const emptyState = shadow.querySelector<HTMLElement>("#hub-search-empty");
 
   const apply = () => {
+    const panels = shadow.querySelectorAll<HTMLElement>("[data-feature-panel]");
     const term = normalizeTerm(input.value.trim());
     const searching = term.length > 0;
     let firstMatch: HTMLInputElement | null = null;
@@ -1607,6 +1617,7 @@ function setupSearch(shadow: ShadowRoot): void {
 
   let timer: number | null = null;
   input.addEventListener("input", () => {
+    if (input.value.trim()) ensureAllPanels();
     if (timer !== null) window.clearTimeout(timer);
     timer = window.setTimeout(apply, 120);
   });
@@ -1616,8 +1627,8 @@ function setupSearch(shadow: ShadowRoot): void {
     .forEach((radio) => radio.addEventListener("change", apply));
 }
 
-function setupSubTabs(shadow: ShadowRoot): void {
-  shadow
+function setupSubTabs(root: ParentNode): void {
+  root
     .querySelectorAll<HTMLInputElement>('input[name^="hub_subtabs_"]')
     .forEach((radio) => {
       radio.addEventListener("change", () => {
@@ -1640,6 +1651,55 @@ function setupSubTabs(shadow: ShadowRoot): void {
           });
       });
     });
+}
+
+function bindPanelControls(root: ParentNode, shadow: ShadowRoot): void {
+  root.querySelectorAll("input.hub-feature-toggle").forEach((toggle: any) => {
+    toggle.addEventListener("change", async () => {
+      const id = toggle.dataset.id;
+      const isEnabled = toggle.checked;
+
+      const panel =
+        shadow.querySelector(`[data-feature-panel="${id}"]`) ??
+        (toggle as HTMLElement).closest(".sub-panel");
+      panel?.classList.toggle("opacity-40", !isEnabled);
+      panel?.classList.toggle("grayscale", !isEnabled);
+      panel
+        ?.querySelectorAll("[data-setting-key]")
+        .forEach((c: any) => (c.disabled = !isEnabled));
+      panel?.querySelectorAll(".card").forEach((card: any) => {
+        if (isEnabled) {
+          card.classList.remove("opacity-40", "grayscale");
+        } else {
+          card.classList.add("opacity-40", "grayscale");
+        }
+      });
+
+      const currentScripts = await getConfig("ACTIVE_SCRIPTS");
+      const updated = isEnabled
+        ? [...currentScripts, id]
+        : currentScripts.filter((f: string) => f !== id);
+      await chrome.storage.local.set({
+        ACTIVE_SCRIPTS: JSON.stringify(updated),
+      });
+    });
+  });
+
+  root.querySelectorAll("[data-reset-feature]").forEach((btn: any) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.resetFeature;
+      const name =
+        FEATURE_DEFS.find((f) => f.id === id)?.name ??
+        (id ? String(id) : "this section");
+      const ok = await showConfirmDialog({
+        title: `Reset ${name}`,
+        message: `Reset all ${name} settings? This can't be undone.`,
+        confirmLabel: "Reset",
+      });
+      if (!ok) return;
+      await resetFeatureSettings(shadow, id);
+    });
+  });
 }
 
 function renderDialogShell(): ReturnType<typeof html> {
@@ -1735,25 +1795,20 @@ async function createModal(active: FeatureId[]): Promise<void> {
     }
   }
 
-  try {
-    const manifest = await fetchCampusList();
-    dynamicCampusOptions = manifest.campuses.map((c) => ({
-      label: c.name,
-      value: c.id,
-    }));
-  } catch {
-    dynamicCampusOptions = [];
-  }
-  await ensureCampusData();
-  try {
-    try {
-      dynamicEventTypeOptions = await fetchEventTypes();
-    } catch {
-      dynamicEventTypeOptions = [];
-    }
-  } catch {
-    dynamicEventTypeOptions = [];
-  }
+  const [manifestResult, eventTypesResult] = await Promise.allSettled([
+    fetchCampusList(),
+    fetchEventTypes(),
+  ]);
+  dynamicCampusOptions =
+    manifestResult.status === "fulfilled"
+      ? manifestResult.value.campuses.map((c) => ({
+          label: c.name,
+          value: c.id,
+        }))
+      : [];
+  dynamicEventTypeOptions =
+    eventTypesResult.status === "fulfilled" ? eventTypesResult.value : [];
+  void ensureCampusData();
   const tabsContent = renderTabsContent(active, disabledDeps, hiddenDeps);
   const lastSync = (await chrome.storage.local.get("LAST_CLOUD_SYNC"))
     .LAST_CLOUD_SYNC;
@@ -1951,11 +2006,38 @@ async function createModal(active: FeatureId[]): Promise<void> {
 
   bindTooltips(shadow, getIsLight);
 
-  setupLazyAbout(shadow);
+  const activatePanel = (id: string | undefined) => {
+    if (!id) return;
+    const el = shadow.querySelector<HTMLElement>(`[data-lazy-panel="${id}"]`);
+    if (!el || el.dataset.built === "1") return;
+    const builder = panelBuilders.get(id);
+    if (!builder) return;
+    el.dataset.built = "1";
+    render(builder(), el);
+    bindPanelControls(el, shadow);
+    setupSubTabs(el);
+    if (id === "about") loadAboutPanel(shadow);
+  };
 
-  setupSearch(shadow);
+  const ensureAllPanels = () => {
+    for (const id of panelBuilders.keys()) activatePanel(id);
+  };
 
-  setupSubTabs(shadow);
+  const firstTab = shadow.querySelector<HTMLInputElement>(
+    'input[name="hub_tabs"][data-hub-tab]',
+  );
+  activatePanel(firstTab?.dataset.hubTab);
+
+  shadow
+    .querySelectorAll<HTMLInputElement>('input[name="hub_tabs"]')
+    .forEach((radio) => {
+      radio.addEventListener("change", () => {
+        if (!radio.checked) return;
+        activatePanel(radio.dataset.hubTab);
+      });
+    });
+
+  setupSearch(shadow, ensureAllPanels);
 
   const themeToggle = shadow.querySelector(
     "#hub-theme-toggle",
@@ -2017,53 +2099,6 @@ async function createModal(active: FeatureId[]): Promise<void> {
       } catch {}
     }
     location.reload();
-  });
-
-  shadow.querySelectorAll("input.hub-feature-toggle").forEach((toggle: any) => {
-    toggle.addEventListener("change", async () => {
-      const id = toggle.dataset.id;
-      const isEnabled = toggle.checked;
-
-      const panel =
-        shadow.querySelector(`[data-feature-panel="${id}"]`) ??
-        (toggle as HTMLElement).closest(".sub-panel");
-      panel?.classList.toggle("opacity-40", !isEnabled);
-      panel?.classList.toggle("grayscale", !isEnabled);
-      panel
-        ?.querySelectorAll("[data-setting-key]")
-        .forEach((c: any) => (c.disabled = !isEnabled));
-      panel?.querySelectorAll(".card").forEach((card: any) => {
-        if (isEnabled) {
-          card.classList.remove("opacity-40", "grayscale");
-        } else {
-          card.classList.add("opacity-40", "grayscale");
-        }
-      });
-
-      const currentScripts = await getConfig("ACTIVE_SCRIPTS");
-      const updated = isEnabled
-        ? [...currentScripts, id]
-        : currentScripts.filter((f: string) => f !== id);
-      await chrome.storage.local.set({
-        ACTIVE_SCRIPTS: JSON.stringify(updated),
-      });
-    });
-  });
-
-  shadow.querySelectorAll("[data-reset-feature]").forEach((btn: any) => {
-    btn.addEventListener("click", async () => {
-      const id = btn.dataset.resetFeature;
-      const name =
-        FEATURE_DEFS.find((f) => f.id === id)?.name ??
-        (id ? String(id) : "this section");
-      const ok = await showConfirmDialog({
-        title: `Reset ${name}`,
-        message: `Reset all ${name} settings? This can't be undone.`,
-        confirmLabel: "Reset",
-      });
-      if (!ok) return;
-      await resetFeatureSettings(shadow, id);
-    });
   });
 
   shadow.addEventListener("change", (e) => {

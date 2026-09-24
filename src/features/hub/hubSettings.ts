@@ -39,6 +39,8 @@ function ensureSidebarButtonStyles(): void {
         transform-box: fill-box;
         transform-origin: center;
         animation: ft-gear-turn 6s linear infinite;
+        will-change: transform;
+        backface-visibility: hidden;
       }
       @keyframes ft-gear-turn {
         from { transform: rotate(0deg); }
@@ -47,9 +49,11 @@ function ensureSidebarButtonStyles(): void {
 
       #ft-students-btn .ft-user-2 {
         animation: ft-user-2 4s ease-in-out infinite;
+        will-change: opacity;
       }
       #ft-students-btn .ft-user-3 {
         animation: ft-user-3 4s ease-in-out infinite;
+        will-change: opacity;
       }
       @keyframes ft-user-2 {
         0% { opacity: 0; }

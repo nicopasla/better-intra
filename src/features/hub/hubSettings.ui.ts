@@ -6,6 +6,8 @@ import { getConfig, CONFIG_DEFAULT, type ConfigKey } from "../../config.ts";
 import {
   DEFAULT_GENERAL_FONT,
   IMPORTED_FONT_MAX_BYTES,
+  addFontToHistory,
+  type ImportedFontEntry,
 } from "../../utils/fonts.ts";
 import {
   FEATURE_DEFS,
@@ -168,6 +170,10 @@ function renderFeatureCard(params: {
   `;
 }
 
+function truncateLabel(name: string, max = 28): string {
+  return name.length > max ? name.slice(0, max - 3) + "..." : name;
+}
+
 function renderFontImportControl(
   container: HTMLElement,
   fileName: string,
@@ -186,6 +192,17 @@ function renderFontImportControl(
             ? "2px solid var(--color-primary)"
             : "2px solid transparent";
       });
+  };
+
+  const saveFontHistory = async (
+    history: readonly ImportedFontEntry[],
+  ): Promise<void> => {
+    try {
+      await chrome.storage.local.set({ GENERAL_FONT_FILE_HISTORY: history });
+    } catch {
+      if (history.length <= 1) return;
+      await saveFontHistory(history.slice(0, -1));
+    }
   };
 
   const importFile = (el: EventTarget | null) => {
@@ -219,6 +236,10 @@ function renderFontImportControl(
         GENERAL_FONT_FILE_NAME: file.name,
         GENERAL_FONT: "file",
       });
+      const history = await getConfig("GENERAL_FONT_FILE_HISTORY");
+      await saveFontHistory(
+        addFontToHistory(history, { name: file.name, dataUri }),
+      );
       highlightPicker("file");
       refresh(file.name);
     };
@@ -237,38 +258,92 @@ function renderFontImportControl(
     refresh("");
   };
 
-  render(
-    html`<div class="flex items-center gap-3 flex-wrap">
-      <button
-        type="button"
-        class="btn btn-sm btn-primary font-bold"
-        ?disabled="${!enabled}"
-        @mousedown="${(e: Event) => e.stopPropagation()}"
-        @click="${(e: Event) => {
-          e.stopPropagation();
-          importFile(e.currentTarget);
-        }}"
-      >
-        Import font file
-      </button>
-      ${fileName
-        ? html`<span class="text-sm opacity-70">${fileName}</span>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline"
-              ?disabled="${!enabled}"
-              @mousedown="${(e: Event) => e.stopPropagation()}"
-              @click="${(e: Event) => {
-                e.stopPropagation();
-                void removeFile();
-              }}"
-            >
-              Remove
-            </button>`
-        : html`<span class="text-sm opacity-50">No file imported</span>`}
-    </div>`,
-    container,
-  );
+  const applyHistoryEntry = async (entry: ImportedFontEntry) => {
+    await chrome.storage.local.set({
+      GENERAL_FONT_FILE: entry.dataUri,
+      GENERAL_FONT_FILE_NAME: entry.name,
+      GENERAL_FONT: "file",
+    });
+    highlightPicker("file");
+    refresh(entry.name);
+  };
+
+  const clearHistory = async () => {
+    await chrome.storage.local.remove(["GENERAL_FONT_FILE_HISTORY"]);
+    refresh(fileName);
+  };
+
+  getConfig("GENERAL_FONT_FILE_HISTORY").then((history) => {
+    render(
+      html`<div class="flex flex-col gap-2 w-full">
+        <div class="flex items-center gap-3 flex-wrap">
+          <button
+            type="button"
+            class="btn btn-sm btn-primary font-bold"
+            ?disabled="${!enabled}"
+            @mousedown="${(e: Event) => e.stopPropagation()}"
+            @click="${(e: Event) => {
+              e.stopPropagation();
+              importFile(e.currentTarget);
+            }}"
+          >
+            Import font file
+          </button>
+          ${fileName
+            ? html`<span class="text-sm opacity-70">${fileName}</span>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline"
+                  ?disabled="${!enabled}"
+                  @mousedown="${(e: Event) => e.stopPropagation()}"
+                  @click="${(e: Event) => {
+                    e.stopPropagation();
+                    void removeFile();
+                  }}"
+                >
+                  Remove
+                </button>`
+            : html`<span class="text-sm opacity-50">No file imported</span>`}
+        </div>
+        ${history.length > 0
+          ? html`<div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs opacity-50">Previously imported:</span>
+              ${history.map(
+                (entry) => html`
+                  <button
+                    type="button"
+                    class="btn btn-xs btn-outline gap-1"
+                    ?disabled="${!enabled}"
+                    data-tip="${entry.name}"
+                    @mousedown="${(e: Event) => e.stopPropagation()}"
+                    @click="${(e: Event) => {
+                      e.stopPropagation();
+                      void applyHistoryEntry(entry);
+                    }}"
+                  >
+                    ${truncateLabel(entry.name)}
+                  </button>
+                `,
+              )}
+              <button
+                type="button"
+                class="btn btn-xs btn-ghost opacity-50 hover:opacity-100 hover:text-error"
+                ?disabled="${!enabled}"
+                data-tip="Clear history"
+                @mousedown="${(e: Event) => e.stopPropagation()}"
+                @click="${(e: Event) => {
+                  e.stopPropagation();
+                  void clearHistory();
+                }}"
+              >
+                ✕
+              </button>
+            </div>`
+          : ""}
+      </div>`,
+      container,
+    );
+  });
 }
 
 function renderSettingControl(def: HubSettingDef, enabled: boolean) {

@@ -15,6 +15,7 @@ export const BACKUP_EXCLUDED_KEYS: ReadonlySet<string> = new Set<ConfigKey>([
   "FRIENDS_DATA_CACHE",
   "GENERAL_FONT_FILE",
   "GENERAL_FONT_FILE_NAME",
+  "GENERAL_FONT_FILE_HISTORY",
 ]);
 
 /**

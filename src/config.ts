@@ -16,6 +16,7 @@ export interface BetterIntraConfig {
   GENERAL_FONT: string;
   GENERAL_FONT_FILE: string;
   GENERAL_FONT_FILE_NAME: string;
+  GENERAL_FONT_FILE_HISTORY: { name: string; dataUri: string }[];
   SHARE_LOOK: boolean;
   DISABLE_ANIMATIONS: boolean;
 
@@ -212,6 +213,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   GENERAL_FONT: "noto-sans",
   GENERAL_FONT_FILE: "",
   GENERAL_FONT_FILE_NAME: "",
+  GENERAL_FONT_FILE_HISTORY: [],
   SHARE_LOOK: false,
   SHORTCUTS_LINKS: [],
   SHORTCUTS_HIDE_IMPORTANT_LINKS: false,

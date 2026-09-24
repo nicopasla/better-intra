@@ -31,6 +31,21 @@ export const IMPORTED_FONT_FAMILY = "BI Custom";
 
 export const IMPORTED_FONT_MAX_BYTES = 4 * 1024 * 1024;
 
+export interface ImportedFontEntry {
+  name: string;
+  dataUri: string;
+}
+
+export function addFontToHistory(
+  history: readonly ImportedFontEntry[],
+  entry: ImportedFontEntry,
+  max = 3,
+): ImportedFontEntry[] {
+  if (!entry.name || !entry.dataUri) return [...history];
+  const filtered = history.filter((h) => h.name !== entry.name);
+  return [entry, ...filtered].slice(0, max);
+}
+
 export const GENERAL_FONT_IMPORT_URL =
   "https://fonts.googleapis.com/css2?family=Noto+Sans:wght@100..900&family=Inter:wght@100..900&family=Roboto:wght@100..900&family=Open+Sans:wght@300..800&family=Source+Sans+3:wght@200..900&family=Work+Sans:wght@100..900&family=Manrope:wght@200..800&family=Atkinson+Hyperlegible+Next:wght@200..800&family=Ubuntu:wght@300;400;500;700&display=swap";
 

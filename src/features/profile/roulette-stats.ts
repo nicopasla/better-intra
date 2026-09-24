@@ -1,6 +1,7 @@
 import { getConfig } from "../../config.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { hashLogin } from "../../utils/crypto.ts";
+import { waitFor } from "../../utils/wait-for.ts";
 import { createCountdown } from "../../utils/countdown.ts";
 import {
   TOOLTIP_SHOW_DELAY,
@@ -535,6 +536,7 @@ function renderCard(
   }
 
   countdownInterval = window.setInterval(() => {
+    if (document.hidden) return;
     const host = document.getElementById("ft-roulette-countdown");
     if (!host?.shadowRoot) {
       if (countdownInterval !== null) clearInterval(countdownInterval);
@@ -584,30 +586,25 @@ export async function initRouletteStats() {
   }));
 
   let attempts = 0;
-  const poll = () => {
-    // Past the grace period the card is mounted regardless, so it is never
-    // dropped on a dashboard where every other card is hidden.
+  const cardReady = () => {
     const lastAttempt = ++attempts > 30;
-
-    const card = ensureCard(lastAttempt);
-    if (!card) {
-      if (lastAttempt) {
-        rouletteStatsPolling = false;
-        return;
-      }
-      requestAnimationFrame(poll);
+    return ensureCard(lastAttempt) !== null;
+  };
+  void waitFor(cardReady).then((ok) => {
+    if (!ok) {
+      rouletteStatsPolling = false;
       return;
     }
-
-    // The card takes its slot in the grid immediately, with placeholders where
-    // the worker values go, so nothing pops in once the request resolves.
+    const card = ensureCard(false);
+    if (!card) {
+      rouletteStatsPolling = false;
+      return;
+    }
     renderCard(card, [], null, showHistory, true);
-
     statsPromise.then(({ roulette, evalStats }) => {
       rouletteStatsInitialized = true;
       rouletteStatsPolling = false;
       renderCard(card, roulette, evalStats, showHistory, false);
     });
-  };
-  requestAnimationFrame(poll);
+  });
 }

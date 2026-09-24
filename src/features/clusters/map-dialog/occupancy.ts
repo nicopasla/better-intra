@@ -208,7 +208,10 @@ function startCountdown(state: DialogState) {
   const badge = state.shadow.getElementById("updated-badge");
   if (badge) badge.style.display = "";
   updateBadge(state);
-  state.timers.countdown = setInterval(() => updateBadge(state), 1000);
+  state.timers.countdown = setInterval(() => {
+    if (document.hidden) return;
+    updateBadge(state);
+  }, 1000);
 }
 
 export function reapplyOccupancy(state: DialogState) {

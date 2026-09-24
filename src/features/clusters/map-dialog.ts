@@ -461,11 +461,14 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
   } else {
     loadCluster(state, activeCluster, abortController.signal);
   }
-  state.timers.poll = setInterval(
-    () => loadOccupancy(state, abortController.signal),
-    60_000,
-  );
-  state.timers.clock = setInterval(() => updateCampusTime(state), 30_000);
+  state.timers.poll = setInterval(() => {
+    if (document.hidden) return;
+    loadOccupancy(state, abortController.signal);
+  }, 60_000);
+  state.timers.clock = setInterval(() => {
+    if (document.hidden) return;
+    updateCampusTime(state);
+  }, 30_000);
   (async () => {
     const rest = state.clusters.filter(
       (c) => c.id !== state.activeCluster.id && c.svg,

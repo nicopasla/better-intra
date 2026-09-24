@@ -3,6 +3,7 @@ import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import FREEZE_SVG from "../../assets/svg/freeze.svg?raw";
 import { createCountdown } from "../../utils/countdown.ts";
 import { parseIntraDate } from "../../utils/dates.ts";
+import { waitFor } from "../../utils/wait-for.ts";
 
 const INJECTED_ID = "ft-freeze-card";
 
@@ -90,6 +91,7 @@ function startCountdown(
 
   if (_intervalId !== null) clearInterval(_intervalId);
   _intervalId = setInterval(() => {
+    if (document.hidden) return;
     if (parseIntraDate(endIso).getTime() - Date.now() <= 0) {
       if (_intervalId !== null) {
         clearInterval(_intervalId);
@@ -160,26 +162,18 @@ function removeFreezeCard() {
   }
 }
 
-function waitForProfileCard(): Promise<HTMLElement | null> {
-  return new Promise((resolve) => {
-    let attempts = 0;
-    const poll = () => {
-      const flexRow = document.querySelector<HTMLElement>(
-        ".flex.flex-col.lg\\:flex-row.gap-6.md\\:gap-8",
-      );
-      const profileCard = flexRow?.firstElementChild as HTMLElement | null;
-      if (profileCard) {
-        resolve(profileCard);
-        return;
-      }
-      if (++attempts > 60) {
-        resolve(null);
-        return;
-      }
-      requestAnimationFrame(poll);
-    };
-    requestAnimationFrame(poll);
-  });
+async function waitForProfileCard(): Promise<HTMLElement | null> {
+  const ok = await waitFor(() => {
+    const flexRow = document.querySelector<HTMLElement>(
+      ".flex.flex-col.lg\\:flex-row.gap-6.md\\:gap-8",
+    );
+    return !!flexRow?.firstElementChild;
+  }, 2000);
+  if (!ok) return null;
+  const flexRow = document.querySelector<HTMLElement>(
+    ".flex.flex-col.lg\\:flex-row.gap-6.md\\:gap-8",
+  );
+  return (flexRow?.firstElementChild as HTMLElement | null) ?? null;
 }
 
 function buildFreezeCard(profileCard: HTMLElement, freezeUntil: string) {

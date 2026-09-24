@@ -3,6 +3,7 @@
   "name": "Better Intra",
   "version": "1.0.8",
   "description": "UI and UX improvements for 42 Intra: logtime calendar, cluster map tools, custom profiles, shortcuts, friends widget, and more.",
+  "author": "nicopasla",
   "permissions": ["storage", "activeTab"],
   "background": {
     "service_worker": "background.js"

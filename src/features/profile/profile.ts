@@ -53,7 +53,6 @@ export async function initProfile() {
   let isUpdating = false;
   let needsRerun = false;
   let initialised = false;
-  let initedPath: string | null = null;
 
   const scheduleUpdate = () => {
     needsRerun = false;
@@ -69,32 +68,29 @@ export async function initProfile() {
         if (!findProfileCard()) return;
         initialised = true;
 
-        if (initedPath !== location.pathname) {
-          initedPath = location.pathname;
-          // Fire-and-forget: features with >2s timeouts or slow network fetches
-          initFreezeCard();
-          injectFriendsWidget();
-          if (location.pathname === "/") colorTrackerBadge();
-          await Promise.allSettled([
-            initLayoutManager(),
-            initProfileCardStyling(),
-            initAchievements(),
-            initMarks(),
-            initProjectBadges(),
-            initProjectsSort(),
-            initRouletteStats(),
-            initEvaluations(),
-            findSlotsButton(),
-            injectEventsSelect(),
-            updateEventFilters(),
-            handleProfileRedirect(),
-            initMilestones(),
-            initBadges(),
-            applyTitleBadgeWrap(),
-            initTranscript(),
-            initPace(),
-          ]);
-        }
+        // Fire-and-forget: features with >2s timeouts or slow network fetches
+        initFreezeCard();
+        injectFriendsWidget();
+        if (location.pathname === "/") colorTrackerBadge();
+        await Promise.allSettled([
+          initLayoutManager(),
+          initProfileCardStyling(),
+          initAchievements(),
+          initMarks(),
+          initProjectBadges(),
+          initProjectsSort(),
+          initRouletteStats(),
+          initEvaluations(),
+          findSlotsButton(),
+          injectEventsSelect(),
+          updateEventFilters(),
+          handleProfileRedirect(),
+          initMilestones(),
+          initBadges(),
+          applyTitleBadgeWrap(),
+          initTranscript(),
+          initPace(),
+        ]);
       }
     } finally {
       isUpdating = false;

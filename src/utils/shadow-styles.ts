@@ -1,51 +1,6 @@
 import { sharedCSS } from "../assets/shared-styles.ts";
 
-const SHEET_SOURCE = sharedCSS.replace(/@import[^;]+;/g, "");
-
-let sharedSheet: CSSStyleSheet | null = null;
-let sheetFailed = false;
-
-function canConstructSheets(): boolean {
-  try {
-    if (typeof CSSStyleSheet === "undefined") return false;
-    const sheet = new CSSStyleSheet();
-    return typeof sheet.replaceSync === "function";
-  } catch {
-    return false;
-  }
-}
-
-const CONSTRUCTABLE = canConstructSheets();
-
-function getSharedSheet(): CSSStyleSheet | null {
-  if (!CONSTRUCTABLE || sheetFailed) return null;
-  if (!sharedSheet) {
-    try {
-      sharedSheet = new CSSStyleSheet();
-      sharedSheet.replaceSync(SHEET_SOURCE);
-    } catch {
-      sheetFailed = true;
-      sharedSheet = null;
-    }
-  }
-  return sharedSheet;
-}
-
-function ensureShared(root: ShadowRoot): void {
-  const sheet = getSharedSheet();
-  if (sheet) {
-    const adopted = root.adoptedStyleSheets ?? [];
-    if (!adopted.includes(sheet)) {
-      try {
-        root.adoptedStyleSheets = [sheet, ...adopted];
-        return;
-      } catch {
-        /* fall through to style element */
-      }
-    } else {
-      return;
-    }
-  }
+function ensureSharedStyle(root: ShadowRoot): void {
   if (root.querySelector("style[data-ft-shared]")) return;
   const style = document.createElement("style");
   style.setAttribute("data-ft-shared", "1");
@@ -54,24 +9,11 @@ function ensureShared(root: ShadowRoot): void {
 }
 
 export function adoptSharedStyles(root: ShadowRoot): void {
-  ensureShared(root);
+  ensureSharedStyle(root);
 }
 
 export function adoptShadowCss(root: ShadowRoot, cssText: string): void {
-  ensureShared(root);
-  if (CONSTRUCTABLE) {
-    const shared = getSharedSheet();
-    if (shared) {
-      try {
-        const featureSheet = new CSSStyleSheet();
-        featureSheet.replaceSync(cssText);
-        root.adoptedStyleSheets = [shared, featureSheet];
-        return;
-      } catch {
-        /* fall through to style element */
-      }
-    }
-  }
+  ensureSharedStyle(root);
   if (cssText.trim()) {
     const style = document.createElement("style");
     style.textContent = cssText;
@@ -80,21 +22,5 @@ export function adoptShadowCss(root: ShadowRoot, cssText: string): void {
 }
 
 export function adoptShadowStyles(root: ShadowRoot): void {
-  ensureShared(root);
-  if (!CONSTRUCTABLE) return;
-  const styles = [...root.querySelectorAll("style")];
-  if (styles.length === 0) return;
-  const shared = getSharedSheet();
-  if (!shared) return;
-  try {
-    const featureSheets = styles.map((el) => {
-      const sheet = new CSSStyleSheet();
-      sheet.replaceSync(el.textContent ?? "");
-      el.remove();
-      return sheet;
-    });
-    root.adoptedStyleSheets = [shared, ...featureSheets];
-  } catch {
-    /* keep tree <style> elements as-is */
-  }
+  ensureSharedStyle(root);
 }

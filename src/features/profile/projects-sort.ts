@@ -1,5 +1,6 @@
 import { getConfig } from "../../config.ts";
 import { adoptSharedStyles } from "../../utils/shadow-styles.ts";
+import { waitFor } from "../../utils/wait-for.ts";
 import { THEMES, getEffectiveTheme } from "./theme/theme-manager.ts";
 import SORT_AZ_SVG from "../../assets/svg/sort-az.svg?raw";
 import SORT_ZA_SVG from "../../assets/svg/sort-za.svg?raw";
@@ -127,6 +128,14 @@ const extractItems = (panel: HTMLElement | null): ProjectItem[] => {
 export async function initProjectsSort() {
   const enabled = await getConfig("PROFILE_PROJECTS_SORT");
   if (!enabled) return;
+
+  const marksHeaderReady = () =>
+    Array.from(
+      document.querySelectorAll<HTMLElement>(
+        ".font-bold.text-black.uppercase.text-sm",
+      ),
+    ).some((el) => el.textContent?.trim().startsWith("Marks"));
+  if (!(await waitFor(marksHeaderReady, 3000))) return;
 
   const marksHeader = Array.from(
     document.querySelectorAll<HTMLElement>(

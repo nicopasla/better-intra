@@ -129,23 +129,28 @@ export async function initProjectsSort() {
   const enabled = await getConfig("PROFILE_PROJECTS_SORT");
   if (!enabled) return;
 
-  const marksHeaderReady = () =>
-    Array.from(
+  const findMarksPanel = (): { header: HTMLElement; panel: HTMLElement } | null => {
+    const headers = Array.from(
       document.querySelectorAll<HTMLElement>(
         ".font-bold.text-black.uppercase.text-sm",
       ),
-    ).some((el) => el.textContent?.trim().startsWith("Marks"));
-  if (!(await waitFor(marksHeaderReady, 3000))) return;
+    );
+    for (const header of headers) {
+      const text = header.textContent?.trim() ?? "";
+      if (!text.startsWith("Marks") && !text.startsWith("Projects")) continue;
+      const panel = header.closest<HTMLElement>(".bg-white");
+      if (panel && extractItems(panel).length >= 2) {
+        return { header, panel };
+      }
+    }
+    return null;
+  };
 
-  const marksHeader = Array.from(
-    document.querySelectorAll<HTMLElement>(
-      ".font-bold.text-black.uppercase.text-sm",
-    ),
-  ).find((el) => el.textContent?.trim().startsWith("Marks"));
-  if (!marksHeader) return;
-
-  const panel = marksHeader.closest<HTMLElement>(".bg-white");
-  if (extractItems(panel).length < 2) return;
+  const found = await waitFor(() => findMarksPanel() != null, 3000);
+  const marksPanel = found ? findMarksPanel() : null;
+  if (!marksPanel) return;
+  const marksHeader = marksPanel.header;
+  const panel = marksPanel.panel;
 
   const titleRow = marksHeader.parentElement;
   if (!titleRow) return;

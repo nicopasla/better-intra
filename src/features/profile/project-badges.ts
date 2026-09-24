@@ -51,9 +51,10 @@ function insertBadges(
             href="${item.href}"
             target="_blank"
             rel="noreferrer"
-            style="display:inline-flex;align-items:center;gap:0.25rem;font-weight:700;padding:0.125rem 0.75rem;border-radius:9999px;border:1px solid transparent;text-decoration:none;${exam
-              ? "background:#ed8179;color:#fff;border-color:#ed8179;"
-              : "background:#16a34a;color:#fff;border-color:#16a34a;"}"
+            class="badge ${exam ? "" : "badge-success"} gap-1 no-underline"
+            style="font-weight: 700; ${exam
+              ? "background: #ed8179; color: #fff; border-color: #ed8179;"
+              : ""}"
           >
             ${item.name}
           </a>

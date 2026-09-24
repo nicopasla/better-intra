@@ -137,18 +137,77 @@ const getVisualKey = (urls: VisualUrls) =>
   });
 
 const CACHE_PREFIX = "visuals_cache_";
+const CACHE_MAINTAINED_KEY = "VISUALS_CACHE_MAINTAINED_AT";
+const CACHE_MAX_ENTRIES = 100;
+const CACHE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
+const CACHE_MAINTAIN_INTERVAL_MS = 60 * 60 * 1000;
 const pendingRevalidations = new Set<string>();
 
+type CachedVisuals = { v: 1; ts: number; urls: VisualUrls };
+
 const getCachedVisuals = async (login: string): Promise<VisualUrls | null> => {
-  const result = (await chrome.storage.local.get(
-    `${CACHE_PREFIX}${login}`,
-  )) as Record<string, VisualUrls>;
-  return result[`${CACHE_PREFIX}${login}`] || null;
+  const key = `${CACHE_PREFIX}${login}`;
+  const result = (await chrome.storage.local.get(key)) as Record<
+    string,
+    CachedVisuals | VisualUrls
+  >;
+  const stored = result[key];
+  if (!stored) return null;
+  if ("urls" in stored && stored.v === 1) return stored.urls;
+  return stored as VisualUrls;
 };
 
 const setCachedVisuals = (login: string, urls: VisualUrls) => {
-  chrome.storage.local.set({ [`${CACHE_PREFIX}${login}`]: urls });
+  chrome.storage.local.set({
+    [`${CACHE_PREFIX}${login}`]: { v: 1, ts: Date.now(), urls },
+  });
 };
+
+async function pruneVisualsCache(): Promise<void> {
+  try {
+    const meta = (await chrome.storage.local.get(CACHE_MAINTAINED_KEY))[
+      CACHE_MAINTAINED_KEY
+    ] as number | undefined;
+    const now = Date.now();
+    if (typeof meta === "number" && now - meta < CACHE_MAINTAIN_INTERVAL_MS) {
+      return;
+    }
+    await chrome.storage.local.set({ [CACHE_MAINTAINED_KEY]: now });
+
+    const storage = chrome.storage.local as unknown as {
+      getKeys?: () => Promise<string[]>;
+    };
+    const keys = storage.getKeys
+      ? await storage.getKeys()
+      : Object.keys(await chrome.storage.local.get(null));
+    const cacheKeys = keys.filter((k) => k.startsWith(CACHE_PREFIX));
+    if (cacheKeys.length === 0) return;
+
+    const all = (await chrome.storage.local.get(cacheKeys)) as Record<
+      string,
+      CachedVisuals | VisualUrls
+    >;
+    const entries = cacheKeys
+      .map((key) => {
+        const value = all[key];
+        const ts =
+          value && "ts" in value && typeof value.ts === "number" ? value.ts : 0;
+        return { key, ts };
+      })
+      .sort((a, b) => b.ts - a.ts);
+
+    const stale = entries
+      .filter(
+        (entry, index) =>
+          index >= CACHE_MAX_ENTRIES ||
+          (entry.ts > 0 && now - entry.ts > CACHE_TTL_MS),
+      )
+      .map((entry) => entry.key);
+    if (stale.length > 0) await chrome.storage.local.remove(stale);
+  } catch {
+    /* cache maintenance is best-effort */
+  }
+}
 
 const revalidateVisuals = async (login: string, cached: VisualUrls) => {
   if (pendingRevalidations.has(login)) return;
@@ -552,6 +611,7 @@ const runUpdateVisuals = async () => {
   const pathParts = location.pathname.split("/").filter((p) => p);
   injectCustomStyles();
   installHistoryListener();
+  void pruneVisualsCache();
 
   let avatarEl = document.querySelector(AVATAR_SELECTOR) as HTMLElement;
 

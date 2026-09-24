@@ -17,7 +17,6 @@ export interface BetterIntraConfig {
   GENERAL_FONT_FILE: string;
   GENERAL_FONT_FILE_NAME: string;
   GENERAL_FONT_FILE_HISTORY: { name: string; dataUri: string }[];
-  SHARE_LOOK: boolean;
   DISABLE_ANIMATIONS: boolean;
 
   // Cloud Sync Settings
@@ -214,7 +213,6 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   GENERAL_FONT_FILE: "",
   GENERAL_FONT_FILE_NAME: "",
   GENERAL_FONT_FILE_HISTORY: [],
-  SHARE_LOOK: false,
   SHORTCUTS_LINKS: [],
   SHORTCUTS_HIDE_IMPORTANT_LINKS: false,
   SHORTCUTS_ALIGNMENT: "left",
@@ -254,7 +252,6 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "ACTIVE_SCRIPTS",
   "BETTER_INTRA_THEME",
   "GENERAL_FONT",
-  "SHARE_LOOK",
   "DISABLE_ANIMATIONS",
   "LOGTIME_GOAL_HOURS",
   "LOGTIME_SHOW_AVERAGE",

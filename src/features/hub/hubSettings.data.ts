@@ -27,7 +27,7 @@ export const FEATURE_DEFS = [
     id: "appearance",
     name: "Appearance",
     icon: PALETTE_SVG,
-    desc: "Theme, accent color, fonts, and profile look sharing.",
+    desc: "Theme, accent color, and fonts.",
     cols: 2,
     subTabs: [
       { id: "theme", name: "Theme", icon: PALETTE_SVG },
@@ -396,17 +396,6 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "font-import",
       fullWidth: true,
       defaultValue: CONFIG_DEFAULT.GENERAL_FONT_FILE_NAME,
-    },
-    {
-      feature: "appearance",
-      subTab: "theme",
-      key: "SHARE_LOOK",
-      label: "Share my theme on my profile",
-      desc: "Visitors running Better Intra see your theme on your profile while they are there.",
-      kind: "toggle",
-      defaultValue: CONFIG_DEFAULT.SHARE_LOOK,
-      grid: true,
-      colSpan: 1,
     },
     {
       feature: "appearance",

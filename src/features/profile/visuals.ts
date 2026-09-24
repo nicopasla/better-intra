@@ -171,6 +171,7 @@ const revalidateVisuals = async (login: string, cached: VisualUrls) => {
     )
       return;
     applyImgs(fresh);
+    applyProfileLook(login, fresh.look ?? null);
     lastAppliedUser = login;
     lastAppliedKey = freshKey;
   } finally {

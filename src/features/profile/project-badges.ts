@@ -5,6 +5,8 @@ import { waitFor } from "../../utils/wait-for.ts";
 const SHADOW_ID = "project-badges-shadow";
 
 let projectBadgesInitialized = false;
+let badgesObserver: MutationObserver | null = null;
+let badgesDebounce: number | null = null;
 
 function isExam(name: string): boolean {
   return /exam/i.test(name);
@@ -65,6 +67,51 @@ function insertBadges(
   hFull.appendChild(host);
 }
 
+function findCard(): HTMLElement | null {
+  const cards = document.querySelectorAll<HTMLElement>(".bg-white.md\\:h-96");
+  return (
+    [...cards].find((c) => {
+      const titleEl = c.querySelector("[class*='uppercase']");
+      return titleEl?.textContent?.trim().toUpperCase() === "PROJECTS";
+    }) ?? null
+  );
+}
+
+function collectItems(card: HTMLElement): { name: string; href: string }[] {
+  const ul = card.querySelector(".h-full ul");
+  const lis = ul?.querySelectorAll("li");
+  if (lis && lis.length > 0) {
+    const items: { name: string; href: string }[] = [];
+    for (const li of lis) {
+      const a = li.querySelector("a");
+      if (!a) continue;
+      items.push({ name: a.textContent?.trim() || "", href: a.href });
+    }
+    return items;
+  }
+  const enhanced = card.querySelector(".flex.flex-col.gap-2");
+  if (enhanced) {
+    const items: { name: string; href: string }[] = [];
+    const divs = enhanced.querySelectorAll(":scope > div");
+    for (let j = 0; j < Math.min(divs.length, 5); j++) {
+      const a = divs[j].querySelector("a");
+      if (!a) continue;
+      items.push({ name: a.textContent?.trim() || "", href: a.href });
+    }
+    return items;
+  }
+  return [];
+}
+
+function applyBadges(): void {
+  const card = findCard();
+  if (!card) return;
+  if (document.getElementById(SHADOW_ID)) return;
+  const items = collectItems(card);
+  if (items.length === 0) return;
+  insertBadges(card, items);
+}
+
 export async function initProjectBadges() {
   if (projectBadgesInitialized) return;
   projectBadgesInitialized = true;
@@ -75,40 +122,28 @@ export async function initProjectBadges() {
   )
     return;
 
-  const findCard = () => {
-    const cards = document.querySelectorAll<HTMLElement>(".bg-white.md\\:h-96");
-    return [...cards].find((c) => {
-      const titleEl = c.querySelector("[class*='uppercase']");
-      return titleEl?.textContent?.trim().toUpperCase() === "PROJECTS";
-    });
+  await waitFor(() => findCard() !== null, 3000).then((ok) => {
+    if (ok) applyBadges();
+  });
+
+  const schedule = () => {
+    if (badgesDebounce !== null) return;
+    badgesDebounce = window.setTimeout(() => {
+      badgesDebounce = null;
+      applyBadges();
+    }, 300);
   };
 
-  await waitFor(() => findCard() !== null, 2000).then((ok) => {
-    if (!ok) return;
-    const card = findCard()!;
-    const ul = card.querySelector(".h-full ul");
-    const lis = ul?.querySelectorAll("li");
-    if (lis && lis.length > 0) {
-      const items: { name: string; href: string }[] = [];
-      for (const li of lis) {
-        const a = li.querySelector("a");
-        if (!a) continue;
-        items.push({ name: a.textContent?.trim() || "", href: a.href });
-      }
-      insertBadges(card, items);
-      return;
-    }
-
-    const enhanced = card.querySelector(".flex.flex-col.gap-2");
-    if (enhanced) {
-      const items: { name: string; href: string }[] = [];
-      const divs = enhanced.querySelectorAll(":scope > div");
-      for (let j = 0; j < Math.min(divs.length, 5); j++) {
-        const a = divs[j].querySelector("a");
-        if (!a) continue;
-        items.push({ name: a.textContent?.trim() || "", href: a.href });
-      }
-      insertBadges(card, items);
-    }
-  });
+  if (!badgesObserver) {
+    badgesObserver = new MutationObserver(() => schedule());
+    badgesObserver.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener(
+      "pagehide",
+      () => {
+        badgesObserver?.disconnect();
+        badgesObserver = null;
+      },
+      { once: true },
+    );
+  }
 }

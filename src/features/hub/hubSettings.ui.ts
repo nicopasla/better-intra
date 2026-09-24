@@ -1363,7 +1363,7 @@ function renderTabsContent(
       </label>
       <div
         role="tabpanel"
-        class="tab-content bg-base-100 border-base-300 p-0 overflow-y-auto"
+        class="tab-content bg-base-100 border-base-300 p-0"
       >
         <div
           class="flex flex-col ${enabled || isAlwaysEnabled
@@ -1841,8 +1841,8 @@ async function createModal(active: FeatureId[]): Promise<void> {
         font-family: ${INTRA_FONT} !important;
       }
       .tab-content {
-        height: 100%;
-        overflow-y: auto;
+        height: auto !important;
+        overflow: visible !important;
       }
     </style>
     <div
@@ -1916,7 +1916,8 @@ async function createModal(active: FeatureId[]): Promise<void> {
 
       <div
         role="tablist"
-        class="tabs tabs-lg tabs-border flex-1 overflow-hidden"
+        class="tabs tabs-lg tabs-border flex-1 overflow-y-auto min-h-0"
+        style="min-height:0;"
       >
         ${tabsContent}
       </div>

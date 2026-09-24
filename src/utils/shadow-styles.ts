@@ -1,65 +1,5 @@
 import { sharedCSS } from "../assets/shared-styles.ts";
 
-type CssMode = "sheet" | "style";
-
-let mode: CssMode | "unknown" = "unknown";
-let sharedSheet: CSSStyleSheet | null = null;
-
-function isForcedStyle(): boolean {
-  try {
-    return localStorage.getItem("ft-css-off") === "1";
-  } catch {
-    return false;
-  }
-}
-
-function detect(): void {
-  if (mode !== "unknown") return;
-  if (isForcedStyle()) {
-    mode = "style";
-    return;
-  }
-  try {
-    if (typeof CSSStyleSheet === "undefined") {
-      mode = "style";
-      return;
-    }
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(sharedCSS);
-    if (!sheet.cssRules || sheet.cssRules.length === 0) {
-      mode = "style";
-      return;
-    }
-
-    const host = document.createElement("div");
-    host.style.cssText =
-      "position:absolute;left:-99999px;top:-99999px;width:1px;height:1px;overflow:hidden;";
-    const root = host.attachShadow({ mode: "open" });
-    root.adoptedStyleSheets = [sheet];
-    const wrapper = document.createElement("div");
-    wrapper.setAttribute("data-theme", "dark");
-    const probe = document.createElement("span");
-    probe.className = "badge";
-    wrapper.appendChild(probe);
-    root.appendChild(wrapper);
-    (document.documentElement || document.body).appendChild(host);
-    const cs = getComputedStyle(probe);
-    const display = cs.display;
-    const align = cs.alignItems;
-    host.remove();
-
-    const worked = display === "inline-flex" && align === "center";
-    if (worked) {
-      sharedSheet = sheet;
-      mode = "sheet";
-    } else {
-      mode = "style";
-    }
-  } catch {
-    mode = "style";
-  }
-}
-
 function ensureSharedStyle(root: ShadowRoot): void {
   if (root.querySelector("style[data-ft-shared]")) return;
   const style = document.createElement("style");
@@ -68,40 +8,12 @@ function ensureSharedStyle(root: ShadowRoot): void {
   root.prepend(style);
 }
 
-function ensureShared(root: ShadowRoot): void {
-  detect();
-  if (mode === "sheet" && sharedSheet) {
-    const adopted = root.adoptedStyleSheets ?? [];
-    if (!adopted.includes(sharedSheet)) {
-      try {
-        root.adoptedStyleSheets = [sharedSheet, ...adopted];
-        return;
-      } catch {
-        /* fall through to style element */
-      }
-    } else {
-      return;
-    }
-  }
+export function adoptSharedStyles(root: ShadowRoot): void {
   ensureSharedStyle(root);
 }
 
-export function adoptSharedStyles(root: ShadowRoot): void {
-  ensureShared(root);
-}
-
 export function adoptShadowCss(root: ShadowRoot, cssText: string): void {
-  ensureShared(root);
-  if (mode === "sheet" && sharedSheet) {
-    try {
-      const featureSheet = new CSSStyleSheet();
-      featureSheet.replaceSync(cssText);
-      root.adoptedStyleSheets = [sharedSheet, featureSheet];
-      return;
-    } catch {
-      /* fall through to style element */
-    }
-  }
+  ensureSharedStyle(root);
   if (cssText.trim()) {
     const style = document.createElement("style");
     style.textContent = cssText;

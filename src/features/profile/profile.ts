@@ -71,6 +71,10 @@ export async function initProfile() {
 
         if (initedPath !== location.pathname) {
           initedPath = location.pathname;
+          // Fire-and-forget: features with >2s timeouts or slow network fetches
+          initFreezeCard();
+          injectFriendsWidget();
+          if (location.pathname === "/") colorTrackerBadge();
           await Promise.allSettled([
             initLayoutManager(),
             initProfileCardStyling(),
@@ -90,10 +94,6 @@ export async function initProfile() {
             initTranscript(),
             initPace(),
           ]);
-          // Fire-and-forget: features with >2s timeouts or slow network fetches
-          initFreezeCard();
-          injectFriendsWidget();
-          if (location.pathname === "/") colorTrackerBadge();
         }
       }
     } finally {

@@ -1,6 +1,9 @@
 import { sharedCSS } from "../assets/shared-styles.ts";
 
+const SHEET_SOURCE = sharedCSS.replace(/@import[^;]+;/g, "");
+
 let sharedSheet: CSSStyleSheet | null = null;
+let sheetFailed = false;
 
 function canConstructSheets(): boolean {
   try {
@@ -15,10 +18,15 @@ function canConstructSheets(): boolean {
 const CONSTRUCTABLE = canConstructSheets();
 
 function getSharedSheet(): CSSStyleSheet | null {
-  if (!CONSTRUCTABLE) return null;
+  if (!CONSTRUCTABLE || sheetFailed) return null;
   if (!sharedSheet) {
-    sharedSheet = new CSSStyleSheet();
-    sharedSheet.replaceSync(sharedCSS);
+    try {
+      sharedSheet = new CSSStyleSheet();
+      sharedSheet.replaceSync(SHEET_SOURCE);
+    } catch {
+      sheetFailed = true;
+      sharedSheet = null;
+    }
   }
   return sharedSheet;
 }

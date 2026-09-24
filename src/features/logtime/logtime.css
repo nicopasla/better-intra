@@ -110,6 +110,13 @@
   width: 100%;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .badge-rainbow,
+  .liquid-fill-full {
+    animation: none !important;
+  }
+}
+
 .compact-group {
   justify-content: center;
 }

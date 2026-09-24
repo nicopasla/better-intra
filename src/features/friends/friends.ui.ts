@@ -546,6 +546,12 @@ function renderWidget(state: WidgetState) {
         text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
       }
 
+      @media (prefers-reduced-motion: reduce) {
+        .badge-rainbow {
+          animation: none !important;
+        }
+      }
+
       .medal-glow-gold,
       .medal-glow-silver,
       .medal-glow-bronze {

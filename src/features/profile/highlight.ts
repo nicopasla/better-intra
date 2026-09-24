@@ -37,6 +37,14 @@ function injectHighlightStyles() {
     .${GLOWING_CLASS} {
       animation: ft-pulsate 2s infinite ease-in-out !important;
     }
+    html.ft-no-anim .${GLOWING_CLASS} {
+      animation: none !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .${GLOWING_CLASS} {
+        animation: none !important;
+      }
+    }
   `;
   const target = document.head || document.documentElement;
   target.appendChild(style);

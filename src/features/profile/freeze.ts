@@ -195,11 +195,14 @@ function buildFreezeCard(profileCard: HTMLElement, freezeUntil: string) {
   card.style.cssText = `min-height: 200px;`;
 
   const iconWrap = document.createElement("div");
+  iconWrap.className = "ft-freeze-icon";
   iconWrap.style.cssText = `width: 2.5rem; height: 2.5rem; color: #fff; animation: ft-freeze-spin 8s linear infinite;`;
   if (!document.getElementById("ft-freeze-spin-style")) {
     const style = document.createElement("style");
     style.id = "ft-freeze-spin-style";
-    style.textContent = `@keyframes ft-freeze-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
+    style.textContent = `@keyframes ft-freeze-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      html.ft-no-anim .ft-freeze-icon { animation: none !important; }
+      @media (prefers-reduced-motion: reduce) { .ft-freeze-icon { animation: none !important; } }`;
     document.head.appendChild(style);
   }
   render(unsafeHTML(FREEZE_SVG), iconWrap);

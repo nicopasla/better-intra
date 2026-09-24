@@ -5,16 +5,6 @@ type CssMode = "sheet" | "style";
 let mode: CssMode | "unknown" = "unknown";
 let sharedSheet: CSSStyleSheet | null = null;
 
-function logDebug(msg: string): void {
-  try {
-    if (localStorage.getItem("ft-css-debug") === "1") {
-      console.warn(`[ft-css] ${msg}`);
-    }
-  } catch {
-    /* ignore */
-  }
-}
-
 function isForcedStyle(): boolean {
   try {
     return localStorage.getItem("ft-css-off") === "1";
@@ -27,20 +17,17 @@ function detect(): void {
   if (mode !== "unknown") return;
   if (isForcedStyle()) {
     mode = "style";
-    logDebug("style mode (forced)");
     return;
   }
   try {
     if (typeof CSSStyleSheet === "undefined") {
       mode = "style";
-      logDebug("style mode (no CSSStyleSheet)");
       return;
     }
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(sharedCSS);
     if (!sheet.cssRules || sheet.cssRules.length === 0) {
       mode = "style";
-      logDebug("style mode (empty sheet)");
       return;
     }
 
@@ -59,26 +46,17 @@ function detect(): void {
     const cs = getComputedStyle(probe);
     const display = cs.display;
     const align = cs.alignItems;
-    const radius = cs.borderRadius;
-    const padding = cs.paddingLeft;
     host.remove();
 
     const worked = display === "inline-flex" && align === "center";
     if (worked) {
       sharedSheet = sheet;
       mode = "sheet";
-      logDebug(
-        `sheet mode (self-test ok, rules=${sheet.cssRules.length}, display=${display}, align=${align}, radius=${radius}, padding=${padding})`,
-      );
     } else {
       mode = "style";
-      logDebug(
-        `style mode (self-test failed, rules=${sheet.cssRules.length}, display=${display}, align=${align}, radius=${radius}, padding=${padding})`,
-      );
     }
   } catch {
     mode = "style";
-    logDebug("style mode (exception)");
   }
 }
 
@@ -132,19 +110,5 @@ export function adoptShadowCss(root: ShadowRoot, cssText: string): void {
 }
 
 export function adoptShadowStyles(root: ShadowRoot): void {
-  ensureShared(root);
-  if (mode !== "sheet" || !sharedSheet) return;
-  const styles = [...root.querySelectorAll("style")];
-  if (styles.length === 0) return;
-  try {
-    const featureSheets = styles.map((el) => {
-      const sheet = new CSSStyleSheet();
-      sheet.replaceSync(el.textContent ?? "");
-      el.remove();
-      return sheet;
-    });
-    root.adoptedStyleSheets = [sharedSheet, ...featureSheets];
-  } catch {
-    /* keep tree <style> elements as-is */
-  }
+  ensureSharedStyle(root);
 }

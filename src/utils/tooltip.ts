@@ -196,12 +196,17 @@ export function bindTooltips(
   };
 
   root.addEventListener("mouseover", (e) => {
-    const path = e.composedPath() as Element[];
-    if (path.some((el) => el instanceof HTMLElement && el.id === TOOLTIP_ID)) {
-      cancelHide();
-      return;
+    const target = e.target;
+    if (!(target instanceof Element)) return;
+    let tip = target.closest<HTMLElement>("[data-tip], [data-tip-html]");
+    if (!tip) {
+      const path = e.composedPath() as Element[];
+      if (path.some((el) => el instanceof HTMLElement && el.id === TOOLTIP_ID)) {
+        cancelHide();
+        return;
+      }
+      tip = (path.find(isTip) as HTMLElement | undefined) ?? null;
     }
-    const tip = path.find(isTip) ?? null;
     if (!tip) return;
     cancelHide();
     cancelShow();
@@ -214,19 +219,19 @@ export function bindTooltips(
       showTimer = window.setTimeout(() => {
         showTimer = null;
         if (hovered !== tip) return;
-        if (tip.dataset.tipHtml) {
+        if (tip!.dataset.tipHtml) {
           showFloatingTooltipHtml(
-            tip,
-            tip.dataset.tipHtml,
+            tip!,
+            tip!.dataset.tipHtml,
             isLight,
             container,
             position,
             size,
           );
-        } else if (tip.dataset.tip) {
+        } else if (tip!.dataset.tip) {
           showFloatingTooltip(
-            tip,
-            tip.dataset.tip,
+            tip!,
+            tip!.dataset.tip,
             isLight,
             container,
             position,
@@ -237,6 +242,16 @@ export function bindTooltips(
     });
   });
   root.addEventListener("mouseout", (e) => {
+    const target = e.target;
+    const fastTip =
+      target instanceof Element
+        ? target.closest("[data-tip], [data-tip-html]")
+        : null;
+    if (fastTip) {
+      cancelShow();
+      scheduleHide();
+      return;
+    }
     const path = e.composedPath() as Element[];
     if (path.some((el) => el instanceof HTMLElement && el.id === TOOLTIP_ID)) {
       cancelShow();

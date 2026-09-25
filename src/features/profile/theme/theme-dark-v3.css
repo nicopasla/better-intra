@@ -420,3 +420,71 @@ html.dark .bg-legacy-main-muted .text-white {
 html.dark .bg-\[rgb\(23\,23\,23\)\] {
   background-color: hsl(var(--card)) !important;
 }
+
+/* ============================================================================
+   ACCENT TOUCHES: selection & focus (theme-driven via --accent / --ring)
+   ============================================================================ */
+
+html.dark ::selection {
+  background-color: hsl(var(--accent) / 0.35);
+  color: hsl(var(--foreground)) !important;
+}
+
+html.dark a:focus-visible,
+html.dark button:focus-visible,
+html.dark input:focus-visible,
+html.dark select:focus-visible,
+html.dark textarea:focus-visible,
+html.dark [tabindex]:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   TOPBAR & SIDEBAR NAV ICONS
+   ============================================================================ */
+
+html.dark .flex.flex-row.items-center.justify-between.h-full.bg-white {
+  background-color: hsl(var(--background)) !important;
+}
+
+html.dark svg[stroke="#000"] {
+  stroke: hsl(var(--foreground)) !important;
+}
+
+html.dark [class*="sidebar"] svg[stroke="#fff"],
+html.dark [class*="nav-left"] svg[stroke="#fff"] {
+  stroke: hsl(var(--foreground)) !important;
+}
+
+html.dark [class*="sidebar"] a:hover svg[stroke="#fff"],
+html.dark [class*="nav-left"] a:hover svg[stroke="#fff"] {
+  stroke: hsl(var(--primary)) !important;
+}
+
+/* ============================================================================
+   SCROLLBARS
+   ============================================================================ */
+
+html.dark * {
+  scrollbar-color: hsl(var(--border)) hsl(var(--card));
+  scrollbar-width: thin;
+}
+
+html.dark ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: hsl(var(--card));
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 5px;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}

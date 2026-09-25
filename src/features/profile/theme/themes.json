@@ -648,21 +648,39 @@
     }
   },
   "seishin": {
-    "primary": "144 70% 55%",
-    "primaryForeground": "144 100% 10%",
-    "ring": "144 70% 55%",
+    "primary": "44 100% 49%",
+    "primaryForeground": "44 100% 15%",
+    "ring": "44 100% 49%",
     "dark": {
-      "background": "144 100% 25%",
-      "card": "144 90% 32%",
-      "foreground": "60 5% 96%",
-      "muted": "144 60% 30%",
-      "mutedForeground": "60 5% 85%",
-      "popover": "144 90% 32%",
-      "popoverForeground": "60 5% 96%",
-      "accent": "144 70% 35%",
-      "accentForeground": "60 5% 96%",
-      "border": "144 60% 40%",
-      "input": "144 80% 30%"
+      "background": "0 0% 7%",
+      "card": "145 35% 14%",
+      "foreground": "0 0% 95%",
+      "muted": "0 0% 15%",
+      "mutedForeground": "0 0% 65%",
+      "popover": "0 0% 7%",
+      "popoverForeground": "0 0% 95%",
+      "accent": "44 100% 49%",
+      "accentForeground": "44 100% 15%",
+      "border": "0 0% 20%",
+      "input": "0 0% 10%"
+    }
+  },
+  "twilight": {
+    "primary": "0 100% 71%",
+    "primaryForeground": "0 0% 0%",
+    "ring": "0 100% 71%",
+    "light": {
+      "background": "24 100% 92%",
+      "card": "22 100% 88%",
+      "foreground": "235 21% 21%",
+      "muted": "22 100% 88%",
+      "mutedForeground": "235 14% 38%",
+      "popover": "22 100% 88%",
+      "popoverForeground": "235 21% 21%",
+      "accent": "22 100% 88%",
+      "accentForeground": "235 21% 21%",
+      "border": "20 100% 85%",
+      "input": "22 100% 90%"
     }
   }
 }

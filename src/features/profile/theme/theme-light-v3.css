@@ -307,3 +307,49 @@ html:not(.dark) .bg-\[rgb\(23\,23\,23\)\] {
 html:not(.dark) .bg-ft-black {
   background-color: hsl(var(--muted)) !important;
 }
+
+/* ============================================================================
+   ACCENT TOUCHES: selection & focus (theme-driven via --accent / --ring)
+   ============================================================================ */
+
+html:not(.dark) ::selection {
+  background-color: hsl(var(--accent) / 0.35);
+  color: hsl(var(--foreground)) !important;
+}
+
+html:not(.dark) a:focus-visible,
+html:not(.dark) button:focus-visible,
+html:not(.dark) input:focus-visible,
+html:not(.dark) select:focus-visible,
+html:not(.dark) textarea:focus-visible,
+html:not(.dark) [tabindex]:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   SCROLLBARS
+   ============================================================================ */
+
+html:not(.dark) * {
+  scrollbar-color: hsl(var(--border)) hsl(var(--card));
+  scrollbar-width: thin;
+}
+
+html:not(.dark) ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html:not(.dark) ::-webkit-scrollbar-track {
+  background: hsl(var(--card));
+}
+
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 5px;
+}
+
+html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}

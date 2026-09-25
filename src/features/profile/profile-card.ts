@@ -489,6 +489,31 @@ export function findProfileCard(): HTMLElement | null {
   return (card as HTMLElement) || null;
 }
 
+const _levelPaddingObserved = new WeakSet<Element>();
+
+export async function watchLevelPadding(profileCard: HTMLElement) {
+  const levelEl = profileCard.querySelector<HTMLElement>("h1.text-4xl");
+  if (!levelEl || _levelPaddingObserved.has(levelEl)) return;
+
+  const enabled = await getConfig("PROFILE_LEVEL_NO_PADDING");
+  if (_levelPaddingObserved.has(levelEl)) return;
+
+  const strip = () => {
+    const raw = levelEl.textContent?.trim() ?? "";
+    const m = raw.match(/^0(\d)$/);
+    const next = enabled && m ? m[1] : raw;
+    if (next !== raw) levelEl.textContent = next;
+  };
+
+  _levelPaddingObserved.add(levelEl);
+  strip();
+  new MutationObserver(strip).observe(levelEl, {
+    childList: true,
+    characterData: true,
+    subtree: true,
+  });
+}
+
 export function applyThemeToProfileCard(theme: { profileColor?: string }) {
   const profileCard = findProfileCard();
   if (!profileCard || !theme?.profileColor) return;
@@ -534,6 +559,8 @@ export async function initProfileCardStyling() {
   }
 
   if (!profileCard) return;
+
+  watchLevelPadding(profileCard);
 
   const useModern = await getConfig("PROFILE_USE_MODERN_INFO_CARD");
   if (useModern) {

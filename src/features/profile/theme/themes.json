@@ -646,5 +646,23 @@
       "border": "0 0% 15%",
       "input": "0 0% 5%"
     }
+  },
+  "seishin": {
+    "primary": "144 70% 55%",
+    "primaryForeground": "144 100% 10%",
+    "ring": "144 70% 55%",
+    "dark": {
+      "background": "144 100% 25%",
+      "card": "144 90% 32%",
+      "foreground": "60 5% 96%",
+      "muted": "144 60% 30%",
+      "mutedForeground": "60 5% 85%",
+      "popover": "144 90% 32%",
+      "popoverForeground": "60 5% 96%",
+      "accent": "144 70% 35%",
+      "accentForeground": "60 5% 96%",
+      "border": "144 60% 40%",
+      "input": "144 80% 30%"
+    }
   }
 }

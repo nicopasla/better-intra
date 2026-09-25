@@ -346,6 +346,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
         { label: "Black", value: "black", color: "0 0% 23%" },
         { label: "Aubergine", value: "coffee", color: "30 66% 58%" },
         { label: "Aqua", value: "aqua", color: "182 90% 51%" },
+        { label: "Seishin", value: "seishin", color: "144 100% 25%" },
         { divider: true },
         { label: "Light" },
         { label: "Default Light", value: "light", color: "181 100% 37%" },

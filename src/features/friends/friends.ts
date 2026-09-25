@@ -57,7 +57,7 @@ export async function isFriend(login: string): Promise<boolean> {
 }
 
 const CACHE_KEY = "FRIENDS_DATA_CACHE";
-const CACHE_TTL = 30_000;
+const CACHE_TTL = 5 * 60_000;
 
 async function getCachedData(): Promise<{
   data: FriendData[];

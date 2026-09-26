@@ -1,16 +1,26 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
-import { getCloudLogin, testCloudConnection } from "./account.ts";
+import { fetchSessions, getCloudLogin } from "./account.ts";
 import { getConfig } from "../../config.ts";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 import { AccountState, createInitialState } from "./state.ts";
 import { createHandlers } from "./handlers.ts";
+
+function formatSessionDate(ts: number): string {
+  if (!ts) return "Unknown date";
+  return new Date(ts).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
 
 function renderAccountTab(
   state: AccountState,
   handlers: ReturnType<typeof createHandlers>,
 ): ReturnType<typeof html> {
   const isConnected = state.activeSessions > 0;
+  const sessionsMax = state.sessionsMax || 20;
 
   if (!state.token) {
     return html`
@@ -103,7 +113,7 @@ function renderAccountTab(
                 >Sessions</span
               >
               <div class="badge badge-success font-bold text-success-content">
-                ${state.activeSessions}/10
+                ${state.sessions.length}/${sessionsMax}
               </div>
             </div>
           </div>
@@ -158,6 +168,50 @@ function renderAccountTab(
         </div>
       </div>
 
+      <!-- Devices -->
+      <div class="bg-base-200 shadow-md p-5 rounded-xl border border-base-300">
+        <h2 class="text-lg font-bold text-base-content mb-4">Devices</h2>
+        ${state.sessions.length === 0
+          ? html`<p class="text-sm opacity-60">No active sessions.</p>`
+          : html`<div class="flex flex-col gap-2">
+              ${state.sessions.map(
+                (s) => html`
+                  <div
+                    class="flex items-center justify-between gap-3 bg-base-100 p-3 rounded-lg border border-base-300"
+                  >
+                    <div class="flex flex-col min-w-0">
+                      <span class="font-semibold text-sm truncate">
+                        ${s.label}
+                        ${s.current
+                          ? html`<span class="badge badge-success badge-sm ml-1"
+                              >This device</span
+                            >`
+                          : ""}
+                      </span>
+                      <span class="text-xs opacity-60 truncate">
+                        ${s.name ? `${s.name} · ` : ""}${s.country ||
+                        "Unknown location"} · ${formatSessionDate(s.createdAt)}
+                      </span>
+                    </div>
+                    ${s.current
+                      ? ""
+                      : html`<button
+                          class="btn btn-xs btn-error font-bold flex-shrink-0 ${state
+                            .revokingId === s.id
+                            ? "loading"
+                            : ""}"
+                          type="button"
+                          ?disabled="${state.revokingId === s.id}"
+                          @click="${() => handlers.handleRevokeSession(s.id)}"
+                        >
+                          Revoke
+                        </button>`}
+                  </div>
+                `,
+              )}
+            </div>`}
+      </div>
+
       <!-- Bottom Section: Action Buttons -->
       <div class="flex justify-between gap-4 mt-auto pt-4">
         <button
@@ -189,7 +243,14 @@ export async function initAccountSettings(container: HTMLElement) {
     state.token = (await getConfig("CLOUD_TOKEN")) || "";
     state.needsReconnect = !!(await getConfig("CLOUD_AUTH_FAILED"));
     if (state.token && state.login) {
-      state.activeSessions = await testCloudConnection();
+      const { sessions, max } = await fetchSessions();
+      state.sessions = sessions;
+      state.sessionsMax = max;
+      state.activeSessions = sessions.length;
+    } else {
+      state.sessions = [];
+      state.sessionsMax = 0;
+      state.activeSessions = 0;
     }
 
     render(renderAccountTab(state, handlers), container);

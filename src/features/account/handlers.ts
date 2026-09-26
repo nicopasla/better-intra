@@ -2,8 +2,10 @@ import {
   applyCloudSettings,
   clearAuthFailed,
   fetchMySettings,
+  fetchSessions,
   loginWith42,
   logoutCloud,
+  revokeSession,
   syncToCloud,
   testCloudConnection,
   wipeAllCloudData,
@@ -172,11 +174,48 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
     }
   };
 
+  const handleRevokeSession = async (id: string) => {
+    const session = state.sessions.find((s) => s.id === id);
+    const confirmed = await showConfirmDialog({
+      title: "Revoke session",
+      message: `Sign out ${session?.label || "this device"}?`,
+      confirmLabel: "Revoke",
+      cancelLabel: "Cancel",
+    });
+    if (!confirmed) return;
+
+    state.revokingId = id;
+    updateUI();
+    const ok = await revokeSession(id);
+    state.revokingId = null;
+
+    if (!ok) {
+      updateUI();
+      await showAlertDialog({
+        title: "Revoke failed",
+        message: "Could not revoke that session. Please try again.",
+      });
+      return;
+    }
+
+    if (session?.current) {
+      await logoutCloud();
+      return;
+    }
+
+    const { sessions, max } = await fetchSessions();
+    state.sessions = sessions;
+    state.sessionsMax = max;
+    state.activeSessions = sessions.length;
+    updateUI();
+  };
+
   return {
     handleLogin42,
     handleDelete,
     handleWipe,
     handlePush,
     handlePull,
+    handleRevokeSession,
   };
 }

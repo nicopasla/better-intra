@@ -1,3 +1,4 @@
+import generateRandomUsername from "generate-random-username";
 import { BetterIntraConfig, getConfig, CLOUD_SYNC_KEYS } from "../../config.ts";
 import type { VisualUrls } from "../profile/visuals.ts";
 import { hashLogin } from "../../utils/crypto.ts";
@@ -24,6 +25,15 @@ export async function clearAuthFailed(): Promise<void> {
   await chrome.storage.local.remove("CLOUD_AUTH_FAILED");
 }
 
+export async function getCloudDeviceName(): Promise<string> {
+  const store = await chrome.storage.local.get("CLOUD_DEVICE_NAME");
+  const existing = store.CLOUD_DEVICE_NAME;
+  if (typeof existing === "string" && existing) return existing;
+  const name = generateRandomUsername({ capitalize: true, separator: " " });
+  await chrome.storage.local.set({ CLOUD_DEVICE_NAME: name });
+  return name;
+}
+
 /**
  * Initiates the 42 OAuth login flow by opening a popup window.
  * It listens for a message from the popup to receive the session token upon success.
@@ -32,8 +42,10 @@ export async function clearAuthFailed(): Promise<void> {
 export async function loginWith42(
   onSuccess?: () => void | Promise<void>,
 ): Promise<void> {
-  const extensionFakeCallback = window.location.href;
-  const authUrl = `${WORKER_URL}/login?redirect_uri=${encodeURIComponent(extensionFakeCallback)}`;
+  const deviceName = await getCloudDeviceName();
+  const callbackUrl = new URL(window.location.href);
+  callbackUrl.searchParams.set("ft_device", deviceName);
+  const authUrl = `${WORKER_URL}/login?redirect_uri=${encodeURIComponent(callbackUrl.toString())}`;
 
   // Record that a login is in progress so that main.ts accepts the callback.
   // This must complete before window.open(): on Firefox the toolbar popup is
@@ -145,6 +157,61 @@ export async function testCloudConnection(): Promise<number> {
   } catch (error) {
     console.error("Cloud connection test failed:", error);
     return 0;
+  }
+}
+
+export interface SessionSummary {
+  id: string;
+  label: string;
+  name?: string;
+  country?: string;
+  createdAt: number;
+  current: boolean;
+}
+
+export interface SessionsResponse {
+  sessions: SessionSummary[];
+  max: number;
+}
+
+export async function fetchSessions(): Promise<SessionsResponse> {
+  const login = await getCloudLogin();
+  const token = await getConfig("CLOUD_TOKEN");
+  if (!login || !token) return { sessions: [], max: 0 };
+
+  try {
+    const hashedLogin = await hashLogin(login);
+    const response = await fetch(
+      `${WORKER_URL}/api/v1/private/sessions?login=${encodeURIComponent(hashedLogin)}`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!(await handleAuthResponse(response))) return { sessions: [], max: 0 };
+    const data = (await response.json()) as SessionsResponse;
+    return { sessions: data.sessions || [], max: data.max || 0 };
+  } catch (error) {
+    console.error("Fetch sessions failed:", error);
+    return { sessions: [], max: 0 };
+  }
+}
+
+export async function revokeSession(id: string): Promise<boolean> {
+  const login = await getCloudLogin();
+  const token = await getConfig("CLOUD_TOKEN");
+  if (!login || !token) return false;
+
+  try {
+    const hashedLogin = await hashLogin(login);
+    const response = await fetch(
+      `${WORKER_URL}/api/v1/private/sessions?login=${encodeURIComponent(hashedLogin)}&id=${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+    return await handleAuthResponse(response);
+  } catch (error) {
+    console.error("Revoke session failed:", error);
+    return false;
   }
 }
 

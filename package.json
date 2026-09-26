@@ -21,19 +21,20 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.3.0",
-    "@vitest/ui": "^5.0.1",
+    "@vitest/ui": "^5.0.2",
     "concurrently": "^10.0.5",
     "cross-env": "^10.1.0",
-    "daisyui": "^5.7.44",
+    "daisyui": "^5.7.46",
     "jsdom": "^30.1.1",
     "sharp": "^0.35.4",
     "typescript": "^7.0.2",
     "vite": "^8.3.0",
-    "vitest": "^5.0.1",
+    "vitest": "^5.0.2",
     "web-ext": "^10.7.0"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "generate-random-username": "^2.2.0",
     "lit-html": "^3.3.3",
     "qrcode-generator": "^2.0.4"
   },

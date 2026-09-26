@@ -1,3 +1,5 @@
+import type { SessionSummary } from "./account";
+
 export interface ButtonState {
   loading: boolean;
   success: boolean;
@@ -9,6 +11,9 @@ export interface AccountState {
   login: string | null;
   token: string;
   activeSessions: number;
+  sessions: SessionSummary[];
+  sessionsMax: number;
+  revokingId: string | null;
   needsReconnect: boolean;
   buttons: {
     push: ButtonState;
@@ -21,6 +26,9 @@ export function createInitialState(): AccountState {
     login: null,
     token: "",
     activeSessions: 0,
+    sessions: [],
+    sessionsMax: 0,
+    revokingId: null,
     needsReconnect: false,
     buttons: {
       push: {

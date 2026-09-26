@@ -10,6 +10,18 @@ import SETTINGS_SVG from "../../../assets/svg/settings_gear.svg?raw";
 import X_SVG from "../../../assets/svg/x.svg?raw";
 import RESET_SVG from "../../../assets/svg/reset.svg?raw";
 
+function renderDefaultOptions(state: DialogState) {
+  const { clusters, defaultId } = state;
+  return [...clusters, { id: "active", name: "Active" }]
+    .filter((c, i, arr) => arr.findIndex((x) => x.id === c.id) === i)
+    .map(
+      (c) =>
+        html`<option value="${c.id}" ?selected="${c.id === defaultId}">
+          ${c.name.toUpperCase()}
+        </option>`,
+    );
+}
+
 export function renderTemplate(state: DialogState): TemplateResult {
   const {
     currentTheme,
@@ -19,6 +31,9 @@ export function renderTemplate(state: DialogState): TemplateResult {
     defaultId,
     showMarkers,
   } = state;
+
+  const ownCampus =
+    !state.detectedCampus || state.activeCampusId === state.detectedCampus;
 
   return html`
     <style>
@@ -318,71 +333,129 @@ export function renderTemplate(state: DialogState): TemplateResult {
             class="clusters-tabs-host"
             style="position:relative;flex:1 1 auto;min-width:0;display:flex;align-items:center;"
           ></div>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <div style="position:relative;">
-            <button
-              type="button"
-              id="settings-btn"
-              class="btn btn-circle btn-ghost btn-sm"
-              data-tip="Settings"
-              data-tip-size="14px"
-            >
-              ${unsafeHTML(
-                SETTINGS_SVG.replace(
-                  "<svg",
-                  '<svg width="16" height="16"',
-                ).replace('stroke="#fff"', 'stroke="currentColor"'),
-              )}
-            </button>
-            <div
-              id="settings-menu"
-              style="display:none;position:absolute;right:0;top:calc(100% + 4px);z-index:50;width:15rem;border-radius:8px;background:var(--color-base-100);border:1px solid var(--color-base-300);box-shadow:0 6px 16px rgba(0,0,0,.28);padding:10px 8px;"
-            >
-              <div id="default-cluster-row">
-                <span
-                  class="text-xs font-semibold uppercase tracking-wide opacity-60 block mb-1"
-                  >Default cluster</span
+          ${state.settingsInline
+            ? html`<div
+                id="settings-inline"
+                class="flex items-center gap-2 shrink-0"
+              >
+                <div
+                  class="w-px h-5 bg-base-content/20 shrink-0"
+                  aria-hidden="true"
+                ></div>
+                <div
+                  id="default-cluster-row"
+                  style="display:${ownCampus ? "" : "none"}"
                 >
-                <select
-                  class="select select-accent select-sm w-full"
-                  id="default-cluster-select"
-                  data-tip="Default cluster"
+                  <select
+                    class="select select-accent select-sm w-40"
+                    id="default-cluster-select"
+                    data-tip="Default cluster"
+                    data-tip-size="14px"
+                  >
+                    ${renderDefaultOptions(state)}
+                  </select>
+                </div>
+                <button
+                  class="btn btn-sm gap-2 ${showMarkers
+                    ? "btn-accent"
+                    : "btn-ghost"}"
+                  style="display:${state.hasMarkers ? "" : "none"};${showMarkers
+                    ? "border-color: var(--color-accent)"
+                    : ""}"
+                  id="markers-btn"
+                  data-tip="Toggle chair markers"
                   data-tip-size="14px"
                 >
-                  ${[...clusters, { id: "active", name: "Active" }]
-                    .filter(
-                      (c, i, arr) => arr.findIndex((x) => x.id === c.id) === i,
-                    )
-                    .map(
-                      (c) =>
-                        html`<option
-                          value="${c.id}"
-                          ?selected="${c.id === defaultId}"
-                        >
-                          ${c.name.toUpperCase()}
-                        </option>`,
-                    )}
-                </select>
-              </div>
-              <button
-                class="btn btn-sm w-full mt-2 justify-between ${showMarkers
-                  ? "btn-accent"
-                  : "btn-ghost"}"
-                style="${showMarkers
-                  ? "border-color: var(--color-accent)"
-                  : ""}"
-                id="markers-btn"
-                data-tip="Toggle chair markers"
-                data-tip-size="14px"
-              >
-                <span>Show chair markers</span>
-                <span class="text-xs opacity-50"
-                  >${showMarkers ? "ON" : "OFF"}</span
+                  <span>Markers</span>
+                  <span class="text-xs opacity-50"
+                    >${showMarkers ? "ON" : "OFF"}</span
+                  >
+                </button>
+                <button
+                  class="btn btn-circle btn-ghost btn-sm"
+                  id="map-tour-btn"
+                  data-tip="Show the map tour"
+                  data-tip-size="14px"
                 >
-              </button>
-            </div>
-          </div>
+                  <span
+                    class="size-5 rounded-full bg-base-300 text-base-content text-xs font-bold flex items-center justify-center"
+                    >?</span
+                  >
+                </button>
+              </div>`
+            : ""}
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          ${state.settingsInline
+            ? ""
+            : html`<div style="position:relative;">
+                <button
+                  type="button"
+                  id="settings-btn"
+                  class="btn btn-circle btn-ghost btn-sm"
+                  data-tip="Settings"
+                  data-tip-size="14px"
+                >
+                  ${unsafeHTML(
+                    SETTINGS_SVG.replace(
+                      "<svg",
+                      '<svg width="16" height="16"',
+                    ).replace('stroke="#fff"', 'stroke="currentColor"'),
+                  )}
+                </button>
+                <div
+                  id="settings-menu"
+                  style="display:none;position:absolute;right:0;top:calc(100% + 4px);z-index:50;width:15rem;border-radius:8px;background:var(--color-base-100);border:1px solid var(--color-base-300);box-shadow:0 6px 16px rgba(0,0,0,.28);padding:10px 8px;"
+                >
+                  <div
+                    id="default-cluster-row"
+                    style="display:${ownCampus ? "" : "none"}"
+                  >
+                    <span
+                      class="text-xs font-semibold uppercase tracking-wide opacity-60 block mb-1"
+                      >Default cluster</span
+                    >
+                    <select
+                      class="select select-accent select-sm w-full"
+                      id="default-cluster-select"
+                      data-tip="Default cluster"
+                      data-tip-size="14px"
+                    >
+                      ${renderDefaultOptions(state)}
+                    </select>
+                  </div>
+                  <button
+                    class="btn btn-sm w-full mt-2 justify-between ${showMarkers
+                      ? "btn-accent"
+                      : "btn-ghost"}"
+                    style="display:${state.hasMarkers
+                      ? ""
+                      : "none"};${showMarkers
+                      ? "border-color: var(--color-accent)"
+                      : ""}"
+                    id="markers-btn"
+                    data-tip="Toggle chair markers"
+                    data-tip-size="14px"
+                  >
+                    <span>Show chair markers</span>
+                    <span class="text-xs opacity-50"
+                      >${showMarkers ? "ON" : "OFF"}</span
+                    >
+                  </button>
+                  <button
+                    class="btn btn-sm w-full mt-2 justify-between"
+                    id="map-tour-btn"
+                    data-tip="Show the map tour"
+                    data-tip-size="14px"
+                  >
+                    <span>How to use the map</span>
+                    <span
+                      class="size-5 rounded-full bg-base-300 text-base-content text-xs font-bold flex items-center justify-center"
+                      >?</span
+                    >
+                  </button>
+                </div>
+              </div>`}
           <button
             class="btn btn-circle btn-ghost btn-sm"
             id="maximize-btn"

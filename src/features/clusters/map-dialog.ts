@@ -27,6 +27,10 @@ import { flashSeat } from "./map-dialog/glow.ts";
 import { rerender } from "./map-dialog/tabs.ts";
 import { updateCampusTime, updateDefaultSelect } from "./map-dialog/header.ts";
 import { findClusterForSeat } from "./map-dialog/helpers.ts";
+import {
+  maybeStartClusterDialogTour,
+  startClusterDialogTour,
+} from "./map-dialog/tour.ts";
 
 export {
   applyPseudoCluster,
@@ -34,6 +38,19 @@ export {
   formatCampusClock,
   findClusterForSeat,
 } from "./map-dialog/helpers.ts";
+
+function positionMenu(menu: HTMLElement, trigger: HTMLElement): void {
+  menu.style.top = "calc(100% + 4px)";
+  menu.style.bottom = "auto";
+  const rect = trigger.getBoundingClientRect();
+  const menuHeight = menu.offsetHeight;
+  const spaceBelow = window.innerHeight - rect.bottom - 8;
+  const spaceAbove = rect.top - 8;
+  if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+    menu.style.top = "auto";
+    menu.style.bottom = "calc(100% + 4px)";
+  }
+}
 
 let opening: Promise<void> | null = null;
 
@@ -116,7 +133,7 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
     activeCampusId = campusOptions[0].id;
   }
 
-  let clusters = await buildClusters(activeCampusId);
+  const { clusters, hasMarkers } = await buildClusters(activeCampusId);
   const campusExits = (await getCampusExits(activeCampusId)) ?? null;
 
   const currentTheme =
@@ -174,6 +191,7 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
     zoomLevel: 1.0,
     defaultZoomLevel: 1.0,
     showMarkers: showMarkersVal,
+    hasMarkers,
     seatPosCache: new Map(),
     svgViewBoxes: new Map(),
     parsedDocs: new Map(),
@@ -189,6 +207,7 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
     activeNameDir,
     activeSinceDir,
     activeWifiOnly,
+    settingsInline: false,
   };
 
   let isMaximized = false;
@@ -230,10 +249,19 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
   };
 
   let resizeObserver: ResizeObserver | null = null;
+  let settingsObserver: ResizeObserver | null = null;
+
+  const updateSettingsLayout = () => {
+    const inline = dialog.clientWidth >= 1080;
+    if (inline === state.settingsInline) return;
+    state.settingsInline = inline;
+    rerender(state);
+  };
 
   dialog.addEventListener("close", () => {
     cleanup();
     if (resizeObserver) resizeObserver.disconnect();
+    if (settingsObserver) settingsObserver.disconnect();
     cleanupResize();
     dialog.remove();
   });
@@ -276,10 +304,18 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
     }
     if (settingsBtn && path.includes(settingsBtn)) {
       if (settingsMenu) {
-        settingsMenu.style.display =
-          settingsMenu.style.display === "none" ? "block" : "none";
+        const willOpen = settingsMenu.style.display === "none";
+        settingsMenu.style.display = willOpen ? "block" : "none";
+        if (willOpen) positionMenu(settingsMenu, settingsBtn);
       }
       if (campusMenu) campusMenu.style.display = "none";
+      return;
+    }
+
+    const tourBtn = shadow.getElementById("map-tour-btn");
+    if (tourBtn && path.includes(tourBtn)) {
+      if (settingsMenu) settingsMenu.style.display = "none";
+      void startClusterDialogTour(state);
       return;
     }
     if (
@@ -413,10 +449,10 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
         el.tagName === "DETAILS" &&
         el.classList.contains("dropdown"),
     );
-    const openDropdown = shadow.querySelector<HTMLDetailsElement>(
+    const openDetails = shadow.querySelector<HTMLDetailsElement>(
       "details.dropdown[open]",
     );
-    if (openDropdown && !inDropdown) openDropdown.open = false;
+    if (openDetails && !inDropdown) openDetails.open = false;
   });
 
   shadow.addEventListener("change", (e) => {
@@ -444,6 +480,10 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
   }
   document.body.appendChild(dialog);
   dialog.showModal();
+  updateSettingsLayout();
+  settingsObserver = new ResizeObserver(() => updateSettingsLayout());
+  settingsObserver.observe(dialog);
+  void maybeStartClusterDialogTour(state, { seatId: opts?.seatId });
   await Promise.all([
     ensureClusterData(
       state,

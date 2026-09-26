@@ -15,11 +15,15 @@ import { clearSeatGlow } from "./glow";
 import { rebuildHeader, updateCampusTime, updateDefaultSelect } from "./header";
 import { getCampusFlag } from "../../profile/campus-flags.ts";
 
-export async function buildClusters(campusId: string): Promise<ClusterInfo[]> {
+export async function buildClusters(
+  campusId: string,
+): Promise<{ clusters: ClusterInfo[]; hasMarkers: boolean }> {
   let repoClusters: { id: string; name: string }[] = [];
+  let hasMarkers = false;
   try {
     const data = await getClusterData(campusId);
     repoClusters = data.clusters;
+    hasMarkers = Object.values(data.screens).some((d) => d !== "NONE");
   } catch {
     repoClusters = [];
   }
@@ -32,7 +36,7 @@ export async function buildClusters(campusId: string): Promise<ClusterInfo[]> {
   for (const [id, svg] of Object.entries(svgs)) {
     if (!list.some((c) => c.id === id)) list.push({ id, name: "", svg });
   }
-  return list;
+  return { clusters: list, hasMarkers };
 }
 
 export async function ensureClusterData(
@@ -273,9 +277,14 @@ export async function loadCampus(
   const exits = await getCampusExits(campusId);
   if (stale()) return;
   state.campusExits = exits ?? null;
-  const clusters = await buildClusters(campusId);
+  const { clusters, hasMarkers } = await buildClusters(campusId);
   if (stale()) return;
   state.clusters = clusters;
+  if (hasMarkers !== state.hasMarkers) {
+    state.hasMarkers = hasMarkers;
+    const mBtn = shadow.getElementById("markers-btn");
+    if (mBtn) mBtn.style.display = hasMarkers ? "" : "none";
+  }
   if (!state.clusters.some((c) => c.svg)) {
     const mapArea = shadow.getElementById("map-area");
     if (mapArea) {

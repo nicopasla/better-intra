@@ -51,6 +51,7 @@ export interface DialogState {
   zoomLevel: number;
   defaultZoomLevel: number;
   showMarkers: boolean;
+  hasMarkers: boolean;
 
   seatPosCache: Map<string, Map<string, SeatPos>>;
   svgViewBoxes: Map<string, { w: number; h: number }>;
@@ -69,6 +70,8 @@ export interface DialogState {
   activeNameDir: "asc" | "desc";
   activeSinceDir: "asc" | "desc";
   activeWifiOnly: boolean;
+
+  settingsInline: boolean;
 }
 
 export const keyOf = (campusId: string, clusterId: string) =>

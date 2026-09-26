@@ -12,6 +12,7 @@ import { initLayoutManager } from "./layout.ts";
 import { initMilestones } from "./milestones.ts";
 import { initFreezeCard } from "./freeze.ts";
 import { findProfileCard, initProfileCardStyling } from "./profile-card.ts";
+import { initCampusFlag } from "./campus-flags.ts";
 import { injectFriendsWidget } from "../friends/friends.ui.ts";
 import { colorTrackerBadge } from "../logtime/tracker-card.ts";
 import { initAchievements } from "./achievements.ts";
@@ -48,7 +49,8 @@ export async function initProfile() {
   }
   if (location.origin !== "https://profile-v3.intra.42.fr") return;
 
-  await ensureCampusData();
+  void initCampusFlag();
+  void ensureCampusData();
 
   let isUpdating = false;
   let needsRerun = false;

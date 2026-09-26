@@ -231,7 +231,7 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
         // Only the profile feature reveals the avatar; otherwise show the Intra one.
         if (!activeScripts.includes("profile")) releaseAvatar();
 
-        await ensureCampusData();
+        void ensureCampusData();
         updateNavAvatar();
 
         // Loop through the user's active scripts and initialize them if they exist in our map.

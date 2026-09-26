@@ -6,7 +6,6 @@ import { bindTooltips } from "../../utils/tooltip.ts";
 import { getIsLight } from "./theme/theme-manager.ts";
 import ARROW_SHARE_SVG from "../../assets/svg/arrow_share.svg?raw";
 import { initShortcutButtons, initFriendBadge } from "./personal-info.ts";
-import { injectCampusFlag } from "./campus-flags.ts";
 
 const PROFILE_CARD_CLASS = "ft-profile-card";
 const SHADOW_HOST_ID = "profile-badges-shadow";
@@ -621,5 +620,4 @@ export async function initProfileCardStyling() {
 
   void initShortcutButtons();
   void initFriendBadge();
-  requestAnimationFrame(() => injectCampusFlag());
 }

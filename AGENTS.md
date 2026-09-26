@@ -98,6 +98,7 @@ Worker cron (`*/5 * * * *`) fetches 42 API `/v2/me/scale_teams` for each user, d
 
 - **NEVER use `innerHTML`** — lit-html is always available. Use `render(unsafeHTML(...), container)` from `lit-html` and `lit-html/directives/unsafe-html.js` instead.
 - **NEVER commit without explicit user approval** — do not run `git commit`, amend, or push unless the user explicitly asks you to.
+- **NEVER add commit descriptions** — commit messages must be a single subject line with no body/description.
 
 ## NEVER deploy the worker without explicit user consent
 

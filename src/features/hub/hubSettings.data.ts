@@ -439,7 +439,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       feature: "profile",
       key: "PROFILE_LEVEL_NO_PADDING",
       label: "Hide leading zero on level",
-      desc: `Replaces the leading zero of single-digit levels with a blank of the same width, so "03" reads as "3" without shifting the layout.`,
+      desc: `Drops the leading zero on single-digit levels and shows the number a little bigger, so "03" reads as "3".`,
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.PROFILE_LEVEL_NO_PADDING,
       grid: true,

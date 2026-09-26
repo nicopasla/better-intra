@@ -499,12 +499,41 @@ export async function watchLevelPadding(profileCard: HTMLElement) {
   if (_levelPaddingObserved.has(levelEl)) return;
 
   const FIGURE_SPACE = "\u2007";
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  const measure = (text: string): number => {
+    if (!ctx) return 0;
+    const cs = getComputedStyle(levelEl);
+    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    return ctx.measureText(text).width;
+  };
+  // Enlarge the remaining digit and center it in the width the original digit
+  // pair occupied. The figure space keeps the box width intact; the translate
+  // compensates for the scale (rotate/scale happen around the box center).
+  const DIGIT_SCALE = 1.3;
+  const centerDigit = () => {
+    const shift = (-DIGIT_SCALE * measure("0")) / 2;
+    levelEl.style.transform = `translateX(${shift}px) scale(${DIGIT_SCALE})`;
+  };
+
   const strip = () => {
     const raw = levelEl.textContent ?? "";
+    if (!enabled) {
+      levelEl.style.transform = "";
+      return;
+    }
     const m = raw.match(/^\s*0(\d)\s*$/);
-    if (!enabled || !m) return;
-    const next = FIGURE_SPACE + m[1];
-    if (raw !== next) levelEl.textContent = next;
+    if (m) {
+      const next = FIGURE_SPACE + m[1];
+      if (raw !== next) levelEl.textContent = next;
+      centerDigit();
+      return;
+    }
+    if (/^\u2007\d$/.test(raw)) {
+      centerDigit();
+      return;
+    }
+    levelEl.style.transform = "";
   };
 
   _levelPaddingObserved.add(levelEl);

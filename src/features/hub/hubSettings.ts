@@ -184,13 +184,15 @@ export function mountGearButton(): void {
   };
 
   void (async () => {
-    if ((await getConfig("CLUSTERS_CAMPUS")) !== "12") return;
     if (!sidebar) return;
 
     const isLight = await getIsLight();
     const color = isLight ? "#1a1d24" : "#fff";
 
-    if (!document.getElementById("ft-students-btn")) {
+    if (
+      (await getConfig("CLUSTERS_CAMPUS")) === "12" &&
+      !document.getElementById("ft-students-btn")
+    ) {
       const container = document.createElement("div");
       render(renderStudentsButton(openStudents, color), container);
       const anchor = sidebar.children[1] ?? sidebar.firstElementChild;
@@ -201,11 +203,19 @@ export function mountGearButton(): void {
       }
     }
 
-    const studentsBtn = document.getElementById("ft-students-btn");
-    if (studentsBtn && !document.getElementById("ft-clusters-btn")) {
+    if (!document.getElementById("ft-clusters-btn")) {
       const container = document.createElement("div");
       render(renderClustersButton(openClusters, color), container);
-      studentsBtn.after(container.firstElementChild!);
+      const button = container.firstElementChild!;
+      const studentsBtn = document.getElementById("ft-students-btn");
+      const gearBtn = document.getElementById("hub-gear-btn");
+      if (studentsBtn) {
+        studentsBtn.after(button);
+      } else if (gearBtn) {
+        gearBtn.before(button);
+      } else {
+        sidebar.appendChild(button);
+      }
     }
   })();
 

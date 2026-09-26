@@ -1068,6 +1068,30 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             </button>`;
           }
 
+          if (actionType === "welcome" || actionType === "tour") {
+            return html`<button
+              type="button"
+              class="btn btn-sm btn-primary font-bold"
+              @click="${() => {
+                void (async () => {
+                  (
+                    document.getElementById("hub-dialog") as HTMLDialogElement
+                  )?.close();
+                  if (actionType === "welcome") {
+                    const { openWelcome } =
+                      await import("../welcome/welcome.ui.ts");
+                    await openWelcome();
+                  } else {
+                    const { startTour } = await import("../welcome/tour.ts");
+                    await startTour();
+                  }
+                })();
+              }}"
+            >
+              ${actionLabel || "Show"}
+            </button>`;
+          }
+
           return html`<button
             type="button"
             class="btn btn-sm btn-error font-bold"
@@ -1361,10 +1385,7 @@ function renderTabsContent(
         </span>
         ${f.name}
       </label>
-      <div
-        role="tabpanel"
-        class="tab-content bg-base-100 border-base-300 p-0"
-      >
+      <div role="tabpanel" class="tab-content bg-base-100 border-base-300 p-0">
         <div
           class="flex flex-col ${enabled || isAlwaysEnabled
             ? cloudDisabled

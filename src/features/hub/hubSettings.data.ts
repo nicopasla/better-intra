@@ -172,7 +172,14 @@ export type HubSettingDef = {
   step?: number;
   placeholder?: string;
   actionLabel?: string;
-  actionType?: "export" | "import" | "reset" | "backup" | "reload-campus";
+  actionType?:
+    | "export"
+    | "import"
+    | "reset"
+    | "backup"
+    | "reload-campus"
+    | "welcome"
+    | "tour";
 };
 
 export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
@@ -741,6 +748,26 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       kind: "action",
       actionType: "backup",
       actionLabel: "Backup",
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "advanced",
+      label: "Welcome screen",
+      desc: "Replay the first-run setup and the guided tour of the sidebar buttons.",
+      kind: "action",
+      actionType: "welcome",
+      actionLabel: "Show welcome",
+      grid: true,
+      colSpan: 1,
+    },
+    {
+      feature: "advanced",
+      label: "Guided tour",
+      desc: "Highlight the buttons Better Intra adds to the Intra page.",
+      kind: "action",
+      actionType: "tour",
+      actionLabel: "Show tour",
       grid: true,
       colSpan: 1,
     },

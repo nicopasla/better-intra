@@ -106,7 +106,7 @@ export async function initProfile() {
   holdAvatar();
 
   const OWN_SELECTOR =
-    "#hub-dialog,#logtime-shadow-wrapper,#shortcuts-shadow-wrapper,#friends-widget-host,#ft-floating-tooltip,#profile-modal-host,#ft-blackhole-v2,#ft-announcement-banner,#ft-v2-warning";
+    "#hub-dialog,#logtime-shadow-wrapper,#shortcuts-shadow-wrapper,#friends-widget-host,#ft-floating-tooltip,#profile-modal-host,#ft-blackhole-v2,#ft-announcement-banner,#ft-v2-warning,#welcome-dialog,#welcome-tour-host";
 
   const isOwnNode = (node: Node): boolean => {
     if (!(node instanceof Element)) return false;

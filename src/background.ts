@@ -2,7 +2,10 @@ import { hashLogin } from "./utils/crypto";
 
 const WORKER_URL = "https://api.betterintra.com";
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === "install") {
+    chrome.storage.local.set({ PENDING_WELCOME: true });
+  }
   syncDiscord();
   syncDiscordQuiet();
 });
@@ -25,9 +28,18 @@ chrome.storage.onChanged.addListener((changes) => {
     syncDiscordQuiet();
   }
   if ("CLOUD_TOKEN" in changes) {
-    reloadIntraTabs();
+    void shouldReloadOnTokenChange().then((reload) => {
+      if (reload) reloadIntraTabs();
+    });
   }
 });
+
+async function shouldReloadOnTokenChange(): Promise<boolean> {
+  const { WELCOME_ACTIVE_UNTIL } = (await chrome.storage.local.get(
+    "WELCOME_ACTIVE_UNTIL",
+  )) as { WELCOME_ACTIVE_UNTIL?: number };
+  return !WELCOME_ACTIVE_UNTIL || Date.now() >= WELCOME_ACTIVE_UNTIL;
+}
 
 async function syncRegistration() {
   const store = await chrome.storage.local.get([

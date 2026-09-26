@@ -9,6 +9,7 @@ import {
   getIsLight,
 } from "./features/profile/theme/theme-manager.ts";
 import { maybePromptRestore } from "./features/account/account.ts";
+import { maybeShowWelcome } from "./features/welcome/welcome.ts";
 import { initGlobalTooltips } from "./utils/tooltip.ts";
 import { ensureCampusData } from "./features/campus/campus.ts";
 import {
@@ -225,6 +226,7 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
         }
 
         await maybePromptRestore();
+        await maybeShowWelcome();
       } catch (error) {
         releaseAvatar();
         console.error("Error during init of Better Intra :", error);

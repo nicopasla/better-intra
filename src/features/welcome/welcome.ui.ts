@@ -348,11 +348,8 @@ export async function openWelcome(): Promise<void> {
       return;
     }
     await applyCloudSettings(settings);
-    await refreshState();
-    state.busy = false;
-    state.message = "Settings restored from your cloud backup.";
-    state.messageError = false;
-    update();
+    await chrome.storage.local.set({ PENDING_WELCOME: true });
+    window.location.reload();
   }
 
   async function openFullSettings() {

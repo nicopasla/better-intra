@@ -20,6 +20,7 @@ export interface TourOptions {
   hostId?: string;
   signal?: AbortSignal;
   scrimOpacity?: number;
+  onEnd?: () => void;
 }
 
 const TOUR_CSS = `
@@ -346,6 +347,7 @@ export async function runTour(options: TourOptions): Promise<void> {
     window.removeEventListener("resize", onFollow);
     document.removeEventListener("keydown", onKey, true);
     host.remove();
+    options.onEnd?.();
     resolveEnd();
   }
 

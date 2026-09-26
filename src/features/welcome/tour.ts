@@ -50,5 +50,9 @@ const TOUR_STEPS: TourStep[] = [
 ];
 
 export function startTour(): Promise<void> {
-  return runTour({ steps: TOUR_STEPS, hostId: "welcome-tour-host" });
+  return runTour({
+    steps: TOUR_STEPS,
+    hostId: "welcome-tour-host",
+    onEnd: () => window.scrollTo({ top: 0, behavior: "smooth" }),
+  });
 }

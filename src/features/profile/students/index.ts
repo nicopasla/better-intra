@@ -14,7 +14,7 @@ import {
   WINDOW_STEP,
   fetchPiscines,
   fetchPisciners,
-  fetchStudents,
+  fetchStudentsPage,
   fetchFutureStudents,
   poolIntakes,
   sortEntries,
@@ -32,6 +32,7 @@ import type {
   SortDir,
   StudentEntry,
   StudentsFilter,
+  StudentsFilterOptions,
   StudentsTab,
   StudentsView,
 } from "./data.ts";
@@ -100,6 +101,10 @@ async function openStudentsDialogImpl() {
   const toggleFilter = (key: FilterKey) => {
     filter = filter === key ? "none" : key;
     visibleCount = INITIAL_VISIBLE_COUNT;
+    if (tab === "students") {
+      void loadStudentsPage(true);
+      return;
+    }
     rerender();
   };
 
@@ -147,6 +152,10 @@ async function openStudentsDialogImpl() {
       sortField = field;
     }
     persistSort();
+    if (tab === "students") {
+      void loadStudentsPage(true);
+      return;
+    }
     entries = sortEntries(entries, tab, sortField, nameDir, dateDir);
     rerender();
   };
@@ -156,10 +165,15 @@ async function openStudentsDialogImpl() {
   let piscineListLoading = false;
   let piscineListLoaded = false;
   let loading = true;
+  let loadingMore = false;
   let lastFetched = 0;
   let query = "";
   let authError = false;
   let visibleCount = INITIAL_VISIBLE_COUNT;
+  let baseTotal = 0;
+  let filteredTotal = 0;
+  let activeCount = 0;
+  let filterOptions: StudentsFilterOptions | null = null;
   let searchTimeout: number | null = null;
   let copiedLogin: string | null = null;
   let copiedLoginTimeout: number | null = null;
@@ -256,19 +270,75 @@ async function openStudentsDialogImpl() {
     if (dd) dd.open = false;
   });
 
+  const loadStudentsPage = async (reset: boolean) => {
+    if (reset) {
+      loading = true;
+      authError = false;
+      rerender();
+    } else {
+      if (loadingMore || entries.length >= filteredTotal) return;
+      loadingMore = true;
+      rerender();
+    }
+
+    const res = await fetchStudentsPage({
+      offset: reset ? 0 : entries.length,
+      limit: INITIAL_VISIBLE_COUNT,
+      sort: sortField,
+      dir: sortField === "name" ? nameDir : dateDir,
+      filter,
+      poolIntake,
+      poolYear,
+      query,
+    });
+
+    if (res?.unauthorized) {
+      entries = [];
+      lastFetched = 0;
+      authError = true;
+      baseTotal = 0;
+      filteredTotal = 0;
+      activeCount = 0;
+    } else if (res?.data) {
+      const page = res.data.data || [];
+      entries = reset ? page : [...entries, ...page];
+      baseTotal = res.data.total ?? entries.length;
+      filteredTotal = res.data.filtered ?? entries.length;
+      activeCount = res.data.active ?? 0;
+      if (res.data.options) filterOptions = res.data.options;
+      lastFetched = res.data.cached_at || 0;
+      if (reset) visibleCount = INITIAL_VISIBLE_COUNT;
+    } else if (reset) {
+      entries = [];
+      lastFetched = 0;
+      baseTotal = 0;
+      filteredTotal = 0;
+      activeCount = 0;
+      filterOptions = null;
+    } else {
+      filteredTotal = entries.length;
+    }
+
+    loading = false;
+    loadingMore = false;
+    rerender();
+  };
+
   const load = async () => {
+    if (tab === "students") {
+      await loadStudentsPage(true);
+      return;
+    }
     loading = true;
     authError = false;
     rerender();
-    let res: Awaited<ReturnType<typeof fetchStudents>>;
+    let res: Awaited<ReturnType<typeof fetchPisciners>>;
     if (tab === "pisciners" && selectedPiscine) {
       res = await fetchPisciners(selectedPiscine.year, selectedPiscine.month);
     } else if (tab === "pisciners") {
       res = null;
-    } else if (tab === "new") {
-      res = await fetchFutureStudents();
     } else {
-      res = await fetchStudents();
+      res = await fetchFutureStudents();
     }
     if (res?.unauthorized) {
       entries = [];
@@ -359,7 +429,16 @@ async function openStudentsDialogImpl() {
       query = value;
       visibleCount = INITIAL_VISIBLE_COUNT;
       if (searchTimeout !== null) window.clearTimeout(searchTimeout);
-      searchTimeout = window.setTimeout(() => rerender(), 150);
+      searchTimeout = window.setTimeout(() => {
+        if (tab === "students") {
+          void loadStudentsPage(true);
+          return;
+        }
+        rerender();
+      }, 150);
+    },
+    onLoadMore: () => {
+      if (tab === "students") void loadStudentsPage(false);
     },
     onSelectPiscine: (year, month) => {
       selectedPiscine = { year, month };
@@ -372,18 +451,27 @@ async function openStudentsDialogImpl() {
       rerender();
     },
     onPoolIntake: (value) => {
-      poolIntake =
-        value === 0
-          ? null
-          : (poolIntakes(entries, currentYear)[value - 1] ?? null);
+      const intakes =
+        tab === "students"
+          ? (filterOptions?.intakes ?? [])
+          : poolIntakes(entries, currentYear);
+      poolIntake = value === 0 ? null : (intakes[value - 1] ?? null);
       poolYear = null;
       visibleCount = INITIAL_VISIBLE_COUNT;
+      if (tab === "students") {
+        void loadStudentsPage(true);
+        return;
+      }
       rerender();
     },
     onPoolYear: (value) => {
       poolYear = value === 0 ? null : value;
       poolIntake = null;
       visibleCount = INITIAL_VISIBLE_COUNT;
+      if (tab === "students") {
+        void loadStudentsPage(true);
+        return;
+      }
       rerender();
     },
     onClearFilters: () => {
@@ -391,6 +479,10 @@ async function openStudentsDialogImpl() {
       poolIntake = null;
       poolYear = null;
       visibleCount = INITIAL_VISIBLE_COUNT;
+      if (tab === "students") {
+        void loadStudentsPage(true);
+        return;
+      }
       rerender();
     },
     onCopyLogin: (login) => {
@@ -427,10 +519,15 @@ async function openStudentsDialogImpl() {
     selectedPiscine,
     entries,
     loading,
+    loadingMore,
     lastFetched,
     query,
     authError,
     visibleCount,
+    baseTotal,
+    filteredTotal,
+    activeCount,
+    filterOptions,
     currentYear,
     copiedLogin,
     isMaximized,
@@ -457,11 +554,14 @@ async function openStudentsDialogImpl() {
     if (sentinel) {
       const root = shadow.querySelector<HTMLElement>(".scroll-area");
       sentinelObserver = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((e) => e.isIntersecting)) {
-            visibleCount += WINDOW_STEP;
-            rerender();
+        (observerEntries) => {
+          if (!observerEntries.some((e) => e.isIntersecting)) return;
+          if (tab === "students") {
+            void loadStudentsPage(false);
+            return;
           }
+          visibleCount += WINDOW_STEP;
+          rerender();
         },
         { root, rootMargin: "400px" },
       );

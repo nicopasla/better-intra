@@ -13,6 +13,9 @@ import CAL_DOWN_SVG from "../../../assets/svg/calendar-arrow-down.svg?raw";
 import CAL_UP_SVG from "../../../assets/svg/calendar-arrow-up.svg?raw";
 import FILTER_SVG from "../../../assets/svg/filter.svg?raw";
 import FILTER_CLEAR_SVG from "../../../assets/svg/filter-clear.svg?raw";
+import STAR_SVG from "../../../assets/svg/star-lucide.svg?raw";
+import WALLET_SVG from "../../../assets/svg/wallet.svg?raw";
+import EVAL_SVG from "../../../assets/svg/eval.svg?raw";
 import CHECK_SVG from "../../../assets/svg/check.svg?raw";
 import FORTY_TWO_SVG from "../../../assets/svg/42_Logo.svg?raw";
 import MAXIMIZE_SVG from "../../../assets/svg/maximize.svg?raw";
@@ -44,6 +47,7 @@ import type {
   SortDir,
   StudentEntry,
   StudentsFilter,
+  StudentsFilterOptions,
   StudentsTab,
   StudentsView,
 } from "./data.ts";
@@ -63,10 +67,15 @@ export interface StudentsTemplateState {
   selectedPiscine: { year: number; month: number } | null;
   entries: StudentEntry[];
   loading: boolean;
+  loadingMore: boolean;
   lastFetched: number;
   query: string;
   authError: boolean;
   visibleCount: number;
+  baseTotal: number;
+  filteredTotal: number;
+  activeCount: number;
+  filterOptions: StudentsFilterOptions | null;
   currentYear: number;
   copiedLogin: string | null;
   isMaximized: boolean;
@@ -93,6 +102,7 @@ export interface StudentsTemplateHandlers {
   onPoolIntake: (value: number) => void;
   onPoolYear: (value: number) => void;
   onClearFilters: () => void;
+  onLoadMore: () => void;
   onCopyLogin: (login: string) => void;
   onConnect: () => void;
   onToggleMaximize: () => void;
@@ -124,14 +134,40 @@ const STATUS_FILTERS: Array<{
   },
 ];
 
+const STATUS_BADGE: Record<
+  FilterKey,
+  { label: string; badgeClass: string; tip: string }
+> = {
+  blackhole: {
+    label: "blackholed",
+    badgeClass: "badge-error",
+    tip: "Blackholed students",
+  },
+  alumni: {
+    label: "alumni",
+    badgeClass: "badge-secondary",
+    tip: "Alumni students",
+  },
+  freeze: {
+    label: "frozen",
+    badgeClass: "badge-info",
+    tip: "Frozen students",
+  },
+};
+
 function renderFilterMenu(
   state: StudentsTemplateState,
   handlers: StudentsTemplateHandlers,
   poolEntries: StudentEntry[],
 ): TemplateResult {
   const { filter, poolIntake, poolYear, tab } = state;
-  const poolYears = poolYearOptions(poolEntries, state.currentYear);
-  const intakes = poolIntakes(poolEntries, state.currentYear);
+  const useServerOptions = tab === "students" && state.filterOptions != null;
+  const poolYears = useServerOptions
+    ? state.filterOptions!.poolYears
+    : poolYearOptions(poolEntries, state.currentYear);
+  const intakes = useServerOptions
+    ? state.filterOptions!.intakes
+    : poolIntakes(poolEntries, state.currentYear);
 
   return html`
     <div
@@ -296,15 +332,20 @@ export function renderStudentsDialogTemplate(
     poolYear,
     entries,
     loading,
+    loadingMore,
     lastFetched,
     query,
     authError,
     visibleCount,
+    baseTotal,
+    filteredTotal,
+    activeCount,
     currentYear,
     copiedLogin,
     isMaximized,
     tabsOverflowing,
   } = state;
+  const isPaged = tab === "students";
 
   const hasActiveFilters =
     filter !== "none" || poolIntake != null || poolYear != null;
@@ -324,24 +365,29 @@ export function renderStudentsDialogTemplate(
       : tab === "students"
         ? entries.filter((e) => !isFutureStudent(e))
         : entries;
-  const activeCount = intakeFiltered.filter((e) => e.active !== false).length;
-  const filtered = intakeFiltered.filter((e) => {
-    if (filter === "blackhole" && !isBlackholed(e)) return false;
-    if (filter === "alumni" && !e.alumni) return false;
-    if (filter === "freeze" && !isFrozen(e)) return false;
-    if (poolIntake != null) {
-      if (
-        e.pool_year !== String(poolIntake.year) ||
-        e.pool_month?.toLowerCase() !== poolMonthName(poolIntake.month)
-      )
-        return false;
-    } else if (poolYear != null && e.pool_year !== String(poolYear)) {
-      return false;
-    }
-    return !q || normalize(`${e.login} ${e.displayname}`).includes(q);
-  });
-  const display =
-    filter === "blackhole"
+  const localActiveCount = intakeFiltered.filter(
+    (e) => e.active !== false,
+  ).length;
+  const filtered = isPaged
+    ? entries
+    : intakeFiltered.filter((e) => {
+        if (filter === "blackhole" && !isBlackholed(e)) return false;
+        if (filter === "alumni" && !e.alumni) return false;
+        if (filter === "freeze" && !isFrozen(e)) return false;
+        if (poolIntake != null) {
+          if (
+            e.pool_year !== String(poolIntake.year) ||
+            e.pool_month?.toLowerCase() !== poolMonthName(poolIntake.month)
+          )
+            return false;
+        } else if (poolYear != null && e.pool_year !== String(poolYear)) {
+          return false;
+        }
+        return !q || normalize(`${e.login} ${e.displayname}`).includes(q);
+      });
+  const display = isPaged
+    ? entries
+    : filter === "blackhole"
       ? [...filtered].sort(
           (a, b) =>
             new Date(b.blackholed_at!).getTime() -
@@ -354,8 +400,18 @@ export function renderStudentsDialogTemplate(
             return tb - ta;
           })
         : filtered;
-  const windowed = display.slice(0, visibleCount);
-  const hasMore = display.length > windowed.length;
+  const windowed = isPaged ? entries : display.slice(0, visibleCount);
+  const hasMore = isPaged
+    ? entries.length < filteredTotal
+    : display.length > windowed.length;
+  const activeBadge = isPaged ? activeCount : localActiveCount;
+  const statusBadge = filter !== "none" ? STATUS_BADGE[filter] : null;
+  const activeBadgeValue = statusBadge ? filteredTotal : activeBadge;
+  const activeBadgeLabel = statusBadge ? statusBadge.label : "active students";
+  const activeBadgeClass = statusBadge
+    ? statusBadge.badgeClass
+    : "badge-success";
+  const activeBadgeTip = statusBadge ? statusBadge.tip : "Active students";
   const showPiscineGrid = tab === "pisciners" && selectedPiscine == null;
   const piscineCount = showPiscineGrid ? piscineList.length : 0;
   const cursusLabel =
@@ -372,7 +428,12 @@ export function renderStudentsDialogTemplate(
       : tab === "new"
         ? "future students"
         : "students";
-  const countValue = showPiscineGrid ? piscineCount : intakeFiltered.length;
+  const countValue = showPiscineGrid
+    ? piscineCount
+    : isPaged
+      ? baseTotal
+      : intakeFiltered.length;
+  const emptyBase = isPaged ? baseTotal === 0 : entries.length === 0;
   const dateLabel =
     tab === "pisciners"
       ? selectedPiscine
@@ -383,128 +444,155 @@ export function renderStudentsDialogTemplate(
           ? futureGroups.map((i) => i.label).join(" · ")
           : "future students"
         : "all students";
+  const openProfile = (login: string) =>
+    window.open(`https://profile.intra.42.fr/users/${login}`, "_blank");
+
+  const renderAvatar = (r: StudentEntry) => html`
+    <img class="avatar" src="${r.image_url}" alt="${r.login}" loading="lazy" />
+  `;
+
+  const renderStatusBadges = (r: StudentEntry) =>
+    html`${isBlackholed(r) && tab !== "pisciners"
+      ? html`<span
+          class="blackhole-badge${view === "list" ? " with-text" : ""}"
+          data-tip="${formatBlackholeDate(r.blackholed_at)}"
+        >
+          ${unsafeHTML(
+            SKULL_SVG.replace("<svg", '<svg width="16" height="16"'),
+          )}
+          ${view === "list" ? formatShortDate(r.blackholed_at) : ""}
+        </span>`
+      : ""}${isFrozen(r) && tab !== "new" && tab !== "pisciners"
+      ? html`<span
+          class="freeze-badge${view === "list" ? " with-text" : ""}"
+          data-tip="Frozen"
+        >
+          ${unsafeHTML(
+            FREEZE_SVG.replace("<svg", '<svg width="16" height="16"'),
+          )}
+          ${view === "list" ? "Frozen" : ""}
+        </span>`
+      : ""}${r.alumni && tab !== "pisciners"
+      ? html`<span
+          class="alumni-badge${view === "list" ? " with-text" : ""}"
+          data-tip="${formatAlumniDate(r.alumnized_at)}"
+        >
+          ${unsafeHTML(
+            GRADUATION_CAP_SVG.replace("<svg", '<svg width="16" height="16"'),
+          )}
+          ${view === "list" ? formatShortDate(r.alumnized_at) : ""}
+        </span>`
+      : ""}`;
+
+  const renderLogin = (r: StudentEntry) => html`
+    <span
+      class="login ${r.login === copiedLogin ? "copied" : ""}"
+      data-tip="Copy login"
+      @click="${(e: Event) => {
+        e.stopPropagation();
+        handlers.onCopyLogin(r.login);
+      }}"
+    >
+      ${r.login === copiedLogin ? "Copied ✓" : r.login}
+    </span>
+  `;
+
+  const renderInfo = (r: StudentEntry) => html`
+    <div class="info">
+      <div class="displayname">
+        <span class="displayname-name">${r.displayname || r.login}</span>
+        ${renderStatusBadges(r)}
+      </div>
+      ${renderLogin(r)}
+    </div>
+  `;
+
+  const renderLevelBadge = (r: StudentEntry) =>
+    tab !== "new" && typeof r.level === "number"
+      ? html`<span
+          class="level-badge"
+          data-tip="Level in ${tab === "pisciners" ? "piscine" : "42 cursus"}"
+        >
+          ${unsafeHTML(STAR_SVG.replace("<svg", '<svg width="12" height="12"'))}
+          ${r.level.toFixed(2)}
+        </span>`
+      : "";
+
+  const renderPoolBadge = (r: StudentEntry) =>
+    tab !== "pisciners" && formatPool(r)
+      ? html`<span class="pool-badge" data-tip="Pool in ${formatPoolFull(r)}">
+          ${unsafeHTML(POOL_SVG.replace("<svg", '<svg width="14" height="14"'))}
+          ${view === "list" ? formatPoolFull(r) : formatPool(r)}
+        </span>`
+      : "";
+
+  const renderDateBadge = (r: StudentEntry) =>
+    tab !== "pisciners" && formatMonthYear(r.begin_at)
+      ? html`<span
+          class="date-badge"
+          data-tip="Entry on ${formatShortDate(r.begin_at)}"
+        >
+          ${unsafeHTML(
+            ENTRY_DATE_SVG.replace("<svg", '<svg width="14" height="14"'),
+          )}
+          ${view === "list"
+            ? formatShortDate(r.begin_at)
+            : formatMonthYear(r.begin_at)}
+        </span>`
+      : "";
+
+  const renderEvalBadge = (r: StudentEntry) =>
+    isPaged && typeof r.correction_point === "number"
+      ? html`<span class="eval-badge" data-tip="Evaluation points">
+          ${unsafeHTML(EVAL_SVG.replace("<svg", '<svg width="14" height="14"'))}
+          ${r.correction_point}
+        </span>`
+      : "";
+
+  const renderWalletBadge = (r: StudentEntry) =>
+    isPaged && typeof r.wallet === "number"
+      ? html`<span class="wallet-badge" data-tip="Wallet">
+          ${unsafeHTML(
+            WALLET_SVG.replace("<svg", '<svg width="14" height="14"'),
+          )}
+          ${r.wallet}
+        </span>`
+      : "";
+
+  const renderStackedRow = (r: StudentEntry) => html`
+    <div
+      class="row ${r.active === false ? "inactive" : ""}"
+      @click="${() => openProfile(r.login)}"
+    >
+      <div class="row-head">${renderAvatar(r)} ${renderLogin(r)}</div>
+      <div class="fullname">
+        <span class="fullname-text">${r.displayname || r.login}</span>
+        ${renderStatusBadges(r)}
+      </div>
+      <div class="row-line">${renderPoolBadge(r)}${renderDateBadge(r)}</div>
+      <div class="row-line">
+        ${renderLevelBadge(r)}${renderEvalBadge(r)}${renderWalletBadge(r)}
+      </div>
+    </div>
+  `;
+
+  const renderDefaultRow = (r: StudentEntry) => html`
+    <div
+      class="row ${tab === "students" && r.active === false ? "inactive" : ""}"
+      @click="${() => openProfile(r.login)}"
+    >
+      ${renderAvatar(r)} ${renderInfo(r)}
+      <div class="row-meta">
+        ${renderPoolBadge(r)}${renderDateBadge(r)}${renderLevelBadge(r)}
+        ${renderEvalBadge(r)}${renderWalletBadge(r)}
+      </div>
+    </div>
+  `;
+
   const renderRows = (rows: StudentEntry[]) => html`
-    <div class="${view}">
-      ${rows.map(
-        (r) =>
-          html`<div
-            class="row ${tab === "students" && r.active === false
-              ? "inactive"
-              : ""}"
-            @click="${() => {
-              window.open(
-                `https://profile.intra.42.fr/users/${r.login}`,
-                "_blank",
-              );
-            }}"
-          >
-            <img
-              class="avatar"
-              src="${r.image_url}"
-              alt="${r.login}"
-              loading="lazy"
-            />
-            <div class="info">
-              <div class="displayname">
-                <span class="displayname-name"
-                  >${r.displayname || r.login}</span
-                >
-                ${isBlackholed(r) && tab !== "pisciners"
-                  ? html`<span
-                      class="blackhole-badge${view === "list"
-                        ? " with-text"
-                        : ""}"
-                      data-tip="${formatBlackholeDate(r.blackholed_at)}"
-                    >
-                      ${unsafeHTML(
-                        SKULL_SVG.replace(
-                          "<svg",
-                          '<svg width="16" height="16"',
-                        ),
-                      )}
-                      ${view === "list" ? formatShortDate(r.blackholed_at) : ""}
-                    </span>`
-                  : ""}
-                ${isFrozen(r) && tab !== "new" && tab !== "pisciners"
-                  ? html`<span
-                      class="freeze-badge${view === "list" ? " with-text" : ""}"
-                      data-tip="Frozen"
-                    >
-                      ${unsafeHTML(
-                        FREEZE_SVG.replace(
-                          "<svg",
-                          '<svg width="16" height="16"',
-                        ),
-                      )}
-                      ${view === "list" ? "Frozen" : ""}
-                    </span>`
-                  : ""}
-                ${r.alumni && tab !== "pisciners"
-                  ? html`<span
-                      class="alumni-badge${view === "list" ? " with-text" : ""}"
-                      data-tip="${formatAlumniDate(r.alumnized_at)}"
-                    >
-                      ${unsafeHTML(
-                        GRADUATION_CAP_SVG.replace(
-                          "<svg",
-                          '<svg width="16" height="16"',
-                        ),
-                      )}
-                      ${view === "list" ? formatShortDate(r.alumnized_at) : ""}
-                    </span>`
-                  : ""}
-              </div>
-              <div
-                class="login ${r.login === copiedLogin ? "copied" : ""}"
-                data-tip="Copy login"
-                @click="${(e: Event) => {
-                  e.stopPropagation();
-                  handlers.onCopyLogin(r.login);
-                }}"
-              >
-                ${r.login === copiedLogin ? "Copied ✓" : r.login}
-              </div>
-            </div>
-            <div class="row-meta">
-              ${tab !== "new" && typeof r.level === "number"
-                ? html`<span
-                    class="level-badge"
-                    data-tip="Level in ${tab === "pisciners"
-                      ? "piscine"
-                      : "42 cursus"}"
-                  >
-                    ${formatLevel(r.level)}
-                  </span>`
-                : ""}
-              ${tab !== "pisciners" && formatPool(r)
-                ? html`<span
-                    class="pool-badge"
-                    data-tip="Pool in ${formatPoolFull(r)}"
-                  >
-                    ${unsafeHTML(
-                      POOL_SVG.replace("<svg", '<svg width="14" height="14"'),
-                    )}
-                    ${view === "list" ? formatPoolFull(r) : formatPool(r)}
-                  </span>`
-                : ""}
-              ${tab !== "pisciners" && formatMonthYear(r.begin_at)
-                ? html`<span
-                    class="date-badge"
-                    data-tip="Entry on ${formatShortDate(r.begin_at)}"
-                  >
-                    ${unsafeHTML(
-                      ENTRY_DATE_SVG.replace(
-                        "<svg",
-                        '<svg width="14" height="14"',
-                      ),
-                    )}
-                    ${view === "list"
-                      ? formatShortDate(r.begin_at)
-                      : formatMonthYear(r.begin_at)}
-                  </span>`
-                : ""}
-            </div>
-          </div>`,
+    <div class="${view}${isPaged ? " roster-students" : ""}">
+      ${rows.map((r) =>
+        isPaged && view === "grid" ? renderStackedRow(r) : renderDefaultRow(r),
       )}
     </div>
   `;
@@ -664,7 +752,9 @@ export function renderStudentsDialogTemplate(
       }
       .pool-badge,
       .date-badge,
-      .level-badge {
+      .level-badge,
+      .eval-badge,
+      .wallet-badge {
         display: inline-flex;
         align-items: center;
         gap: 0.3rem;
@@ -690,16 +780,87 @@ export function renderStudentsDialogTemplate(
         color: var(--color-primary-content);
         background: color-mix(in oklch, var(--color-primary) 45%, transparent);
       }
+      .wallet-badge {
+        color: var(--color-secondary-content);
+        background: color-mix(
+          in oklch,
+          var(--color-secondary) 45%,
+          transparent
+        );
+      }
+      .eval-badge {
+        color: var(--color-warning-content);
+        background: color-mix(in oklch, var(--color-warning) 50%, transparent);
+      }
       .pool-badge svg,
       .date-badge svg,
-      .level-badge svg {
+      .level-badge svg,
+      .eval-badge svg,
+      .wallet-badge svg {
         fill: currentColor;
+        width: 0.875rem;
+        height: 0.875rem;
+        flex-shrink: 0;
+      }
+      .level-badge svg {
+        fill: none;
+        stroke: currentColor;
+        width: 0.75rem;
+        height: 0.75rem;
       }
       .grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 0.5rem;
       }
+      .grid.roster-students {
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        align-items: start;
+      }
+      .grid.roster-students .row {
+        align-items: stretch;
+        gap: 0.2rem;
+        text-align: center;
+        padding: 0.4rem 0.25rem;
+      }
+      .grid.roster-students .login {
+        font-size: 1.05rem;
+        font-weight: 600;
+        opacity: 1;
+      }
+      .grid.roster-students .fullname {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        width: 100%;
+        min-width: 0;
+        font-size: 0.9rem;
+        font-weight: 500;
+        opacity: 0.6;
+      }
+      .grid.roster-students .fullname-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+      }
+      .row-head {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+      }
+      .row-line {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+        flex-wrap: wrap;
+        width: 100%;
+      }
+
       .grid .piscine-card {
         padding: 0.9rem 0.5rem;
         gap: 0.15rem;
@@ -943,10 +1104,10 @@ export function renderStudentsDialogTemplate(
           >
           ${tab === "students"
             ? html`<span
-                class="badge badge-sm badge-success h-8 flex-shrink-0 font-bold font-mono"
+                class="badge badge-sm ${activeBadgeClass} h-8 flex-shrink-0 font-bold font-mono"
                 style="white-space:nowrap;border-radius:var(--radius-field)"
-                data-tip="Active students"
-                >${activeCount} active students</span
+                data-tip="${activeBadgeTip}"
+                >${activeBadgeValue} ${activeBadgeLabel}</span
               >`
             : ""}
           <div class="ml-auto flex items-center gap-2">
@@ -1045,13 +1206,14 @@ export function renderStudentsDialogTemplate(
               ? renderConnectBanner(handlers.onConnect)
               : filtered.length === 0
                 ? html`<div class="text-center p-6 text-base-content/50">
-                    ${entries.length === 0 ? "No data" : "No results"}
+                    ${emptyBase ? "No data" : "No results"}
                   </div>`
                 : html`${tab === "new"
                     ? html`<div class="flex flex-col gap-5">
                         ${futureGroups.map((i) => {
                           const inGroup = (e: StudentEntry) => {
-                            if (!isFutureStudent(e) || !e.begin_at) return false;
+                            if (!isFutureStudent(e) || !e.begin_at)
+                              return false;
                             const d = new Date(e.begin_at);
                             return (
                               d.getMonth() + 1 === i.month &&
@@ -1080,6 +1242,11 @@ export function renderStudentsDialogTemplate(
                     : renderRows(windowed)}
                   ${hasMore
                     ? html`<div class="sentinel" aria-hidden="true"></div>`
+                    : ""}
+                  ${loadingMore
+                    ? html`<div class="flex items-center justify-center p-4">
+                        <span class="loading loading-spinner loading-md"></span>
+                      </div>`
                     : ""}`}
       </div>
     </div>

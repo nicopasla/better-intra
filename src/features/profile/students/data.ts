@@ -25,11 +25,40 @@ export interface StudentEntry {
   pool_year?: string | null;
   alumnized_at?: string;
   level?: number;
+  correction_point?: number;
+  wallet?: number;
 }
 
 export interface StudentsResponse {
   cached_at?: number;
   data?: StudentEntry[];
+}
+
+export interface StudentsFilterOptions {
+  intakes: Intake[];
+  poolYears: number[];
+}
+
+export interface StudentsPageResponse {
+  cached_at?: number;
+  total?: number;
+  active?: number;
+  filtered?: number;
+  offset?: number;
+  limit?: number;
+  options?: StudentsFilterOptions;
+  data?: StudentEntry[];
+}
+
+export interface StudentsPageParams {
+  offset: number;
+  limit: number;
+  sort: SortField;
+  dir: SortDir;
+  filter: StudentsFilter;
+  poolIntake: { month: number; year: number } | null;
+  poolYear: number | null;
+  query: string;
 }
 
 export interface PiscineEntry {
@@ -275,6 +304,43 @@ export async function fetchStudents(): Promise<{
   unauthorized?: boolean;
 } | null> {
   return fetchEndpoint("students", new URLSearchParams());
+}
+
+export async function fetchStudentsPage(params: StudentsPageParams): Promise<{
+  data?: StudentsPageResponse;
+  unauthorized?: boolean;
+} | null> {
+  try {
+    const cloudLogin = await getConfig("CLOUD_LOGIN");
+    const token = await getConfig("CLOUD_TOKEN");
+    if (!cloudLogin || !token) return { unauthorized: true };
+
+    const search = new URLSearchParams({
+      _: String(Date.now()),
+      login: await hashLogin(cloudLogin),
+      limit: String(params.limit),
+      offset: String(params.offset),
+      sort: params.sort,
+      dir: params.dir,
+      filter: params.filter,
+    });
+    if (params.poolIntake) {
+      search.set("pool_month", String(params.poolIntake.month));
+      search.set("pool_year", String(params.poolIntake.year));
+    } else if (params.poolYear != null) {
+      search.set("pool_year", String(params.poolYear));
+    }
+    if (params.query.trim()) search.set("q", params.query.trim());
+
+    const res = await fetch(`${WORKER_URL}/api/v1/students?${search}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.status === 401) return { unauthorized: true };
+    if (!res.ok) return null;
+    return { data: (await res.json()) as StudentsPageResponse };
+  } catch {
+    return null;
+  }
 }
 
 export async function fetchPisciners(

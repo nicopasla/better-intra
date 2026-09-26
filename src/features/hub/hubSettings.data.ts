@@ -253,6 +253,17 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     },
     {
       feature: "logtime",
+      key: "LOGTIME_SHOW_TOTAL_TACOS",
+      label: "Header total",
+      desc: "Shows the all-time emoji total next to the Logtime title.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.LOGTIME_SHOW_TOTAL_TACOS,
+      grid: true,
+      colSpan: 1,
+      dependsOn: "LOGTIME_SHOW_TACOS",
+    },
+    {
+      feature: "logtime",
       key: "LOGTIME_EMOJI",
       label: "Custom Emoji",
       desc: "Replace 🌮 with your favorite emoji.",

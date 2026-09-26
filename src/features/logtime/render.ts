@@ -364,18 +364,20 @@ export function renderHeaderContent(
   collapsed = false,
   streak: LogtimeStreak | null = null,
 ) {
-  let totalCappedEarnings = 0;
-
-  for (const data of Object.values(monthsData)) {
-    const monthSecs = Object.values(data).reduce((a, b) => a + b, 0);
-    const monthEarnings = (monthSecs / 3600) * config.rate;
-    const cappedMonthEarnings = config.max_earnings
-      ? Math.min(monthEarnings, config.max_earnings)
-      : monthEarnings;
-    totalCappedEarnings += cappedMonthEarnings;
+  const showTotalTacos = config.show_tacos && config.show_total_tacos;
+  let totalTacos = 0;
+  if (showTotalTacos) {
+    let totalCappedEarnings = 0;
+    for (const data of Object.values(monthsData)) {
+      const monthSecs = Object.values(data).reduce((a, b) => a + b, 0);
+      const monthEarnings = (monthSecs / 3600) * config.rate;
+      const cappedMonthEarnings = config.max_earnings
+        ? Math.min(monthEarnings, config.max_earnings)
+        : monthEarnings;
+      totalCappedEarnings += cappedMonthEarnings;
+    }
+    totalTacos = Math.floor(totalCappedEarnings / config.divisor);
   }
-
-  const totalTacos = Math.floor(totalCappedEarnings / config.divisor);
 
   const views = CALENDAR_VIEWS;
 
@@ -386,7 +388,7 @@ export function renderHeaderContent(
       class="lt-header font-bold uppercase text-sm tracking-tight flex items-center w-full"
     >
       <span class="lt-title">Logtime</span>
-      ${config.show_tacos
+      ${showTotalTacos
         ? html`<span
             class="badge badge-dash badge-success badge-lg font-bold font-mono ml-2 lt-tacos-badge"
             >${totalTacos} ${config.emoji}</span

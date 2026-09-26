@@ -6,6 +6,7 @@ export interface LogtimeStreak {
   longestStreak: number;
   bestDay: { date: string; secs: number };
   bestWeek: { monday: string; secs: number };
+  range: { from: string; to: string };
 }
 
 const ymd = (d: Date): string =>
@@ -87,7 +88,13 @@ export function computeStreak(
     }
   }
 
-  return { currentStreak, longestStreak, bestDay, bestWeek };
+  return {
+    currentStreak,
+    longestStreak,
+    bestDay,
+    bestWeek,
+    range: { from: first, to: last },
+  };
 }
 
 const DAY_FMT = new Intl.DateTimeFormat("en-GB", {
@@ -95,15 +102,25 @@ const DAY_FMT = new Intl.DateTimeFormat("en-GB", {
   month: "2-digit",
 });
 
+export const RANGE_FMT = new Intl.DateTimeFormat("en-GB", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
+export function formatRange(range: { from: string; to: string }): string {
+  return `${RANGE_FMT.format(localDay(range.from))} – ${RANGE_FMT.format(localDay(range.to))}`;
+}
+
 const days = (n: number) => `${n} ${n === 1 ? "day" : "days"}`;
 
-export function streakLines(streak: LogtimeStreak): string[] {
+export function streakLines(records: LogtimeStreak): string[] {
   const day = (key: string) => DAY_FMT.format(localDay(key));
   return [
-    `Current streak: ${days(streak.currentStreak)}`,
-    `Longest streak: ${days(streak.longestStreak)}`,
-    `Best day: ${fmtHours(streak.bestDay.secs)} (${day(streak.bestDay.date)})`,
-    `Best week: ${fmtHours(streak.bestWeek.secs)} (week of ${day(streak.bestWeek.monday)})`,
-    "Over the days shown",
+    `Current streak: ${days(records.currentStreak)}`,
+    `Longest streak: ${days(records.longestStreak)}`,
+    `Best day: ${fmtHours(records.bestDay.secs)} (${day(records.bestDay.date)})`,
+    `Best week: ${fmtHours(records.bestWeek.secs)} (week of ${day(records.bestWeek.monday)})`,
+    formatRange(records.range),
   ];
 }

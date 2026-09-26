@@ -108,7 +108,16 @@ describe("streakLines", () => {
       "Longest streak: 1 day",
       "Best day: 5h30 (13/04)",
       "Best week: 5h30 (week of 13/04)",
-      "Over the days shown",
+      "13/04/2026 – 13/04/2026",
     ]);
+  });
+
+  it("reports the date range covered by the data", () => {
+    const r = computeStreak(
+      { "2024-04-17": "02:00:00", "2026-09-26": "03:00:00" },
+      at(2026, 9, 26),
+    )!;
+    expect(r.range).toEqual({ from: "2024-04-17", to: "2026-09-26" });
+    expect(streakLines(r).at(-1)).toBe("17/04/2024 – 26/09/2026");
   });
 });

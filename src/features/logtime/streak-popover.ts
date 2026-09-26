@@ -2,7 +2,7 @@ import { html, render, TemplateResult } from "lit-html";
 import { adoptShadowCss } from "../../utils/shadow-styles.ts";
 import { getEffectiveTheme } from "../profile/theme/theme-manager.ts";
 import { fmtHours } from "./utils.ts";
-import type { LogtimeStreak } from "./streak.ts";
+import { formatRange, type LogtimeStreak } from "./streak.ts";
 
 const POPOVER_ID = "ft-streak-popover";
 const HIDE_DELAY_MS = 120;
@@ -106,7 +106,7 @@ export async function showStreakPopover(
               )}
             </div>
             <span class="text-[0.65rem] opacity-40 text-center"
-              >Over the days shown</span
+              >${formatRange(streak.range)}</span
             >
           </div>
         </div>

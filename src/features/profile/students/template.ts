@@ -559,22 +559,29 @@ export function renderStudentsDialogTemplate(
         </span>`
       : "";
 
-  const renderStackedRow = (r: StudentEntry) => html`
-    <div
-      class="row ${r.active === false ? "inactive" : ""}"
-      @click="${() => openProfile(r.login)}"
-    >
-      <div class="row-head">${renderAvatar(r)} ${renderLogin(r)}</div>
-      <div class="fullname">
-        <span class="fullname-text">${r.displayname || r.login}</span>
-        ${renderStatusBadges(r)}
+  const renderStackedRow = (r: StudentEntry) => {
+    const pool = renderPoolBadge(r);
+    const date = renderDateBadge(r);
+    const level = renderLevelBadge(r);
+    const evalBadge = renderEvalBadge(r);
+    const wallet = renderWalletBadge(r);
+    return html`
+      <div
+        class="row ${isPaged && r.active === false ? "inactive" : ""}"
+        @click="${() => openProfile(r.login)}"
+      >
+        <div class="row-head">${renderAvatar(r)} ${renderLogin(r)}</div>
+        <div class="fullname">
+          <span class="fullname-text">${r.displayname || r.login}</span>
+          ${renderStatusBadges(r)}
+        </div>
+        ${pool || date ? html`<div class="row-line">${pool}${date}</div>` : ""}
+        ${level || evalBadge || wallet
+          ? html`<div class="row-line">${level}${evalBadge}${wallet}</div>`
+          : ""}
       </div>
-      <div class="row-line">${renderPoolBadge(r)}${renderDateBadge(r)}</div>
-      <div class="row-line">
-        ${renderLevelBadge(r)}${renderEvalBadge(r)}${renderWalletBadge(r)}
-      </div>
-    </div>
-  `;
+    `;
+  };
 
   const renderDefaultRow = (r: StudentEntry) => html`
     <div
@@ -590,9 +597,9 @@ export function renderStudentsDialogTemplate(
   `;
 
   const renderRows = (rows: StudentEntry[]) => html`
-    <div class="${view}${isPaged ? " roster-students" : ""}">
+    <div class="${view}${view === "grid" ? " roster-students" : ""}">
       ${rows.map((r) =>
-        isPaged && view === "grid" ? renderStackedRow(r) : renderDefaultRow(r),
+        view === "grid" ? renderStackedRow(r) : renderDefaultRow(r),
       )}
     </div>
   `;
@@ -1226,11 +1233,12 @@ export function renderStudentsDialogTemplate(
                           return html`<div>
                             <div class="flex items-center gap-2 mb-2 px-1">
                               <span
-                                class="badge badge-lg badge-ghost font-mono font-bold"
+                                class="badge badge-lg badge-primary font-mono font-bold"
                               >
                                 ${piscineMonthName(i.month)} ${i.year}
                               </span>
-                              <span class="badge badge-lg badge-ghost font-mono"
+                              <span
+                                class="badge badge-lg badge-accent font-mono"
                                 >${groupCount}
                                 ${groupCount === 1 ? "student" : "students"}
                               </span>

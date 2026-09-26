@@ -251,11 +251,14 @@ function renderPiscineCalendar(
           .map((p) => p.month)
           .sort((a, b) => a - b);
         return html`<div>
-          <div class="flex items-center gap-2 mb-2 px-1">
-            <span class="badge badge-lg badge-ghost font-mono font-bold">
+          <div class="piscine-cal-head flex items-center gap-2 mb-2 px-1">
+            <span
+              class="piscine-cal-year badge badge-lg badge-primary font-mono font-bold"
+            >
               ${year}
             </span>
-            <span class="badge badge-lg badge-ghost font-mono"
+            <span
+              class="piscine-cal-count badge badge-lg badge-accent font-mono"
               >${months.length} piscines</span
             >
           </div>
@@ -700,6 +703,9 @@ export function renderStudentsDialogTemplate(
       .grid .piscine-card {
         padding: 0.9rem 0.5rem;
         gap: 0.15rem;
+      }
+      .piscine-cal-head .badge {
+        border-radius: 0.75rem;
       }
       .piscine-card__month {
         font-size: 0.9rem;

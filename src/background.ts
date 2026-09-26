@@ -151,8 +151,32 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       .finally(sendResponse);
     return true;
   }
+  if (message?.type === "FT_OPEN_HUB") {
+    openHub()
+      .catch(() => undefined)
+      .finally(sendResponse);
+    return true;
+  }
   return undefined;
 });
+
+async function openHub() {
+  const tabs = await chrome.tabs.query({ url: "https://*.intra.42.fr/*" });
+  const existing = tabs[0];
+  if (existing?.id) {
+    await chrome.tabs.update(existing.id, { active: true });
+    if (existing.windowId) {
+      try {
+        await chrome.windows.update(existing.windowId, { focused: true });
+      } catch {
+        // focusing is best-effort
+      }
+    }
+    chrome.tabs.reload(existing.id);
+    return;
+  }
+  await chrome.tabs.create({ url: "https://profile-v3.intra.42.fr/" });
+}
 
 async function reloadIntraTabs() {
   const tabs = await chrome.tabs.query({ url: "https://*.intra.42.fr/*" });

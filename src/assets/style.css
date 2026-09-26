@@ -28,6 +28,10 @@
   font-variant-numeric: tabular-nums;
 }
 
+.badge {
+  border-radius: var(--radius-field);
+}
+
 @plugin "daisyui" {
   root:
     "#hub-shadow-wrapper", "#events-shadow-wrapper", "#profile-shadow-wrapper",
@@ -58,6 +62,7 @@
     "swap",
     "fieldset",
     "status",
+    "stat",
     "tooltip",
     "badge",
     "collapse",

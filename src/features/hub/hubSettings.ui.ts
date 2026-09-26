@@ -1215,6 +1215,7 @@ function isAlwaysEnabledFeature(f: (typeof FEATURE_DEFS)[number]): boolean {
     f.id === "discord" ||
     f.id === "calendar" ||
     f.id === "advanced" ||
+    f.id === "account" ||
     f.id === "extras"
   );
 }
@@ -1251,6 +1252,10 @@ function buildPanelBody(
   disabledDeps: Set<string>,
   hiddenDeps: Set<string>,
 ) {
+  if (f.id === "account") {
+    return html`<div class="w-full p-6" data-account-panel></div>`;
+  }
+
   const settings = renderSettingList(
     HUB_SETTING_DEFS[f.id] || [],
     isAlwaysEnabled,
@@ -1864,6 +1869,19 @@ async function createModal(active: FeatureId[]): Promise<void> {
         height: auto !important;
         overflow: visible !important;
       }
+      .tabs {
+        align-content: flex-start !important;
+      }
+      .tab-content:has([data-account-panel]) {
+        height: calc(100% - var(--tab-height, 3rem)) !important;
+        overflow: hidden !important;
+      }
+      [data-feature-panel="account"],
+      [data-feature-panel="account"] [data-lazy-panel],
+      [data-account-panel] {
+        height: 100%;
+        min-height: 0;
+      }
     </style>
     <div
       class="flex flex-col h-full text-base-content bg-base-100"
@@ -2039,6 +2057,12 @@ async function createModal(active: FeatureId[]): Promise<void> {
     bindPanelControls(el, shadow);
     setupSubTabs(el);
     if (id === "about") loadAboutPanel(shadow);
+    if (id === "account") {
+      const mount = el.querySelector<HTMLElement>("[data-account-panel]") ?? el;
+      void import("../account/account.ui.ts").then((m) =>
+        m.initAccountSettings(mount),
+      );
+    }
   };
 
   const ensureAllPanels = () => {

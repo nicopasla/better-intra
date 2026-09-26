@@ -236,5 +236,15 @@ export async function initHubSettings(): Promise<FeatureId[]> {
   addEventListener("pagehide", () => clearInterval(hubInterval), {
     once: true,
   });
+
+  const pending = (await chrome.storage.local.get("PENDING_OPEN_HUB")) as {
+    PENDING_OPEN_HUB?: boolean;
+  };
+  if (pending.PENDING_OPEN_HUB) {
+    await chrome.storage.local.remove("PENDING_OPEN_HUB");
+    const { openHubModal } = await import("./hubSettings.ui.ts");
+    await openHubModal(active);
+  }
+
   return active;
 }

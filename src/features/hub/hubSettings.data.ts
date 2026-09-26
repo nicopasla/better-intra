@@ -5,6 +5,7 @@ import SHORTCUT from "../../assets/svg/shortcut.svg?raw";
 import ABOUT from "../../assets/svg/about.svg?raw";
 import DISCORD_SVG from "../../assets/svg/discord.svg?raw";
 import ADVANCED_SVG from "../../assets/svg/advanced.svg?raw";
+import USER_COG_SVG from "../../assets/svg/user-cog.svg?raw";
 import GRID_SVG from "../../assets/svg/grid.svg?raw";
 import PALETTE_SVG from "../../assets/svg/palette.svg?raw";
 import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
@@ -79,6 +80,12 @@ export const FEATURE_DEFS = [
     icon: ADVANCED_SVG,
     desc: "General behavior settings.",
     cols: 2,
+  },
+  {
+    id: "account",
+    name: "Account",
+    icon: USER_COG_SVG,
+    desc: "Connect your 42 account, sync settings, and manage sessions.",
   },
   {
     id: "about",
@@ -654,6 +661,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       fullWidth: true,
     },
   ],
+  account: [],
   about: [
     {
       feature: "about",

@@ -14,6 +14,9 @@ export interface AccountState {
   sessions: SessionSummary[];
   sessionsMax: number;
   revokingId: string | null;
+  revokingOthers: boolean;
+  autoPush: boolean;
+  lastSynced: number | null;
   needsReconnect: boolean;
   buttons: {
     push: ButtonState;
@@ -29,6 +32,9 @@ export function createInitialState(): AccountState {
     sessions: [],
     sessionsMax: 0,
     revokingId: null,
+    revokingOthers: false,
+    autoPush: false,
+    lastSynced: null,
     needsReconnect: false,
     buttons: {
       push: {

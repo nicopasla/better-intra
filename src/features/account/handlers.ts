@@ -210,6 +210,45 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
     updateUI();
   };
 
+  const handleToggleAutoPush = (value: boolean) => {
+    state.autoPush = value;
+    updateUI();
+    void chrome.storage.local.set({ CLOUD_SYNC_ENABLED: value });
+  };
+
+  const handleRevokeOthers = async () => {
+    const others = state.sessions.filter((s) => !s.current);
+    if (others.length === 0) return;
+
+    const confirmed = await showConfirmDialog({
+      title: "Sign out other sessions",
+      message: `Sign out ${others.length} other ${
+        others.length === 1 ? "session" : "sessions"
+      }?`,
+      confirmLabel: "Sign out",
+      cancelLabel: "Cancel",
+    });
+    if (!confirmed) return;
+
+    state.revokingOthers = true;
+    updateUI();
+    const results = await Promise.all(others.map((s) => revokeSession(s.id)));
+    state.revokingOthers = false;
+
+    const { sessions, max } = await fetchSessions();
+    state.sessions = sessions;
+    state.sessionsMax = max;
+    state.activeSessions = sessions.length;
+    updateUI();
+
+    if (results.some((ok) => !ok)) {
+      await showAlertDialog({
+        title: "Some sessions weren't signed out",
+        message: "Please try again.",
+      });
+    }
+  };
+
   return {
     handleLogin42,
     handleDelete,
@@ -217,5 +256,7 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
     handlePush,
     handlePull,
     handleRevokeSession,
+    handleToggleAutoPush,
+    handleRevokeOthers,
   };
 }

@@ -18,6 +18,8 @@ import {
 } from "./render.ts";
 import { renderCompactMonthGroup, MonthEntry, chunkMonths } from "./compact.ts";
 import { renderHeatmapCard } from "./heatmap.ts";
+import { computeStreak } from "./streak.ts";
+import { closeStreakPopover } from "./streak-popover.ts";
 import { getLastSeenFormatted, limit } from "./utils.ts";
 import {
   getEffectiveTheme,
@@ -142,6 +144,7 @@ const getConfigs = async () => {
     "DISABLE_ANIMATIONS",
     "LOGTIME_MAX_EARNINGS",
     "LOGTIME_CALENDAR_VIEW",
+    "LOGTIME_SHOW_STREAK",
   ] as const);
   return {
     goal_hours: c.LOGTIME_GOAL_HOURS,
@@ -158,6 +161,7 @@ const getConfigs = async () => {
     disable_animations: c.DISABLE_ANIMATIONS,
     max_earnings: c.LOGTIME_MAX_EARNINGS,
     calendar_view: c.LOGTIME_CALENDAR_VIEW,
+    show_streak: c.LOGTIME_SHOW_STREAK,
   };
 };
 
@@ -303,6 +307,7 @@ function renderLogtime(
   eventsByDate?: Record<string, CalendarEvent[]>,
 ): void {
   if (!stats || !CONFIG) return;
+  closeStreakPopover();
   lastStats = stats;
   // Let other modules (tracker badge) react to the *current* stats: a plain
   // 42_LOGTIME_DATA listener would run before this assignment and read the
@@ -471,6 +476,7 @@ function renderLogtime(
   }
 
   const lastSeenValue = getLastSeenFormatted(stats, CONFIG.show_days_mode);
+  const streak = computeStreak(stats);
   const handleViewChange = async (value: string) => {
     await chrome.storage.local.set({ LOGTIME_CALENDAR_VIEW: value });
     CONFIG.calendar_view = value;
@@ -485,6 +491,7 @@ function renderLogtime(
     primaryColor,
     primaryContent,
     viewOverflow,
+    streak,
   );
 
   let shadowHost = document.getElementById("logtime-shadow-wrapper");

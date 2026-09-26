@@ -228,6 +228,16 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       ],
       grid: false,
     },
+    {
+      feature: "logtime",
+      key: "LOGTIME_SHOW_STREAK",
+      label: "Show streak",
+      desc: "Shows your current streak, best day and best week in the Logtime header.",
+      kind: "toggle",
+      defaultValue: CONFIG_DEFAULT.LOGTIME_SHOW_STREAK,
+      grid: true,
+      colSpan: 1,
+    },
 
     { feature: "logtime", label: "Emoji & Earnings", kind: "divider" },
 

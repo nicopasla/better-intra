@@ -8,6 +8,8 @@ import {
   INTRA_FONT,
 } from "./constants";
 import { fmtHours, hexToRgba, safeLabelsColor } from "./utils";
+import { LogtimeStreak, streakLines } from "./streak";
+import { showStreakPopover, scheduleHideStreakPopover } from "./streak-popover";
 import { LogtimeConfig, CalendarEvent, EventsByDate } from "./logtime";
 import { escapeHtml } from "../../utils/tooltip.ts";
 import LOGTIME_CSS from "./logtime.css?inline";
@@ -360,6 +362,7 @@ export function renderHeaderContent(
   primaryColor: string,
   primaryContent: string,
   collapsed = false,
+  streak: LogtimeStreak | null = null,
 ) {
   let totalCappedEarnings = 0;
 
@@ -459,12 +462,32 @@ export function renderHeaderContent(
           </ul>
         </details>
       </div>
-      ${lastSeenValue !== "N/A"
-        ? html`<span
-            class="ml-auto badge badge-success font-bold font-mono tracking-tight lt-active-badge"
-            >Active ${lastSeenValue}</span
-          >`
-        : ""}
+      <span class="ml-auto flex items-center gap-2">
+        ${config.show_streak && streak
+          ? html`<span
+              class="badge ${streak.currentStreak > 0
+                ? "badge-warning"
+                : "badge-ghost"} font-bold font-mono tracking-tight lt-streak-badge gap-1"
+              role="img"
+              aria-label="${streakLines(streak).join(", ")}"
+              @mouseenter="${(e: Event) =>
+                showStreakPopover(
+                  e.currentTarget as HTMLElement,
+                  streak as LogtimeStreak,
+                )}"
+              @mouseleave="${() => scheduleHideStreakPopover()}"
+            >
+              <span class="text-sm leading-none">🔥</span>
+              ${streak.currentStreak}
+            </span>`
+          : ""}
+        ${lastSeenValue !== "N/A"
+          ? html`<span
+              class="badge badge-success font-bold font-mono tracking-tight lt-active-badge"
+              >Active ${lastSeenValue}</span
+            >`
+          : ""}
+      </span>
     </div>
   </div>`;
 }

@@ -507,9 +507,6 @@ export async function watchLevelPadding(profileCard: HTMLElement) {
     ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
     return ctx.measureText(text).width;
   };
-  // Enlarge the remaining digit and center it in the width the original digit
-  // pair occupied. The figure space keeps the box width intact; the translate
-  // compensates for the scale (rotate/scale happen around the box center).
   const DIGIT_SCALE = 1.3;
   const centerDigit = () => {
     const shift = (-DIGIT_SCALE * measure("0")) / 2;

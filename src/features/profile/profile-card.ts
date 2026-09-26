@@ -498,11 +498,13 @@ export async function watchLevelPadding(profileCard: HTMLElement) {
   const enabled = await getConfig("PROFILE_LEVEL_NO_PADDING");
   if (_levelPaddingObserved.has(levelEl)) return;
 
+  const FIGURE_SPACE = "\u2007";
   const strip = () => {
-    const raw = levelEl.textContent?.trim() ?? "";
-    const m = raw.match(/^0(\d)$/);
-    const next = enabled && m ? m[1] : raw;
-    if (next !== raw) levelEl.textContent = next;
+    const raw = levelEl.textContent ?? "";
+    const m = raw.match(/^\s*0(\d)\s*$/);
+    if (!enabled || !m) return;
+    const next = FIGURE_SPACE + m[1];
+    if (raw !== next) levelEl.textContent = next;
   };
 
   _levelPaddingObserved.add(levelEl);

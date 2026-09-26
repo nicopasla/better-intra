@@ -84,16 +84,6 @@ Replaces the default logtime view with a monthly calendar showing your logged ho
 
 ---
 
-### 🖥️ Clusters
-
-* **Directional markers** — small indicators on the cluster map showing which way each chair faces. Toggle on/off from the cluster tab bar. Available for all campuses.
-* **Cluster picker** — a dropdown on the cluster tab bar to quickly switch clusters.
-* **Markers toggle** — a button on the cluster tab bar to show/hide chair direction indicators.
-* **Default cluster** — set your preferred cluster and it loads automatically when you open the page.
-* **Open in new tab** — optionally open user profiles in a new tab when clicking seats on the cluster map.
-
----
-
 ### 🗺️ Cluster Map Dialog
 
 A live interactive cluster map popup accessible from profile quick-link buttons.
@@ -106,8 +96,9 @@ A live interactive cluster map popup accessible from profile quick-link buttons.
 * **Campus selector** — switch between 42 campuses from within the dialog; the map loads the selected campus's clusters.
 * **Campus clock** — a live clock showing the selected campus's local time.
 * **Click to visit profile** — click any occupied seat to open that user's profile, optionally in a new tab.
-* **In-dialog settings** — toggle directional markers and set your default cluster from within the dialog.
-* **Works for all campuses** — the live map is available for every 42 campus.
+* **Directional markers** — small in-map indicators showing which way each chair faces. Toggle them on/off from the in-dialog settings.
+* **Default cluster** — set your preferred cluster and the dialog opens on it.
+* **Works for all campuses** — the live map, directional markers, and default cluster are available for every 42 campus.
 
 ---
 
@@ -138,7 +129,6 @@ A students directory for the **Belgium** campus, opened from the **users icon** 
 Your 42 campus is detected automatically — no manual setup.
 
 * **Passive detection** — visiting your profile page silently detects your campus from the intra's own API. Your detected campus appears as a badge in the Advanced settings tab.
-* **Chair direction indicators** — cluster screen markers load automatically for your detected campus. Available for all campuses with submitted cluster data.
 * **Contributing** — add your campus by submitting cluster name/ID data via a pull request to the [campuses/](https://github.com/nicopasla/better-intra/tree/main/campuses) directory.
 
 ---
@@ -232,7 +222,7 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 * All extension settings in one place.
 * Click the **gear icon** on the intra sidebar to open it.
 * **Search settings** — a search box in the hub header filters settings across all tabs and jumps to the first match.
-* Tabs: Appearance (Theme + Logtime), Add-ons, Profile, Clusters, Shortcuts, Discord, Calendar, Advanced, About.
+* Tabs: Appearance (Theme + Logtime), Add-ons, Profile, Shortcuts, Discord, Calendar, Advanced, About.
 * Turn features on/off individually, or reset a feature's settings to default.
 * **Drag to reorder dashboard cards** — in the Profile tab, drag and drop cards (Logtime, Agenda, Evaluations, Projects, Achievements, Thursday Roulette) to reorder them on the dashboard. Toggle visibility with the eye icon, or reset to default order.
 * The footer bar shows your theme toggle, cloud connection status, last sync badge, and auto-push toggle.

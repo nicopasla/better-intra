@@ -48,10 +48,6 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
     IS_PROFILE_V3
       ? import("./features/logtime/logtime.ts").then((m) => m.initLogtime())
       : Promise.resolve(),
-  clusters: () =>
-    IS_PROFILE_V3
-      ? import("./features/clusters/clusters.ts").then((m) => m.initClusters())
-      : Promise.resolve(),
   shortcuts: () =>
     IS_PROFILE_HOST
       ? import("./features/shortcuts/shortcuts.ts").then((m) =>

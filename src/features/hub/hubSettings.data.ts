@@ -1,6 +1,5 @@
 import CLOCK from "../../assets/svg/clock.svg?raw";
 import CALENDAR from "../../assets/svg/calendar.svg?raw";
-import CLUSTERS from "../../assets/svg/clusters.svg?raw";
 import USER from "../../assets/svg/user.svg?raw";
 import SHORTCUT from "../../assets/svg/shortcut.svg?raw";
 import ABOUT from "../../assets/svg/about.svg?raw";
@@ -9,7 +8,6 @@ import ADVANCED_SVG from "../../assets/svg/advanced.svg?raw";
 import GRID_SVG from "../../assets/svg/grid.svg?raw";
 import PALETTE_SVG from "../../assets/svg/palette.svg?raw";
 import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
-import { CLUSTERS as CLUSTER_OPTIONS } from "../campus/campus.ts";
 import { RAINBOW_PALETTES } from "../logtime/rainbow-presets.ts";
 import { SANS_FONTS } from "../../utils/fonts.ts";
 
@@ -55,13 +53,6 @@ export const FEATURE_DEFS = [
     desc: "Redesign the logtime to show weekly and total hours.",
     cols: 3,
     hideFromTopLevel: true,
-  },
-  {
-    id: "clusters",
-    name: "Clusters",
-    icon: CLUSTERS,
-    desc: "Direction markers, new-tab links, and a saved default cluster.",
-    cols: 2,
   },
   {
     id: "shortcuts",
@@ -287,44 +278,6 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       grid: true,
       colSpan: 1,
       dependsOn: "LOGTIME_SHOW_TACOS",
-    },
-  ],
-  clusters: [
-    { feature: "clusters", label: "Behavior", kind: "divider" },
-    {
-      feature: "clusters",
-      key: "CLUSTERS_SHOW_MARKERS",
-      label: "Show markers",
-      desc: "Shows the direction markers on the cluster screen.",
-      kind: "toggle",
-      defaultValue: CONFIG_DEFAULT.CLUSTERS_SHOW_MARKERS,
-      grid: true,
-      colSpan: 1,
-    },
-    {
-      feature: "clusters",
-      key: "CLUSTERS_OPEN_NEW_TAB",
-      label: "Open profiles in new tab",
-      desc: "When clicking a user on the clusters map, opens their profile in a new tab.",
-      kind: "toggle",
-      defaultValue: CONFIG_DEFAULT.CLUSTERS_OPEN_NEW_TAB,
-      grid: true,
-      colSpan: 1,
-    },
-    { feature: "clusters", label: "Defaults", kind: "divider" },
-    {
-      feature: "clusters",
-      key: "CLUSTERS_DEFAULT_ID",
-      label: "Default cluster",
-      desc: "Prefills a cluster page when the page opens.",
-      kind: "select",
-      defaultValue: String(CONFIG_DEFAULT.CLUSTERS_DEFAULT_ID),
-      options: CLUSTER_OPTIONS.map((c) => ({
-        label: c.name.toUpperCase(),
-        value: c.id,
-      })),
-      grid: true,
-      colSpan: 1,
     },
   ],
   appearance: [

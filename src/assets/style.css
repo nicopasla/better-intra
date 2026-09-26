@@ -31,7 +31,7 @@
 @plugin "daisyui" {
   root:
     "#hub-shadow-wrapper", "#events-shadow-wrapper", "#profile-shadow-wrapper",
-    "#profile-badges-shadow", "#cluster-shadow-host",
+    "#profile-badges-shadow",
     "#shortcuts-shadow-wrapper", "#friends-shadow-wrapper",
     "#ft-friend-btn-shadow", "#logtime-shadow-wrapper", "#popup-root",
     "#project-badges-shadow", "#cluster-map-dialog", "#profile-modal-host",

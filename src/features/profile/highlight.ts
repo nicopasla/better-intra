@@ -1,175 +1,6 @@
 import { CLUSTERS, getClusterData } from "../clusters/clusters.data.ts";
 import { openClusterDialog } from "../clusters/map-dialog.ts";
-import { normalizeSeatId } from "../clusters/map-dialog/seats.ts";
 import { getConfig } from "../../config.ts";
-
-/** The unique ID for the injected stylesheet. */
-const GLOW_STYLE_ID = "ft-glow-styles";
-/** The CSS class applied to a highlighted seat. */
-const GLOWING_CLASS = "ft-glowing-seat";
-/** A data attribute to mark an element as highlighted. */
-const HIGHLIGHT_ATTR = "data-highlighted";
-/** The URL query parameter used to specify a seat to highlight. */
-const SEAT_PARAM = "seat";
-/** The path for the cluster map pages. */
-const CLUSTERS_PATH = "/clusters";
-/** The scale factor to apply to a highlighted seat. */
-const HIGHLIGHT_SCALE = 1.4;
-
-/**
- * Injects the CSS styles for the seat highlight animation into the document head.
- * The styles are only injected once.
- */
-function injectHighlightStyles() {
-  if (document.getElementById(GLOW_STYLE_ID)) return;
-
-  const style = document.createElement("style");
-  style.id = GLOW_STYLE_ID;
-  style.textContent = `
-    @keyframes ft-pulsate {
-      0%, 100% {
-        filter: drop-shadow(0 0 2px #ff0055) drop-shadow(0 0 5px #ff0055);
-      }
-      50% {
-        filter: drop-shadow(0 0 8px #ff0055) drop-shadow(0 0 15px #ff0055);
-      }
-    }
-    .${GLOWING_CLASS} {
-      animation: ft-pulsate 2s infinite ease-in-out !important;
-    }
-    html.ft-no-anim .${GLOWING_CLASS} {
-      animation: none !important;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .${GLOWING_CLASS} {
-        animation: none !important;
-      }
-    }
-  `;
-  const target = document.head || document.documentElement;
-  target.appendChild(style);
-}
-
-/**
- * Finds and removes all active highlight effects from any seat on the page.
- */
-function clearExistingHighlight() {
-  document.querySelectorAll(`[${HIGHLIGHT_ATTR}='true']`).forEach((el) => {
-    el.removeAttribute(HIGHLIGHT_ATTR);
-    el.removeAttribute("transform");
-    el.classList.remove(GLOWING_CLASS);
-  });
-}
-
-/**
- * Retrieves the SVG elements corresponding to a given seat identifier.
- * Matches regardless of campus seat-id formatting (dashes vs concatenated).
- * @param seatId The seat identifier (e.g., "e1r1p1", "shi-r5-p6", "c1r17s2").
- * @returns An array of matching SVG elements.
- */
-function getSeatElements(seatId: string): SVGGraphicsElement[] {
-  const exact = document.querySelectorAll<SVGGraphicsElement>(
-    `[id="${CSS.escape(seatId)}"]`,
-  );
-  if (exact.length > 0) return Array.from(exact);
-
-  const key = normalizeSeatId(seatId);
-  const matches: SVGGraphicsElement[] = [];
-  for (const el of document.querySelectorAll<SVGGraphicsElement>("[id]")) {
-    if (normalizeSeatId(el.getAttribute("id") || "") === key) {
-      matches.push(el);
-    }
-  }
-  return matches;
-}
-
-/**
- * Reads the 'seat' URL parameter and applies the highlight effect to the corresponding seat.
- * If no parameter is found, it clears any existing highlight.
- */
-export function highlightSeatFromURL() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const targetSeat = urlParams.get(SEAT_PARAM)?.toLowerCase();
-
-  if (!targetSeat) {
-    clearExistingHighlight();
-    return;
-  }
-
-  const elements = getSeatElements(targetSeat);
-  if (elements.length === 0) return;
-
-  const firstEl = elements[0];
-  if (firstEl.classList.contains(GLOWING_CLASS)) return;
-
-  clearExistingHighlight();
-
-  const x = parseFloat(firstEl.getAttribute("x") || "0");
-  const y = parseFloat(firstEl.getAttribute("y") || "0");
-  const w = parseFloat(firstEl.getAttribute("width") || "30");
-  const h = parseFloat(firstEl.getAttribute("height") || "30");
-
-  const transX = (x + w / 2) * (1 - HIGHLIGHT_SCALE);
-  const transY = (y + h / 2) * (1 - HIGHLIGHT_SCALE);
-  const transformString = `translate(${transX}, ${transY}) scale(${HIGHLIGHT_SCALE})`;
-
-  elements.forEach((el) => {
-    el.setAttribute(HIGHLIGHT_ATTR, "true");
-    el.setAttribute("transform", transformString);
-    el.classList.add(GLOWING_CLASS);
-    el.parentNode?.appendChild(el); // Bring to front
-  });
-
-  setTimeout(() => {
-    firstEl.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, 200);
-}
-
-/**
- * Removes the 'seat' parameter from the URL in the browser's history.
- */
-function cleanUrlParam() {
-  const url = new URL(window.location.href);
-  if (url.searchParams.has(SEAT_PARAM)) {
-    url.searchParams.delete(SEAT_PARAM);
-    window.history.replaceState({}, document.title, url.toString());
-  }
-}
-
-/**
- * Checks if the current page is a cluster map and triggers the highlight logic.
- * It also polls for a short duration to handle dynamically loaded map elements.
- */
-function checkRouteAndHighlight() {
-  if (!window.location.pathname.includes(CLUSTERS_PATH)) {
-    clearExistingHighlight();
-    return;
-  }
-
-  highlightSeatFromURL();
-
-  // Poll for dynamically loaded seats
-  let attempts = 0;
-  const interval = setInterval(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const targetSeat = urlParams.get(SEAT_PARAM)?.toLowerCase();
-
-    if (!targetSeat || attempts++ > 30) {
-      clearInterval(interval);
-      return;
-    }
-
-    try {
-      if (getSeatElements(targetSeat).length > 0) {
-        highlightSeatFromURL();
-        clearInterval(interval);
-      }
-    } catch (err) {
-      clearInterval(interval);
-      console.warn("Better Intra: could not highlight seat", err);
-    }
-  }, 500);
-}
 
 /** A WeakSet to keep track of labels that have already been processed. */
 const processedLabels = new WeakSet<HTMLElement>();
@@ -211,7 +42,9 @@ function installSeatClickGuard() {
           const href = (node as HTMLAnchorElement).href || "";
           if (href.includes("/clusters") && href.includes("seat=")) {
             try {
-              const seat = new URLSearchParams(new URL(href).search).get("seat");
+              const seat = new URLSearchParams(new URL(href).search).get(
+                "seat",
+              );
               if (seat) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
@@ -263,10 +96,6 @@ export async function handleProfileRedirect() {
   label.addEventListener("click", onLabelClick);
 }
 
-/**
- * Initializes all features related to seat highlighting and profile redirection.
- * Sets up event listeners to handle navigation and dynamic content.
- */
 async function init() {
   if (CLUSTERS.length === 0) {
     try {
@@ -275,29 +104,7 @@ async function init() {
     } catch {}
   }
 
-  injectHighlightStyles();
   installSeatClickGuard();
-
-  if (
-    window.location.pathname.includes(CLUSTERS_PATH) &&
-    window.location.search.includes(`${SEAT_PARAM}=`)
-  ) {
-    setTimeout(cleanUrlParam, 1000);
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", checkRouteAndHighlight);
-  } else {
-    checkRouteAndHighlight();
-  }
-
-  window.addEventListener("popstate", checkRouteAndHighlight);
-  window.addEventListener("hashchange", checkRouteAndHighlight);
-  document.addEventListener(
-    "click",
-    () => setTimeout(checkRouteAndHighlight, 100),
-    true,
-  );
 }
 
 void init();

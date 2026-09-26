@@ -59,7 +59,6 @@ async function saveSetting(key: string, value: unknown): Promise<void> {
 
 import { fetchCampusList, fetchEventTypes } from "../clusters/clusters.data.ts";
 import {
-  CLUSTERS,
   ensureCampusData,
   clearCampusConfigCache,
   loadCampusData,
@@ -696,12 +695,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                     { label: "Show All", value: "all" },
                     ...dynamicEventTypeOptions,
                   ]
-                : def.key === "CLUSTERS_DEFAULT_ID" && CLUSTERS.length > 0
-                  ? CLUSTERS.map((c) => ({
-                      label: c.name.toUpperCase(),
-                      value: c.id,
-                    }))
-                  : (def.options ?? []);
+                : (def.options ?? []);
           return html`<select
             class="select select-accent w-44"
             data-setting-key="${def.key}"

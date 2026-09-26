@@ -1,11 +1,5 @@
 export { fetchEventTypes } from "../profile/events/events.ts";
-export {
-  ensureCampusData,
-  fetchCampusList,
-  CLUSTERS,
-  type ExitConfig,
-  type ExitSign,
-} from "../campus/campus.ts";
+export { fetchCampusList, CLUSTERS } from "../campus/campus.ts";
 import type { ExitConfig as CampusExitConfig } from "../campus/campus.ts";
 import {
   loadCampusData,
@@ -98,11 +92,6 @@ const buildScreens = (
 };
 
 export let SCREENS: Record<string, ScreenDirection> = {};
-
-export function clearClusterData(): void {
-  SCREENS = {};
-  CAMPUS_CLUSTERS.length = 0;
-}
 
 export async function getClusterData(campusId: string): Promise<{
   clusters: { id: string; name: string }[];

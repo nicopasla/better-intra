@@ -28,7 +28,10 @@ cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && cross-env TARGET=fire
 
 - `tsc` type-checks only (`noEmit: true` in tsconfig.json).
 - Output is `dist-firefox/` or `dist-chrome/` (gitignored).
-- `content.js` is bundled as IIFE. `popup.js` is bundled separately. `background.js` is bundled as IIFE.
+- `content.js` is a tiny IIFE boot (`public/content.js`) injected at `document_start`: it injects `hook.js` synchronously, then dynamically imports the real app `content-app.js`.
+- `content-app.js` is built as **ESM with code-splitting** (`chunks/*.js`). `content-app.js` + `chunks/*.js` are exposed via `web_accessible_resources`. Feature modules (profile/logtime/clusters/…) are lazy-loaded per host in `src/main.ts`.
+- `popup.js` is bundled separately. `background.js` is bundled as IIFE.
+- Add any new content-script ESM chunk directories to `web_accessible_resources` in both manifests.
 - `manifest.json` is generated on the fly from per-browser manifest templates.
 - Icons are copied from `public/icons/` on build. To regenerate: `node scripts/generate-icons.js` (requires `sharp`).
 

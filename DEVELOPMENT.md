@@ -33,7 +33,9 @@ Always `tsc` (type-check only, `noEmit`) → `vite build` (content script) → `
 cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build && cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build --config vite.popup.config.ts && cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox vite build --config vite.background.config.ts
 ```
 
-- `content.js` is bundled as IIFE. `popup.js` is bundled separately. `background.js` is bundled as IIFE.
+- `content.js` is a tiny IIFE boot (`public/content.js`): it injects `hook.js` synchronously then dynamically imports `content-app.js`.
+- `content-app.js` is ESM with code-splitting into `chunks/*.js`; feature modules are lazy-loaded per host in `src/main.ts`. Both `content-app.js` and `chunks/*.js` are listed in `web_accessible_resources`.
+- `popup.js` is bundled separately. `background.js` is bundled as IIFE.
 - `manifest.json` is generated from `manifests/manifest.{chrome,firefox}.json` with version from `package.json`.
 - Icons are copied from `public/icons/` on build. To regenerate: `node scripts/generate-icons.js` (requires `sharp`).
 

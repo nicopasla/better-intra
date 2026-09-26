@@ -1,14 +1,8 @@
-import { initLogtime } from "./features/logtime/logtime.ts";
-import { initClusters } from "./features/clusters/clusters.ts";
-import { initProfile } from "./features/profile/profile.ts";
 import { initHubSettings } from "./features/hub/hubSettings.ts";
-import { initShortcuts } from "./features/shortcuts/shortcuts.ts";
-import { initSubjectTracker } from "./features/subjects/tracker.ts";
 import {
   initThemeManager,
   getIsLight,
 } from "./features/profile/theme/theme-manager.ts";
-import { maybePromptRestore } from "./features/account/account.ts";
 import { maybeShowWelcome } from "./features/welcome/welcome.ts";
 import { initGlobalTooltips } from "./utils/tooltip.ts";
 import { ensureCampusData } from "./features/campus/campus.ts";
@@ -32,28 +26,38 @@ void initAnnouncementBanner();
 initGlobalTooltips(getIsLight);
 void initFontManager();
 
-{
-  const s = document.createElement("script");
-  s.src = chrome.runtime.getURL("hook.js");
-  (document.head || document.documentElement).appendChild(s);
-  s.remove();
-}
-
 // Hold the avatar before React paints, so the Intra picture cannot flash
 // before the visuals are applied. Released below when profile is off.
 injectAvatarPendingRule();
 holdAvatar();
 
-/**
- * A map that links feature ID strings to their initialization functions.
- * This prevents the need for a long list of if-statements and makes adding
- * new features cleaner.
- */
+const HOSTNAME = window.location.hostname;
+const IS_PROFILE_V3 = HOSTNAME === "profile-v3.intra.42.fr";
+const IS_PROFILE_HOST =
+  HOSTNAME === "profile-v3.intra.42.fr" || HOSTNAME === "profile.intra.42.fr";
+const IS_PROJECTS = HOSTNAME === "projects.intra.42.fr";
+
+// Feature code is loaded on demand and only on the hosts that use it, so the
+// heavy profile/logtime/clusters bundles are never fetched elsewhere.
 const featureInitializers: { [key: string]: () => Promise<void> } = {
-  profile: initProfile,
-  logtime: initLogtime,
-  clusters: initClusters,
-  shortcuts: initShortcuts,
+  profile: () =>
+    IS_PROFILE_V3 || IS_PROJECTS
+      ? import("./features/profile/profile.ts").then((m) => m.initProfile())
+      : Promise.resolve(),
+  logtime: () =>
+    IS_PROFILE_V3
+      ? import("./features/logtime/logtime.ts").then((m) => m.initLogtime())
+      : Promise.resolve(),
+  clusters: () =>
+    IS_PROFILE_V3
+      ? import("./features/clusters/clusters.ts").then((m) => m.initClusters())
+      : Promise.resolve(),
+  shortcuts: () =>
+    IS_PROFILE_HOST
+      ? import("./features/shortcuts/shortcuts.ts").then((m) =>
+          m.initShortcuts(),
+        )
+      : Promise.resolve(),
 };
 
 (function v2Warning() {
@@ -199,9 +203,11 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
 
     if (target) {
       try {
-        // The subject tracker always runs: badges/data are local. Sharing
-        // with the collaborative registry is an opt-in setting instead.
-        void initSubjectTracker();
+        if (IS_PROJECTS) {
+          void import("./features/subjects/tracker.ts").then((m) =>
+            m.initSubjectTracker(),
+          );
+        }
 
         // Hub settings are always initialized for the settings page.
         // initHubSettings returns the active feature list.
@@ -225,7 +231,15 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
           }
         }
 
-        await maybePromptRestore();
+        const pendingRestore = await chrome.storage.local.get(
+          "PENDING_SETTINGS_RESTORE",
+        );
+        if (pendingRestore.PENDING_SETTINGS_RESTORE) {
+          const { maybePromptRestore } =
+            await import("./features/account/account.ts");
+          await maybePromptRestore();
+        }
+
         await maybeShowWelcome();
       } catch (error) {
         releaseAvatar();

@@ -7,8 +7,6 @@ import GLOBE_OUTLINE_SVG from "../../assets/svg/globe-outline.svg?raw";
 import { getIsLight } from "../profile/theme/theme-manager.ts";
 import { getActiveFeatures } from "./hubSettings.storage.ts";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
-import { openStudentsDialog } from "../profile/students/index.ts";
-import { openClusterDialog } from "../clusters/map-dialog.ts";
 import { isPisciner } from "../../utils/intrapy.ts";
 
 function findSidebarMainGroup(): HTMLDivElement | null {
@@ -173,14 +171,16 @@ export function mountGearButton(): void {
         alert("You need to be a student to access that.");
         return;
       }
+      const { openStudentsDialog } =
+        await import("../profile/students/index.ts");
       openStudentsDialog();
     } catch (err) {}
   };
 
   const openClusters = () => {
-    try {
-      openClusterDialog();
-    } catch (err) {}
+    void import("../clusters/map-dialog.ts")
+      .then((m) => m.openClusterDialog())
+      .catch(() => undefined);
   };
 
   void (async () => {

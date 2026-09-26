@@ -9,7 +9,7 @@ import ADVANCED_SVG from "../../assets/svg/advanced.svg?raw";
 import GRID_SVG from "../../assets/svg/grid.svg?raw";
 import PALETTE_SVG from "../../assets/svg/palette.svg?raw";
 import { CONFIG_DEFAULT, ConfigKey } from "../../config.ts";
-import { CLUSTERS as CLUSTER_OPTIONS } from "../clusters/clusters.data.ts";
+import { CLUSTERS as CLUSTER_OPTIONS } from "../campus/campus.ts";
 import { RAINBOW_PALETTES } from "../logtime/rainbow-presets.ts";
 import { SANS_FONTS } from "../../utils/fonts.ts";
 

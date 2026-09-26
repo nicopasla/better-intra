@@ -18,7 +18,10 @@ export default defineConfig({
           import.meta.dirname,
           `manifests/manifest.${target}.json`,
         );
-        const manifestDst = resolve(import.meta.dirname, `${outDir}/manifest.json`);
+        const manifestDst = resolve(
+          import.meta.dirname,
+          `${outDir}/manifest.json`,
+        );
 
         if (!fs.existsSync(manifestSrc)) {
           console.error(`\nManifest not found: ${manifestSrc}\n`);
@@ -50,11 +53,14 @@ export default defineConfig({
     outDir: outDir,
     emptyOutDir: false,
     minify: false,
+    target: "esnext",
+    modulePreload: false,
     rollupOptions: {
-      input: { content: resolve(import.meta.dirname, "src/main.ts") },
+      input: { "content-app": resolve(import.meta.dirname, "src/main.ts") },
       output: {
-        format: "iife",
+        format: "es",
         entryFileNames: "[name].js",
+        chunkFileNames: "chunks/[name].js",
         assetFileNames: "[name].[ext]",
       },
     },
@@ -67,6 +73,5 @@ export default defineConfig({
     __TW_VERSION__: JSON.stringify(pkg.dependencies["@tailwindcss/vite"]),
     __DAISY_VERSION__: JSON.stringify(pkg.devDependencies.daisyui),
     __WEB_EXT_VERSION__: JSON.stringify(pkg.devDependencies["web-ext"]),
-    "import.meta": "{}",
   },
 });

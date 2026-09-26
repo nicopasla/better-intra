@@ -1,8 +1,4 @@
 import { getConfig, getConfigMany } from "../../config.ts";
-import { getCloudLogin, fetchUserVisuals } from "../account/account.ts";
-import { createSettingsModal } from "./profile.modal.ts";
-import { applyThemeToProfileCard } from "./profile-card.ts";
-import { applyPublicLogtimeSettings, initLogtime } from "../logtime/logtime.ts";
 import { applyProfileLook, clearProfileLook } from "./theme/theme-manager.ts";
 import { sanitizeVisualUrls } from "./visuals-sanitize.ts";
 import {
@@ -213,6 +209,7 @@ const revalidateVisuals = async (login: string, cached: VisualUrls) => {
   if (pendingRevalidations.has(login)) return;
   pendingRevalidations.add(login);
   try {
+    const { fetchUserVisuals } = await import("../account/account.ts");
     const fresh = await fetchUserVisuals(login);
     if (!fresh || login !== lastUser) return;
     const freshKey = getVisualKey(fresh);
@@ -513,7 +510,10 @@ export const applyImgs = (rawUrls: VisualUrls | null) => {
   }
 
   if (urls.theme) {
-    applyThemeToProfileCard(urls.theme);
+    const theme = urls.theme;
+    void import("./profile-card.ts").then((m) =>
+      m.applyThemeToProfileCard(theme),
+    );
   }
 
   setStyleForSelector(
@@ -528,7 +528,10 @@ export const applyImgs = (rawUrls: VisualUrls | null) => {
     // logtime settings must not render the widget for someone who disabled it.
     getConfig("ACTIVE_SCRIPTS").then((scripts) => {
       if (!Array.isArray(scripts) || !scripts.includes("logtime")) return;
-      return initLogtime().then(() => applyPublicLogtimeSettings(logtime));
+      void import("../logtime/logtime.ts").then(async (m) => {
+        await m.initLogtime();
+        m.applyPublicLogtimeSettings(logtime);
+      });
     });
   }
 };
@@ -615,7 +618,7 @@ const runUpdateVisuals = async () => {
 
   let avatarEl = document.querySelector(AVATAR_SELECTOR) as HTMLElement;
 
-  let myLogin = await getCloudLogin();
+  let myLogin = await getConfig("CLOUD_LOGIN");
   if (!myLogin) myLogin = "me";
 
   const targetLogin =
@@ -651,13 +654,15 @@ const runUpdateVisuals = async () => {
       avatarEl.addEventListener("click", (e) => {
         e.stopPropagation();
         showingOriginalAvatar = false;
-        createSettingsModal((updatedVisuals) => {
-          visualCache = updatedVisuals;
-          setCachedVisuals(targetLogin, updatedVisuals);
-          applyImgs(visualCache);
-          lastAppliedUser = targetLogin;
-          lastAppliedKey = getVisualKey(visualCache);
-        });
+        void import("./profile.modal.ts").then((m) =>
+          m.createSettingsModal((updatedVisuals) => {
+            visualCache = updatedVisuals;
+            setCachedVisuals(targetLogin, updatedVisuals);
+            applyImgs(visualCache);
+            lastAppliedUser = targetLogin;
+            lastAppliedKey = getVisualKey(visualCache);
+          }),
+        );
       });
     }
   }
@@ -757,6 +762,7 @@ const runUpdateVisuals = async () => {
         isFetching = true;
         const fetchForLogin = targetLogin;
         try {
+          const { fetchUserVisuals } = await import("../account/account.ts");
           const cloudUrls = await fetchUserVisuals(targetLogin);
 
           if (fetchForLogin !== lastUser) return;

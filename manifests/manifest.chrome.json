@@ -10,7 +10,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["hook.js"],
+      "resources": ["hook.js", "content-app.js", "chunks/*.js"],
       "matches": ["https://*.intra.42.fr/*"]
     }
   ],

@@ -22,6 +22,12 @@ export interface BetterIntraConfig {
   // Cloud Sync Settings
   CLOUD_SYNC_ENABLED: boolean;
   LAST_CLOUD_SYNC: number | null;
+  CLOUD_REVISION: string | null;
+  CLOUD_SYNC_CONFLICT: boolean;
+  CLOUD_BASELINE: Record<string, unknown> | null;
+  SETTINGS_BACKUP_LOCAL:
+    | { at: number; settings: Record<string, unknown> }[]
+    | null;
   CLOUD_TOKEN: string;
   CLOUD_LOGIN: string;
   CLOUD_AUTH_FAILED: boolean;
@@ -140,8 +146,12 @@ export interface BetterIntraConfig {
  */
 export const CONFIG_DEFAULT: BetterIntraConfig = {
   ACTIVE_SCRIPTS: ["logtime", "clusters", "profile", "shortcuts"],
-  CLOUD_SYNC_ENABLED: false,
+  CLOUD_SYNC_ENABLED: true,
   LAST_CLOUD_SYNC: null,
+  CLOUD_REVISION: null,
+  CLOUD_SYNC_CONFLICT: false,
+  CLOUD_BASELINE: null,
+  SETTINGS_BACKUP_LOCAL: null,
   CLOUD_TOKEN: "",
   CLOUD_LOGIN: "",
   CLOUD_AUTH_FAILED: false,

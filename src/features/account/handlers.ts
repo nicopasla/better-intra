@@ -1,15 +1,20 @@
 import {
   applyCloudSettings,
   clearAuthFailed,
+  collectLocalSettings,
+  fetchCloudSettings,
   fetchMySettings,
   fetchSessions,
   loginWith42,
   logoutCloud,
+  pushLocalBackup,
   revokeSession,
   syncToCloud,
   testCloudConnection,
   wipeAllCloudData,
 } from "./account";
+import { diffSettings } from "./conflict-dialog.ts";
+import { showBackupsDialog } from "./backups-dialog.ts";
 import {
   showAlertDialog,
   showConfirmDialog,
@@ -98,10 +103,16 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
       return;
     }
 
-    const success = await syncToCloud();
-    if (success) {
+    const result = await syncToCloud();
+
+    if (result.status === "conflict") {
+      resetButtonState(state, "push", "Push Settings");
+      await loadReview(result.cloud ?? {});
+      return;
+    }
+
+    if (result.status === "ok") {
       await clearAuthFailed();
-      await chrome.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
       state.buttons.push = {
         loading: false,
         success: true,
@@ -119,6 +130,58 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
       resetButtonState(state, "push", "Push Settings");
       updateUI();
     }, 2500);
+  };
+
+  const loadReview = async (cloud?: Record<string, unknown>) => {
+    const cloudSettings = cloud ?? (await fetchCloudSettings())?.settings;
+    if (!cloudSettings) return;
+    const local = await collectLocalSettings();
+    state.reviewDiff = diffSettings(local, cloudSettings);
+    state.reviewOpen = true;
+    updateUI();
+  };
+
+  const handleReviewConflict = async () => {
+    await loadReview();
+  };
+
+  const handleDismissReview = () => {
+    state.reviewOpen = false;
+    updateUI();
+  };
+
+  const handleUseCloud = async () => {
+    const cloud = await fetchCloudSettings();
+    if (!cloud) return;
+    await pushLocalBackup();
+    await applyCloudSettings(cloud.settings as never);
+    await chrome.storage.local.set({
+      CLOUD_BASELINE: cloud.settings,
+      CLOUD_REVISION: cloud.revision,
+      CLOUD_SYNC_CONFLICT: false,
+      LAST_CLOUD_SYNC: Date.now(),
+    });
+    state.conflict = false;
+    state.reviewOpen = false;
+    state.reviewDiff = [];
+    updateUI();
+  };
+
+  const handleKeepMine = async () => {
+    const local = await collectLocalSettings();
+    await syncToCloud({ force: true });
+    await chrome.storage.local.set({
+      CLOUD_BASELINE: local,
+      CLOUD_SYNC_CONFLICT: false,
+    });
+    state.conflict = false;
+    state.reviewOpen = false;
+    state.reviewDiff = [];
+    updateUI();
+  };
+
+  const handleOpenBackups = () => {
+    void showBackupsDialog();
   };
 
   const handlePull = async () => {
@@ -151,6 +214,7 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
     const settings = await fetchMySettings();
     if (settings) {
       await clearAuthFailed();
+      await pushLocalBackup();
       await applyCloudSettings(settings);
       await chrome.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
       state.buttons.pull = {
@@ -210,12 +274,6 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
     updateUI();
   };
 
-  const handleToggleAutoPush = (value: boolean) => {
-    state.autoPush = value;
-    updateUI();
-    void chrome.storage.local.set({ CLOUD_SYNC_ENABLED: value });
-  };
-
   const handleRevokeOthers = async () => {
     const others = state.sessions.filter((s) => !s.current);
     if (others.length === 0) return;
@@ -256,7 +314,11 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
     handlePush,
     handlePull,
     handleRevokeSession,
-    handleToggleAutoPush,
     handleRevokeOthers,
+    handleReviewConflict,
+    handleDismissReview,
+    handleUseCloud,
+    handleKeepMine,
+    handleOpenBackups,
   };
 }

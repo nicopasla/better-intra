@@ -6,6 +6,7 @@ import { formatRelative } from "../../utils/dates.ts";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 import { AccountState, createInitialState } from "./state.ts";
 import { createHandlers } from "./handlers.ts";
+import { renderConflictList } from "./conflict-dialog.ts";
 
 function formatSessionDate(ts: number): string {
   if (!ts) return "Unknown date";
@@ -123,6 +124,56 @@ function renderAccountTab(
             </button>
           </div>`
         : ""}
+      ${state.conflict
+        ? html`<div
+            class="rounded-xl border border-error/40 bg-base-300/40 p-4 flex flex-col gap-3"
+          >
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-col">
+                <span class="text-sm font-semibold text-error"
+                  >Settings changed on another device</span
+                >
+                <span class="text-xs opacity-50"
+                  >Review the differences before choosing.</span
+                >
+              </div>
+              ${state.reviewOpen
+                ? html`<button
+                    class="btn btn-xs btn-ghost font-bold"
+                    type="button"
+                    @click="${handlers.handleDismissReview}"
+                  >
+                    Hide
+                  </button>`
+                : html`<button
+                    class="btn btn-xs btn-error font-bold"
+                    type="button"
+                    @click="${handlers.handleReviewConflict}"
+                  >
+                    Review changes
+                  </button>`}
+            </div>
+            ${state.reviewOpen
+              ? html`${renderConflictList(state.reviewDiff)}
+                  <div class="flex flex-wrap justify-end gap-2">
+                    <button
+                      class="btn btn-xs btn-warning font-bold"
+                      type="button"
+                      @click="${handlers.handleKeepMine}"
+                    >
+                      Keep this device
+                    </button>
+                    <button
+                      class="btn btn-xs btn-success font-bold"
+                      type="button"
+                      @click="${handlers.handleUseCloud}"
+                    >
+                      Use cloud
+                    </button>
+                  </div>`
+              : ""}
+          </div>`
+        : ""}
 
       <div
         class="stats stats-vertical sm:stats-horizontal bg-base-300/40 border border-base-300 rounded-xl w-full"
@@ -161,6 +212,17 @@ function renderAccountTab(
             style="font-size:1.25rem;font-weight:700;"
           >
             ${state.sessions.length}/${sessionsMax}
+          </div>
+        </div>
+        <div class="stat" style="padding:0.75rem 1rem;">
+          <div class="stat-title opacity-70" style="font-size:0.8rem;">
+            Synced
+          </div>
+          <div
+            class="stat-value font-mono"
+            style="font-size:1.25rem;font-weight:700;"
+          >
+            ${formatRelative(state.lastSynced)}
           </div>
         </div>
       </div>
@@ -245,27 +307,24 @@ function renderAccountTab(
 
         <div class="flex flex-col gap-4 min-h-0">
           <div class="rounded-xl bg-base-300/40 p-4 flex flex-col gap-3">
-            <div class="flex flex-col">
-              <span class="text-sm font-semibold">Cloud sync</span>
-              <span class="text-xs opacity-50">Push or pull your settings</span>
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex flex-col">
+                <span class="text-sm font-semibold">Cloud sync</span>
+                <span class="text-xs opacity-50"
+                  >Push or pull your settings</span
+                >
+              </div>
+              <button
+                class="btn btn-xs btn-outline font-bold"
+                type="button"
+                @click="${handlers.handleOpenBackups}"
+              >
+                Backups
+              </button>
             </div>
             <div class="grid grid-cols-2 gap-2">
               ${syncButton("pull", state.buttons.pull, handlers.handlePull)}
               ${syncButton("push", state.buttons.push, handlers.handlePush)}
-              <button
-                class="badge h-12 w-full text-sm font-bold cursor-pointer ${state.autoPush
-                  ? "badge-success text-success-content"
-                  : "badge-ghost"}"
-                type="button"
-                @click="${() => handlers.handleToggleAutoPush(!state.autoPush)}"
-              >
-                Auto push ${state.autoPush ? "on" : "off"}
-              </button>
-              <span
-                class="badge badge-ghost h-12 w-full text-sm font-mono opacity-80"
-              >
-                Last synced ${formatRelative(state.lastSynced)}
-              </span>
             </div>
           </div>
 
@@ -323,7 +382,11 @@ export async function initAccountSettings(container: HTMLElement) {
 
     state.autoPush = (await getConfig("CLOUD_SYNC_ENABLED")) === true;
     state.lastSynced = (await getConfig("LAST_CLOUD_SYNC")) ?? null;
-
+    state.conflict = (await getConfig("CLOUD_SYNC_CONFLICT")) === true;
+    if (!state.conflict) {
+      state.reviewOpen = false;
+      state.reviewDiff = [];
+    }
     render(renderAccountTab(state, handlers), container);
   }
 

@@ -8,6 +8,7 @@ import {
 } from "../../utils/confirm-dialog.ts";
 import { markAuthFlowPending } from "./auth-callback.ts";
 import { sanitizeVisualUrls } from "../profile/visuals-sanitize.ts";
+import { mergeSettings } from "./merge.ts";
 
 export { hashLogin };
 
@@ -219,18 +220,31 @@ export async function revokeSession(id: string): Promise<boolean> {
  * Gathers all local settings (except cloud credentials) and pushes them to the cloud.
  * @returns A promise that resolves to true on success, false on failure.
  */
-export async function syncToCloud(): Promise<boolean> {
+export type SyncStatus = "ok" | "conflict" | "error";
+
+export interface SyncResult {
+  status: SyncStatus;
+  revision?: string;
+  cloud?: Record<string, unknown>;
+}
+
+export async function collectLocalSettings(): Promise<Record<string, unknown>> {
+  const settings: Record<string, unknown> = {};
+  for (const key of CLOUD_SYNC_KEYS) {
+    settings[key] = await getConfig(key);
+  }
+  return settings;
+}
+
+export async function syncToCloud(opts?: {
+  force?: boolean;
+}): Promise<SyncResult> {
   const login = await getCloudLogin();
   const token = await getConfig("CLOUD_TOKEN");
-  if (!login || !token) return false;
+  if (!login || !token) return { status: "error" };
 
   try {
-    const settings: Partial<BetterIntraConfig> = {};
-
-    for (const key of CLOUD_SYNC_KEYS) {
-      (settings as Record<string, unknown>)[key] = await getConfig(key);
-    }
-
+    const settings = await collectLocalSettings();
     const hashedLogin = await hashLogin(login);
     const response = await fetch(
       `${WORKER_URL}/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}`,
@@ -240,17 +254,36 @@ export async function syncToCloud(): Promise<boolean> {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ settings }),
+        body: JSON.stringify({
+          settings,
+          baseRevision: (await getConfig("CLOUD_REVISION")) ?? null,
+          force: opts?.force === true,
+        }),
       },
     );
-    const success = await handleAuthResponse(response);
-    if (success) {
-      await chrome.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
+
+    if (response.status === 409) {
+      const data = (await response.json().catch(() => ({}))) as {
+        settings?: Record<string, unknown>;
+      };
+      await chrome.storage.local.set({ CLOUD_SYNC_CONFLICT: true });
+      return { status: "conflict", cloud: data.settings || {} };
     }
-    return success;
+
+    if (!(await handleAuthResponse(response))) return { status: "error" };
+
+    const data = (await response.json().catch(() => ({}))) as {
+      revision?: string;
+    };
+    await chrome.storage.local.set({
+      LAST_CLOUD_SYNC: Date.now(),
+      CLOUD_SYNC_CONFLICT: false,
+      ...(data.revision ? { CLOUD_REVISION: data.revision } : {}),
+    });
+    return { status: "ok", revision: data.revision };
   } catch (error) {
     console.error("Cloud sync failed:", error);
-    return false;
+    return { status: "error" };
   }
 }
 
@@ -308,10 +341,21 @@ export async function syncMyVisuals(visuals: {
               "PROFILE_BACKGROUND_HISTORY",
             ),
           },
+          baseRevision: (await getConfig("CLOUD_REVISION")) ?? null,
         }),
       },
     );
-    await handleAuthResponse(res);
+
+    if (res.status === 409) {
+      await chrome.storage.local.set({ CLOUD_SYNC_CONFLICT: true });
+      return;
+    }
+    if (!(await handleAuthResponse(res))) return;
+    const data = (await res.json().catch(() => ({}))) as { revision?: string };
+    await chrome.storage.local.set({
+      CLOUD_SYNC_CONFLICT: false,
+      ...(data.revision ? { CLOUD_REVISION: data.revision } : {}),
+    });
   } catch (e) {
     console.error("Cloud Quick Sync Error:", e);
   }
@@ -361,7 +405,14 @@ export async function fetchUserVisuals(
  * Fetches the current user's settings from the cloud.
  * @returns A promise that resolves to a partial config object, or null on failure.
  */
-export async function fetchMySettings(): Promise<Partial<BetterIntraConfig> | null> {
+export interface CloudSettingsSnapshot {
+  settings: Record<string, unknown>;
+  revision: string | null;
+  discordId?: string;
+  discordUsername?: string;
+}
+
+export async function fetchCloudSettings(): Promise<CloudSettingsSnapshot | null> {
   const login = await getCloudLogin();
   const token = await getConfig("CLOUD_TOKEN");
   if (!login || !token) return null;
@@ -375,20 +426,129 @@ export async function fetchMySettings(): Promise<Partial<BetterIntraConfig> | nu
       },
     );
     if (!(await handleAuthResponse(response))) return null;
-    const data = (await response.json()) as any;
-    const settings = data.settings || {};
-    if (data.discordId) {
-      (settings as Record<string, unknown>).DISCORD_ID = data.discordId;
-    }
-    if (data.discordUsername) {
-      (settings as Record<string, unknown>).DISCORD_USERNAME =
-        data.discordUsername;
-    }
+    const data = (await response.json()) as {
+      settings?: Record<string, unknown>;
+      revision?: string | null;
+      discordId?: string;
+      discordUsername?: string;
+    };
+    return {
+      settings: data.settings || {},
+      revision: data.revision ?? null,
+      discordId: data.discordId,
+      discordUsername: data.discordUsername,
+    };
+  } catch (error) {
+    console.error("[fetchCloudSettings] error:", error);
+    return null;
+  }
+}
+
+export async function fetchMySettings(): Promise<Partial<BetterIntraConfig> | null> {
+  const data = await fetchCloudSettings();
+  if (!data) return null;
+
+  try {
+    const settings = { ...data.settings };
+    if (data.discordId) settings.DISCORD_ID = data.discordId;
+    if (data.discordUsername) settings.DISCORD_USERNAME = data.discordUsername;
+    await chrome.storage.local.set({
+      CLOUD_REVISION: data.revision,
+      CLOUD_SYNC_CONFLICT: false,
+    });
     return settings as Partial<BetterIntraConfig>;
   } catch (error) {
     console.error("[fetchMySettings] error:", error);
     return null;
   }
+}
+
+export interface SettingsHistoryEntryView {
+  index: number;
+  revision: string | null;
+  createdAt: number;
+}
+
+const LOCAL_BACKUP_LIMIT = 5;
+
+export async function fetchSettingsHistory(): Promise<
+  SettingsHistoryEntryView[]
+> {
+  const login = await getCloudLogin();
+  const token = await getConfig("CLOUD_TOKEN");
+  if (!login || !token) return [];
+
+  try {
+    const hashedLogin = await hashLogin(login);
+    const res = await fetch(
+      `${WORKER_URL}/api/v1/private/settings/history?login=${encodeURIComponent(hashedLogin)}`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!(await handleAuthResponse(res))) return [];
+    const data = (await res.json()) as { entries?: SettingsHistoryEntryView[] };
+    return data.entries || [];
+  } catch (error) {
+    console.error("Fetch settings history failed:", error);
+    return [];
+  }
+}
+
+export async function restoreSettingsSnapshot(index: number): Promise<boolean> {
+  const login = await getCloudLogin();
+  const token = await getConfig("CLOUD_TOKEN");
+  if (!login || !token) return false;
+
+  try {
+    const hashedLogin = await hashLogin(login);
+    const res = await fetch(
+      `${WORKER_URL}/api/v1/private/settings/restore?login=${encodeURIComponent(hashedLogin)}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ index }),
+      },
+    );
+    if (!(await handleAuthResponse(res))) return false;
+    const data = (await res.json()) as {
+      revision?: string;
+      settings?: Record<string, unknown>;
+    };
+    if (data.settings) {
+      await applyCloudSettings(data.settings as Partial<BetterIntraConfig>);
+    }
+    await chrome.storage.local.set({
+      CLOUD_REVISION: data.revision ?? null,
+      CLOUD_SYNC_CONFLICT: false,
+      CLOUD_BASELINE: data.settings ?? null,
+      LAST_CLOUD_SYNC: Date.now(),
+    });
+    return true;
+  } catch (error) {
+    console.error("Restore settings snapshot failed:", error);
+    return false;
+  }
+}
+
+export async function pushLocalBackup(): Promise<void> {
+  const settings = await collectLocalSettings();
+  if (Object.keys(settings).length === 0) return;
+  const existing = (await getConfig("SETTINGS_BACKUP_LOCAL")) || [];
+  const next = [{ at: Date.now(), settings }, ...existing].slice(
+    0,
+    LOCAL_BACKUP_LIMIT,
+  );
+  await chrome.storage.local.set({ SETTINGS_BACKUP_LOCAL: next });
+}
+
+export async function restoreLocalBackup(index: number): Promise<boolean> {
+  const existing = (await getConfig("SETTINGS_BACKUP_LOCAL")) || [];
+  const entry = existing[index];
+  if (!entry) return false;
+  await applyCloudSettings(entry.settings as Partial<BetterIntraConfig>);
+  return true;
 }
 
 /**
@@ -511,5 +671,54 @@ export async function maybePromptRestore(): Promise<void> {
   ) {
     await applyCloudSettings(settings);
     window.location.reload();
+  }
+}
+
+export async function maybeMergeCloud(): Promise<void> {
+  const login = await getCloudLogin();
+  const token = await getConfig("CLOUD_TOKEN");
+  if (!login || !token) return;
+
+  const cloud = await fetchCloudSettings();
+  if (!cloud) return;
+
+  const local = await collectLocalSettings();
+  const base = await getConfig("CLOUD_BASELINE");
+  const { apply, conflicts } = mergeSettings(base, local, cloud.settings);
+
+  if (Object.keys(apply).length > 0) {
+    await pushLocalBackup();
+    await chrome.storage.local.set(apply);
+  }
+  await chrome.storage.local.set({
+    CLOUD_BASELINE: cloud.settings,
+    CLOUD_REVISION: cloud.revision,
+    CLOUD_SYNC_CONFLICT: conflicts.length > 0,
+  });
+}
+
+export async function maybePromptConflict(): Promise<void> {
+  if (!(await getConfig("CLOUD_SYNC_CONFLICT"))) return;
+
+  const cloud = await fetchCloudSettings();
+  if (!cloud) return;
+
+  const local = await collectLocalSettings();
+  const { diffSettings, showSettingsConflictDialog } =
+    await import("./conflict-dialog.ts");
+  const choice = await showSettingsConflictDialog(
+    diffSettings(local, cloud.settings),
+  );
+
+  if (choice === "pull") {
+    await applyCloudSettings(cloud.settings as Partial<BetterIntraConfig>);
+    await chrome.storage.local.set({
+      CLOUD_REVISION: cloud.revision,
+      CLOUD_SYNC_CONFLICT: false,
+      LAST_CLOUD_SYNC: Date.now(),
+    });
+    window.location.reload();
+  } else if (choice === "keep") {
+    await syncToCloud({ force: true });
   }
 }

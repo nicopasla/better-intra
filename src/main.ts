@@ -21,10 +21,29 @@ import {
 import { initFontManager } from "./utils/font-manager.ts";
 import { html, render } from "lit-html";
 
-initThemeManager();
-void initAnnouncementBanner();
-initGlobalTooltips(getIsLight);
-void initFontManager();
+void (async () => {
+  try {
+    const { maybeMergeCloud } = await import("./features/account/account.ts");
+    await maybeMergeCloud();
+  } catch {
+    // merging is best-effort
+  }
+
+  const { CLOUD_SYNC_DEFAULT_MIGRATED } = await chrome.storage.local.get(
+    "CLOUD_SYNC_DEFAULT_MIGRATED",
+  );
+  if (!CLOUD_SYNC_DEFAULT_MIGRATED) {
+    await chrome.storage.local.set({
+      CLOUD_SYNC_DEFAULT_MIGRATED: true,
+      CLOUD_SYNC_ENABLED: true,
+    });
+  }
+
+  initThemeManager();
+  void initAnnouncementBanner();
+  initGlobalTooltips(getIsLight);
+  void initFontManager();
+})();
 
 // Hold the avatar before React paints, so the Intra picture cannot flash
 // before the visuals are applied. Released below when profile is off.
@@ -235,6 +254,10 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
             await import("./features/account/account.ts");
           await maybePromptRestore();
         }
+
+        const { maybePromptConflict } =
+          await import("./features/account/account.ts");
+        await maybePromptConflict();
 
         await maybeShowWelcome();
       } catch (error) {

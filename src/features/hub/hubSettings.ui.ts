@@ -2,7 +2,12 @@ import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { until } from "lit-html/directives/until.js";
 import { ref } from "lit-html/directives/ref.js";
-import { getConfig, CONFIG_DEFAULT, type ConfigKey } from "../../config.ts";
+import {
+  getConfig,
+  CONFIG_DEFAULT,
+  CLOUD_SYNC_KEYS,
+  type ConfigKey,
+} from "../../config.ts";
 import {
   DEFAULT_GENERAL_FONT,
   IMPORTED_FONT_MAX_BYTES,
@@ -53,8 +58,34 @@ import {
 import { bindTooltips } from "../../utils/tooltip.ts";
 import { showConfirmDialog } from "../../utils/confirm-dialog.ts";
 
+const CLOUD_PUSH_DEBOUNCE_MS = 30_000;
+let cloudPushTimer: number | null = null;
+let cloudPushPending = false;
+
+function flushCloudPush(): void {
+  if (cloudPushTimer !== null) {
+    window.clearTimeout(cloudPushTimer);
+    cloudPushTimer = null;
+  }
+  if (!cloudPushPending) return;
+  cloudPushPending = false;
+  void syncToCloud();
+}
+
+function scheduleCloudPush(): void {
+  cloudPushPending = true;
+  if (cloudPushTimer !== null) window.clearTimeout(cloudPushTimer);
+  cloudPushTimer = window.setTimeout(flushCloudPush, CLOUD_PUSH_DEBOUNCE_MS);
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) flushCloudPush();
+});
+
 async function saveSetting(key: string, value: unknown): Promise<void> {
   await chrome.storage.local.set({ [key]: value });
+  if (!(CLOUD_SYNC_KEYS as readonly string[]).includes(key)) return;
+  if ((await getConfig("CLOUD_SYNC_ENABLED")) === true) scheduleCloudPush();
 }
 
 import { fetchCampusList, fetchEventTypes } from "../clusters/clusters.data.ts";
@@ -1761,6 +1792,7 @@ async function createModal(active: FeatureId[]): Promise<void> {
         dialog.close();
       }
     });
+    dialog.addEventListener("close", () => flushCloudPush());
 
     const applyDesktopLock = () => {
       dialog.style.width = "100%";
@@ -2001,32 +2033,6 @@ async function createModal(active: FeatureId[]): Promise<void> {
             <span class="btn btn-info border border-base-content/20 font-mono"
               >Synced at ${dateString}</span
             >
-            ${isConnected
-              ? html`<div class="join">
-                  <input
-                    type="radio"
-                    name="hub-auto-push"
-                    class="join-item btn btn-outline border-base-content/20"
-                    aria-label="Manual push"
-                    value="manual"
-                    @change="${() =>
-                      chrome.storage.local.set({
-                        CLOUD_SYNC_ENABLED: false,
-                      })}"
-                  />
-                  <input
-                    type="radio"
-                    name="hub-auto-push"
-                    class="join-item btn btn-outline border-base-content/20"
-                    aria-label="Auto push"
-                    value="auto"
-                    @change="${() =>
-                      chrome.storage.local.set({
-                        CLOUD_SYNC_ENABLED: true,
-                      })}"
-                  />
-                </div>`
-              : ""}
           </div>
         </div>
         <button
@@ -2126,19 +2132,13 @@ async function createModal(active: FeatureId[]): Promise<void> {
   });
 
   const reloadBtn = shadow.querySelector("#hub-reload");
-  const autoPushRadios = shadow.querySelectorAll(
-    'input[name="hub-auto-push"]',
-  ) as NodeListOf<HTMLInputElement>;
-  const isAutoPush = (await getConfig("CLOUD_SYNC_ENABLED")) === true;
-  autoPushRadios.forEach(
-    (r) => (r.checked = r.value === (isAutoPush ? "auto" : "manual")),
-  );
-
   reloadBtn?.addEventListener("click", async () => {
-    const checked = shadow.querySelector(
-      'input[name="hub-auto-push"]:checked',
-    ) as HTMLInputElement | null;
-    if (checked?.value === "auto") {
+    if (cloudPushTimer !== null) {
+      window.clearTimeout(cloudPushTimer);
+      cloudPushTimer = null;
+    }
+    if (cloudPushPending) {
+      cloudPushPending = false;
       try {
         await syncToCloud();
       } catch {}

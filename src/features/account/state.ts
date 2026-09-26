@@ -1,4 +1,5 @@
 import type { SessionSummary } from "./account";
+import type { SettingDiff } from "./conflict-dialog";
 
 export interface ButtonState {
   loading: boolean;
@@ -17,6 +18,9 @@ export interface AccountState {
   revokingOthers: boolean;
   autoPush: boolean;
   lastSynced: number | null;
+  conflict: boolean;
+  reviewDiff: SettingDiff[];
+  reviewOpen: boolean;
   needsReconnect: boolean;
   buttons: {
     push: ButtonState;
@@ -35,6 +39,9 @@ export function createInitialState(): AccountState {
     revokingOthers: false,
     autoPush: false,
     lastSynced: null,
+    conflict: false,
+    reviewDiff: [],
+    reviewOpen: false,
     needsReconnect: false,
     buttons: {
       push: {

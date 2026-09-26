@@ -882,18 +882,23 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                   ) as HTMLElement;
                   if (container)
                     container.setAttribute("data-theme", input.value);
+                  const preset = THEMES[input.value];
+                  const mode: "dark" | "light" | null =
+                    input.value === "light"
+                      ? "light"
+                      : input.value === "dark"
+                        ? "dark"
+                        : preset?.light && !preset?.dark
+                          ? "light"
+                          : preset?.dark && !preset?.light
+                            ? "dark"
+                            : null;
                   const toggle = root.querySelector(
                     "#hub-theme-toggle",
                   ) as HTMLInputElement;
-                  if (toggle) {
-                    const isLight =
-                      input.value === "light" || !!THEMES[input.value]?.light;
-                    if (toggle.checked === isLight) {
-                      toggle.checked = !isLight;
-                      chrome.storage.local.set({
-                        BETTER_INTRA_THEME: isLight ? "light" : "dark",
-                      });
-                    }
+                  if (mode) {
+                    if (toggle) toggle.checked = mode === "dark";
+                    chrome.storage.local.set({ BETTER_INTRA_THEME: mode });
                   }
                 }}"
               />`;
@@ -2069,10 +2074,9 @@ async function createModal(active: FeatureId[]): Promise<void> {
     ? presetKey
     : "dark";
   hubContainer?.setAttribute("data-theme", validPreset);
-  const isLightPreset =
-    validPreset === "light" ||
-    (validPreset !== "dark" && !!THEMES[validPreset]?.light);
-  if (themeToggle) themeToggle.checked = !isLightPreset;
+  if (themeToggle) {
+    themeToggle.checked = (await getEffectiveTheme()) === "dark";
+  }
 
   themeToggle?.addEventListener("change", async () => {
     const isDark = themeToggle.checked;

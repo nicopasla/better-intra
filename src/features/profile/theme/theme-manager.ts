@@ -63,28 +63,29 @@ async function applyThemePreset() {
 
   if (isDark && preset.dark) {
     const vars = [
-      `--primary: ${primary}`,
-      `--primary-foreground: ${primaryForeground}`,
-      `--ring: ${ring}`,
+      `--primary: ${primary} !important`,
+      `--primary-foreground: ${primaryForeground} !important`,
+      `--ring: ${ring} !important`,
     ];
     for (const [key, val] of Object.entries(preset.dark)) {
-      vars.push(`--${toKebab(key)}: ${val}`);
+      vars.push(`--${toKebab(key)}: ${val} !important`);
     }
-    content = `html.dark {\n    ${vars.join(";\n    ")};\n  }`;
+    content = `html.dark, html.dark body, html.dark #root {\n    ${vars.join(";\n    ")};\n  }`;
   } else if (!isDark && preset.light) {
     const vars = [
-      `--primary: ${primary}`,
-      `--primary-foreground: ${primaryForeground}`,
-      `--ring: ${ring}`,
-      `--legacy-main: var(--primary)`,
+      `--primary: ${primary} !important`,
+      `--primary-foreground: ${primaryForeground} !important`,
+      `--ring: ${ring} !important`,
+      `--legacy-main: var(--primary) !important`,
     ];
     for (const [key, val] of Object.entries(preset.light)) {
-      vars.push(`--${toKebab(key)}: ${val}`);
+      vars.push(`--${toKebab(key)}: ${val} !important`);
     }
-    content = `html:not(.dark) {\n    ${vars.join(";\n    ")};\n  }\n${themeLightV3Overrides}`;
+    content = `html:not(.dark), html:not(.dark) body, html:not(.dark) #root {\n    ${vars.join(";\n    ")};\n  }\n${themeLightV3Overrides}`;
   }
 
   styleEl.textContent = content;
+  (document.head || document.documentElement).appendChild(styleEl);
 }
 
 function applyTheme(theme: "dark" | "light") {

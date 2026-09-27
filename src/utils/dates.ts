@@ -24,3 +24,15 @@ export function formatRelative(ts: number | null | undefined): string {
   if (hours < 24) return `${hours}h ago`;
   return `${Math.floor(hours / 24)}d ago`;
 }
+
+/** Absolute en-US date for an Intra timestamp; `short` uses an abbreviated month. */
+export function formatAbsoluteDate(
+  iso: string,
+  style: "long" | "short" = "long",
+): string {
+  return parseIntraDate(iso).toLocaleDateString("en-US", {
+    month: style === "long" ? "long" : "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatRelative, parseIntraDate } from "../src/utils/dates.ts";
+import { formatAbsoluteDate, formatRelative, parseIntraDate } from "../src/utils/dates.ts";
 
 describe("parseIntraDate", () => {
   it("reads a timezone-less timestamp as UTC", () => {
@@ -32,5 +32,17 @@ describe("formatRelative", () => {
     expect(formatRelative(now - 5 * 60_000)).toBe("5m ago");
     expect(formatRelative(now - 3 * 3_600_000)).toBe("3h ago");
     expect(formatRelative(now - 2 * 86_400_000)).toBe("2d ago");
+  });
+});
+
+describe("formatAbsoluteDate", () => {
+  it("formats a long month", () => {
+    expect(formatAbsoluteDate("2024-03-05T12:00:00")).toBe("March 5, 2024");
+  });
+
+  it("formats a short month", () => {
+    expect(formatAbsoluteDate("2024-03-05T12:00:00", "short")).toBe(
+      "Mar 5, 2024",
+    );
   });
 });

@@ -4,7 +4,7 @@ import { getConfig } from "../../config.ts";
 import { waitFor } from "../../utils/wait-for.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { getLoginFromPage } from "../../utils/profile-login.ts";
-import { parseIntraDate } from "../../utils/dates.ts";
+import { formatAbsoluteDate, parseIntraDate } from "../../utils/dates.ts";
 import { intrapyFetch, waitForIntrapyToken } from "../../utils/intrapy.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
 import CHECK_CIRCLE_SVG from "../../assets/svg/check-circle.svg?raw";
@@ -32,11 +32,7 @@ async function fetchAchievements(
 }
 
 function formatDate(dateStr: string): string {
-  return parseIntraDate(dateStr).toLocaleDateString("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return formatAbsoluteDate(dateStr, "short");
 }
 
 function findCard(): HTMLElement | null {

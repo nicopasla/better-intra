@@ -2,7 +2,7 @@ import { render, html } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import FREEZE_SVG from "../../assets/svg/freeze.svg?raw";
 import { createCountdown } from "../../utils/countdown.ts";
-import { parseIntraDate } from "../../utils/dates.ts";
+import { parseIntraDate, formatAbsoluteDate } from "../../utils/dates.ts";
 import { waitFor } from "../../utils/wait-for.ts";
 import { intrapyFetch, waitForIntrapyToken } from "../../utils/intrapy.ts";
 import { ensureDocumentStyle } from "../../utils/style.ts";
@@ -14,12 +14,7 @@ interface CursusEntry {
 }
 
 function formatDate(iso: string): string {
-  const d = parseIntraDate(iso);
-  return d.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatAbsoluteDate(iso, "long");
 }
 
 function getCountdownParts(endIso: string): number[] {

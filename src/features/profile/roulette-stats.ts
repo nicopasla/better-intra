@@ -1,4 +1,5 @@
 import { getConfig } from "../../config.ts";
+import { WORKER_URL, workerFetch } from "../../utils/worker.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { hashLogin } from "../../utils/crypto.ts";
 import { waitFor } from "../../utils/wait-for.ts";
@@ -11,7 +12,6 @@ import {
 import { getIsLight } from "./theme/theme-manager.ts";
 import { createSkeleton, createSkeletonLines } from "../../utils/skeleton.ts";
 
-const WORKER_URL = "https://api.betterintra.com";
 const CARD_ID = "ft-roulette-card";
 
 let rouletteStatsInitialized = false;
@@ -112,12 +112,9 @@ async function fetchProfileStats(targetLogin: string): Promise<{
       target: targetLogin,
       force: "1",
     });
-    const res = await fetch(
-      `${WORKER_URL}/api/v1/private/profile-stats?${params}`,
-      {
-        headers: { Authorization: `Bearer ${sessionToken}` },
-      },
-    );
+    const res = await workerFetch(`/api/v1/private/profile-stats?${params}`, {
+      token: sessionToken,
+    });
     if (!res.ok) return { roulette: [], evalStats: null };
 
     const data = (await res.json()) as {

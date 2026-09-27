@@ -1,4 +1,5 @@
 import { render } from "lit-html";
+import { WORKER_URL, workerFetch } from "../../utils/worker.ts";
 import { getConfig, getConfigMany } from "../../config.ts";
 import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
 import { resolveRainbowColors } from "./rainbow-presets.ts";
@@ -42,7 +43,6 @@ export interface CalendarEvent {
 
 export type EventsByDate = Record<string, CalendarEvent[]>;
 
-const WORKER_URL = "https://api.betterintra.com";
 
 const historyCache = new Map<string, Record<string, number>>();
 const fetchPromiseMap = new Map<string, Promise<void>>();
@@ -81,12 +81,10 @@ async function fetchHistoricalLogtime(
       }
 
       const hashed = await hashLogin(cloudLogin);
-      let url = `${WORKER_URL}/api/v1/private/logtime/history?login=${encodeURIComponent(hashed)}&user=${encodeURIComponent(login)}`;
-      if (before) url += `&before=${encodeURIComponent(before)}`;
+      let path = `/api/v1/private/logtime/history?login=${encodeURIComponent(hashed)}&user=${encodeURIComponent(login)}`;
+      if (before) path += `&before=${encodeURIComponent(before)}`;
 
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${sessionToken}` },
-      });
+      const res = await workerFetch(path, { token: sessionToken });
       if (res.ok) {
         const data = await res.json();
         if (data.days) {

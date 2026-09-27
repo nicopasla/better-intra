@@ -1,7 +1,7 @@
 import { getConfig } from "../../../config.ts";
+import { workerFetch } from "../../../utils/worker.ts";
 import { hashLogin } from "../../../utils/crypto.ts";
 
-const WORKER_URL = "https://api.betterintra.com";
 
 export const INITIAL_VISIBLE_COUNT = 60;
 export const WINDOW_STEP = 90;
@@ -286,9 +286,7 @@ async function fetchEndpoint(
     params.set("_", String(Date.now()));
     params.set("login", await hashLogin(cloudLogin));
 
-    const res = await fetch(`${WORKER_URL}/api/v1/${path}?${params}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await workerFetch(`/api/v1/${path}?${params}`, { token });
     if (res.status === 401) return { unauthorized: true };
     if (!res.ok) return null;
     const json = (await res.json()) as StudentsResponse | StudentEntry[];
@@ -332,9 +330,7 @@ export async function fetchStudentsPage(params: StudentsPageParams): Promise<{
     }
     if (params.query.trim()) search.set("q", params.query.trim());
 
-    const res = await fetch(`${WORKER_URL}/api/v1/students?${search}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await workerFetch(`/api/v1/students?${search}`, { token });
     if (res.status === 401) return { unauthorized: true };
     if (!res.ok) return null;
     return { data: (await res.json()) as StudentsPageResponse };
@@ -371,9 +367,7 @@ export async function fetchPiscines(): Promise<{
       login: await hashLogin(cloudLogin),
     });
 
-    const res = await fetch(`${WORKER_URL}/api/v1/piscines?${params}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await workerFetch(`/api/v1/piscines?${params}`, { token });
     if (res.status === 401) return { unauthorized: true };
     if (!res.ok) return null;
     return { data: (await res.json()) as PiscinesResponse };
@@ -396,8 +390,8 @@ export async function fetchFutureStudents(): Promise<{
       login: await hashLogin(cloudLogin),
     });
 
-    const res = await fetch(`${WORKER_URL}/api/v1/future-students?${params}`, {
-      headers: { Authorization: `Bearer ${token}` },
+    const res = await workerFetch(`/api/v1/future-students?${params}`, {
+      token,
     });
     if (res.status === 401) return { unauthorized: true };
     if (!res.ok) return null;

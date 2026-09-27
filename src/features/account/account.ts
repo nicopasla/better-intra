@@ -1,4 +1,5 @@
 import generateRandomUsername from "generate-random-username";
+import { WORKER_URL, workerFetch } from "../../utils/worker.ts";
 import { BetterIntraConfig, getConfig, CLOUD_SYNC_KEYS } from "../../config.ts";
 import type { VisualUrls } from "../profile/visuals.ts";
 import { hashLogin } from "../../utils/crypto.ts";
@@ -12,7 +13,6 @@ import { mergeSettings } from "./merge.ts";
 
 export { hashLogin };
 
-const WORKER_URL = "https://api.betterintra.com";
 
 async function handleAuthResponse(response: Response): Promise<boolean> {
   if (response.status === 401) {
@@ -146,11 +146,9 @@ export async function testCloudConnection(): Promise<number> {
 
   try {
     const hashedLogin = await hashLogin(login);
-    const response = await fetch(
-      `${WORKER_URL}/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
+    const response = await workerFetch(
+      `/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}`,
+      { token },
     );
     if (!(await handleAuthResponse(response))) return 0;
     const data = (await response.json()) as any;
@@ -182,9 +180,9 @@ export async function fetchSessions(): Promise<SessionsResponse> {
 
   try {
     const hashedLogin = await hashLogin(login);
-    const response = await fetch(
-      `${WORKER_URL}/api/v1/private/sessions?login=${encodeURIComponent(hashedLogin)}`,
-      { headers: { Authorization: `Bearer ${token}` } },
+    const response = await workerFetch(
+      `/api/v1/private/sessions?login=${encodeURIComponent(hashedLogin)}`,
+      { token },
     );
     if (!(await handleAuthResponse(response))) return { sessions: [], max: 0 };
     const data = (await response.json()) as SessionsResponse;
@@ -202,12 +200,9 @@ export async function revokeSession(id: string): Promise<boolean> {
 
   try {
     const hashedLogin = await hashLogin(login);
-    const response = await fetch(
-      `${WORKER_URL}/api/v1/private/sessions?login=${encodeURIComponent(hashedLogin)}&id=${encodeURIComponent(id)}`,
-      {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      },
+    const response = await workerFetch(
+      `/api/v1/private/sessions?login=${encodeURIComponent(hashedLogin)}&id=${encodeURIComponent(id)}`,
+      { method: "DELETE", token },
     );
     return await handleAuthResponse(response);
   } catch (error) {
@@ -419,11 +414,9 @@ export async function fetchCloudSettings(): Promise<CloudSettingsSnapshot | null
 
   try {
     const hashedLogin = await hashLogin(login);
-    const response = await fetch(
-      `${WORKER_URL}/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
+    const response = await workerFetch(
+      `/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}`,
+      { token },
     );
     if (!(await handleAuthResponse(response))) return null;
     const data = (await response.json()) as {
@@ -480,9 +473,9 @@ export async function fetchSettingsHistory(): Promise<
 
   try {
     const hashedLogin = await hashLogin(login);
-    const res = await fetch(
-      `${WORKER_URL}/api/v1/private/settings/history?login=${encodeURIComponent(hashedLogin)}`,
-      { headers: { Authorization: `Bearer ${token}` } },
+    const res = await workerFetch(
+      `/api/v1/private/settings/history?login=${encodeURIComponent(hashedLogin)}`,
+      { token },
     );
     if (!(await handleAuthResponse(res))) return [];
     const data = (await res.json()) as { entries?: SettingsHistoryEntryView[] };
@@ -562,12 +555,9 @@ export async function logoutCloud(): Promise<boolean> {
   if (login && token) {
     try {
       const hashedLogin = await hashLogin(login);
-      await fetch(
-        `${WORKER_URL}/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        },
+      await workerFetch(
+        `/api/v1/private/settings?login=${encodeURIComponent(hashedLogin)}`,
+        { method: "DELETE", token },
       );
     } catch (e) {
       console.error("Failed to notify worker of logout", e);

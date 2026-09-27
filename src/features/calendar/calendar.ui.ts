@@ -1,4 +1,5 @@
 import { html, render } from "lit-html";
+import { WORKER_URL, workerFetch } from "../../utils/worker.ts";
 import { ref } from "lit-html/directives/ref.js";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { hashLogin } from "../../utils/crypto.ts";
@@ -6,7 +7,6 @@ import { generateQrDataUrl } from "./qr.ts";
 import CALENDAR_PLUS_SVG from "../../assets/svg/calendar-plus.svg?raw";
 import COPY_SVG from "../../assets/svg/copy.svg?raw";
 
-const WORKER_URL = "https://api.betterintra.com";
 const TOKEN_KEY = "CALENDAR_SYNC_TOKEN";
 
 function calUrl(token: string): string {
@@ -156,16 +156,9 @@ function renderPanel(el: Element | undefined) {
     const hashed = await hashLogin(cloudLogin);
 
     try {
-      const res = await fetch(
-        `${WORKER_URL}/api/v1/private/calendar/token?login=${encodeURIComponent(hashed)}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionToken}`,
-          },
-          body: JSON.stringify({ token: uuid }),
-        },
+      const res = await workerFetch(
+        `/api/v1/private/calendar/token?login=${encodeURIComponent(hashed)}`,
+        { method: "POST", token: sessionToken, body: { token: uuid } },
       );
       if (!res.ok) throw new Error("Failed to register token");
       await chrome.storage.local.set({ [TOKEN_KEY]: uuid });

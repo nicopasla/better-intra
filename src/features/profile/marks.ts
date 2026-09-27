@@ -1,4 +1,5 @@
 import { html, render } from "lit-html";
+import { WORKER_URL, workerFetch } from "../../utils/worker.ts";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { getConfig } from "../../config.ts";
 import { getCloudLogin } from "../account/account.ts";
@@ -14,7 +15,6 @@ import X_SVG from "../../assets/svg/x.svg?raw";
 import CHEVRON_DOWN_SVG from "../../assets/svg/chevron-down.svg?raw";
 import { createSkeleton } from "../../utils/skeleton.ts";
 
-const WORKER_URL = "https://api.betterintra.com";
 
 const OUTSTANDING_CACHE_TTL_MS = 60 * 1000;
 
@@ -147,14 +147,12 @@ async function fetchOutstandingProjects(
 
   const hashedLogin = await hashLogin(cloudLogin);
   try {
-    let url = `${WORKER_URL}/api/v1/private/outstanding?login=${encodeURIComponent(hashedLogin)}`;
+    let path = `/api/v1/private/outstanding?login=${encodeURIComponent(hashedLogin)}`;
     if (targetLogin) {
-      url += `&target=${encodeURIComponent(targetLogin)}`;
-      if (count !== undefined) url += `&count=${count}`;
+      path += `&target=${encodeURIComponent(targetLogin)}`;
+      if (count !== undefined) path += `&count=${count}`;
     }
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${sessionToken}` },
-    });
+    const res = await workerFetch(path, { token: sessionToken });
     if (!res.ok) {
       return targetLogin ? {} : outstandingCache || {};
     }

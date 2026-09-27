@@ -1,7 +1,7 @@
 import { getConfig, setConfig } from "../../config.ts";
+import { workerFetch } from "../../utils/worker.ts";
 import { hashLogin } from "../account/account.ts";
 
-const WORKER_URL = "https://api.betterintra.com";
 
 export interface FriendData {
   login: string;
@@ -94,9 +94,9 @@ export async function fetchFriendsData(
   if (logins.length === 1) {
     try {
       const hashedLogin = await hashLogin(cloudLogin);
-      const res = await fetch(
-        `${WORKER_URL}/api/v1/private/friends/data?login=${encodeURIComponent(hashedLogin)}&logins=${encodeURIComponent(logins[0])}`,
-        { headers: { Authorization: `Bearer ${token}` } },
+      const res = await workerFetch(
+        `/api/v1/private/friends/data?login=${encodeURIComponent(hashedLogin)}&logins=${encodeURIComponent(logins[0])}`,
+        { token },
       );
       if (res.status === 401) {
         await chrome.storage.local.set({ CLOUD_AUTH_FAILED: true });
@@ -121,9 +121,9 @@ export async function fetchFriendsData(
 
   try {
     const hashedLogin = await hashLogin(cloudLogin);
-    const res = await fetch(
-      `${WORKER_URL}/api/v1/private/friends/data?login=${encodeURIComponent(hashedLogin)}&logins=${encodeURIComponent(logins.join(","))}`,
-      { headers: { Authorization: `Bearer ${token}` } },
+    const res = await workerFetch(
+      `/api/v1/private/friends/data?login=${encodeURIComponent(hashedLogin)}&logins=${encodeURIComponent(logins.join(","))}`,
+      { token },
     );
     if (res.ok) {
       const data = (await res.json()) as { friends?: FriendData[] };

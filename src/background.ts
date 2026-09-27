@@ -1,6 +1,6 @@
 import { hashLogin } from "./utils/crypto";
+import { WORKER_URL, workerFetch } from "./utils/worker";
 
-const WORKER_URL = "https://api.betterintra.com";
 
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === "install") {
@@ -57,12 +57,10 @@ async function syncRegistration() {
   if (discordEnabled && discordId) return;
 
   const hashedLogin = await hashLogin(cloudLogin);
-  const url = `${WORKER_URL}/api/v1/private/evaluations?login=${encodeURIComponent(hashedLogin)}&action=unregister`;
+  const path = `/api/v1/private/evaluations?login=${encodeURIComponent(hashedLogin)}&action=unregister`;
 
   try {
-    await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await workerFetch(path, { token });
   } catch {
     console.warn("syncRegistration: fetch failed");
   }
@@ -84,26 +82,16 @@ async function syncDiscord() {
   const discordId = String(store.DISCORD_ID || "").trim();
 
   if (enabled && discordId) {
-    const url = `${WORKER_URL}/api/v1/private/discord/link?login=${encodeURIComponent(hashedLogin)}`;
+    const path = `/api/v1/private/discord/link?login=${encodeURIComponent(hashedLogin)}`;
     try {
-      await fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ discordId }),
-      });
+      await workerFetch(path, { method: "POST", token, body: { discordId } });
     } catch {
       console.warn("syncDiscord: link fetch failed");
     }
   } else if (!discordId) {
-    const url = `${WORKER_URL}/api/v1/private/discord/unlink?login=${encodeURIComponent(hashedLogin)}`;
+    const path = `/api/v1/private/discord/unlink?login=${encodeURIComponent(hashedLogin)}`;
     try {
-      await fetch(url, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await workerFetch(path, { method: "POST", token });
     } catch {
       console.warn("syncDiscord: unlink fetch failed");
     }
@@ -123,21 +111,18 @@ async function syncDiscordQuiet() {
   if (!token || !cloudLogin) return;
 
   const hashedLogin = await hashLogin(cloudLogin);
-  const url = `${WORKER_URL}/api/v1/private/discord/quiet?login=${encodeURIComponent(hashedLogin)}`;
+  const path = `/api/v1/private/discord/quiet?login=${encodeURIComponent(hashedLogin)}`;
 
   try {
-    await fetch(url, {
+    await workerFetch(path, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+      token,
+      body: {
         quietEnabled: store.DISCORD_QUIET_ENABLED === true,
         quietStart: String(store.DISCORD_QUIET_START || "22:00"),
         quietEnd: String(store.DISCORD_QUIET_END || "08:00"),
         timezoneOffset: new Date().getTimezoneOffset(),
-      }),
+      },
     });
   } catch {
     console.warn("syncDiscordQuiet: fetch failed");

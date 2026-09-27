@@ -1,7 +1,7 @@
 import { getConfig } from "../../config.ts";
+import { WORKER_URL } from "../../utils/worker.ts";
 import { hashLogin } from "../account/account.ts";
 
-const WORKER_URL = "https://api.betterintra.com";
 
 export async function uploadImage(file: File): Promise<string> {
   const token = await getConfig("CLOUD_TOKEN");

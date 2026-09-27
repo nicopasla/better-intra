@@ -2,6 +2,9 @@ import type { OccupancyEntry, ActiveSortMode } from "./render";
 import type { SeatPos } from "./crop";
 import { getSvgSlug } from "./cache";
 import type { ExitConfig } from "../../campus/campus.ts";
+import { WORKER_URL } from "../../../utils/worker.ts";
+
+export { WORKER_URL };
 
 export type {
   ExitConfig,
@@ -15,7 +18,6 @@ export interface ClusterInfo {
   svg?: string;
 }
 
-export const WORKER_URL = "https://api.betterintra.com";
 export const CLUSTERS_JSON_URL = "https://meta.intra.42.fr/clusters.json";
 export const POLL_INTERVAL = 60_000;
 export const SEAT_TARGET_PX = 60;

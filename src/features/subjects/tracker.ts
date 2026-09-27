@@ -1,4 +1,5 @@
 import { getConfig } from "../../config.ts";
+import { workerFetch } from "../../utils/worker.ts";
 import { hashLogin } from "../../utils/crypto.ts";
 import {
   decide,
@@ -9,7 +10,6 @@ import {
 } from "./fingerprint.ts";
 import { renderSubjectBadge } from "./ui.ts";
 
-const WORKER_URL = "https://api.betterintra.com";
 const CHECK_COOLDOWN_MS = 15 * 60 * 1000;
 
 interface LocalSubjectState {
@@ -81,11 +81,9 @@ async function getWorkerState(
   slug: string,
   client: CloudClient,
 ): Promise<WorkerStateEntry | null> {
-  const url = `${WORKER_URL}/api/v1/private/subjects/state?login=${encodeURIComponent(client.hashedLogin)}&slugs=${encodeURIComponent(slug)}`;
+  const path = `/api/v1/private/subjects/state?login=${encodeURIComponent(client.hashedLogin)}&slugs=${encodeURIComponent(slug)}`;
   try {
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${client.token}` },
-    });
+    const res = await workerFetch(path, { token: client.token });
     if (!res.ok) return null;
     const data = (await res.json()) as { subjects?: WorkerStateEntry[] };
     return data.subjects?.find((s) => s.slug === slug) ?? null;
@@ -99,15 +97,12 @@ async function reportToWorker(
   client: CloudClient,
   url: string,
 ): Promise<WorkerReportEntry | null> {
-  const endpoint = `${WORKER_URL}/api/v1/private/subjects/report?login=${encodeURIComponent(client.hashedLogin)}`;
+  const path = `/api/v1/private/subjects/report?login=${encodeURIComponent(client.hashedLogin)}`;
   try {
-    const res = await fetch(endpoint, {
+    const res = await workerFetch(path, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${client.token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ items: [{ slug, url: normalizeUrl(url) }] }),
+      token: client.token,
+      body: { items: [{ slug, url: normalizeUrl(url) }] },
     });
     if (!res.ok) return null;
     const data = (await res.json()) as { subjects?: WorkerReportEntry[] };

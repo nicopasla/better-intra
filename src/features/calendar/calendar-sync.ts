@@ -1,6 +1,6 @@
 import { hashLogin } from "../../utils/crypto.ts";
+import { workerFetch } from "../../utils/worker.ts";
 
-const WORKER_URL = "https://api.betterintra.com";
 
 function escapeIcs(text: string): string {
   return text
@@ -105,16 +105,9 @@ export async function syncCalendarIcs(
   const ics = generateIcs(events);
 
   try {
-    const res = await fetch(
-      `${WORKER_URL}/api/v1/private/calendar/update?login=${encodeURIComponent(hashed)}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionToken}`,
-        },
-        body: JSON.stringify({ ics }),
-      },
+    const res = await workerFetch(
+      `/api/v1/private/calendar/update?login=${encodeURIComponent(hashed)}`,
+      { method: "POST", token: sessionToken, body: { ics } },
     );
     if (res.ok) {
       await chrome.storage.local.set({ CALENDAR_EVENTS_HASH: currentHash });

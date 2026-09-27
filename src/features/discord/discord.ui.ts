@@ -1,4 +1,5 @@
 import { html, render } from "lit-html";
+import { WORKER_URL, workerFetch } from "../../utils/worker.ts";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { ref } from "lit-html/directives/ref.js";
 import { getConfig } from "../../config.ts";
@@ -8,7 +9,6 @@ import { hashLogin } from "../../utils/crypto";
 import { loginWith42, clearAuthFailed } from "../account/account.ts";
 import { markAuthFlowPending } from "../account/auth-callback.ts";
 
-const WORKER_URL = "https://api.betterintra.com";
 
 let discordPanelListener:
   | ((changes: { [key: string]: chrome.storage.StorageChange }) => void)
@@ -87,9 +87,9 @@ export function renderDiscordPanel() {
       if (shouldBeRegistered && !evalActive) {
         try {
           const hashed = await hashLogin(login);
-          const res = await fetch(
-            `${WORKER_URL}/api/v1/private/evaluations?login=${encodeURIComponent(hashed)}&action=register`,
-            { headers: { Authorization: `Bearer ${token}` } },
+          const res = await workerFetch(
+            `/api/v1/private/evaluations?login=${encodeURIComponent(hashed)}&action=register`,
+            { token },
           );
           if (res.ok) {
             await chrome.storage.local.set({ DISCORD_EVAL_REGISTERED: true });
@@ -99,9 +99,9 @@ export function renderDiscordPanel() {
       } else if (!shouldBeRegistered && evalActive) {
         try {
           const hashed = await hashLogin(login);
-          await fetch(
-            `${WORKER_URL}/api/v1/private/evaluations?login=${encodeURIComponent(hashed)}&action=unregister`,
-            { headers: { Authorization: `Bearer ${token}` } },
+          await workerFetch(
+            `/api/v1/private/evaluations?login=${encodeURIComponent(hashed)}&action=unregister`,
+            { token },
           );
         } catch {}
         await chrome.storage.local.set({ DISCORD_EVAL_REGISTERED: false });
@@ -220,15 +220,12 @@ export function renderDiscordPanel() {
               try {
                 const controller = new AbortController();
                 const timer = setTimeout(() => controller.abort(), 15000);
-                const res = await fetch(
-                  `${WORKER_URL}/api/v1/private/discord/test`,
+                const res = await workerFetch(
+                  `/api/v1/private/discord/test`,
                   {
                     method: "POST",
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ login, discordId }),
+                    token,
+                    body: { login, discordId },
                     signal: controller.signal,
                   },
                 );

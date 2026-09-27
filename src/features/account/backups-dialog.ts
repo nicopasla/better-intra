@@ -5,7 +5,7 @@ import {
   showConfirmDialog,
 } from "../../utils/confirm-dialog.ts";
 import { getConfig } from "../../config.ts";
-import { formatRelative } from "../../utils/dates.ts";
+import { formatAbsoluteDateTime, formatRelative } from "../../utils/dates.ts";
 import {
   fetchSettingsHistory,
   restoreLocalBackup,
@@ -85,7 +85,8 @@ export async function showBackupsDialog(): Promise<void> {
                               class="flex items-center justify-between gap-2 rounded-lg bg-base-200/60 px-3 py-2"
                             >
                               <span class="text-sm"
-                                >${formatRelative(h.createdAt)}</span
+                                >${formatRelative(h.createdAt)} ·
+                                ${formatAbsoluteDateTime(h.createdAt)}</span
                               >
                               <button
                                 class="btn btn-xs btn-outline font-bold"
@@ -113,7 +114,8 @@ export async function showBackupsDialog(): Promise<void> {
                               class="flex items-center justify-between gap-2 rounded-lg bg-base-200/60 px-3 py-2"
                             >
                               <span class="text-sm"
-                                >${formatRelative(b.at)}</span
+                                >${formatRelative(b.at)} ·
+                                ${formatAbsoluteDateTime(b.at)}</span
                               >
                               <button
                                 class="btn btn-xs btn-outline font-bold"

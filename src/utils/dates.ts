@@ -25,6 +25,17 @@ export function formatRelative(ts: number | null | undefined): string {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
+export function formatAbsoluteDateTime(ts: number): string {
+  return new Date(ts).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
 /** Absolute en-US date for an Intra timestamp; `short` uses an abbreviated month. */
 export function formatAbsoluteDate(
   iso: string,

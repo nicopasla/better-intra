@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { formatAbsoluteDate, formatRelative, parseIntraDate } from "../src/utils/dates.ts";
+import {
+  formatAbsoluteDate,
+  formatAbsoluteDateTime,
+  formatRelative,
+  parseIntraDate,
+} from "../src/utils/dates.ts";
 
 describe("parseIntraDate", () => {
   it("reads a timezone-less timestamp as UTC", () => {
@@ -44,5 +49,14 @@ describe("formatAbsoluteDate", () => {
     expect(formatAbsoluteDate("2024-03-05T12:00:00", "short")).toBe(
       "Mar 5, 2024",
     );
+  });
+});
+
+describe("formatAbsoluteDateTime", () => {
+  it("includes the date and 24h time", () => {
+    const ts = new Date(2024, 2, 5, 18, 14).getTime();
+    const out = formatAbsoluteDateTime(ts);
+    expect(out).toContain("Mar 5, 2024");
+    expect(out).toContain("18:14");
   });
 });

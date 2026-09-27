@@ -1,5 +1,7 @@
 import { render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
+import { positionFloating } from "./floating.ts";
+import type { Placement } from "@floating-ui/dom";
 
 export type TooltipPosition = "top" | "right";
 
@@ -23,6 +25,7 @@ export function escapeHtml(value: string): string {
 }
 
 let tooltipEl: HTMLElement | null = null;
+let tooltipCleanup: (() => void) | null = null;
 
 function ensureTooltip(container: HTMLElement): HTMLElement {
   if (!tooltipEl) {
@@ -61,33 +64,15 @@ function styleTooltip(
   ].join(";");
 }
 
-function positionTooltip(
+function showTooltip(
   el: HTMLElement,
   target: HTMLElement,
   position: TooltipPosition,
 ) {
-  const rect = target.getBoundingClientRect();
-  const tw = el.offsetWidth;
-  const th = el.offsetHeight;
-  const margin = 8;
-  let left: number;
-  let top: number;
-  if (position === "right") {
-    left = rect.right + margin;
-    if (left + tw > window.innerWidth - margin) {
-      left = rect.left - tw - margin;
-    }
-    top = rect.top + rect.height / 2 - th / 2;
-    top = Math.max(margin, Math.min(top, window.innerHeight - th - margin));
-  } else {
-    left = rect.left + rect.width / 2 - tw / 2;
-    left = Math.max(margin, Math.min(left, window.innerWidth - tw - margin));
-    top = rect.top - th - margin;
-    if (top < margin) top = rect.bottom + margin;
-  }
-  el.style.left = `${Math.round(left)}px`;
-  el.style.top = `${Math.round(top)}px`;
-  el.style.visibility = "visible";
+  tooltipCleanup?.();
+  tooltipCleanup = positionFloating(target, el, {
+    placement: position as Placement,
+  }).destroy;
 }
 
 export function showFloatingTooltip(
@@ -102,7 +87,7 @@ export function showFloatingTooltip(
   const el = ensureTooltip(container);
   el.textContent = text;
   styleTooltip(el, isLight, false, size);
-  positionTooltip(el, target, position);
+  showTooltip(el, target, position);
 }
 
 export function showFloatingTooltipHtml(
@@ -117,10 +102,12 @@ export function showFloatingTooltipHtml(
   const el = ensureTooltip(container);
   render(unsafeHTML(html), el);
   styleTooltip(el, isLight, true, size);
-  positionTooltip(el, target, position);
+  showTooltip(el, target, position);
 }
 
 export function hideFloatingTooltip(): void {
+  tooltipCleanup?.();
+  tooltipCleanup = null;
   if (!tooltipEl) return;
   tooltipEl.remove();
   tooltipEl = null;

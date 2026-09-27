@@ -1,5 +1,6 @@
 import { html, render, TemplateResult } from "lit-html";
 import { adoptShadowCss } from "../../utils/shadow-styles.ts";
+import { positionFloating } from "../../utils/floating.ts";
 import { getEffectiveTheme } from "../profile/theme/theme-manager.ts";
 import { fmtHours } from "./utils.ts";
 import { formatRange, type LogtimeStreak } from "./streak.ts";
@@ -9,6 +10,7 @@ const HIDE_DELAY_MS = 120;
 
 let _host: HTMLElement | null = null;
 let _hideTimer: ReturnType<typeof setTimeout> | null = null;
+let _positionCleanup: (() => void) | null = null;
 
 const DAY_FMT = new Intl.DateTimeFormat("en-GB", {
   day: "2-digit",
@@ -45,6 +47,8 @@ export function closeStreakPopover(): void {
     clearTimeout(_hideTimer);
     _hideTimer = null;
   }
+  _positionCleanup?.();
+  _positionCleanup = null;
   if (!_host) return;
   _host.remove();
   _host = null;
@@ -63,7 +67,7 @@ export async function showStreakPopover(
 
   const host = document.createElement("div");
   host.id = POPOVER_ID;
-  host.style.cssText = "position:absolute;z-index:99999;width:238px;";
+  host.style.cssText = "z-index:99999;width:238px;visibility:hidden;";
   _host = host;
 
   const shadow = host.attachShadow({ mode: "open" });
@@ -117,12 +121,10 @@ export async function showStreakPopover(
 
   document.body.appendChild(host);
 
-  const rect = anchor.getBoundingClientRect();
-  const height = host.getBoundingClientRect().height;
-  const above = rect.top - height - 6;
-  const top = above >= 4 ? above : rect.bottom + 6;
-  host.style.top = `${top + window.scrollY}px`;
-  host.style.left = `${Math.min(rect.left + window.scrollX, document.documentElement.scrollWidth - 254)}px`;
+  _positionCleanup = positionFloating(anchor, host, {
+    placement: "top",
+    offsetPx: 6,
+  }).destroy;
 
   host.addEventListener("mouseenter", () => {
     if (_hideTimer) {

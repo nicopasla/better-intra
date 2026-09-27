@@ -83,3 +83,29 @@ describe("sanitizeBackup", () => {
     expect(sanitizeBackup(exported)).toEqual(exported);
   });
 });
+
+describe("cloud sync state", () => {
+  const SYNC_STATE: Record<string, unknown> = {
+    CLOUD_REVISION: "abc-123",
+    CLOUD_SYNC_CONFLICT: true,
+    CLOUD_BASELINE: { LOGTIME_EMOJI: "🌮" },
+    SETTINGS_BACKUP_LOCAL: [{ at: 1, settings: { LOGTIME_EMOJI: "🌮" } }],
+  };
+
+  it("never exports sync state", () => {
+    expect(exportableSettings({ ...SYNC_STATE })).toEqual({});
+  });
+
+  it("never restores sync state from a backup file", () => {
+    expect(sanitizeBackup({ ...SYNC_STATE })).toEqual({});
+  });
+
+  it("keeps regular settings alongside sync state", () => {
+    expect(
+      exportableSettings({ ...SYNC_STATE, LOGTIME_EMOJI: "🍕" }),
+    ).toEqual({ LOGTIME_EMOJI: "🍕" });
+    expect(
+      sanitizeBackup({ ...SYNC_STATE, LOGTIME_EMOJI: "🍕" }),
+    ).toEqual({ LOGTIME_EMOJI: "🍕" });
+  });
+});

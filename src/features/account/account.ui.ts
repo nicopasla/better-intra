@@ -10,10 +10,12 @@ import { renderConflictList } from "./conflict-dialog.ts";
 
 function formatSessionDate(ts: number): string {
   if (!ts) return "Unknown date";
-  return new Date(ts).toLocaleDateString(undefined, {
+  return new Date(ts).toLocaleString(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 

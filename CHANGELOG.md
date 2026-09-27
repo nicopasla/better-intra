@@ -2,6 +2,66 @@
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-09-28
+
+### Features 🎉
+
+- feat(account): restore configurable manual/auto push, default manual ([25e73b7](https://github.com/nicopasla/better-intra/commit/25e73b7))
+- feat(account): show date and hour in the backups list ([a427adb](https://github.com/nicopasla/better-intra/commit/a427adb))
+- feat(sortable): migrate drag-and-drop lists to sortablejs ([602b210](https://github.com/nicopasla/better-intra/commit/602b210))
+- feat(floating): add positionFloating utility for dynamic tooltip positioning ([8f2706b](https://github.com/nicopasla/better-intra/commit/8f2706b))
+- feat(account): show session time alongside the date ([3b8ba09](https://github.com/nicopasla/better-intra/commit/3b8ba09))
+- feat(popup): open account settings from the toolbar ([f0cc867](https://github.com/nicopasla/better-intra/commit/f0cc867))
+- feat(welcome): add font selection and fix footer layout ([345f475](https://github.com/nicopasla/better-intra/commit/345f475))
+- feat(streak): add date range to streak calculations and display ([6ff34f0](https://github.com/nicopasla/better-intra/commit/6ff34f0))
+- feat(logtime): gate header emoji total behind an off-by-default setting ([3130a4c](https://github.com/nicopasla/better-intra/commit/3130a4c))
+- feat(logtime): add streak chip and popover ([8197ade](https://github.com/nicopasla/better-intra/commit/8197ade))
+- feat(students): match grid layout across Future students and Pisciners tabs ([5e7ee15](https://github.com/nicopasla/better-intra/commit/5e7ee15))
+- feat(account): add cloud backups, three-way merge and conflict review ([9e0c44a](https://github.com/nicopasla/better-intra/commit/9e0c44a))
+- feat(account): add hub Account tab, popup launcher, and session controls ([ff317a6](https://github.com/nicopasla/better-intra/commit/ff317a6))
+- feat(account): add device sessions list, revoke and device names ([62bd37c](https://github.com/nicopasla/better-intra/commit/62bd37c))
+- feat(profile): center and enlarge the level digit when hiding the leading zero ([59d442d](https://github.com/nicopasla/better-intra/commit/59d442d))
+- feat(students): server-side roster pagination and wallet/eval badges ([be2c384](https://github.com/nicopasla/better-intra/commit/be2c384))
+- feat(clusters): add map dialog tour and responsive settings ([317a99f](https://github.com/nicopasla/better-intra/commit/317a99f))
+- feat(welcome): add first-run welcome screen and guided tour ([89059d7](https://github.com/nicopasla/better-intra/commit/89059d7))
+- feat(profile): add seishin/twilight themes, more theme selectors, and level padding toggle ([1598cb3](https://github.com/nicopasla/better-intra/commit/1598cb3))
+- feat(theme): add 'seishin' theme with custom color settings #13 ([eae92e1](https://github.com/nicopasla/better-intra/commit/eae92e1))
+
+### Bug fixes 🐛
+
+- fix(backup): exclude cloud sync state from exports and imports ([7634809](https://github.com/nicopasla/better-intra/commit/7634809))
+- fix(cloud): include badge order and sync only on Save & Reload ([0cffd1f](https://github.com/nicopasla/better-intra/commit/0cffd1f))
+- fix(profile): seed info card accent color before first render ([b4869a4](https://github.com/nicopasla/better-intra/commit/b4869a4))
+- fix(profile): show campus flag early and keep it across re-renders ([7166d12](https://github.com/nicopasla/better-intra/commit/7166d12))
+- fix(theme): apply preset colors to the Intra page background ([f3ea430](https://github.com/nicopasla/better-intra/commit/f3ea430))
+- fix(students): revert STUDENTS_CACHE_TTL to 24 hours for consistency ([cc749ed](https://github.com/nicopasla/better-intra/commit/cc749ed))
+- fix(students): align piscine calendar badge colors and radius with cards ([d3b7bb7](https://github.com/nicopasla/better-intra/commit/d3b7bb7))
+- fix(students): update STUDENTS_CACHE_TTL to 7 days for improved caching ([0ada306](https://github.com/nicopasla/better-intra/commit/0ada306))
+- fix(hub): move level leading-zero setting to the dashboard section ([9ec6b5f](https://github.com/nicopasla/better-intra/commit/9ec6b5f))
+- fix(welcome): only show on the logged-in profile and re-run after restore ([2e86fc3](https://github.com/nicopasla/better-intra/commit/2e86fc3))
+- fix(profile): preserve width when hiding level leading zero ([2cb14aa](https://github.com/nicopasla/better-intra/commit/2cb14aa))
+
+### Maintenance 🧹
+
+- chore(brave): implement script to resolve Brave binary path per OS ([c2aca10](https://github.com/nicopasla/better-intra/commit/c2aca10))
+- chore(profile): remove stale comment in level padding ([ba4bb72](https://github.com/nicopasla/better-intra/commit/ba4bb72))
+
+### Other Changes 🔄
+
+- perf(css): lazy-load custom daisyUI themes into shadow roots ([3e87bac](https://github.com/nicopasla/better-intra/commit/3e87bac))
+- perf(popup): load shared CSS via link instead of inlining in popup.js ([d3d0165](https://github.com/nicopasla/better-intra/commit/d3d0165))
+- perf(css): scope Tailwind to src, trim daisyUI components, and minify CSS ([49a1b01](https://github.com/nicopasla/better-intra/commit/49a1b01))
+- refactor(worker): centralize API base URL and add workerFetch helper ([26d3077](https://github.com/nicopasla/better-intra/commit/26d3077))
+- refactor(dates): share absolute date formatter ([bb0b2a3](https://github.com/nicopasla/better-intra/commit/bb0b2a3))
+- refactor(utils): add shared style injection helper ([c92901e](https://github.com/nicopasla/better-intra/commit/c92901e))
+- refactor(intrapy): share token wait and API fetch helpers ([dca8af4](https://github.com/nicopasla/better-intra/commit/dca8af4))
+- refactor(config): add typed setConfig and share legacy JSON parsing ([eeac1e0](https://github.com/nicopasla/better-intra/commit/eeac1e0))
+- refactor(utils): centralize color math with colord ([2991537](https://github.com/nicopasla/better-intra/commit/2991537))
+- docs: add single-line commit message rule to AGENTS.md ([b362d45](https://github.com/nicopasla/better-intra/commit/b362d45))
+- refactor(clusters): remove the native cluster-map page injection ([fca8936](https://github.com/nicopasla/better-intra/commit/fca8936))
+- perf(content): split content script into a boot + lazy ESM chunks ([2c89f49](https://github.com/nicopasla/better-intra/commit/2c89f49))
+- perf(api): raise friends cache TTL and update worker for token fallback fix ([dec04db](https://github.com/nicopasla/better-intra/commit/dec04db))
+
 ## [1.9.1] - 2026-09-24
 
 ### Features 🎉
@@ -1276,7 +1336,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.9.1...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.10.0...HEAD
+[1.10.0]: https://github.com/nicopasla/better-intra/compare/v1.9.1...v1.10.0
 [1.9.1]: https://github.com/nicopasla/better-intra/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/nicopasla/better-intra/compare/v1.8.6...v1.9.0
 [1.8.6]: https://github.com/nicopasla/better-intra/compare/v1.8.5...v1.8.6

@@ -1,7 +1,7 @@
 import { getConfig } from "../../config.ts";
 import { openClusterDialog } from "../clusters/map-dialog.ts";
 import { addFriend, removeFriend, isFriend } from "../friends/friends.ts";
-import { getCloudLogin, syncToCloud } from "../account/account.ts";
+import { getCloudLogin } from "../account/account.ts";
 import { getLoginFromPage } from "../../utils/profile-login.ts";
 import HOLY_GRAPH_SVG from "../../assets/svg/holy-graph.svg?raw";
 import CLUSTERS_SVG from "../../assets/svg/clusters.svg?raw";
@@ -67,7 +67,6 @@ export async function initFriendBadge() {
       } else {
         await addFriend(targetLogin);
       }
-      syncToCloud();
       friendState = !friendState;
       render();
     } catch {

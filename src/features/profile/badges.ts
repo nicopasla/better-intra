@@ -154,6 +154,11 @@ export function applyBadgeLayout(
 
 let lastAppliedKey = "";
 
+export function refreshBadgeLayout(): void {
+  lastAppliedKey = "";
+  applyTitleBadgeWrap();
+}
+
 export function applyTitleBadgeWrap() {
   if (location.hostname !== "profile-v3.intra.42.fr") return;
   if (!(location.pathname === "/" || location.pathname.startsWith("/users")))
@@ -170,6 +175,15 @@ export function applyTitleBadgeWrap() {
     });
   })();
 }
+
+// Badge order/wrap can change from the profile modal or arrive from cloud sync;
+// re-apply whenever they do instead of waiting for a page reload.
+chrome.storage.onChanged?.addListener((changes, area) => {
+  if (area !== "local") return;
+  if (changes.PROFILE_BADGE_ORDER || changes.PROFILE_BADGE_WRAP) {
+    refreshBadgeLayout();
+  }
+});
 
 let badgesInitialized = false;
 

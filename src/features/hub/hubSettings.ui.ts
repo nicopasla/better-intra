@@ -6,7 +6,6 @@ import {
   getConfig,
   setConfig,
   CONFIG_DEFAULT,
-  CLOUD_SYNC_KEYS,
   type ConfigKey,
 } from "../../config.ts";
 import {
@@ -64,34 +63,10 @@ import {
 import { bindTooltips } from "../../utils/tooltip.ts";
 import { showConfirmDialog } from "../../utils/confirm-dialog.ts";
 
-const CLOUD_PUSH_DEBOUNCE_MS = 30_000;
-let cloudPushTimer: number | null = null;
-let cloudPushPending = false;
-
-function flushCloudPush(): void {
-  if (cloudPushTimer !== null) {
-    window.clearTimeout(cloudPushTimer);
-    cloudPushTimer = null;
-  }
-  if (!cloudPushPending) return;
-  cloudPushPending = false;
-  void syncToCloud();
-}
-
-function scheduleCloudPush(): void {
-  cloudPushPending = true;
-  if (cloudPushTimer !== null) window.clearTimeout(cloudPushTimer);
-  cloudPushTimer = window.setTimeout(flushCloudPush, CLOUD_PUSH_DEBOUNCE_MS);
-}
-
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) flushCloudPush();
-});
-
+// Changes only persist locally here; they are uploaded when the user clicks
+// "Save & Reload" (or the account "Push Settings" button).
 async function saveSetting(key: string, value: unknown): Promise<void> {
   await chrome.storage.local.set({ [key]: value });
-  if (!(CLOUD_SYNC_KEYS as readonly string[]).includes(key)) return;
-  if ((await getConfig("CLOUD_SYNC_ENABLED")) === true) scheduleCloudPush();
 }
 
 import { fetchCampusList, fetchEventTypes } from "../clusters/clusters.data.ts";
@@ -1794,7 +1769,6 @@ async function createModal(
         dialog.close();
       }
     });
-    dialog.addEventListener("close", () => flushCloudPush());
 
     const applyDesktopLock = () => {
       dialog.style.width = "100%";
@@ -2049,7 +2023,7 @@ async function createModal(
           <span class="size-5 flex items-center justify-center">
             ${unsafeHTML(RELOAD_SVG)}
           </span>
-          Reload
+          Save & Reload
         </button>
       </div>
     </div>`;
@@ -2141,16 +2115,9 @@ async function createModal(
 
   const reloadBtn = shadow.querySelector("#hub-reload");
   reloadBtn?.addEventListener("click", async () => {
-    if (cloudPushTimer !== null) {
-      window.clearTimeout(cloudPushTimer);
-      cloudPushTimer = null;
-    }
-    if (cloudPushPending) {
-      cloudPushPending = false;
-      try {
-        await syncToCloud();
-      } catch {}
-    }
+    try {
+      await syncToCloud();
+    } catch {}
     location.reload();
   });
 

@@ -1,7 +1,7 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { ref } from "lit-html/directives/ref.js";
-import { getConfig, setConfig, VISUAL_CLOUD_KEYS } from "../../config.ts";
+import { getConfig, VISUAL_CLOUD_KEYS } from "../../config.ts";
 import {
   fetchMySettings,
   loginWith42,
@@ -9,7 +9,11 @@ import {
   syncMyVisuals,
 } from "../account/account.ts";
 import { applyImgs, injectCustomStyles, VisualUrls } from "./visuals.ts";
-import { getTitleBadges, applyBadgeLayout } from "./badges.ts";
+import {
+  getTitleBadges,
+  applyBadgeLayout,
+  refreshBadgeLayout,
+} from "./badges.ts";
 import { getEffectiveTheme } from "./theme/theme-manager.ts";
 import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
 import { createSortable, moveItem } from "../../utils/sortable.ts";
@@ -461,8 +465,7 @@ function renderPanelContent(
     const hidden = badgeTitles
       .filter((t) => knownHidden.has(t.toLowerCase()))
       .map((t) => `-${t}`);
-    state.badgeOrder = [...list, ...hidden];
-    void setConfig("PROFILE_BADGE_ORDER", state.badgeOrder);
+    onFormUpdate({ badgeOrder: [...list, ...hidden] });
   };
 
   const setupBadgeSortable = (el: Element | undefined) => {
@@ -1079,6 +1082,7 @@ export const createSettingsModal = async (
           console.error("Failed to sync visuals:", e);
         }
         onSaveCallback(updatedVisuals);
+        refreshBadgeLayout();
         close();
       });
   }

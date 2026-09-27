@@ -10,11 +10,7 @@ import {
   isFriend,
   removeFriend,
 } from "./friends.ts";
-import {
-  loginWith42,
-  clearAuthFailed,
-  syncToCloud,
-} from "../account/account.ts";
+import { loginWith42, clearAuthFailed } from "../account/account.ts";
 import { getConfig } from "../../config.ts";
 import {
   THEMES,
@@ -1290,7 +1286,6 @@ export async function injectFriendsWidget() {
       _state.deleteMode = false;
       _state.selected = [];
       renderWidgetUI();
-      syncToCloud();
     },
     onCancelDelete: () => {
       if (!_state) return;
@@ -1341,7 +1336,6 @@ export async function injectFriendsWidget() {
       clearFriendsCache();
       renderWidgetUI();
       _shadow?.querySelector<HTMLInputElement>('input[type="text"]')?.focus();
-      syncToCloud();
     },
     onToggleAdd: () => {
       if (!_state) return;

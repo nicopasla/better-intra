@@ -4,6 +4,7 @@ import {
   setConfig,
   setConfigMany,
   CONFIG_DEFAULT,
+  CLOUD_SYNC_KEYS,
 } from "../src/config";
 
 beforeEach(() => {
@@ -45,7 +46,9 @@ describe("getConfig", () => {
   });
 
   it("parses a JSON-stringified array from storage (legacy compat)", async () => {
-    await chrome.storage.local.set({ ACTIVE_SCRIPTS: JSON.stringify(["logtime", "profile"]) });
+    await chrome.storage.local.set({
+      ACTIVE_SCRIPTS: JSON.stringify(["logtime", "profile"]),
+    });
     const value = await getConfig("ACTIVE_SCRIPTS");
     expect(value).toEqual(["logtime", "profile"]);
   });
@@ -74,6 +77,15 @@ describe("setConfig", () => {
     await setConfig("PROFILE_BADGE_ORDER", ["A", "-B"]);
     const raw = await chrome.storage.local.get("PROFILE_BADGE_ORDER");
     expect(raw.PROFILE_BADGE_ORDER).toEqual(["A", "-B"]);
+  });
+});
+
+describe("CLOUD_SYNC_KEYS", () => {
+  it("includes the reorderable lists that must reach the cloud", () => {
+    expect(CLOUD_SYNC_KEYS).toContain("SHORTCUTS_LINKS");
+    expect(CLOUD_SYNC_KEYS).toContain("PROFILE_CARD_ORDER");
+    expect(CLOUD_SYNC_KEYS).toContain("PROFILE_BADGE_ORDER");
+    expect(CLOUD_SYNC_KEYS).toContain("PROFILE_BADGE_WRAP");
   });
 });
 

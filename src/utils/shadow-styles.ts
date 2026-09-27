@@ -1,11 +1,14 @@
 import { sharedCSS } from "../assets/shared-styles.ts";
+import { ensureThemeStyle } from "./theme-styles.ts";
 
 function ensureSharedStyle(root: ShadowRoot): void {
-  if (root.querySelector("style[data-ft-shared]")) return;
-  const style = document.createElement("style");
-  style.setAttribute("data-ft-shared", "1");
-  style.textContent = sharedCSS;
-  root.prepend(style);
+  if (!root.querySelector("style[data-ft-shared]")) {
+    const style = document.createElement("style");
+    style.setAttribute("data-ft-shared", "1");
+    style.textContent = sharedCSS;
+    root.prepend(style);
+  }
+  ensureThemeStyle(root);
 }
 
 export function adoptSharedStyles(root: ShadowRoot): void {

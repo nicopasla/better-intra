@@ -1,4 +1,5 @@
 import { getConfig } from "../../../config.ts";
+import { setCustomThemesEnabled } from "../../../utils/theme-styles.ts";
 import themev3 from "./theme-dark-v3.css?inline";
 import themev2 from "./theme-dark-v2.css?inline";
 import themeLightV3 from "./theme-light-default-v3.css?inline";
@@ -49,14 +50,18 @@ async function applyThemePreset() {
 
   if (!presetKey || presetKey === "dark" || presetKey === "light") {
     styleEl.textContent = "";
+    setCustomThemesEnabled(false);
     return;
   }
 
   const preset = THEMES[presetKey];
   if (!preset) {
     styleEl.textContent = "";
+    setCustomThemesEnabled(false);
     return;
   }
+
+  setCustomThemesEnabled(true);
 
   const { primary, primaryForeground, ring } = preset;
   let content = "";

@@ -14,7 +14,10 @@ export default defineConfig({
       name: "stub-shared-css-inline",
       enforce: "pre",
       resolveId(source) {
-        if (source.endsWith("style.css?inline")) {
+        if (
+          source.endsWith("style.css?inline") ||
+          source.endsWith("themes.css?inline")
+        ) {
           return resolve(import.meta.dirname, "src/popup/empty-shared-css.ts");
         }
         return null;

@@ -36,6 +36,7 @@
   "dependencies": {
     "@floating-ui/dom": "^1.8.0",
     "@tailwindcss/vite": "^4.3.3",
+    "colord": "^2.10.0",
     "generate-random-username": "^2.2.0",
     "lit-html": "^3.3.3",
     "qrcode-generator": "^2.0.4",

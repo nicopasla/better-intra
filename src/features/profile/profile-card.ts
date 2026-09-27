@@ -2,6 +2,7 @@ import { getConfig } from "../../config.ts";
 import { CLUSTERS, getClusterData } from "../clusters/clusters.data.ts";
 import { openClusterDialog } from "../clusters/map-dialog.ts";
 import { adoptShadowCss } from "../../utils/shadow-styles.ts";
+import { toHex } from "../../utils/color.ts";
 import { bindTooltips } from "../../utils/tooltip.ts";
 import { getIsLight } from "./theme/theme-manager.ts";
 import ARROW_SHARE_SVG from "../../assets/svg/arrow_share.svg?raw";
@@ -478,10 +479,7 @@ function injectProfileCardStyles() {
 }
 
 function rgbToHex(color: string): string {
-  const m = color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-  if (!m) return color;
-  const toHex = (n: string) => parseInt(n).toString(16).padStart(2, "0");
-  return `#${toHex(m[1])}${toHex(m[2])}${toHex(m[3])}`;
+  return toHex(color);
 }
 
 function extractLevelColor(profileCard: HTMLElement | null): string | null {

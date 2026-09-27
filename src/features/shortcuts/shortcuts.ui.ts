@@ -3,6 +3,7 @@ import { ref } from "lit-html/directives/ref.js";
 import { repeat } from "lit-html/directives/repeat.js";
 import { getConfig } from "../../config.ts";
 import { createSortable } from "../../utils/sortable.ts";
+import { contrastText } from "../../utils/color.ts";
 import GLOBE from "../../assets/svg/globe.svg";
 
 export interface ShortcutLink {
@@ -63,13 +64,7 @@ export const getFaviconUrl = (url: string): string => {
   }
 };
 
-export const getContrastColor = (hex: string): string => {
-  const safeHex = sanitizeColor(hex);
-  const r = parseInt(safeHex.slice(1, 3), 16);
-  const g = parseInt(safeHex.slice(3, 5), 16);
-  const b = parseInt(safeHex.slice(5, 7), 16);
-  return (r * 299 + g * 587 + b * 114) / 1000 >= 128 ? "#000000" : "#ffffff";
-};
+export const getContrastColor = (hex: string): string => contrastText(hex);
 
 export function renderShortcutRow(
   link: ShortcutLink,

@@ -1,5 +1,8 @@
 import { html, render } from "lit-html";
+import { ref } from "lit-html/directives/ref.js";
+import { repeat } from "lit-html/directives/repeat.js";
 import { getConfig } from "../../config.ts";
+import { createSortable } from "../../utils/sortable.ts";
 import GLOBE from "../../assets/svg/globe.svg";
 
 export interface ShortcutLink {
@@ -7,9 +10,18 @@ export interface ShortcutLink {
   url: string;
   color: string;
   emoji?: string;
+  _id?: string;
 }
 
+let _idCounter = 0;
+const ensureId = (link: ShortcutLink): ShortcutLink => {
+  if (!link._id) link._id = `sc-${_idCounter++}`;
+  return link;
+};
+
 const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+
+let shortcutsSortable: { destroy: () => void } | null = null;
 
 export const sanitizeColor = (color: unknown): string => {
   const colorStr = String(color || "").trim();
@@ -38,6 +50,7 @@ export const normalizeLink = (link: unknown): ShortcutLink => {
     url: sanitizeUrl(obj.url),
     color: sanitizeColor(obj.color),
     emoji: typeof obj.emoji === "string" ? obj.emoji.trim() : "",
+    _id: typeof obj._id === "string" ? obj._id : undefined,
   };
 };
 
@@ -65,6 +78,11 @@ export function renderShortcutRow(
   return html` <div
     class="link-group flex flex-row gap-2 border border-base-300 rounded-lg p-2 bg-base-200/30 items-end"
   >
+    <span
+      class="ft-shortcut-grip self-stretch flex items-center justify-center px-1 cursor-grab active:cursor-grabbing opacity-40 hover:opacity-80"
+      title="Drag to reorder"
+      >⠿</span
+    >
     <div class="flex flex-row gap-2">
       <input
         type="text"
@@ -122,11 +140,24 @@ export function renderShortcutsSettings(
   const maxLinks = 8;
   const isFull = links.length >= maxLinks;
 
+  const setupSortable = (el: Element | undefined) => {
+    shortcutsSortable?.destroy();
+    shortcutsSortable = null;
+    if (!el) return;
+    shortcutsSortable = createSortable(el as HTMLElement, {
+      draggable: ".link-group",
+      handle: ".ft-shortcut-grip",
+      onReorder: (from, to) => onMoveRow(from, to),
+    });
+  };
+
   return html`
     <div class="shortcuts-settings flex flex-col gap-4">
-      <div class="space-y-2" @input="${onInput}">
-        ${links.map((link, idx) =>
-          renderShortcutRow(link, () => onDeleteRow(idx)),
+      <div class="space-y-2" @input="${onInput}" ${ref(setupSortable)}>
+        ${repeat(
+          links,
+          (link) => ensureId(link)._id!,
+          (link, idx) => renderShortcutRow(link, () => onDeleteRow(idx)),
         )}
       </div>
 
@@ -158,7 +189,7 @@ export function renderShortcutsSettings(
               class="preview-section p-4 rounded-xl border border-base-300 bg-base-200/10"
             >
               <div class="flex justify-center">
-                ${renderShortcutsDisplay(links, onMoveRow)}
+                ${renderShortcutsDisplay(links)}
               </div>
             </div>
           `
@@ -261,13 +292,9 @@ function renderLinkContent(
 
 export function renderShortcutsDisplay(
   links: ShortcutLink[],
-  onMoveRow?: (from: number, to: number) => void,
   openNewTab = true,
 ): ReturnType<typeof html> {
-  const isDragMode = !!onMoveRow;
-  const displayLinks = isDragMode
-    ? links
-    : links.filter((l) => l.url && l.name);
+  const displayLinks = links.filter((l) => l.url && l.name);
 
   if (displayLinks.length === 0) return html``;
 
@@ -276,120 +303,24 @@ export function renderShortcutsDisplay(
       class="flex flex-wrap gap-3 p-0 m-0 items-center"
       id="shortcuts-display"
     >
-      ${displayLinks.map((link, idx) => {
-        const contrast = getContrastColor(link.color);
-        const hasEmoji = !!(link.emoji && link.emoji.trim().length > 0);
-        const isValid = link.url && link.name;
-
-        if (isDragMode) {
-          const dimmed = !isValid;
+      ${repeat(
+        displayLinks,
+        (link) => ensureId(link)._id!,
+        (link) => {
+          const contrast = getContrastColor(link.color);
+          const hasEmoji = !!(link.emoji && link.emoji.trim().length > 0);
 
           return html`<a
-            href="${isValid ? link.url : "#"}"
+            href="${link.url}"
             target="${openNewTab ? "_blank" : ""}"
             rel="${openNewTab ? "noopener noreferrer" : ""}"
-            class="btn btn-lg h-auto min-h-12 px-4 py-2 rounded-2xl border-none font-bold uppercase tracking-wider shadow-lg hover:shadow-lg no-underline inline-flex items-center gap-3 ${dimmed
-              ? "opacity-40 grayscale"
-              : ""}"
+            class="btn btn-lg h-auto min-h-12 px-4 py-2 rounded-2xl border-none font-bold uppercase tracking-wider shadow-lg hover:shadow-lg no-underline inline-flex items-center gap-3"
             style="background-color: ${link.color}; color: ${contrast};"
-            draggable="${isValid}"
-            @dragstart="${(e: DragEvent) => {
-              if (!isValid) {
-                e.preventDefault();
-                return;
-              }
-              e.dataTransfer?.setData("text/plain", String(idx));
-              (e.currentTarget as HTMLElement).classList.add("opacity-30");
-            }}"
-            @dragover="${(e: DragEvent) => {
-              e.preventDefault();
-              (e.currentTarget as HTMLElement).classList.add(
-                "ring-2",
-                "ring-primary",
-              );
-            }}"
-            @dragleave="${(e: DragEvent) => {
-              (e.currentTarget as HTMLElement).classList.remove(
-                "ring-2",
-                "ring-primary",
-              );
-            }}"
-            @drop="${(e: DragEvent) => {
-              e.preventDefault();
-              (e.currentTarget as HTMLElement).classList.remove(
-                "ring-2",
-                "ring-primary",
-              );
-              const fromIdx = parseInt(
-                e.dataTransfer?.getData("text/plain") || "-1",
-              );
-              if (fromIdx !== -1 && fromIdx !== idx) {
-                onMoveRow!(fromIdx, idx);
-              }
-            }}"
-            @dragend="${(e: DragEvent) => {
-              (e.currentTarget as HTMLElement).classList.remove(
-                "opacity-30",
-                "ring-2",
-                "ring-primary",
-              );
-            }}"
           >
             ${renderLinkContent(link, contrast, hasEmoji)}
           </a>`;
-        }
-
-        return html`<a
-          href="${link.url}"
-          target="${openNewTab ? "_blank" : ""}"
-          rel="${openNewTab ? "noopener noreferrer" : ""}"
-          class="btn btn-lg h-auto min-h-12 px-4 py-2 rounded-2xl border-none font-bold uppercase tracking-wider shadow-lg hover:shadow-lg no-underline inline-flex items-center gap-3"
-          style="background-color: ${link.color}; color: ${contrast};"
-        >
-          ${renderLinkContent(link, contrast, hasEmoji)}
-        </a>`;
-      })}
+        },
+      )}
     </div>
   `;
-}
-
-async function initShortcutsSettings(container: HTMLElement) {
-  let links: ShortcutLink[] = await getStoredLinks();
-
-  const save = async () => {
-    const updated = extractLinksFromForm(container);
-    await chrome.storage.local.set({
-      SHORTCUTS_LINKS: JSON.stringify(updated),
-    });
-  };
-
-  const update = () => {
-    render(
-      renderShortcutsSettings(
-        links,
-        () => {
-          if (links.length < 8) {
-            links = [...links, { name: "", url: "", color: "#7dd3fc" }];
-            update();
-          }
-        },
-        async (idx) => {
-          links = links.filter((_, i) => i !== idx);
-          if (links.length === 0) {
-            links = [{ name: "", url: "", color: "#7dd3fc", emoji: "" }];
-          }
-          await save();
-          update();
-        },
-        async () => {
-          await save();
-        },
-        () => update(),
-        () => {},
-      ),
-      container,
-    );
-  };
-
-  update();
 }

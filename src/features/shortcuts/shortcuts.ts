@@ -99,7 +99,7 @@ export async function injectShortcutsDisplay() {
           }
         </style>
         ${hideImportantLinks ? "" : html`<div class="separator"></div>`}
-        ${renderShortcutsDisplay(links, undefined, openNewTab)}
+        ${renderShortcutsDisplay(links, openNewTab)}
       `,
       shadowRoot,
     );

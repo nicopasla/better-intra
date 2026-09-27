@@ -32,6 +32,11 @@ import {
 import { clearAuthFailed } from "../account/account.ts";
 import { loginWith42, syncToCloud } from "../account/account.ts";
 import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
+import {
+  createSortable,
+  moveItem,
+  mergeVisibleOrder,
+} from "../../utils/sortable.ts";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
 import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
 import X_SVG from "../../assets/svg/x.svg?raw";
@@ -388,10 +393,12 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
     let links: ShortcutLink[] = [];
 
     let saveTimer: ReturnType<typeof setTimeout> | null = null;
+    const stripIds = (list: ShortcutLink[]): ShortcutLink[] =>
+      list.map(({ name, url, color, emoji }) => ({ name, url, color, emoji }));
     const save = async () => {
       links = extractLinksFromForm(container);
       await chrome.storage.local.set({
-        SHORTCUTS_LINKS: JSON.stringify(links),
+        SHORTCUTS_LINKS: JSON.stringify(stripIds(links)),
       });
     };
     const debouncedSave = () => {
@@ -415,18 +422,18 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
           async (idx) => {
             links = links.filter((_, i) => i !== idx);
             await chrome.storage.local.set({
-              SHORTCUTS_LINKS: JSON.stringify(links),
+              SHORTCUTS_LINKS: JSON.stringify(stripIds(links)),
             });
             update();
           },
           () => debouncedSave(),
           () => update(),
-          (from, to) => {
-            const newLinks = [...links];
-            const [moved] = newLinks.splice(from, 1);
-            newLinks.splice(to, 0, moved);
-            links = newLinks;
-            setTimeout(() => update(), 0);
+          async (from, to) => {
+            links = moveItem(links, from, to);
+            await chrome.storage.local.set({
+              SHORTCUTS_LINKS: JSON.stringify(stripIds(links)),
+            });
+            update();
           },
         ),
         container,
@@ -454,7 +461,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
     container.className = "w-full flex flex-col gap-2 relative mt-2";
     container.setAttribute("data-card-order-panel", "true");
 
-    let draggedIdx: number | null = null;
+    let cardSortable: { destroy: () => void } | null = null;
 
     const cardColors: Record<string, string> = {
       EVALUATIONS: "bg-error text-error-content hover:bg-error/80 border-error",
@@ -475,6 +482,8 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
     };
 
     const renderCardOrder = (currentOrder: string[]) => {
+      cardSortable?.destroy();
+      cardSortable = null;
       render(
         html`
           <button
@@ -493,6 +502,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
 
           <div
             class="flex flex-wrap gap-3 items-center p-4 bg-base-300/30 rounded-xl border border-base-300 w-full"
+            data-card-order-list="true"
           >
             <span class="text-xs opacity-50 w-full pb-1">Drag to reorder</span>
             ${currentOrder.map((rawName, idx) => {
@@ -526,14 +536,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                     ? "cursor-grab active:cursor-grabbing"
                     : "cursor-not-allowed"}
       ${isDisabled ? "opacity-30 line-through saturate-50 scale-95" : ""}"
-                  draggable="${enabled && !isDisabled}"
-                  @dragstart="${(e: DragEvent) =>
-                    enabled && !isDisabled && handleDragStart(e, idx)}"
-                  @dragover="${(e: DragEvent) =>
-                    enabled && handleDragOver(e, idx)}"
-                  @dragend="${() => enabled && handleDragEnd()}"
-                  @drop="${(e: DragEvent) =>
-                    enabled && handleDrop(e, currentOrder, idx)}"
+                  data-ft-draggable
                 >
                   ${enabled && !isDisabled
                     ? html`<span
@@ -578,40 +581,21 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
         `,
         container,
       );
-    };
 
-    const handleDragStart = (e: DragEvent, idx: number) => {
-      draggedIdx = idx;
-      if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
-      (e.currentTarget as HTMLElement).style.opacity = "0.3";
-    };
-
-    const handleDragOver = (e: DragEvent, idx: number) => {
-      e.preventDefault();
-    };
-
-    const handleDragEnd = () => {
-      draggedIdx = null;
-      container
-        .querySelectorAll<HTMLElement>(".btn")
-        .forEach((p) => (p.style.opacity = ""));
-    };
-
-    const handleDrop = (
-      e: DragEvent,
-      currentOrder: string[],
-      targetIdx: number,
-    ) => {
-      e.preventDefault();
-      if (draggedIdx === null || draggedIdx === targetIdx) return;
-
-      const newOrder = [...currentOrder];
-      const [removed] = newOrder.splice(draggedIdx, 1);
-      newOrder.splice(targetIdx, 0, removed);
-
-      draggedIdx = null;
-      renderCardOrder(newOrder);
-      saveSetting(def.key!, newOrder);
+      if (!enabled) return;
+      const list = container.querySelector<HTMLElement>(
+        "[data-card-order-list]",
+      );
+      if (!list) return;
+      cardSortable = createSortable(list, {
+        draggable: "[data-ft-draggable]",
+        filter: ".line-through",
+        onReorder: (from, to) => {
+          const visible = currentOrder.filter((n) => !n.startsWith("-"));
+          const reordered = moveItem(visible, from, to);
+          saveSetting(def.key!, mergeVisibleOrder(currentOrder, reordered));
+        },
+      });
     };
 
     const resetToDefault = () => {

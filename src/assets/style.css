@@ -332,3 +332,25 @@
   --depth: 0;
   --noise: 0;
 }
+
+.ft-sortable-ghost {
+  opacity: 0.35;
+  border-style: dashed !important;
+}
+
+.ft-sortable-chosen {
+  cursor: grabbing;
+}
+
+.ft-sortable-drag {
+  cursor: grabbing;
+}
+
+.ft-sortable-fallback {
+  opacity: 1 !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+  outline: 2px solid var(--color-primary, #00babc);
+  outline-offset: 2px;
+  cursor: grabbing;
+  pointer-events: none;
+}

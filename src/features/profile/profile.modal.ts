@@ -1,5 +1,6 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
+import { ref } from "lit-html/directives/ref.js";
 import { getConfig, VISUAL_CLOUD_KEYS } from "../../config.ts";
 import {
   fetchMySettings,
@@ -11,6 +12,7 @@ import { applyImgs, injectCustomStyles, VisualUrls } from "./visuals.ts";
 import { getTitleBadges, applyBadgeLayout } from "./badges.ts";
 import { getEffectiveTheme } from "./theme/theme-manager.ts";
 import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
+import { createSortable, moveItem } from "../../utils/sortable.ts";
 import LINK_SVG from "../../assets/svg/link.svg?raw";
 import GRIP_VERTICAL_SVG from "../../assets/svg/grip-vertical.svg?raw";
 import EYE_SVG from "../../assets/svg/eye.svg?raw";
@@ -43,7 +45,7 @@ interface FormState {
 type ProfileTab = "avatar" | "banner" | "background" | "badges";
 
 let activeTab: ProfileTab = "avatar";
-let badgeDragIdx: number | null = null;
+let badgeSortable: { destroy: () => void } | null = null;
 
 function addToHistory(url: string, history: string[]): string[] {
   if (!url) return history;
@@ -455,13 +457,23 @@ function renderPanelContent(
 
   const moveBadge = (from: number, to: number) => {
     if (from === to) return;
-    const list = [...badgeTitles];
-    const [removed] = list.splice(from, 1);
-    list.splice(to, 0, removed);
+    const list = moveItem(badgeTitles, from, to);
     const hidden = badgeTitles
       .filter((t) => knownHidden.has(t.toLowerCase()))
       .map((t) => `-${t}`);
-    onFormUpdate({ badgeOrder: [...list, ...hidden] });
+    state.badgeOrder = [...list, ...hidden];
+    void chrome.storage.local.set({ PROFILE_BADGE_ORDER: state.badgeOrder });
+  };
+
+  const setupBadgeSortable = (el: Element | undefined) => {
+    badgeSortable?.destroy();
+    badgeSortable = null;
+    if (!el) return;
+    badgeSortable = createSortable(el as HTMLElement, {
+      draggable: "[data-ft-draggable]",
+      filter: ".line-through",
+      onReorder: (from, to) => moveBadge(from, to),
+    });
   };
 
   const badgesPanel = html`
@@ -527,7 +539,10 @@ function renderPanelContent(
         >
           Order & visibility
         </div>
-        <div class="flex flex-wrap gap-3 items-center">
+        <div
+          class="flex flex-wrap gap-3 items-center"
+          ${ref(setupBadgeSortable)}
+        >
           <span class="text-xs opacity-50 w-full pb-1"
             >Drag to reorder · click the eye to hide</span
           >
@@ -539,22 +554,7 @@ function renderPanelContent(
                   ? "opacity-30 line-through saturate-50 scale-95"
                   : ""}"
                 data-ft-badge-idx="${idx}"
-                draggable="true"
-                @dragstart="${(e: DragEvent) => {
-                  if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
-                  (e.currentTarget as HTMLElement).style.opacity = "0.3";
-                  badgeDragIdx = idx;
-                }}"
-                @dragover="${(e: DragEvent) => e.preventDefault()}"
-                @dragend="${(e: DragEvent) => {
-                  (e.currentTarget as HTMLElement).style.opacity = "";
-                  badgeDragIdx = null;
-                }}"
-                @drop="${(e: DragEvent) => {
-                  e.preventDefault();
-                  if (badgeDragIdx !== null) moveBadge(badgeDragIdx, idx);
-                  badgeDragIdx = null;
-                }}"
+                data-ft-draggable="true"
               >
                 <span
                   class="size-3 shrink-0 opacity-40 pointer-events-none flex items-center justify-center"
@@ -594,7 +594,9 @@ function renderPanelContent(
 
   return html`
     <style>
-      :host { display: block; }
+      :host {
+        display: block;
+      }
     </style>
     <div
       data-theme="${currentTheme}"
@@ -717,7 +719,9 @@ export const createSettingsModal = async (
 
   const skeleton = html`
     <style>
-      :host { display: block; }
+      :host {
+        display: block;
+      }
     </style>
     <div
       data-theme="${currentTheme}"
@@ -744,7 +748,11 @@ export const createSettingsModal = async (
   dialog.showModal();
 
   content.addEventListener("click", (e) => e.stopPropagation());
-  dialog.addEventListener("close", () => dialog.remove());
+  dialog.addEventListener("close", () => {
+    badgeSortable?.destroy();
+    badgeSortable = null;
+    dialog.remove();
+  });
   dialog.addEventListener("click", () => dialog.close());
 
   if (isConnected) {
@@ -799,6 +807,8 @@ export const createSettingsModal = async (
     );
 
   const close = () => {
+    badgeSortable?.destroy();
+    badgeSortable = null;
     dialog.close();
     dialog.remove();
   };

@@ -52,7 +52,7 @@ cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && cross-env TARGET=fire
 ## Toolchain
 
 - **Vite 8** + `@tailwindcss/vite` plugin (Tailwind v4 CSS-driven config, no `tailwind.config.js`).
-- **daisyUI 5** — loaded via `@plugin "daisyui"` in `src/assets/style.css`. Scoped to shadow DOM roots. Only a subset of components included: button, toggle, input, select, radio, label, card, tabs, modal, divider, swap, fieldset, status, tooltip, badge, collapse, ring, avatar, indicator, list, loading, join, kbd, dropdown, menu.
+- **daisyUI 5** — loaded via `@plugin "daisyui"` in `src/assets/style.css`. Scoped to shadow DOM roots. Only a subset of components included: button, toggle, input, select, label, card, tab, modal, divider, swap, status, stat, badge, countdown, avatar, indicator, list, loading, skeleton, progress, steps, join, dropdown, menu, alert. Tailwind content detection is scoped to `src/`.
 - **TypeScript 6** — `strict: true`, `moduleResolution: bundler`, `types: ["chrome"]`.
 - **lit-html** — DOM templating for settings UI and popup.
 - **web-ext** — running and signing the extension.

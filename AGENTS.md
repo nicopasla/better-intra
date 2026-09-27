@@ -52,7 +52,7 @@ cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && cross-env TARGET=fire
 
 ## DaisyUI note
 
-daisyUI is scoped to shadow DOM roots (see `style.css` `root:` config). Only these components are included: `button, toggle, input, select, radio, label, card, tabs, modal, divider, swap, fieldset, status, tooltip, badge, collapse, ring, avatar, indicator, list, loading, join, kbd, dropdown, menu`.
+daisyUI is scoped to shadow DOM roots (see `style.css` `root:` config). Only these components are included: `button, toggle, input, select, label, card, tab, modal, divider, swap, status, stat, badge, countdown, avatar, indicator, list, loading, skeleton, progress, steps, join, dropdown, menu, alert`. Tailwind content detection is scoped to `src/` via `source("../")` so docs/GIFs don't generate CSS.
 
 ## Testing
 

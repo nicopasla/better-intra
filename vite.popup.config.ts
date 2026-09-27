@@ -55,6 +55,7 @@ export default defineConfig({
     outDir: outDir,
     emptyOutDir: false,
     minify: false,
+    cssMinify: "lightningcss",
     rollupOptions: {
       input: { popup: resolve(import.meta.dirname, "src/popup/popup.ts") },
       output: {

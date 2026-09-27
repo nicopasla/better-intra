@@ -53,6 +53,7 @@ export default defineConfig({
     outDir: outDir,
     emptyOutDir: false,
     minify: false,
+    cssMinify: "lightningcss",
     target: "esnext",
     modulePreload: false,
     rollupOptions: {

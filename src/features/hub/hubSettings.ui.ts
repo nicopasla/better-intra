@@ -4,6 +4,7 @@ import { until } from "lit-html/directives/until.js";
 import { ref } from "lit-html/directives/ref.js";
 import {
   getConfig,
+  setConfig,
   CONFIG_DEFAULT,
   CLOUD_SYNC_KEYS,
   type ConfigKey,
@@ -397,9 +398,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
       list.map(({ name, url, color, emoji }) => ({ name, url, color, emoji }));
     const save = async () => {
       links = extractLinksFromForm(container);
-      await chrome.storage.local.set({
-        SHORTCUTS_LINKS: JSON.stringify(stripIds(links)),
-      });
+      await setConfig("SHORTCUTS_LINKS", stripIds(links));
     };
     const debouncedSave = () => {
       if (saveTimer) clearTimeout(saveTimer);
@@ -421,18 +420,14 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
           },
           async (idx) => {
             links = links.filter((_, i) => i !== idx);
-            await chrome.storage.local.set({
-              SHORTCUTS_LINKS: JSON.stringify(stripIds(links)),
-            });
+            await setConfig("SHORTCUTS_LINKS", stripIds(links));
             update();
           },
           () => debouncedSave(),
           () => update(),
           async (from, to) => {
             links = moveItem(links, from, to);
-            await chrome.storage.local.set({
-              SHORTCUTS_LINKS: JSON.stringify(stripIds(links)),
-            });
+            await setConfig("SHORTCUTS_LINKS", stripIds(links));
             update();
           },
         ),
@@ -1725,9 +1720,7 @@ function bindPanelControls(root: ParentNode, shadow: ShadowRoot): void {
       const updated = isEnabled
         ? [...currentScripts, id]
         : currentScripts.filter((f: string) => f !== id);
-      await chrome.storage.local.set({
-        ACTIVE_SCRIPTS: JSON.stringify(updated),
-      });
+      await setConfig("ACTIVE_SCRIPTS", updated);
     });
   });
 

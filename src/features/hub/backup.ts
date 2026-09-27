@@ -1,4 +1,8 @@
-import { CONFIG_DEFAULT, type ConfigKey } from "../../config.ts";
+import {
+  CONFIG_DEFAULT,
+  parseLegacyJson,
+  type ConfigKey,
+} from "../../config.ts";
 
 /**
  * Keys that must never leave the browser in a backup file, nor be written
@@ -23,17 +27,6 @@ export const BACKUP_EXCLUDED_KEYS: ReadonlySet<string> = new Set<ConfigKey>([
  * ACTIVE_SCRIPTS); getConfig() parses them back. Do the same here so that the
  * shape check below compares the real value.
  */
-function parseLegacyJson(value: unknown): unknown {
-  if (typeof value === "string" && /^\s*[\[{]/.test(value)) {
-    try {
-      return JSON.parse(value);
-    } catch {
-      return value;
-    }
-  }
-  return value;
-}
-
 function sameShape(value: unknown, reference: unknown): boolean {
   if (reference === null) {
     return value === null || typeof value === "object";

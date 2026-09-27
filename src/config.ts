@@ -396,6 +396,58 @@ export const getConfigMany = async <K extends ConfigKey>(
   return out;
 };
 
+/**
+ * Some legacy callers serialize arrays/objects as JSON strings (e.g. hub
+ * settings, friends list). Parse those back so consumers get the declared type.
+ */
+export function parseLegacyJson(value: unknown): unknown {
+  if (
+    typeof value === "string" &&
+    (value.startsWith("[") || value.startsWith("{"))
+  ) {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value;
+    }
+  }
+  return value;
+}
+
+/** Keys whose values are still persisted as JSON strings for backwards compatibility. */
+const JSON_STRING_KEYS: ReadonlySet<ConfigKey> = new Set<ConfigKey>([
+  "ACTIVE_SCRIPTS",
+  "SHORTCUTS_LINKS",
+  "FRIENDS_LIST",
+]);
+
+/**
+ * Inverse of getConfig(): write a single config value using the same on-disk
+ * representation each key already uses (a JSON string for the legacy keys,
+ * the raw value otherwise).
+ */
+export const setConfig = async <T extends ConfigKey>(
+  key: T,
+  value: BetterIntraConfig[T],
+): Promise<void> => {
+  await chrome.storage.local.set({ [key]: serializeConfigValue(key, value) });
+};
+
+/** Batched variant of setConfig(): one storage write for several keys. */
+export const setConfigMany = async (
+  values: Partial<BetterIntraConfig>,
+): Promise<void> => {
+  const items: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(values)) {
+    items[key] = serializeConfigValue(key as ConfigKey, value);
+  }
+  await chrome.storage.local.set(items);
+};
+
+function serializeConfigValue(key: ConfigKey, value: unknown): unknown {
+  return JSON_STRING_KEYS.has(key) ? JSON.stringify(value) : value;
+}
+
 /** Apply defaults, legacy JSON-string parsing and per-key fix-ups to a raw stored value. */
 function normalizeConfigValue<T extends ConfigKey>(
   key: T,
@@ -403,18 +455,7 @@ function normalizeConfigValue<T extends ConfigKey>(
 ): BetterIntraConfig[T] {
   let value: unknown = raw !== undefined ? raw : CONFIG_DEFAULT[key];
 
-  // Some legacy callers serialize arrays/objects as JSON strings (e.g. hub settings).
-  // Parse those back so consumers get the declared type.
-  if (
-    typeof value === "string" &&
-    (value.startsWith("[") || value.startsWith("{"))
-  ) {
-    try {
-      value = JSON.parse(value);
-    } catch {
-      /* keep string */
-    }
-  }
+  value = parseLegacyJson(value);
 
   if (key === "PROFILE_CARD_ORDER" && Array.isArray(value)) {
     const stored = value as string[];

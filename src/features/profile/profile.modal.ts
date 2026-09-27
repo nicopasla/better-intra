@@ -1,7 +1,7 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { ref } from "lit-html/directives/ref.js";
-import { getConfig, VISUAL_CLOUD_KEYS } from "../../config.ts";
+import { getConfig, setConfig, VISUAL_CLOUD_KEYS } from "../../config.ts";
 import {
   fetchMySettings,
   loginWith42,
@@ -462,7 +462,7 @@ function renderPanelContent(
       .filter((t) => knownHidden.has(t.toLowerCase()))
       .map((t) => `-${t}`);
     state.badgeOrder = [...list, ...hidden];
-    void chrome.storage.local.set({ PROFILE_BADGE_ORDER: state.badgeOrder });
+    void setConfig("PROFILE_BADGE_ORDER", state.badgeOrder);
   };
 
   const setupBadgeSortable = (el: Element | undefined) => {

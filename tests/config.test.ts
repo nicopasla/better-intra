@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { getConfig, CONFIG_DEFAULT } from "../src/config";
+import {
+  getConfig,
+  setConfig,
+  setConfigMany,
+  CONFIG_DEFAULT,
+} from "../src/config";
 
 beforeEach(() => {
   (chrome.storage.local.clear as any)();
@@ -49,5 +54,35 @@ describe("getConfig", () => {
     await chrome.storage.local.set({ LOGTIME_GOAL_HOURS: undefined });
     const value = await getConfig("LOGTIME_GOAL_HOURS");
     expect(value).toBe(CONFIG_DEFAULT.LOGTIME_GOAL_HOURS);
+  });
+});
+
+describe("setConfig", () => {
+  it("round-trips a string key", async () => {
+    await setConfig("LOGTIME_EMOJI", "🍕");
+    expect(await getConfig("LOGTIME_EMOJI")).toBe("🍕");
+  });
+
+  it("stores legacy array keys as JSON strings", async () => {
+    await setConfig("ACTIVE_SCRIPTS", ["logtime", "profile"]);
+    const raw = await chrome.storage.local.get("ACTIVE_SCRIPTS");
+    expect(raw.ACTIVE_SCRIPTS).toBe(JSON.stringify(["logtime", "profile"]));
+    expect(await getConfig("ACTIVE_SCRIPTS")).toEqual(["logtime", "profile"]);
+  });
+
+  it("stores non-legacy array keys raw", async () => {
+    await setConfig("PROFILE_BADGE_ORDER", ["A", "-B"]);
+    const raw = await chrome.storage.local.get("PROFILE_BADGE_ORDER");
+    expect(raw.PROFILE_BADGE_ORDER).toEqual(["A", "-B"]);
+  });
+});
+
+describe("setConfigMany", () => {
+  it("writes several keys in one call", async () => {
+    await setConfigMany({ LOGTIME_EMOJI: "🌮", FRIENDS_LIST: ["alice"] });
+    expect(await getConfig("LOGTIME_EMOJI")).toBe("🌮");
+    expect(await getConfig("FRIENDS_LIST")).toEqual(["alice"]);
+    const raw = await chrome.storage.local.get("FRIENDS_LIST");
+    expect(raw.FRIENDS_LIST).toBe(JSON.stringify(["alice"]));
   });
 });

@@ -9,18 +9,9 @@ export async function injectShortcutsDisplay() {
   if (document.getElementById(CONTAINER_ID)) return;
 
   const activeFeatures = await getConfig("ACTIVE_SCRIPTS");
-  let active: string[] = [];
+  const active = Array.isArray(activeFeatures) ? activeFeatures : [];
 
-  try {
-    active =
-      typeof activeFeatures === "string"
-        ? JSON.parse(activeFeatures)
-        : activeFeatures;
-  } catch {
-    return;
-  }
-
-  if (!Array.isArray(active) || !active.includes("shortcuts")) {
+  if (!active.includes("shortcuts")) {
     document.getElementById(CONTAINER_ID)?.remove();
     return;
   }

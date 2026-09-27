@@ -1,4 +1,4 @@
-import { getConfig } from "../../config.ts";
+import { getConfig, setConfig } from "../../config.ts";
 import { hashLogin } from "../account/account.ts";
 
 const WORKER_URL = "https://api.betterintra.com";
@@ -24,19 +24,11 @@ export interface FriendData {
 
 export async function getFriendsList(): Promise<string[]> {
   const raw = await getConfig("FRIENDS_LIST");
-  if (!raw) return [];
-  try {
-    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  return Array.isArray(raw) ? raw : [];
 }
 
 export async function saveFriendsList(logins: string[]): Promise<void> {
-  await chrome.storage.local.set({
-    FRIENDS_LIST: JSON.stringify(logins),
-  });
+  await setConfig("FRIENDS_LIST", logins);
 }
 
 export async function addFriend(login: string): Promise<void> {

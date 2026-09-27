@@ -196,20 +196,9 @@ export function renderShortcutsSettings(
 export async function getStoredLinks(): Promise<ShortcutLink[]> {
   const stored = await getConfig("SHORTCUTS_LINKS");
   const fallback = [{ name: "", url: "", color: "#7dd3fc", emoji: "" }];
-  if (!stored) return fallback;
-  try {
-    let parsed: any;
-    if (typeof stored === "string") {
-      parsed = JSON.parse(stored);
-    } else {
-      parsed = stored;
-    }
-    if (!Array.isArray(parsed)) return fallback;
-    const normalized = parsed.map(normalizeLink).slice(0, 8);
-    return normalized.length > 0 ? normalized : fallback;
-  } catch {
-    return fallback;
-  }
+  if (!Array.isArray(stored)) return fallback;
+  const normalized = stored.map(normalizeLink).slice(0, 8);
+  return normalized.length > 0 ? normalized : fallback;
 }
 
 export function extractLinksFromForm(root: HTMLElement): ShortcutLink[] {

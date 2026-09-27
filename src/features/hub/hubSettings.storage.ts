@@ -1,4 +1,4 @@
-import { getConfig } from "../../config.ts";
+import { getConfig, parseLegacyJson, setConfig } from "../../config.ts";
 import {
   FEATURE_DEFS,
   FEATURE_IDS,
@@ -7,15 +7,7 @@ import {
 } from "./hubSettings.data.ts";
 
 function normalizeActive(raw: unknown): FeatureId[] {
-  let parsed: unknown = raw;
-
-  if (typeof raw === "string") {
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      parsed = null;
-    }
-  }
+  const parsed = parseLegacyJson(raw);
 
   if (!Array.isArray(parsed)) {
     return FEATURE_DEFS.map((f) => f.id);
@@ -37,7 +29,7 @@ export async function getActiveFeatures(): Promise<FeatureId[]> {
   const active = normalizeActive(raw);
 
   if (JSON.stringify(raw) !== JSON.stringify(active)) {
-    await chrome.storage.local.set({ [STORAGE_KEY]: active });
+    await setConfig(STORAGE_KEY, active);
   }
 
   return active;

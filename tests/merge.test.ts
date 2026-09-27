@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mergeSettings } from "../src/features/account/merge.ts";
+import { cloudHasRevision } from "../src/features/account/account.ts";
 
 describe("mergeSettings", () => {
   it("applies cloud-only changes and keeps local-only changes", () => {
@@ -28,11 +29,7 @@ describe("mergeSettings", () => {
   });
 
   it("fills missing keys from the cloud on first run (no baseline)", () => {
-    const { apply, conflicts } = mergeSettings(
-      null,
-      { a: 1 },
-      { a: 2, b: 3 },
-    );
+    const { apply, conflicts } = mergeSettings(null, { a: 1 }, { a: 2, b: 3 });
     expect(apply).toEqual({ b: 3 });
     expect(conflicts).toEqual([]);
   });
@@ -51,5 +48,17 @@ describe("mergeSettings", () => {
     const { apply, conflicts } = mergeSettings(base, local, cloud);
     expect(apply).toEqual({});
     expect(conflicts).toEqual([]);
+  });
+});
+
+describe("cloudHasRevision", () => {
+  it("accepts a non-empty revision string", () => {
+    expect(cloudHasRevision("abc-123")).toBe(true);
+  });
+
+  it("rejects missing or empty revisions", () => {
+    expect(cloudHasRevision(null)).toBe(false);
+    expect(cloudHasRevision(undefined)).toBe(false);
+    expect(cloudHasRevision("")).toBe(false);
   });
 });

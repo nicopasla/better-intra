@@ -148,7 +148,7 @@ export interface BetterIntraConfig {
  */
 export const CONFIG_DEFAULT: BetterIntraConfig = {
   ACTIVE_SCRIPTS: ["logtime", "clusters", "profile", "shortcuts"],
-  CLOUD_SYNC_ENABLED: true,
+  CLOUD_SYNC_ENABLED: false,
   LAST_CLOUD_SYNC: null,
   CLOUD_REVISION: null,
   CLOUD_SYNC_CONFLICT: false,

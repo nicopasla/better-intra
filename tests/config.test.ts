@@ -12,6 +12,10 @@ beforeEach(() => {
 });
 
 describe("getConfig", () => {
+  it("defaults auto push to off", () => {
+    expect(CONFIG_DEFAULT.CLOUD_SYNC_ENABLED).toBe(false);
+  });
+
   it("returns the default when storage is empty", async () => {
     const value = await getConfig("LOGTIME_GOAL_HOURS");
     expect(value).toBe(CONFIG_DEFAULT.LOGTIME_GOAL_HOURS);

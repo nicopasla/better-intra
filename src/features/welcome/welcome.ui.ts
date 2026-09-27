@@ -34,6 +34,7 @@ interface WelcomeState {
   font: string;
   connected: boolean;
   login: string | null;
+  autoPush: boolean;
   busy: boolean;
   message: string;
   messageError: boolean;
@@ -81,25 +82,28 @@ export async function openWelcome(): Promise<void> {
     font: DEFAULT_GENERAL_FONT,
     connected: false,
     login: null,
+    autoPush: false,
     busy: false,
     message: "",
     messageError: false,
   };
 
   async function refreshState() {
-    const [savedTheme, savedPreset, savedFont, login, token] =
+    const [savedTheme, savedPreset, savedFont, login, token, autoPush] =
       await Promise.all([
         getConfig("BETTER_INTRA_THEME"),
         getConfig("PROFILE_THEME_PRESET"),
         getConfig("GENERAL_FONT"),
         getCloudLogin(),
         getConfig("CLOUD_TOKEN"),
+        getConfig("CLOUD_SYNC_ENABLED"),
       ]);
     state.theme = (savedTheme as ThemeMode) || "dark";
     state.preset = savedPreset || CONFIG_DEFAULT.PROFILE_THEME_PRESET;
     state.font = savedFont || DEFAULT_GENERAL_FONT;
     state.connected = !!token && !!login;
     state.login = login;
+    state.autoPush = autoPush === true;
   }
 
   await refreshState();
@@ -189,21 +193,39 @@ export async function openWelcome(): Promise<void> {
             <h3 class="font-bold">42 account &amp; cloud sync</h3>
             ${state.connected
               ? html`<div
-                  class="flex items-center justify-between gap-4 flex-wrap"
-                >
-                  <p class="text-sm opacity-70">
-                    Connected as
-                    <span class="font-mono font-bold">${state.login}</span>.
-                  </p>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-primary font-bold"
-                    ?disabled=${state.busy}
-                    @click=${() => handleRestore()}
+                    class="flex items-center justify-between gap-4 flex-wrap"
                   >
-                    Restore from cloud
-                  </button>
-                </div>`
+                    <p class="text-sm opacity-70">
+                      Connected as
+                      <span class="font-mono font-bold">${state.login}</span>.
+                    </p>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-primary font-bold"
+                      ?disabled=${state.busy}
+                      @click=${() => handleRestore()}
+                    >
+                      Restore from cloud
+                    </button>
+                  </div>
+                  <label
+                    class="flex items-center justify-between gap-4 cursor-pointer"
+                  >
+                    <div class="flex flex-col">
+                      <span class="text-sm font-medium">Auto push</span>
+                      <span class="text-xs opacity-60"
+                        >Push your settings automatically and merge them on
+                        startup.</span
+                      >
+                    </div>
+                    <input
+                      type="checkbox"
+                      class="toggle toggle-primary"
+                      .checked=${state.autoPush}
+                      @change=${(e: Event) =>
+                        setAutoPush((e.target as HTMLInputElement).checked)}
+                    />
+                  </label>`
               : html`<p class="text-sm opacity-70">
                     Connect to sync settings across devices and unlock friends
                     stats, marks, calendar and more.
@@ -340,6 +362,12 @@ export async function openWelcome(): Promise<void> {
   function setFont(font: string) {
     state.font = font;
     void save("GENERAL_FONT", font);
+    update();
+  }
+
+  function setAutoPush(value: boolean) {
+    state.autoPush = value;
+    void save("CLOUD_SYNC_ENABLED", value);
     update();
   }
 

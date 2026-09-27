@@ -2,8 +2,8 @@ import {
   applyCloudSettings,
   clearAuthFailed,
   collectLocalSettings,
+  cloudHasRevision,
   fetchCloudSettings,
-  fetchMySettings,
   fetchSessions,
   loginWith42,
   logoutCloud,
@@ -13,6 +13,7 @@ import {
   testCloudConnection,
   wipeAllCloudData,
 } from "./account";
+import { getConfig, setConfig } from "../../config.ts";
 import { diffSettings } from "./conflict-dialog.ts";
 import { showBackupsDialog } from "./backups-dialog.ts";
 import {
@@ -211,12 +212,21 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
       return;
     }
 
-    const settings = await fetchMySettings();
-    if (settings) {
+    const cloud = await fetchCloudSettings();
+    if (cloud) {
       await clearAuthFailed();
       await pushLocalBackup();
-      await applyCloudSettings(settings);
-      await chrome.storage.local.set({ LAST_CLOUD_SYNC: Date.now() });
+      await applyCloudSettings(cloud.settings as never);
+      await chrome.storage.local.set({
+        LAST_CLOUD_SYNC: Date.now(),
+        ...(cloudHasRevision(cloud.revision)
+          ? {
+              CLOUD_BASELINE: cloud.settings,
+              CLOUD_REVISION: cloud.revision,
+              CLOUD_SYNC_CONFLICT: false,
+            }
+          : {}),
+      });
       state.buttons.pull = {
         loading: false,
         success: true,
@@ -307,12 +317,19 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
     }
   };
 
+  const handleToggleAutoPush = async (value: boolean) => {
+    await setConfig("CLOUD_SYNC_ENABLED", value);
+    state.autoPush = value;
+    updateUI();
+  };
+
   return {
     handleLogin42,
     handleDelete,
     handleWipe,
     handlePush,
     handlePull,
+    handleToggleAutoPush,
     handleRevokeSession,
     handleRevokeOthers,
     handleReviewConflict,

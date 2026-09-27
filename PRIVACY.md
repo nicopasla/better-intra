@@ -19,7 +19,7 @@ When viewing other users' profiles, their public custom visual URLs (avatar, ban
 If you enable cloud sync, the following data is transmitted to the extension's Cloudflare Worker at `api.betterintra.com`:
 
 - Your **42 login** (hashed) — used to identify your stored settings
-- Your **extension settings** — so they can be synced across devices. The auto-push feature can automatically sync your settings when clicking Reload in the hub footer.
+- Your **extension settings** — so they can be synced across devices. With Manual push (the default) settings are only uploaded when you click Push; with Auto push, enabled in the Account tab or the welcome screen, they are also uploaded on Save & Reload and merged at startup.
 - Your **friend logins** — to fetch their online status and location
 - Your **custom profile visuals** (avatar, banner, background URLs) — so other Better Intra users can see them when viewing your profile
 - Your **Discord User ID** (if enabled) — for sending evaluation notifications via DM

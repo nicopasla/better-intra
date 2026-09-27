@@ -13,7 +13,6 @@ import { mergeSettings } from "./merge.ts";
 
 export { hashLogin };
 
-
 async function handleAuthResponse(response: Response): Promise<boolean> {
   if (response.status === 401) {
     await chrome.storage.local.set({ CLOUD_AUTH_FAILED: true });
@@ -273,6 +272,7 @@ export async function syncToCloud(opts?: {
     await chrome.storage.local.set({
       LAST_CLOUD_SYNC: Date.now(),
       CLOUD_SYNC_CONFLICT: false,
+      CLOUD_BASELINE: settings,
       ...(data.revision ? { CLOUD_REVISION: data.revision } : {}),
     });
     return { status: "ok", revision: data.revision };
@@ -664,13 +664,21 @@ export async function maybePromptRestore(): Promise<void> {
   }
 }
 
+export function cloudHasRevision(revision: string | null | undefined): boolean {
+  return typeof revision === "string" && revision.length > 0;
+}
+
 export async function maybeMergeCloud(): Promise<void> {
+  if ((await getConfig("CLOUD_SYNC_ENABLED")) !== true) return;
+
   const login = await getCloudLogin();
   const token = await getConfig("CLOUD_TOKEN");
   if (!login || !token) return;
 
   const cloud = await fetchCloudSettings();
   if (!cloud) return;
+
+  if (!cloudHasRevision(cloud.revision)) return;
 
   const local = await collectLocalSettings();
   const base = await getConfig("CLOUD_BASELINE");
@@ -688,6 +696,7 @@ export async function maybeMergeCloud(): Promise<void> {
 }
 
 export async function maybePromptConflict(): Promise<void> {
+  if ((await getConfig("CLOUD_SYNC_ENABLED")) !== true) return;
   if (!(await getConfig("CLOUD_SYNC_CONFLICT"))) return;
 
   const cloud = await fetchCloudSettings();

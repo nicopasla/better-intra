@@ -225,7 +225,7 @@ A friends panel accessible from a button in the bottom-right corner of the page.
 * Tabs: Appearance (Theme + Logtime), Add-ons, Profile, Shortcuts, Discord, Calendar, Advanced, About.
 * Turn features on/off individually, or reset a feature's settings to default.
 * **Drag to reorder dashboard cards** — in the Profile tab, drag and drop cards (Logtime, Agenda, Evaluations, Projects, Achievements, Thursday Roulette) to reorder them on the dashboard. Toggle visibility with the eye icon, or reset to default order.
-* The footer bar shows your theme toggle, cloud connection status, last sync badge, and auto-push toggle.
+* The footer bar shows your theme toggle, cloud connection status, and last sync badge. Manual/Auto push is configured in the Account tab (and the welcome screen), defaulting to Manual.
 * **Backup & Restore** — export all settings to a timestamped JSON file, or import from a previous backup. In the Advanced tab.
 * **Reset all data** — wipe all Better Intra settings and start fresh. In the Advanced tab.
 * **Auto-detected campus** — shown as a badge in the Advanced tab.

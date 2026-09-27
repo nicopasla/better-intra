@@ -25,7 +25,7 @@ Access a friends panel from a button in the bottom-right corner. Add friends by 
 A top banner on profile pages shows official Better Intra announcements, colour-coded as Notice, Warning, or Critical, with optional action links. Dismiss any announcement with a click — it stays hidden for the current session.
 
 ### ☁️ Cloud Sync (optional)
-Authenticate with your 42 Intra account via the Cloudflare Worker to sync settings across devices. Push, pull, or enable auto-push from the hub footer to automatically sync your settings on reload. Synced visuals (avatar, banner, background) become visible to other Better Intra users viewing your profile.
+Authenticate with your 42 Intra account via the Cloudflare Worker to sync settings across devices. Push and pull manually, or turn on Auto push in the Account tab (or the welcome screen) to sync on Save & Reload and merge at startup. Synced visuals (avatar, banner, background) become visible to other Better Intra users viewing your profile.
 
 ### 📅 Calendar Sync ☁️
 Subscribe to your 42 events in any calendar app via a private ICS subscription URL. Scan the QR code for easy mobile setup. Events auto-sync on profile visit. Configure from the Calendar tab.
@@ -34,7 +34,7 @@ Subscribe to your 42 events in any calendar app via a private ICS subscription U
 Discord DM notifications when your evaluations are booked or correcteds are revealed. The Cloudflare Worker runs every 5 minutes and sends DMs directly via the Better Intra bot — no browser polling needed. Connect your Discord account from the Discord tab — auto-joins Le Bassin to enable direct messages. Quiet hours let you pause notifications during specified hours. Pending evaluations are sorted into **"To Feedback", "Evaluator", and "Evaluated"** sections with counts. 42 sign-in required.
 
 ### ⚙️ Settings Hub
-All extension settings in one place, accessible from the gear icon on the intra sidebar. Tabs for Appearance, Add-ons, Profile, Shortcuts, Discord, Calendar, Advanced, and About. **Drag and drop** dashboard cards in the Profile tab to reorder them, toggle visibility, or reset to default. The footer shows your theme toggle, cloud connection status, last sync badge, and auto-push toggle. Export, import, or reset all settings from the Advanced tab. Turn features on/off or reset settings to default. Better Intra's own styled tooltips replace native ones throughout the extension.
+All extension settings in one place, accessible from the gear icon on the intra sidebar. Tabs for Appearance, Add-ons, Profile, Shortcuts, Discord, Calendar, Advanced, and About. **Drag and drop** dashboard cards in the Profile tab to reorder them, toggle visibility, or reset to default. The footer shows your theme toggle, cloud connection status, and last sync badge; Manual/Auto push is configured in the Account tab. Export, import, or reset all settings from the Advanced tab. Turn features on/off or reset settings to default. Better Intra's own styled tooltips replace native ones throughout the extension.
 
 ---
 

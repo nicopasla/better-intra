@@ -324,6 +324,26 @@ function renderAccountTab(
                 Backups
               </button>
             </div>
+            <label
+              class="flex items-center justify-between gap-3 cursor-pointer"
+            >
+              <div class="flex flex-col">
+                <span class="text-sm font-medium">Auto push</span>
+                <span class="text-xs opacity-50"
+                  >Push your settings automatically on Save &amp; Reload and
+                  merge on startup.</span
+                >
+              </div>
+              <input
+                type="checkbox"
+                class="toggle toggle-primary"
+                .checked="${state.autoPush}"
+                @change="${(e: Event) =>
+                  handlers.handleToggleAutoPush(
+                    (e.target as HTMLInputElement).checked,
+                  )}"
+              />
+            </label>
             <div class="grid grid-cols-2 gap-2">
               ${syncButton("pull", state.buttons.pull, handlers.handlePull)}
               ${syncButton("push", state.buttons.push, handlers.handlePush)}

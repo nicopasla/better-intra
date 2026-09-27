@@ -29,16 +29,6 @@ void (async () => {
     // merging is best-effort
   }
 
-  const { CLOUD_SYNC_DEFAULT_MIGRATED } = await chrome.storage.local.get(
-    "CLOUD_SYNC_DEFAULT_MIGRATED",
-  );
-  if (!CLOUD_SYNC_DEFAULT_MIGRATED) {
-    await chrome.storage.local.set({
-      CLOUD_SYNC_DEFAULT_MIGRATED: true,
-      CLOUD_SYNC_ENABLED: true,
-    });
-  }
-
   initThemeManager();
   void initAnnouncementBanner();
   initGlobalTooltips(getIsLight);

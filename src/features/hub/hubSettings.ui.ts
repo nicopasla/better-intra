@@ -2115,9 +2115,11 @@ async function createModal(
 
   const reloadBtn = shadow.querySelector("#hub-reload");
   reloadBtn?.addEventListener("click", async () => {
-    try {
-      await syncToCloud();
-    } catch {}
+    if ((await getConfig("CLOUD_SYNC_ENABLED")) === true) {
+      try {
+        await syncToCloud();
+      } catch {}
+    }
     location.reload();
   });
 

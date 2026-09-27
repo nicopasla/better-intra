@@ -5,6 +5,7 @@ import { createCountdown } from "../../utils/countdown.ts";
 import { parseIntraDate } from "../../utils/dates.ts";
 import { waitFor } from "../../utils/wait-for.ts";
 import { intrapyFetch, waitForIntrapyToken } from "../../utils/intrapy.ts";
+import { ensureDocumentStyle } from "../../utils/style.ts";
 
 const INJECTED_ID = "ft-freeze-card";
 
@@ -144,14 +145,12 @@ function buildFreezeCard(profileCard: HTMLElement, freezeUntil: string) {
   const iconWrap = document.createElement("div");
   iconWrap.className = "ft-freeze-icon";
   iconWrap.style.cssText = `width: 2.5rem; height: 2.5rem; color: #fff; animation: ft-freeze-spin 8s linear infinite;`;
-  if (!document.getElementById("ft-freeze-spin-style")) {
-    const style = document.createElement("style");
-    style.id = "ft-freeze-spin-style";
-    style.textContent = `@keyframes ft-freeze-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  ensureDocumentStyle(
+    "ft-freeze-spin-style",
+    `@keyframes ft-freeze-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       html.ft-no-anim .ft-freeze-icon { animation: none !important; }
-      @media (prefers-reduced-motion: reduce) { .ft-freeze-icon { animation: none !important; } }`;
-    document.head.appendChild(style);
-  }
+      @media (prefers-reduced-motion: reduce) { .ft-freeze-icon { animation: none !important; } }`,
+  );
   render(unsafeHTML(FREEZE_SVG), iconWrap);
 
   const title = document.createElement("div");

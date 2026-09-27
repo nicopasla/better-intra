@@ -1,6 +1,7 @@
 import { html, render } from "lit-html";
 import { getConfig } from "../../config.ts";
 import { waitFor } from "../../utils/wait-for.ts";
+import { ensureDocumentStyle } from "../../utils/style.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
 
 let initialized = false;
@@ -49,11 +50,7 @@ const STYLES = `
 `;
 
 function injectStyles() {
-  if (document.getElementById(STYLE_ID)) return;
-  const style = document.createElement("style");
-  style.id = STYLE_ID;
-  style.textContent = STYLES;
-  document.head.appendChild(style);
+  ensureDocumentStyle(STYLE_ID, STYLES);
 }
 
 function findWidget() {

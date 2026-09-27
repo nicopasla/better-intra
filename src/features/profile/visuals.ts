@@ -1,4 +1,5 @@
 import { getConfig, getConfigMany } from "../../config.ts";
+import { ensureDocumentStyle } from "../../utils/style.ts";
 import { applyProfileLook, clearProfileLook } from "./theme/theme-manager.ts";
 import { sanitizeVisualUrls } from "./visuals-sanitize.ts";
 import {
@@ -49,13 +50,10 @@ export const releaseAvatar = (): void => {
 const AVATAR_PENDING_STYLE_ID = "ft-avatar-pending-style";
 
 export const injectAvatarPendingRule = (): void => {
-  if (document.getElementById(AVATAR_PENDING_STYLE_ID)) return;
-  const host = document.head || document.documentElement;
-  if (!host) return;
-  const style = document.createElement("style");
-  style.id = AVATAR_PENDING_STYLE_ID;
-  style.textContent = `html.${AVATAR_PENDING_CLASS} ${AVATAR_SELECTOR} { opacity: 0 !important; }`;
-  host.appendChild(style);
+  ensureDocumentStyle(
+    AVATAR_PENDING_STYLE_ID,
+    `html.${AVATAR_PENDING_CLASS} ${AVATAR_SELECTOR} { opacity: 0 !important; }`,
+  );
 };
 
 let isFetching = false;
@@ -313,10 +311,9 @@ export const needsReapply = (urls: VisualUrls) => {
 
 export const injectCustomStyles = () => {
   injectAvatarPendingRule();
-  if (document.getElementById("ft-profile-host-styles")) return;
-  const style = document.createElement("style");
-  style.id = "ft-profile-host-styles";
-  style.textContent = `
+  ensureDocumentStyle(
+    "ft-profile-host-styles",
+    `
     .bg-ft-gray b,
       .bg-ft-gray span {font-size: 1.2rem !important;font-weight: bold !important;font-family: var(--font-sans);}
       p.text-sm:nth-child(2) {font-size: 1.3rem !important;}
@@ -388,8 +385,8 @@ export const injectCustomStyles = () => {
     html:not(.dark) .inline-flex.items-center.rounded.border.shadow-base {
       color: #fff !important;
     }
-  `;
-  document.head.appendChild(style);
+  `,
+  );
 };
 
 const setStyleForSelector = (id: string, selector: string, cssText: string) => {

@@ -5,6 +5,7 @@ import { getCloudLogin } from "../account/account.ts";
 import { getEffectiveTheme, THEMES } from "./theme/theme-manager.ts";
 import { loadCampusData, TranscriptEntry } from "../campus/campus.ts";
 import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
+import { ensureDocumentStyle } from "../../utils/style.ts";
 import X_SVG from "../../assets/svg/x.svg?raw";
 
 async function openTranscriptDialog(
@@ -26,12 +27,10 @@ async function openTranscriptDialog(
     className: "bg-transparent",
   });
 
-  const backdropStyle = document.createElement("style");
-  backdropStyle.textContent = `#ft-transcript-dialog::backdrop { background: rgba(0,0,0,0.5); }`;
-  if (!document.getElementById("ft-ts-backdrop-style")) {
-    backdropStyle.id = "ft-ts-backdrop-style";
-    document.head.appendChild(backdropStyle);
-  }
+  ensureDocumentStyle(
+    "ft-ts-backdrop-style",
+    `#ft-transcript-dialog::backdrop { background: rgba(0,0,0,0.5); }`,
+  );
   Object.assign(dialog.style, {
     width: "min(320px, calc(100dvw - 2rem))",
     maxHeight: "80vh",

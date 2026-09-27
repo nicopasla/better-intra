@@ -1,4 +1,5 @@
 import { waitFor } from "../../utils/wait-for.ts";
+import { ensureDocumentStyle } from "../../utils/style.ts";
 
 let milestonesStarted = false;
 
@@ -44,10 +45,9 @@ function enhanceMilestones() {
 }
 
 function injectMilestoneStyles() {
-  if (document.getElementById("fire-milestone-style")) return;
-  const style = document.createElement("style");
-  style.id = "fire-milestone-style";
-  style.textContent = `
+  ensureDocumentStyle(
+    "fire-milestone-style",
+    `
     @property --ft-angle {
       syntax: "<angle>";
       initial-value: 0deg;
@@ -138,6 +138,6 @@ function injectMilestoneStyles() {
       justify-content: flex-start;
       padding-bottom: 0 !important;
     }
-  `;
-  document.head.appendChild(style);
+  `,
+  );
 }

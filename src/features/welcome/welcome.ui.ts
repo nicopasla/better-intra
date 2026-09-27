@@ -1,6 +1,7 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
+import { ensureDocumentStyle } from "../../utils/style.ts";
 import { getConfig, CONFIG_DEFAULT } from "../../config.ts";
 import {
   HUB_INFO,
@@ -43,10 +44,9 @@ function isLightPreset(preset: string): boolean {
 }
 
 function ensureGlobalStyle(): void {
-  if (document.getElementById(STYLE_ID)) return;
-  const style = document.createElement("style");
-  style.id = STYLE_ID;
-  style.textContent = `
+  ensureDocumentStyle(
+    STYLE_ID,
+    `
     #${DIALOG_ID} {
       margin: auto;
       padding: 0;
@@ -56,8 +56,8 @@ function ensureGlobalStyle(): void {
       max-height: 92vh;
     }
     #${DIALOG_ID}::backdrop { background: rgba(3, 6, 10, 0.62); }
-  `;
-  (document.head || document.documentElement).appendChild(style);
+  `,
+  );
 }
 
 function themeOptions(): readonly FeatureCardOption[] {

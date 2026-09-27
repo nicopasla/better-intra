@@ -8,6 +8,7 @@ import { getIsLight } from "../profile/theme/theme-manager.ts";
 import { getActiveFeatures } from "./hubSettings.storage.ts";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { isPisciner } from "../../utils/intrapy.ts";
+import { ensureDocumentStyle } from "../../utils/style.ts";
 
 function findSidebarMainGroup(): HTMLDivElement | null {
   const profileLink = document.querySelector<HTMLAnchorElement>(
@@ -29,10 +30,9 @@ const SIDEBAR_STYLE_ID = "ft-sidebar-buttons-style";
  * disabled by the extension-wide animation switch / reduced-motion.
  */
 function ensureSidebarButtonStyles(): void {
-  if (!document.getElementById(SIDEBAR_STYLE_ID)) {
-    const style = document.createElement("style");
-    style.id = SIDEBAR_STYLE_ID;
-    style.textContent = `
+  ensureDocumentStyle(
+    SIDEBAR_STYLE_ID,
+    `
       #hub-gear-btn svg {
         transform-box: fill-box;
         transform-origin: center;
@@ -77,9 +77,8 @@ function ensureSidebarButtonStyles(): void {
           animation: none;
         }
       }
-    `;
-    (document.head || document.documentElement).appendChild(style);
-  }
+    `,
+  );
 
   void getConfig("DISABLE_ANIMATIONS").then((disabled) => {
     document.documentElement.classList.toggle("ft-no-anim", disabled);

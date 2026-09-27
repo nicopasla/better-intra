@@ -98,11 +98,16 @@ import {
 let dynamicCampusOptions: { label: string; value: string }[] = [];
 let dynamicEventTypeOptions: { label: string; value: string }[] = [];
 
-export async function openHubModal(active: FeatureId[]) {
+export async function openHubModal(
+  active: FeatureId[],
+  initialTab?: FeatureId,
+) {
   let dialog = document.getElementById("hub-dialog") as HTMLDialogElement;
   if (!dialog) {
-    createModal(active);
+    createModal(active, initialTab);
     dialog = document.getElementById("hub-dialog") as HTMLDialogElement;
+  } else if (initialTab) {
+    focusHubTab(dialog, initialTab);
   }
 
   document.documentElement.style.overflow = "hidden";
@@ -1378,6 +1383,7 @@ function renderTabsContent(
   active: FeatureId[],
   disabledDeps: Set<string>,
   hiddenDeps: Set<string>,
+  initialTab?: FeatureId,
 ) {
   panelBuilders = new Map();
   const visibleDefs = FEATURE_DEFS.filter(
@@ -1412,7 +1418,7 @@ function renderTabsContent(
         <input
           type="radio"
           name="hub_tabs"
-          ?checked="${idx === 0}"
+          ?checked="${initialTab ? f.id === initialTab : idx === 0}"
           data-hub-tab="${f.id}"
         />
         <span class="size-4 flex items-center justify-center">
@@ -1768,7 +1774,26 @@ function renderDialogShell(): ReturnType<typeof html> {
   `;
 }
 
-async function createModal(active: FeatureId[]): Promise<void> {
+function focusHubTab(dialog: HTMLDialogElement, tab: FeatureId): void {
+  const shadow = dialog.querySelector("#hub-shadow-wrapper")?.shadowRoot;
+  const radio = shadow?.querySelector<HTMLInputElement>(
+    `input[data-hub-tab="${tab}"]`,
+  );
+  if (!radio) return;
+  if (!radio.checked) {
+    radio.checked = true;
+    radio.dispatchEvent(new Event("change"));
+  }
+  radio.closest<HTMLElement>(".tab")?.scrollIntoView({
+    block: "nearest",
+    inline: "nearest",
+  });
+}
+
+async function createModal(
+  active: FeatureId[],
+  initialTab?: FeatureId,
+): Promise<void> {
   let dialog = document.getElementById("hub-dialog") as HTMLDialogElement;
   if (!dialog) {
     dialog = document.createElement("dialog");
@@ -1866,7 +1891,12 @@ async function createModal(active: FeatureId[]): Promise<void> {
   dynamicEventTypeOptions =
     eventTypesResult.status === "fulfilled" ? eventTypesResult.value : [];
   void ensureCampusData();
-  const tabsContent = renderTabsContent(active, disabledDeps, hiddenDeps);
+  const tabsContent = renderTabsContent(
+    active,
+    disabledDeps,
+    hiddenDeps,
+    initialTab,
+  );
   const lastSync = (await chrome.storage.local.get("LAST_CLOUD_SYNC"))
     .LAST_CLOUD_SYNC;
   const isConnected = !!(await getConfig("CLOUD_TOKEN"));
@@ -2078,7 +2108,8 @@ async function createModal(active: FeatureId[]): Promise<void> {
   const firstTab = shadow.querySelector<HTMLInputElement>(
     'input[name="hub_tabs"][data-hub-tab]',
   );
-  activatePanel(firstTab?.dataset.hubTab);
+  activatePanel(initialTab ?? firstTab?.dataset.hubTab);
+  if (initialTab) focusHubTab(dialog, initialTab);
 
   shadow
     .querySelectorAll<HTMLInputElement>('input[name="hub_tabs"]')

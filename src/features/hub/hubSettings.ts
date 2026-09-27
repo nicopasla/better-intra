@@ -238,12 +238,16 @@ export async function initHubSettings(): Promise<FeatureId[]> {
   });
 
   const pending = (await chrome.storage.local.get("PENDING_OPEN_HUB")) as {
-    PENDING_OPEN_HUB?: boolean;
+    PENDING_OPEN_HUB?: boolean | FeatureId;
   };
   if (pending.PENDING_OPEN_HUB) {
     await chrome.storage.local.remove("PENDING_OPEN_HUB");
     const { openHubModal } = await import("./hubSettings.ui.ts");
-    await openHubModal(active);
+    const initialTab =
+      typeof pending.PENDING_OPEN_HUB === "string"
+        ? pending.PENDING_OPEN_HUB
+        : undefined;
+    await openHubModal(active, initialTab);
   }
 
   return active;

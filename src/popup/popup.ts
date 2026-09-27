@@ -75,7 +75,7 @@ function renderConnectButton(label: string) {
 
 function openSettings() {
   void chrome.storage.local
-    .set({ PENDING_OPEN_HUB: true })
+    .set({ PENDING_OPEN_HUB: "account" })
     .then(() => chrome.runtime.sendMessage({ type: "FT_OPEN_HUB" }))
     .catch(() => undefined)
     .finally(() => window.close());
@@ -124,7 +124,7 @@ async function renderLauncher(container: HTMLElement) {
                     type="button"
                     @click="${openSettings}"
                   >
-                    Open settings
+                    Open account settings
                   </button>
                 `}
           <button

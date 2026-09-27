@@ -4,59 +4,12 @@ import FREEZE_SVG from "../../assets/svg/freeze.svg?raw";
 import { createCountdown } from "../../utils/countdown.ts";
 import { parseIntraDate } from "../../utils/dates.ts";
 import { waitFor } from "../../utils/wait-for.ts";
+import { intrapyFetch, waitForIntrapyToken } from "../../utils/intrapy.ts";
 
 const INJECTED_ID = "ft-freeze-card";
 
-function waitForToken(timeout = 15000): Promise<string | null> {
-  return new Promise((resolve) => {
-    let resolved = false;
-    let timer: ReturnType<typeof setTimeout>;
-
-    const handler = (e: CustomEvent) => {
-      if (resolved) return;
-      resolved = true;
-      cleanup();
-      resolve(e.detail);
-    };
-    const cleanup = () => {
-      document.removeEventListener(
-        "42_INTRAPY_TOKEN",
-        handler as EventListener,
-      );
-      clearTimeout(timer);
-    };
-    document.addEventListener("42_INTRAPY_TOKEN", handler as EventListener);
-
-    const stored = sessionStorage.getItem("ft_intrapy_token");
-    if (stored) {
-      resolved = true;
-      cleanup();
-      resolve(stored);
-      return;
-    }
-
-    timer = setTimeout(() => {
-      cleanup();
-      resolve(null);
-    }, timeout);
-  });
-}
-
-async function fetchCursusData(login: string, token: string): Promise<any[]> {
-  try {
-    const res = await fetch(
-      `https://intrapy.intra.42.fr/api/v1/users/${login}/cursus`,
-      { headers: { Authorization: token } },
-    );
-    if (!res.ok) {
-      console.warn("fetchCursusData: non-ok response", res.status);
-      return [];
-    }
-    return await res.json();
-  } catch (e) {
-    console.warn("fetchCursusData: network error", e);
-    return [];
-  }
+interface CursusEntry {
+  freeze_until?: string;
 }
 
 function formatDate(iso: string): string {
@@ -247,14 +200,17 @@ export async function initFreezeCard() {
       }
     }
 
-    const token = await waitForToken(20000);
+    const token = await waitForIntrapyToken(20000);
     if (!token) return;
 
-    const cursusList = await fetchCursusData(targetLogin, token);
+    const cursusList = await intrapyFetch<CursusEntry[]>(
+      `/api/v1/users/${targetLogin}/cursus`,
+      token,
+    );
     if (!Array.isArray(cursusList) || cursusList.length === 0) return;
 
     const frozen = cursusList.find(
-      (c: any) =>
+      (c) =>
         c.freeze_until && parseIntraDate(c.freeze_until).getTime() > Date.now(),
     );
     const freezeUntil: string | null = frozen?.freeze_until ?? null;

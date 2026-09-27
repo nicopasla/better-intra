@@ -5,6 +5,7 @@ import { waitFor } from "../../utils/wait-for.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { getLoginFromPage } from "../../utils/profile-login.ts";
 import { parseIntraDate } from "../../utils/dates.ts";
+import { intrapyFetch, waitForIntrapyToken } from "../../utils/intrapy.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
 import CHECK_CIRCLE_SVG from "../../assets/svg/check-circle.svg?raw";
 
@@ -19,52 +20,15 @@ const INJECTED_ID = "ft-achievements-injected";
 let achievementsInitialized = false;
 let lastInjectedLogin: string | null = null;
 
-function waitForToken(timeout = 15000): Promise<string | null> {
-  return new Promise((resolve) => {
-    let resolved = false;
-    let timer: ReturnType<typeof setTimeout>;
-    const handler = (e: CustomEvent) => {
-      if (resolved) return;
-      resolved = true;
-      cleanup();
-      resolve(e.detail);
-    };
-    const cleanup = () => {
-      document.removeEventListener(
-        "42_INTRAPY_TOKEN",
-        handler as EventListener,
-      );
-      clearTimeout(timer);
-    };
-    document.addEventListener("42_INTRAPY_TOKEN", handler as EventListener);
-    const stored = sessionStorage.getItem("ft_intrapy_token");
-    if (stored) {
-      resolved = true;
-      cleanup();
-      resolve(stored);
-      return;
-    }
-    timer = setTimeout(() => {
-      cleanup();
-      resolve(null);
-    }, timeout);
-  });
-}
-
 async function fetchAchievements(
   login: string,
   token: string,
 ): Promise<Achievement[]> {
-  try {
-    const res = await fetch(
-      `https://intrapy.intra.42.fr/api/v1/users/${login}/achievements`,
-      { headers: { Authorization: token } },
-    );
-    if (!res.ok) return [];
-    return (await res.json()) as Achievement[];
-  } catch {
-    return [];
-  }
+  const data = await intrapyFetch<Achievement[]>(
+    `/api/v1/users/${login}/achievements`,
+    token,
+  );
+  return Array.isArray(data) ? data : [];
 }
 
 function formatDate(dateStr: string): string {
@@ -211,7 +175,7 @@ export async function initAchievements() {
   if (!login) return;
   if (achievementsInitialized && login === lastInjectedLogin) return;
 
-  const token = await waitForToken(30000);
+  const token = await waitForIntrapyToken(30000);
   if (!token) return;
   achievementsInitialized = true;
   lastInjectedLogin = login;

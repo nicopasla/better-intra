@@ -27,6 +27,7 @@ import {
   THEMES,
 } from "../profile/theme/theme-manager.ts";
 import { bindTooltips } from "../../utils/tooltip.ts";
+import { intrapyFetch } from "../../utils/intrapy.ts";
 import { syncCalendarIcs } from "../calendar/calendar-sync.ts";
 
 export interface CalendarEvent {
@@ -41,7 +42,6 @@ export interface CalendarEvent {
 
 export type EventsByDate = Record<string, CalendarEvent[]>;
 
-const INTRAPY_BASE = "https://intrapy.intra.42.fr";
 const WORKER_URL = "https://api.betterintra.com";
 
 const historyCache = new Map<string, Record<string, number>>();
@@ -202,11 +202,11 @@ async function fetchEvents(): Promise<Record<string, CalendarEvent[]>> {
   try {
     const token = sessionStorage.getItem("ft_intrapy_token");
     if (!token) return {};
-    const res = await fetch(`${INTRAPY_BASE}/api/v1/users/me/events`, {
-      headers: { Authorization: token },
-    });
-    if (!res.ok) return {};
-    const data = (await res.json()) as Record<string, CalendarEvent>;
+    const data = await intrapyFetch<Record<string, CalendarEvent>>(
+      "/api/v1/users/me/events",
+      token,
+    );
+    if (!data) return {};
     return groupEventsByDate(Object.values(data));
   } catch {
     return {};

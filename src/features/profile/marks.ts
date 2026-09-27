@@ -5,6 +5,7 @@ import { getCloudLogin } from "../account/account.ts";
 import { hashLogin } from "../../utils/crypto.ts";
 import { getLoginFromPage } from "../../utils/profile-login.ts";
 import { parseIntraDate } from "../../utils/dates.ts";
+import { intrapyFetch, waitForIntrapyToken } from "../../utils/intrapy.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
 import { adoptSharedStyles } from "../../utils/shadow-styles.ts";
 import { getEffectiveTheme } from "./theme/theme-manager.ts";
@@ -49,41 +50,6 @@ let ownProfileLoading = false;
 let otherProfileRunning = false;
 let cachedToken: string | null = null;
 let cachedLogin: string | null = null;
-
-function waitForToken(timeout = 15000): Promise<string | null> {
-  return new Promise((resolve) => {
-    let resolved = false;
-    let timer: ReturnType<typeof setTimeout>;
-
-    const handler = (e: CustomEvent) => {
-      if (resolved) return;
-      resolved = true;
-      cleanup();
-      resolve(e.detail);
-    };
-    const cleanup = () => {
-      document.removeEventListener(
-        "42_INTRAPY_TOKEN",
-        handler as EventListener,
-      );
-      clearTimeout(timer);
-    };
-    document.addEventListener("42_INTRAPY_TOKEN", handler as EventListener);
-
-    const stored = sessionStorage.getItem("ft_intrapy_token");
-    if (stored) {
-      resolved = true;
-      cleanup();
-      resolve(stored);
-      return;
-    }
-
-    timer = setTimeout(() => {
-      cleanup();
-      resolve(null);
-    }, timeout);
-  });
-}
 
 function formatDate(dateStr: string): string {
   const d = parseIntraDate(dateStr);
@@ -218,15 +184,12 @@ async function fetchMarks(
   cursusId: string,
   targetLogin?: string,
 ): Promise<MarkedProject[]> {
-  const url = `https://intrapy.intra.42.fr/api/v1/users/${login}/projects/marked?cursus_id=${cursusId}`;
+  const data = await intrapyFetch<MarkedProject[]>(
+    `/api/v1/users/${login}/projects/marked?cursus_id=${cursusId}`,
+    token,
+  );
+  if (!Array.isArray(data)) return [];
   try {
-    const res = await fetch(url, {
-      headers: { Authorization: token },
-    });
-    if (!res.ok) {
-      return [];
-    }
-    const data = (await res.json()) as MarkedProject[];
     const filtered = data.filter((p) => p.final_mark !== null);
 
     const outstanding = targetLogin
@@ -979,7 +942,7 @@ export async function initMarks() {
     const cardPromise = waitForCard("PROJECTS");
     void cardPromise.then((card) => card && showMarksSkeleton(card));
 
-    const token = await waitForToken(15000);
+    const token = await waitForIntrapyToken(15000);
     if (!token) {
       removeMarksSkeleton();
       ownProfileLoading = false;
@@ -1020,7 +983,7 @@ export async function initMarks() {
 
     otherProfileRunning = true;
     let marksData: MarkedProject[] | undefined;
-    const token = await waitForToken(15000);
+    const token = await waitForIntrapyToken(15000);
     const cursusId = token ? await waitForCursusId(10000) : null;
     if (token && cursusId) {
       const key = `OTHER_${targetLogin}_${cursusId}`;

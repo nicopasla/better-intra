@@ -37,19 +37,29 @@ export function waitForIntrapyToken(
   });
 }
 
+export async function intrapyFetch<T>(
+  path: string,
+  token: string,
+): Promise<T | null> {
+  try {
+    const res = await fetch(`${INTRAPY_BASE}${path}`, {
+      headers: { Authorization: token },
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
 export async function isPisciner(login: string): Promise<boolean> {
   try {
     const token = await waitForIntrapyToken();
     if (!token) return false;
 
-    const res = await fetch(`${INTRAPY_BASE}/api/v1/users/${login}/cursus`, {
-      headers: { Authorization: token },
-    });
-    if (!res.ok) return false;
-    const data = (await res.json()) as Array<{
-      grade?: string;
-      slug?: string;
-    }>;
+    const data = await intrapyFetch<
+      Array<{ grade?: string; slug?: string }>
+    >(`/api/v1/users/${login}/cursus`, token);
     if (!Array.isArray(data)) return false;
 
     const hasPiscine = data.some((c) => c.grade === "Pisciner");

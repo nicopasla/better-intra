@@ -10,6 +10,7 @@ export default defineConfig({
     outDir: outDir,
     emptyOutDir: false,
     minify: false,
+    target: "esnext",
     rollupOptions: {
       input: { background: resolve(import.meta.dirname, "src/background.ts") },
       output: {

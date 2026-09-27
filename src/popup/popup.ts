@@ -3,13 +3,9 @@ import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { clearAuthFailed, loginWith42 } from "../features/account/account.ts";
 import { getConfig } from "../config.ts";
 import { initFontManager } from "../utils/font-manager.ts";
-import CSS from "../assets/style.css?inline";
+import "../assets/style.css";
 import ICON_SVG from "../assets/svg/icon.svg?raw";
 import FORTY_TWO_SVG from "../assets/svg/42_Logo.svg?raw";
-
-const style = document.createElement("style");
-style.textContent = CSS;
-document.head.appendChild(style);
 
 void initFontManager();
 

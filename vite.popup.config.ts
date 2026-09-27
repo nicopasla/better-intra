@@ -10,6 +10,16 @@ const outDir = process.env.BUILD_OUT_DIR || "dist";
 
 export default defineConfig({
   plugins: [
+    {
+      name: "stub-shared-css-inline",
+      enforce: "pre",
+      resolveId(source) {
+        if (source.endsWith("style.css?inline")) {
+          return resolve(import.meta.dirname, "src/popup/empty-shared-css.ts");
+        }
+        return null;
+      },
+    },
     tailwindcss(),
     {
       name: "write-popup-html",
@@ -24,6 +34,7 @@ export default defineConfig({
     html, body { margin: 0; padding: 0; width: 420px; min-height: 320px; }
     #popup-root { width: 100%; min-height: 320px; background: white; }
   </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="popup-root" data-theme="light">
@@ -56,6 +67,8 @@ export default defineConfig({
     emptyOutDir: false,
     minify: false,
     cssMinify: "lightningcss",
+    cssCodeSplit: false,
+    target: "esnext",
     rollupOptions: {
       input: { popup: resolve(import.meta.dirname, "src/popup/popup.ts") },
       output: {

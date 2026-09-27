@@ -39,7 +39,7 @@ cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && cross-env TARGET=fire
 
 - `npm run dev:firefox` — watch mode + web-ext auto-reload with Firefox.
 - `npm run dev:chrome` — watch mode + web-ext auto-reload with Chrome.
-- `npm run dev:brave` — like Chrome but uses Brave binary path from `package.json`.
+- `npm run dev:brave` — like Chrome but runs Brave via `scripts/run-brave.js`, which resolves the Brave binary per OS (override with `BRAVE_BINARY`).
 
 ## Framework & toolchain
 

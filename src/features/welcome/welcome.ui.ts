@@ -19,6 +19,7 @@ import {
 } from "../account/account.ts";
 import { showConfirmDialog } from "../../utils/confirm-dialog.ts";
 import { THEMES } from "../profile/theme/theme-manager.ts";
+import { SANS_FONTS, DEFAULT_GENERAL_FONT } from "../../utils/fonts.ts";
 
 const DIALOG_ID = "welcome-dialog";
 const HOST_ID = "welcome-shadow-wrapper";
@@ -29,6 +30,7 @@ type ThemeMode = "dark" | "light" | "system";
 interface WelcomeState {
   theme: ThemeMode;
   preset: string;
+  font: string;
   connected: boolean;
   login: string | null;
   busy: boolean;
@@ -65,6 +67,10 @@ function themeOptions(): readonly FeatureCardOption[] {
   return def?.options ?? [];
 }
 
+function fontOptions(): readonly (typeof SANS_FONTS)[number][] {
+  return SANS_FONTS.filter((f) => f.id !== "file");
+}
+
 export async function openWelcome(): Promise<void> {
   document.getElementById(DIALOG_ID)?.remove();
   ensureGlobalStyle();
@@ -72,6 +78,7 @@ export async function openWelcome(): Promise<void> {
   const state: WelcomeState = {
     theme: "dark",
     preset: CONFIG_DEFAULT.PROFILE_THEME_PRESET,
+    font: DEFAULT_GENERAL_FONT,
     connected: false,
     login: null,
     busy: false,
@@ -80,14 +87,17 @@ export async function openWelcome(): Promise<void> {
   };
 
   async function refreshState() {
-    const [savedTheme, savedPreset, login, token] = await Promise.all([
-      getConfig("BETTER_INTRA_THEME"),
-      getConfig("PROFILE_THEME_PRESET"),
-      getCloudLogin(),
-      getConfig("CLOUD_TOKEN"),
-    ]);
+    const [savedTheme, savedPreset, savedFont, login, token] =
+      await Promise.all([
+        getConfig("BETTER_INTRA_THEME"),
+        getConfig("PROFILE_THEME_PRESET"),
+        getConfig("GENERAL_FONT"),
+        getCloudLogin(),
+        getConfig("CLOUD_TOKEN"),
+      ]);
     state.theme = (savedTheme as ThemeMode) || "dark";
     state.preset = savedPreset || CONFIG_DEFAULT.PROFILE_THEME_PRESET;
+    state.font = savedFont || DEFAULT_GENERAL_FONT;
     state.connected = !!token && !!login;
     state.login = login;
   }
@@ -95,6 +105,7 @@ export async function openWelcome(): Promise<void> {
   await refreshState();
 
   const options = themeOptions();
+  const fonts = fontOptions();
 
   const dialog = document.createElement("dialog");
   dialog.id = DIALOG_ID;
@@ -136,10 +147,10 @@ export async function openWelcome(): Promise<void> {
     return html`
       <div
         data-theme=${theme}
-        class="bg-base-100 text-base-content rounded-2xl shadow-2xl border border-base-300 overflow-hidden"
+        class="bg-base-100 text-base-content rounded-2xl shadow-2xl border border-base-300 overflow-hidden flex flex-col max-h-[92vh]"
       >
         <div
-          class="p-6 sm:p-8 flex flex-col gap-6 max-h-[92vh] overflow-y-auto"
+          class="p-6 sm:p-8 flex flex-col gap-6 flex-1 min-h-0 overflow-y-auto"
         >
           <div
             class="relative flex flex-col items-center text-center gap-2 pt-2"
@@ -267,32 +278,51 @@ export async function openWelcome(): Promise<void> {
                 })}
               </div>
             </div>
+            <div class="flex flex-col gap-2">
+              <span class="text-sm font-medium">Font</span>
+              <div class="flex flex-wrap gap-1">
+                ${fonts.map((f) => {
+                  const selected = f.id === state.font;
+                  const fontFamily = f.family
+                    ? `"${f.family}", system-ui, sans-serif`
+                    : "system-ui, sans-serif";
+                  return html`<button
+                    type="button"
+                    class="btn btn-sm flex-none"
+                    style="font-family: ${fontFamily}; font-size: 0.95rem; border: 2px solid ${selected
+                      ? "var(--color-primary)"
+                      : "transparent"};"
+                    @click=${() => setFont(f.id)}
+                  >
+                    ${f.label}
+                  </button>`;
+                })}
+              </div>
+            </div>
           </section>
+        </div>
 
-          <div class="flex items-center justify-between gap-3 flex-wrap">
+        <div
+          class="border-t border-base-300 bg-base-100 p-4 sm:px-8 flex items-center justify-between gap-3 flex-wrap shrink-0"
+        >
+          <button
+            type="button"
+            class="btn btn-ghost"
+            @click=${() => openFullSettings()}
+          >
+            Open full settings
+          </button>
+          <div class="flex gap-2">
+            <button type="button" class="btn btn-ghost" @click=${() => close()}>
+              Skip tour
+            </button>
             <button
               type="button"
-              class="btn btn-ghost"
-              @click=${() => openFullSettings()}
+              class="btn btn-primary font-bold"
+              @click=${() => finishWithTour()}
             >
-              Open full settings
+              Get started
             </button>
-            <div class="flex gap-2">
-              <button
-                type="button"
-                class="btn btn-ghost"
-                @click=${() => close()}
-              >
-                Skip tour
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary font-bold"
-                @click=${() => finishWithTour()}
-              >
-                Get started
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -304,6 +334,12 @@ export async function openWelcome(): Promise<void> {
     void save("PROFILE_THEME_PRESET", preset);
     state.theme = isLightPreset(preset) ? "light" : "dark";
     void save("BETTER_INTRA_THEME", state.theme);
+    update();
+  }
+
+  function setFont(font: string) {
+    state.font = font;
+    void save("GENERAL_FONT", font);
     update();
   }
 

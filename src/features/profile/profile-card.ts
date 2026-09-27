@@ -244,6 +244,18 @@ function listenForCursusChange() {
   }) as EventListener);
 }
 
+export function seedBadgeHostColor(
+  shadowHost: HTMLElement,
+  profileCard: HTMLElement,
+): void {
+  const style = getComputedStyle(profileCard);
+  const userColor = style.getPropertyValue("--user-color").trim();
+  const translucent = style.getPropertyValue("--user-color-translucent").trim();
+  if (userColor) shadowHost.style.setProperty("--user-color", userColor);
+  if (translucent)
+    shadowHost.style.setProperty("--user-color-translucent", translucent);
+}
+
 function createInfoCard(
   items: { label: string; value: string }[],
   profileCard: HTMLElement,
@@ -255,6 +267,7 @@ function createInfoCard(
   if (cardBg && cardBg !== "transparent" && cardBg !== "rgba(0, 0, 0, 0)")
     shadowHost.style.setProperty("--ft-card-bg", cardBg);
   if (cardText) shadowHost.style.setProperty("--ft-card-text", cardText);
+  seedBadgeHostColor(shadowHost, profileCard);
 
   const shadowRoot = shadowHost.attachShadow({ mode: "open" });
   bindTooltips(shadowRoot, getIsLight);
@@ -589,15 +602,6 @@ export async function initProfileCardStyling() {
 
   watchLevelPadding(profileCard);
 
-  const useModern = await getConfig("PROFILE_USE_MODERN_INFO_CARD");
-  if (useModern) {
-    profileCard
-      .querySelector<HTMLElement>(".border-t-neutral-600")
-      ?.style.setProperty("display", "none", "important");
-    moveStatsBar(profileCard);
-    listenForCursusChange();
-  }
-
   const pathParts = location.pathname.split("/").filter(Boolean);
   const isOtherUser = pathParts[0] === "users" && !!pathParts[1];
 
@@ -616,6 +620,15 @@ export async function initProfileCardStyling() {
 
   if (color) {
     applyThemeToProfileCard({ profileColor: color });
+  }
+
+  const useModern = await getConfig("PROFILE_USE_MODERN_INFO_CARD");
+  if (useModern) {
+    profileCard
+      .querySelector<HTMLElement>(".border-t-neutral-600")
+      ?.style.setProperty("display", "none", "important");
+    moveStatsBar(profileCard);
+    listenForCursusChange();
   }
 
   void initShortcutButtons();

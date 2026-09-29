@@ -16,7 +16,9 @@ const FILE_STYLE_ID = "ft-font-file";
  * can use `var(--font-sans)`. The value follows `--bi-font-sans`, which
  * `initFontManager` sets on the root element; custom properties inherit into
  * shadow roots, so this also drives the Tailwind `--font-sans` defined in
- * style.css. Intra's own `--font-mono` is intentionally left untouched.
+ * style.css. Every light-DOM element is forced to the selected font so that
+ * Intra's hardcoded families (`.font-bold`, `.font-semibold`, `.font-sans`,
+ * `.font-mono`, code/pre, inline styles) can't win; shadow roots are untouched.
  */
 function ensureGlobalStyle(): void {
   if (document.getElementById(STYLE_ID)) return;
@@ -27,8 +29,10 @@ function ensureGlobalStyle(): void {
   --font-sans: var(--bi-font-sans, ${SYSTEM_SANS_STACK}) !important;
 }
 html, body {
-  font-family: var(--bi-font-sans, ${SYSTEM_SANS_STACK}) !important;
   font-variant-numeric: tabular-nums;
+}
+html, body, html * {
+  font-family: var(--bi-font-sans, ${SYSTEM_SANS_STACK}) !important;
 }`;
   (document.head || document.documentElement).appendChild(style);
 }

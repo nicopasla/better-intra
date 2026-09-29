@@ -120,6 +120,7 @@ export type SettingKind =
   | "rainbow-palette"
   | "campus-info"
   | "font-preset"
+  | "font-scale"
   | "font-import"
   | "feature-cards";
 
@@ -376,6 +377,23 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
         value: f.id,
         font: f.family,
       })),
+    },
+    {
+      feature: "appearance",
+      subTab: "theme",
+      key: "GENERAL_FONT_SCALE",
+      label: "Font size",
+      desc: "Scales all text across Intra and Better Intra. Lower it if the selected font feels too big.",
+      kind: "font-scale",
+      fullWidth: true,
+      defaultValue: CONFIG_DEFAULT.GENERAL_FONT_SCALE,
+      options: [
+        { label: "Aa", value: "80" },
+        { label: "Aa", value: "90" },
+        { label: "Aa", value: "100" },
+        { label: "Aa", value: "110" },
+        { label: "Aa", value: "125" },
+      ],
     },
     {
       feature: "appearance",

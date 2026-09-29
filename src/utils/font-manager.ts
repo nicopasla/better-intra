@@ -10,6 +10,10 @@ import {
 const STYLE_ID = "ft-font-base";
 const FILE_STYLE_ID = "ft-font-file";
 
+const MIN_FONT_SCALE = 70;
+const MAX_FONT_SCALE = 150;
+const DEFAULT_FONT_SCALE = 100;
+
 /**
  * Defines the extension font variables on the document root so that the
  * light-DOM elements (roulette, marks, evaluations, native profile stats…)
@@ -19,6 +23,8 @@ const FILE_STYLE_ID = "ft-font-file";
  * style.css. Every light-DOM element is forced to the selected font so that
  * Intra's hardcoded families (`.font-bold`, `.font-semibold`, `.font-sans`,
  * `.font-mono`, code/pre, inline styles) can't win; shadow roots are untouched.
+ * The root `font-size` follows `--bi-font-scale`, so rem-based sizes on both
+ * the Intra page and Better Intra's panels scale with the selected preset.
  */
 function ensureGlobalStyle(): void {
   if (document.getElementById(STYLE_ID)) return;
@@ -27,6 +33,9 @@ function ensureGlobalStyle(): void {
   style.textContent = `@import url("${GENERAL_FONT_IMPORT_URL}");
 :root {
   --font-sans: var(--bi-font-sans, ${SYSTEM_SANS_STACK}) !important;
+}
+html {
+  font-size: var(--bi-font-scale, ${DEFAULT_FONT_SCALE}%) !important;
 }
 html, body {
   font-variant-numeric: tabular-nums;
@@ -42,6 +51,13 @@ function applyGeneralFont(id: string): void {
     "--bi-font-sans",
     resolveSansStack(id),
   );
+}
+
+function applyFontScale(scale: number): void {
+  const value = Number.isFinite(scale)
+    ? Math.min(MAX_FONT_SCALE, Math.max(MIN_FONT_SCALE, scale))
+    : DEFAULT_FONT_SCALE;
+  document.documentElement.style.setProperty("--bi-font-scale", `${value}%`);
 }
 
 function syncFontFile(dataUri: string): void {
@@ -68,12 +84,15 @@ let initialized = false;
 export async function initFontManager(): Promise<void> {
   ensureGlobalStyle();
 
-  const { GENERAL_FONT, GENERAL_FONT_FILE } = await getConfigMany([
-    "GENERAL_FONT",
-    "GENERAL_FONT_FILE",
-  ] as const);
+  const { GENERAL_FONT, GENERAL_FONT_SCALE, GENERAL_FONT_FILE } =
+    await getConfigMany([
+      "GENERAL_FONT",
+      "GENERAL_FONT_SCALE",
+      "GENERAL_FONT_FILE",
+    ] as const);
   syncFontFile(GENERAL_FONT_FILE);
   applyGeneralFont(GENERAL_FONT || DEFAULT_GENERAL_FONT);
+  applyFontScale(Number(GENERAL_FONT_SCALE));
 
   if (initialized) return;
   initialized = true;
@@ -87,6 +106,9 @@ export async function initFontManager(): Promise<void> {
       applyGeneralFont(
         String(changes.GENERAL_FONT.newValue || DEFAULT_GENERAL_FONT),
       );
+    }
+    if (changes.GENERAL_FONT_SCALE) {
+      applyFontScale(Number(changes.GENERAL_FONT_SCALE.newValue));
     }
   });
 }

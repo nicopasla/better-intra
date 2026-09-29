@@ -14,6 +14,7 @@ export interface BetterIntraConfig {
   ACTIVE_SCRIPTS: string[];
   BETTER_INTRA_THEME: "dark" | "light" | "system";
   GENERAL_FONT: string;
+  GENERAL_FONT_SCALE: number;
   GENERAL_FONT_FILE: string;
   GENERAL_FONT_FILE_NAME: string;
   GENERAL_FONT_FILE_HISTORY: { name: string; dataUri: string }[];
@@ -224,6 +225,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
 
   BETTER_INTRA_THEME: "dark",
   GENERAL_FONT: "noto-sans",
+  GENERAL_FONT_SCALE: 100,
   GENERAL_FONT_FILE: "",
   GENERAL_FONT_FILE_NAME: "",
   GENERAL_FONT_FILE_HISTORY: [],
@@ -266,6 +268,7 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "ACTIVE_SCRIPTS",
   "BETTER_INTRA_THEME",
   "GENERAL_FONT",
+  "GENERAL_FONT_SCALE",
   "DISABLE_ANIMATIONS",
   "LOGTIME_GOAL_HOURS",
   "LOGTIME_SHOW_AVERAGE",

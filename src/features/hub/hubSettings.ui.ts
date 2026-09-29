@@ -932,6 +932,42 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             })}
           </div>`;
 
+        case "font-scale":
+          return html`<div class="flex flex-wrap gap-1 w-full items-end">
+            ${(def.options ?? []).map((o) => {
+              const selected = String(o.value) === String(value);
+              const previewSize = Number(o.value) * 0.15;
+              return html`<button
+                type="button"
+                class="btn btn-sm flex-1 leading-none"
+                data-font-scale="${o.value}"
+                data-tip="${o.value}%"
+                ?disabled="${!enabled}"
+                style="font-size: ${previewSize}px; border: 2px solid ${selected
+                  ? "var(--color-primary)"
+                  : "transparent"};"
+                @mousedown="${(e: Event) => e.stopPropagation()}"
+                @click="${(e: Event) => {
+                  e.stopPropagation();
+                  const btn = e.currentTarget as HTMLButtonElement;
+                  saveSetting(def.key!, Number(o.value));
+                  btn
+                    .closest(".flex")!
+                    .querySelectorAll("[data-font-scale]")
+                    .forEach((b) => {
+                      const el = b as HTMLButtonElement;
+                      el.style.border =
+                        el.dataset.fontScale === o.value
+                          ? "2px solid var(--color-primary)"
+                          : "2px solid transparent";
+                    });
+                }}"
+              >
+                ${o.label}
+              </button>`;
+            })}
+          </div>`;
+
         case "font-import":
           return html`<div
             ${ref((el) => {

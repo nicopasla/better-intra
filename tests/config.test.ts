@@ -91,6 +91,11 @@ describe("CLOUD_SYNC_KEYS", () => {
     expect(CLOUD_SYNC_KEYS).toContain("PROFILE_BADGE_ORDER");
     expect(CLOUD_SYNC_KEYS).toContain("PROFILE_BADGE_WRAP");
   });
+
+  it("includes the font scale setting", () => {
+    expect(CLOUD_SYNC_KEYS).toContain("GENERAL_FONT_SCALE");
+    expect(CONFIG_DEFAULT.GENERAL_FONT_SCALE).toBe(100);
+  });
 });
 
 describe("setConfigMany", () => {

@@ -22,7 +22,7 @@ html.dark {
    ============================================================================ */
 
 html.dark [style*="--radix-popper-available-width"] {
-  background-color: hsl(var(--card)) !important;
+  background-color: hsl(var(--popover, var(--card))) !important;
   color: hsl(var(--foreground)) !important;
 }
 
@@ -46,8 +46,17 @@ html.dark [class*="sidebar"],
 html.dark [class*="nav-left"],
 html.dark [class*="navigation"],
 html.dark .main-left-navbar {
-  background-color: hsl(var(--card)) !important;
+  background-color: hsl(var(--bi-sidebar, var(--card))) !important;
   border-right: 1px solid hsl(var(--border)) !important;
+}
+
+/* Intra paints the sidebar with a hardcoded variant color (production/dev/staging). */
+html.dark .bg-\[\#4E5566\],
+html.dark .bg-\[\#BA5959\],
+html.dark .bg-\[\#CE58CE\],
+html.dark .fixed.top-0.flex.flex-col.items-center.w-20.z-50,
+html.dark .fixed.top-0.flex.flex-col.items-center.w-20.z-50>* {
+  background-color: hsl(var(--bi-sidebar, var(--card))) !important;
 }
 
 html.dark [class*="sidebar"] a,
@@ -109,7 +118,7 @@ html.dark textarea,
 html.dark select,
 html.dark [class*="input"],
 html.dark [class*="field"] {
-  background-color: hsl(var(--input)) !important;
+  background-color: hsl(var(--bi-input, var(--input))) !important;
   color: hsl(var(--foreground)) !important;
   border-color: hsl(var(--border)) !important;
   caret-color: hsl(var(--foreground)) !important;
@@ -124,6 +133,27 @@ html.dark input::placeholder,
 html.dark textarea::placeholder {
   color: hsl(var(--muted-foreground)) !important;
   opacity: 1 !important;
+}
+
+/* The header search bar has no background class of its own. */
+html.dark input[type="search"],
+html.dark input[type="search"]:hover,
+html.dark input[type="search"]:focus,
+html.dark input[type="search"]:focus-visible,
+html.dark [class*="search"] input:not([type="checkbox"]):not([type="radio"]),
+html.dark .bg-white input[type="search"],
+html.dark .bg-white .grow input,
+html.dark .h-16 input[type="search"] {
+  background-color: hsl(var(--bi-input, var(--input))) !important;
+  background-image: none !important;
+  color: hsl(var(--foreground)) !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Split out so browsers without :has() don't drop the rule above. */
+html.dark div:has(> input[type="search"]) {
+  background-color: hsl(var(--bi-input, var(--input))) !important;
 }
 
 /* ============================================================================
@@ -161,7 +191,7 @@ html.dark [class*="projects"],
 html.dark [class*="project-item"],
 html.dark [class*="pending"],
 html.dark [class*="evaluation"] {
-  background-color: hsl(var(--card)) !important;
+  background-color: hsl(var(--bi-card, var(--card))) !important;
   color: hsl(var(--foreground)) !important;
 }
 
@@ -316,7 +346,7 @@ html.dark .hover\:bg-zinc-300 a.text-legacy-main:hover {
 
 html.dark div[role="alertdialog"],
 html.dark div.alert-dialog-content {
-  background-color: hsl(var(--card)) !important;
+  background-color: hsl(var(--popover, var(--card))) !important;
   border: 1px solid hsl(var(--border)) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
 }
@@ -445,7 +475,7 @@ html.dark [tabindex]:focus-visible {
    ============================================================================ */
 
 html.dark .flex.flex-row.items-center.justify-between.h-full.bg-white {
-  background-color: hsl(var(--background)) !important;
+  background-color: hsl(var(--bi-header, var(--background))) !important;
 }
 
 html.dark svg[stroke="#000"] {

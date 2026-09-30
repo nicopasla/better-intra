@@ -65,7 +65,16 @@ function themeOptions(): readonly FeatureCardOption[] {
   const def = HUB_SETTING_DEFS.appearance.find(
     (d) => d.key === "PROFILE_THEME_PRESET",
   );
-  return def?.options ?? [];
+  const options = def?.options ?? [];
+  // The custom theme builder lives in the full settings; keep onboarding simple.
+  return options.filter(
+    (o, i) =>
+      (o as { value?: string }).value !== "custom" &&
+      !(
+        (o as { divider?: boolean }).divider &&
+        (options[i + 1] as { value?: string } | undefined)?.value === "custom"
+      ),
+  );
 }
 
 function fontOptions(): readonly (typeof SANS_FONTS)[number][] {

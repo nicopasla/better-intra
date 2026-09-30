@@ -60,6 +60,7 @@ import {
   getEffectiveTheme,
   getIsLight,
 } from "../profile/theme/theme-manager.ts";
+import { openThemeEditor } from "../profile/theme/theme-editor.ts";
 import { bindTooltips } from "../../utils/tooltip.ts";
 import { showConfirmDialog } from "../../utils/confirm-dialog.ts";
 
@@ -188,6 +189,108 @@ function renderFeatureCard(params: {
 
 function truncateLabel(name: string, max = 28): string {
   return name.length > max ? name.slice(0, max - 3) + "..." : name;
+}
+
+function applyThemePresetSideEffects(value: string, root: ShadowRoot): void {
+  const container = root.querySelector("[data-theme]") as HTMLElement | null;
+  if (container) container.setAttribute("data-theme", value);
+  const preset = THEMES[value];
+  const mode: "dark" | "light" | null =
+    value === "light"
+      ? "light"
+      : value === "dark"
+        ? "dark"
+        : preset?.light && !preset?.dark
+          ? "light"
+          : preset?.dark && !preset?.light
+            ? "dark"
+            : null;
+  const toggle = root.querySelector(
+    "#hub-theme-toggle",
+  ) as HTMLInputElement | null;
+  if (mode) {
+    if (toggle) toggle.checked = mode === "dark";
+    chrome.storage.local.set({ BETTER_INTRA_THEME: mode });
+  }
+}
+
+function renderThemePresetControl(
+  host: HTMLElement,
+  def: HubSettingDef,
+  initial: string,
+  enabled: boolean,
+): void {
+  let selected = initial;
+
+  const draw = () => {
+    render(
+      html`<div class="flex flex-col gap-3 w-full">
+        <div class="flex flex-wrap gap-1 w-full">
+          ${(def.options ?? []).map((raw) => {
+            const o = raw as {
+              label?: string;
+              value?: string;
+              color?: string;
+              divider?: boolean;
+            };
+            if (o.divider) {
+              return html`<div class="w-full h-px bg-base-300 my-1"></div>`;
+            }
+            if (o.label && !o.value) {
+              return html`<div
+                class="w-full text-xs font-bold uppercase opacity-50 pt-1"
+              >
+                ${o.label}
+              </div>`;
+            }
+            const hsl = o.color ?? "199 89% 48%";
+            const isSelected = String(o.value) === selected;
+            const lightness = parseInt(hsl.split(" ")[2] ?? "50");
+            const textColor =
+              lightness > 50 ? "hsl(0 0% 10%)" : "hsl(0 0% 100%)";
+            return html`<input
+              type="radio"
+              name="${def.key}"
+              class="btn btn-sm flex-none"
+              aria-label="${o.label}"
+              value="${o.value}"
+              style="background-color: hsl(${hsl}); color: ${textColor}; border: 2px solid ${isSelected
+                ? "#fff"
+                : "transparent"}; outline: ${isSelected
+                ? "2px solid hsl(" + hsl + ")"
+                : "none"}; outline-offset: 2px;"
+              ?checked="${isSelected}"
+              ?disabled="${!enabled}"
+              @change="${(e: Event) => {
+                const input = e.target as HTMLInputElement;
+                if (!input.checked) return;
+                selected = input.value;
+                saveSetting(def.key!, input.value);
+                applyThemePresetSideEffects(
+                  input.value,
+                  input.getRootNode() as ShadowRoot,
+                );
+                draw();
+              }}"
+            />`;
+          })}
+        </div>
+        <div class="w-full">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline"
+            ?disabled="${!enabled}"
+            @click="${() => openThemeEditor(def.options ?? [])}"
+          >
+            Customize theme colors
+          </button>
+        </div>
+      </div>`,
+      host,
+    );
+  };
+
+  draw();
 }
 
 function renderFontImportControl(
@@ -814,86 +917,20 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
         }
 
         case "theme-preset":
-          return html`<div class="flex flex-wrap gap-1 w-full">
-            ${(def.options ?? []).map((o) => {
-              if ((o as { divider?: boolean }).divider) {
-                return html`<div class="w-full h-px bg-base-300 my-1"></div>`;
-              }
-              if (
-                (o as { label?: string }).label &&
-                !(o as { value?: string }).value
-              ) {
-                return html`<div
-                  class="w-full text-xs font-bold uppercase opacity-50 pt-1"
-                >
-                  ${o.label}
-                </div>`;
-              }
-              const hsl = (o as { color?: string }).color ?? "199 89% 48%";
-              const selected = String(o.value) === String(value);
-              const parts = hsl.split(" ");
-              const lightness = parseInt(parts[2] ?? "50");
-              const textColor =
-                lightness > 50 ? "hsl(0 0% 10%)" : "hsl(0 0% 100%)";
-              return html`<input
-                type="radio"
-                name="${def.key}"
-                class="btn btn-sm flex-none"
-                aria-label="${o.label}"
-                value="${o.value}"
-                data-hsl="${hsl}"
-                style="background-color: hsl(${hsl}); color: ${textColor}; border: 2px solid ${selected
-                  ? "#fff"
-                  : "transparent"}; outline: ${selected
-                  ? "2px solid hsl(" + hsl + ")"
-                  : "none"}; outline-offset: 2px;"
-                ?checked="${selected}"
-                @change="${(e: Event) => {
-                  const input = e.target as HTMLInputElement;
-                  if (!input.checked) return;
-                  saveSetting(def.key!, input.value);
-                  const group = input.closest(".flex")!;
-                  group
-                    .querySelectorAll(`input[name="${def.key}"]`)
-                    .forEach((r) => {
-                      const el = r as HTMLInputElement;
-                      const h = el.dataset.hsl ?? "199 89% 48%";
-                      el.style.border = el.checked
-                        ? "2px solid #fff"
-                        : "2px solid transparent";
-                      el.style.outline = el.checked
-                        ? `2px solid hsl(${h})`
-                        : "none";
-                      el.style.outlineOffset = el.checked ? "2px" : "";
-                    });
-                  const root = input.getRootNode() as ShadowRoot;
-                  const container = root.querySelector(
-                    "[data-theme]",
-                  ) as HTMLElement;
-                  if (container)
-                    container.setAttribute("data-theme", input.value);
-                  const preset = THEMES[input.value];
-                  const mode: "dark" | "light" | null =
-                    input.value === "light"
-                      ? "light"
-                      : input.value === "dark"
-                        ? "dark"
-                        : preset?.light && !preset?.dark
-                          ? "light"
-                          : preset?.dark && !preset?.light
-                            ? "dark"
-                            : null;
-                  const toggle = root.querySelector(
-                    "#hub-theme-toggle",
-                  ) as HTMLInputElement;
-                  if (mode) {
-                    if (toggle) toggle.checked = mode === "dark";
-                    chrome.storage.local.set({ BETTER_INTRA_THEME: mode });
-                  }
-                }}"
-              />`;
+          return html`<div
+            class="w-full"
+            ${ref((el) => {
+              if (el)
+                queueMicrotask(() =>
+                  renderThemePresetControl(
+                    el as HTMLElement,
+                    def,
+                    String(value),
+                    enabled,
+                  ),
+                );
             })}
-          </div>`;
+          ></div>`;
 
         case "font-preset":
           return html`<div class="flex flex-wrap gap-1 w-full">

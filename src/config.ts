@@ -4,6 +4,15 @@
  * their types, default values, and the logic for retrieving them from storage.
  */
 
+/** A single mode's custom theme palette: role id -> hex color ("" = use default). */
+export type CustomThemePalette = Record<string, string>;
+
+/** User-defined theme colors for both modes, used when PROFILE_THEME_PRESET is "custom". */
+export interface CustomTheme {
+  dark: CustomThemePalette;
+  light: CustomThemePalette;
+}
+
 /**
  * Defines the complete shape and types for all configuration options.
  * Using a strict interface ensures type safety across the application
@@ -68,6 +77,7 @@ export interface BetterIntraConfig {
   PROFILE_CARD_ORDER: string[];
   PROFILE_USE_CUSTOM_COLOR: boolean;
   PROFILE_THEME_PRESET: string;
+  PROFILE_THEME_OVERRIDES: Record<string, CustomTheme>;
   PROFILE_SHOW_MARKS: boolean;
   PROFILE_SHOW_ROULETTE: boolean;
   PROFILE_SHOW_ROULETTE_HISTORY: boolean;
@@ -199,6 +209,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   ],
   PROFILE_USE_CUSTOM_COLOR: true,
   PROFILE_THEME_PRESET: "dark",
+  PROFILE_THEME_OVERRIDES: {},
   PROFILE_SHOW_MARKS: true,
   PROFILE_SHOW_ROULETTE: true,
   PROFILE_SHOW_ROULETTE_HISTORY: true,
@@ -299,6 +310,7 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "PROFILE_CARD_ORDER",
   "PROFILE_USE_CUSTOM_COLOR",
   "PROFILE_THEME_PRESET",
+  "PROFILE_THEME_OVERRIDES",
   "PROFILE_SHOW_MARKS",
   "PROFILE_SHOW_ROULETTE",
   "PROFILE_SHOW_ROULETTE_HISTORY",

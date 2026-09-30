@@ -7,8 +7,10 @@ html:not(.dark) body {
   background-color: hsl(var(--background)) !important;
 }
 
-html:not(.dark) .bg-\[\#4E5566\] {
-  background-color: hsl(var(--muted)) !important;
+html:not(.dark) .bg-\[\#4E5566\],
+html:not(.dark) .bg-\[\#BA5959\],
+html:not(.dark) .bg-\[\#CE58CE\] {
+  background-color: hsl(var(--bi-sidebar, var(--muted))) !important;
 }
 
 /* ============================================================================
@@ -19,7 +21,7 @@ html:not(.dark) [class*="sidebar"],
 html:not(.dark) [class*="nav-left"],
 html:not(.dark) [class*="navigation"],
 html:not(.dark) .main-left-navbar {
-  background-color: hsl(var(--card)) !important;
+  background-color: hsl(var(--bi-sidebar, var(--card))) !important;
   border-right: 1px solid hsl(var(--border)) !important;
 }
 
@@ -68,8 +70,35 @@ html:not(.dark) textarea,
 html:not(.dark) select,
 html:not(.dark) [class*="input"],
 html:not(.dark) [class*="field"] {
-  background-color: hsl(var(--input)) !important;
+  background-color: hsl(var(--bi-input, var(--input))) !important;
   border-color: hsl(var(--border)) !important;
+}
+
+/* The header search bar has no background class of its own. */
+html:not(.dark) input[type="search"],
+html:not(.dark) input[type="search"]:hover,
+html:not(.dark) input[type="search"]:focus,
+html:not(.dark) input[type="search"]:focus-visible,
+html:not(.dark) [class*="search"] input:not([type="checkbox"]):not([type="radio"]),
+html:not(.dark) .bg-white input[type="search"],
+html:not(.dark) .bg-white .grow input,
+html:not(.dark) .h-16 input[type="search"] {
+  background-color: hsl(var(--bi-input, var(--input))) !important;
+  background-image: none !important;
+  color: hsl(var(--foreground)) !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Split out so browsers without :has() don't drop the rule above. */
+html:not(.dark) div:has(> input[type="search"]) {
+  background-color: hsl(var(--bi-input, var(--input))) !important;
+}
+
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+  color: hsl(var(--muted-foreground)) !important;
+  opacity: 1 !important;
 }
 
 html:not(.dark) select option {
@@ -105,14 +134,18 @@ html:not(.dark) .stroke-\[hsla\(180\,_100\%\,_37\%\,_0\.3\)\] {
   stroke: hsl(var(--primary) / 0.3) !important;
 }
 
+html:not(.dark) .flex.flex-row.items-center.justify-between.h-full.bg-white {
+  background-color: hsl(var(--bi-header, var(--background))) !important;
+}
+
 html:not(.dark) [style*="--radix-popper-available-width"] {
-  background-color: hsl(var(--card)) !important;
+  background-color: hsl(var(--popover, var(--card))) !important;
   color: hsl(var(--foreground)) !important;
 }
 
 html:not(.dark) div.bg-white,
 html:not(.dark) div.bg-zinc-100 {
-  background-color: hsl(var(--card)) !important;
+  background-color: hsl(var(--bi-card, var(--card))) !important;
 }
 
 html:not(.dark) div.bg-gray-50,
@@ -198,7 +231,7 @@ html:not(.dark) .hover\:bg-zinc-300 a.text-legacy-main:hover {
 
 html:not(.dark) div[role="alertdialog"],
 html:not(.dark) div.alert-dialog-content {
-  background-color: hsl(var(--card)) !important;
+  background-color: hsl(var(--popover, var(--card))) !important;
   border: 1px solid hsl(var(--border)) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
 }

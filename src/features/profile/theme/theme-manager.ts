@@ -1,5 +1,15 @@
 import { getConfig } from "../../../config.ts";
-import { setCustomThemesEnabled } from "../../../utils/theme-styles.ts";
+import {
+  setCustomDaisyTheme,
+  setCustomThemesEnabled,
+} from "../../../utils/theme-styles.ts";
+import {
+  buildDaisyThemeCss,
+  buildIntraVars,
+  hexToTriplet,
+  modeVarsFromResolved,
+  resolvePalette,
+} from "./custom-theme.ts";
 import themev3 from "./theme-dark-v3.css?inline";
 import themev2 from "./theme-dark-v2.css?inline";
 import themeLightV3 from "./theme-light-default-v3.css?inline";
@@ -28,14 +38,17 @@ type ThemePreset = {
   light?: ThemeModeVars;
 };
 
-export const THEMES: Record<string, ThemePreset> = themesJson;
+export const THEMES: Record<string, ThemePreset> = { ...themesJson };
 
 function toKebab(str: string): string {
   return str.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
 }
 
-async function applyThemePreset() {
-  const presetKey = await getConfig("PROFILE_THEME_PRESET");
+export async function applyThemePreset() {
+  const [presetKey, overrides] = await Promise.all([
+    getConfig("PROFILE_THEME_PRESET"),
+    getConfig("PROFILE_THEME_OVERRIDES"),
+  ]);
   const isDark = document.documentElement.classList.contains("dark");
 
   let styleEl = document.getElementById(
@@ -48,46 +61,71 @@ async function applyThemePreset() {
     (document.head || document.documentElement).appendChild(styleEl);
   }
 
-  if (!presetKey || presetKey === "dark" || presetKey === "light") {
-    styleEl.textContent = "";
-    setCustomThemesEnabled(false);
-    return;
-  }
+  const isCustom = presetKey === "custom";
+  const isBuiltin = presetKey === "dark" || presetKey === "light";
+  const namedPreset = !isCustom && !isBuiltin ? THEMES[presetKey] : undefined;
+  const palette = overrides?.[presetKey]?.[isDark ? "dark" : "light"] ?? {};
+  const hasOverrides = Object.keys(palette).length > 0;
 
-  const preset = THEMES[presetKey];
-  if (!preset) {
+  if (!isCustom && !namedPreset && !(isBuiltin && hasOverrides)) {
     styleEl.textContent = "";
     setCustomThemesEnabled(false);
+    setCustomDaisyTheme(null);
+    const original = themesJson[presetKey as keyof typeof themesJson] as
+      | ThemePreset
+      | undefined;
+    if (original) THEMES[presetKey] = original;
     return;
   }
 
   setCustomThemesEnabled(true);
 
-  const { primary, primaryForeground, ring } = preset;
-  let content = "";
+  const baseKey = isCustom || isBuiltin ? undefined : presetKey;
+  const vars = buildIntraVars(palette, isDark, baseKey);
+  const resolved = resolvePalette(palette, isDark, baseKey);
+  const composed: ThemePreset = {
+    primary: hexToTriplet(resolved.accent),
+    primaryForeground: hexToTriplet(resolved.accentText),
+    ring: hexToTriplet(resolved.accent),
+    dark: modeVarsFromResolved(resolved),
+    light: modeVarsFromResolved(resolved),
+  };
 
-  if (isDark && preset.dark) {
-    const vars = [
-      `--primary: ${primary} !important`,
-      `--primary-foreground: ${primaryForeground} !important`,
-      `--ring: ${ring} !important`,
-    ];
-    for (const [key, val] of Object.entries(preset.dark)) {
-      vars.push(`--${toKebab(key)}: ${val} !important`);
-    }
-    content = `html.dark, html.dark body, html.dark #root {\n    ${vars.join(";\n    ")};\n  }`;
-  } else if (!isDark && preset.light) {
-    const vars = [
-      `--primary: ${primary} !important`,
-      `--primary-foreground: ${primaryForeground} !important`,
-      `--ring: ${ring} !important`,
-      `--legacy-main: var(--primary) !important`,
-    ];
-    for (const [key, val] of Object.entries(preset.light)) {
-      vars.push(`--${toKebab(key)}: ${val} !important`);
-    }
-    content = `html:not(.dark), html:not(.dark) body, html:not(.dark) #root {\n    ${vars.join(";\n    ")};\n  }\n${themeLightV3Overrides}`;
+  // Expose the composed colors to the ~7 places that read `THEMES[presetKey]`.
+  // Replace the entry (never mutate the shared themes.json objects).
+  const original = themesJson[
+    presetKey as keyof typeof themesJson
+  ] as ThemePreset;
+  if (isCustom) {
+    THEMES.custom = composed;
+  } else if (original) {
+    THEMES[presetKey] = hasOverrides
+      ? {
+          ...THEMES[presetKey],
+          primary: composed.primary,
+          primaryForeground: composed.primaryForeground,
+          ring: composed.ring,
+        }
+      : original;
   }
+
+  if (isCustom) {
+    setCustomDaisyTheme(
+      buildDaisyThemeCss(palette, isDark, undefined, "custom"),
+    );
+  } else if (hasOverrides) {
+    setCustomDaisyTheme(
+      buildDaisyThemeCss(palette, isDark, baseKey, presetKey),
+    );
+  } else {
+    setCustomDaisyTheme(null);
+  }
+
+  const selector = isDark
+    ? "html.dark, html.dark body, html.dark #root"
+    : "html:not(.dark), html:not(.dark) body, html:not(.dark) #root";
+  let content = `${selector} {\n    ${vars.join(";\n    ")};\n  }`;
+  if (!isDark) content += `\n${themeLightV3Overrides}`;
 
   styleEl.textContent = content;
   (document.head || document.documentElement).appendChild(styleEl);
@@ -198,6 +236,9 @@ export async function initThemeManager() {
       initThemeManager();
     }
     if (area === "local" && changes.PROFILE_THEME_PRESET) {
+      void applyThemePreset();
+    }
+    if (area === "local" && changes.PROFILE_THEME_OVERRIDES) {
       void applyThemePreset();
     }
   });

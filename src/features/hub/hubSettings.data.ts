@@ -361,6 +361,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
         { label: "Soap", value: "soap", color: "4 68% 66%" },
         { label: "Citrus", value: "citrus", color: "51 100% 50%" },
         { label: "Twilight", value: "twilight", color: "0 100% 71%" },
+        { divider: true },
+        { label: "Custom", value: "custom", color: "280 70% 60%" },
       ],
     },
     {

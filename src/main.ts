@@ -214,6 +214,10 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
           );
         }
 
+        void import("./features/back-to-v2.ts").then((m) =>
+          m.initBackToV2Confirm(),
+        );
+
         // Hub settings are always initialized for the settings page.
         // initHubSettings returns the active feature list.
         const activeScripts = await initHubSettings();

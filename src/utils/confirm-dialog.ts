@@ -59,32 +59,37 @@ export async function showConfirmDialog(
     html`
       <div
         data-theme="light"
-        class="alert items-center shadow-2xl"
+        class="alert shadow-2xl flex flex-col items-stretch"
         style="border-radius:1rem;"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          class="h-6 w-6 shrink-0 stroke-current"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        <div class="flex flex-col gap-1 text-left">
-          <h3 class="font-bold text-base">${title}</h3>
-          <p class="text-sm opacity-80">${message}</p>
+        <div class="flex items-start gap-3 w-full">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            class="h-6 w-6 shrink-0 stroke-current mt-0.5"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <div class="flex flex-col gap-1 text-left">
+            <h3 class="font-bold text-base">${title}</h3>
+            <p class="text-sm opacity-80">${message}</p>
+          </div>
         </div>
-        <div class="flex gap-2 mt-2">
-          <button class="btn btn-sm btn-error" @click="${() => resolve(false)}">
+        <div class="flex gap-2 mt-2 w-full">
+          <button
+            class="btn btn-md flex-1 btn-success font-bold"
+            @click="${() => resolve(false)}"
+          >
             ${cancelLabel}
           </button>
           <button
-            class="btn btn-sm btn-success font-bold"
+            class="btn btn-md flex-1 btn-error font-bold"
             @click="${() => resolve(true)}"
           >
             ${confirmLabel}
@@ -128,29 +133,31 @@ export async function showAlertDialog(
       html`
         <div
           data-theme="light"
-          class="alert items-center shadow-2xl"
+          class="alert items-start shadow-2xl flex flex-col items-stretch"
           style="border-radius:1rem;"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            class="h-6 w-6 shrink-0 stroke-current"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <div class="flex flex-col gap-1 text-left">
-            <h3 class="font-bold text-base">${title}</h3>
-            <p class="text-sm opacity-80">${message}</p>
+          <div class="flex items-start gap-3 w-full">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              class="h-6 w-6 shrink-0 stroke-current mt-0.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <div class="flex flex-col gap-1 text-left">
+              <h3 class="font-bold text-base">${title}</h3>
+              <p class="text-sm opacity-80">${message}</p>
+            </div>
           </div>
-          <div class="flex gap-2 mt-2">
+          <div class="mt-2 w-full">
             <button
-              class="btn btn-sm btn-success font-bold"
+              class="btn btn-md w-full btn-success font-bold"
               @click="${resolve}"
             >
               ${confirmLabel}

@@ -14,7 +14,9 @@ import {
 } from "../account/account.ts";
 import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
 import X_SVG from "../../assets/svg/x.svg?raw";
-import CLOUD_SVG from "../../assets/svg/cloud.svg?raw";
+import CLOUD_SVG from "../../assets/svg/cloud-lucide.svg?raw";
+import CLOUD_OFF_SVG from "../../assets/svg/cloud-off.svg?raw";
+import CLOUD_ALERT_SVG from "../../assets/svg/cloud-alert.svg?raw";
 import ICON_SVG from "../../assets/svg/icon.svg?raw";
 import RELOAD_SVG from "../../assets/svg/reload.svg?raw";
 import SEARCH_SVG from "../../assets/svg/search.svg?raw";
@@ -325,15 +327,55 @@ async function createModal(
         class="flex-none p-4 border-t border-base-200 bg-base-200/50 flex justify-between items-center"
       >
         <div class="flex items-center gap-3">
-          <span
-            class="${isConnected ? "text-success" : "text-error"}"
-            data-tip="${isConnected ? "Connected" : "Offline"}"
-            data-tip-size="14px"
-          >
-            <span class="size-5 flex items-center justify-center"
-              >${unsafeHTML(CLOUD_SVG)}</span
-            >
-          </span>
+          ${authFailed
+            ? html`<button
+                type="button"
+                class="flex items-center gap-2 text-error font-bold text-sm cursor-pointer"
+                data-tip="Token expired — reconnect with 42"
+                data-tip-size="14px"
+                @click="${() => {
+                  loginWith42(async () => {
+                    await clearAuthFailed();
+                    window.location.reload();
+                  });
+                }}"
+              >
+                <span
+                  class="size-7 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:stroke-current"
+                  >${unsafeHTML(CLOUD_ALERT_SVG)}</span
+                >
+                <span>Error</span>
+              </button>`
+            : isConnected
+              ? html`<span
+                  class="flex items-center gap-2 text-success font-bold text-sm"
+                  data-tip="Connected"
+                  data-tip-size="14px"
+                >
+                  <span
+                    class="size-7 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:stroke-current"
+                    >${unsafeHTML(CLOUD_SVG)}</span
+                  >
+                  <span>Connected</span>
+                </span>`
+              : html`<button
+                  type="button"
+                  class="flex items-center gap-2 text-error font-bold text-sm cursor-pointer"
+                  data-tip="Offline — connect with 42"
+                  data-tip-size="14px"
+                  @click="${() => {
+                    loginWith42(async () => {
+                      await clearAuthFailed();
+                      window.location.reload();
+                    });
+                  }}"
+                >
+                  <span
+                    class="size-7 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:stroke-current"
+                    >${unsafeHTML(CLOUD_OFF_SVG)}</span
+                  >
+                  <span>Disconnected</span>
+                </button>`}
         </div>
         <button
           id="hub-reload"

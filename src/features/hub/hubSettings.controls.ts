@@ -30,11 +30,16 @@ import RESET_SVG from "../../assets/svg/reset.svg?raw";
 import GRIP_VERTICAL_SVG from "../../assets/svg/grip-vertical.svg?raw";
 import LINK_SVG from "../../assets/svg/link.svg?raw";
 import CHEVRON_DOWN_SVG from "../../assets/svg/chevron-down.svg?raw";
+import SUNSET_SVG from "../../assets/svg/sunset.svg?raw";
+import SUNRISE_SVG from "../../assets/svg/sunrise.svg?raw";
 import { exportableSettings, sanitizeBackup } from "./backup.ts";
 import { renderDiscordPanel } from "../discord/discord.ui.ts";
 import { renderCalendarPanel } from "../calendar/calendar.ui.ts";
 import { THEMES } from "../profile/theme/theme-manager.ts";
-import { openThemeEditor } from "../profile/theme/theme-editor.ts";
+import {
+  openThemeEditor,
+  openCommunityThemesDialog,
+} from "../profile/theme/theme-editor.ts";
 import { showConfirmDialog } from "../../utils/confirm-dialog.ts";
 import { fetchCampusList } from "../clusters/clusters.data.ts";
 import { clearCampusConfigCache, loadCampusData } from "../campus/campus.ts";
@@ -42,6 +47,10 @@ import {
   dynamicCampusOptions,
   dynamicEventTypeOptions,
 } from "./hubSettings.state.ts";
+import {
+  getCampusSunTimes,
+  type CampusSunTimes,
+} from "../profile/theme/campus-coords.ts";
 
 // Changes only persist locally here; they are uploaded when the user clicks
 // "Save & Reload" (or the account "Push Settings" button).
@@ -133,9 +142,15 @@ function truncateLabel(name: string, max = 28): string {
   return name.length > max ? name.slice(0, max - 3) + "..." : name;
 }
 
-function applyThemePresetSideEffects(value: string, root: ShadowRoot): void {
+async function applyThemePresetSideEffects(
+  value: string,
+  root: ShadowRoot,
+): Promise<void> {
   const container = root.querySelector("[data-theme]") as HTMLElement | null;
   if (container) container.setAttribute("data-theme", value);
+  const currentMode = await getConfig("BETTER_INTRA_THEME");
+  // System / Schedule are explicit overrides; picking a theme shouldn't disable them.
+  if (currentMode === "system" || currentMode === "schedule") return;
   const preset = THEMES[value];
   const mode: "dark" | "light" | null =
     value === "light"
@@ -148,79 +163,266 @@ function applyThemePresetSideEffects(value: string, root: ShadowRoot): void {
             ? "dark"
             : null;
   if (mode) {
-    chrome.storage.local.set({ BETTER_INTRA_THEME: mode });
+    await chrome.storage.local.set({ BETTER_INTRA_THEME: mode });
   }
 }
 
-function renderThemePresetControl(
+function renderPresetSwatches(
+  options: readonly FeatureCardOption[] | undefined,
+  selected: string,
+  enabled: boolean,
+  groupName: string,
+  onSelect: (value: string, root: ShadowRoot) => void,
+): unknown {
+  return (options ?? []).map((raw) => {
+    const o = raw as {
+      label?: string;
+      value?: string;
+      color?: string;
+      divider?: boolean;
+    };
+    if (o.divider) {
+      return html`<div class="w-full h-px bg-base-300 my-1"></div>`;
+    }
+    if (o.label && !o.value) {
+      return html`<div
+        class="w-full text-xs font-bold uppercase opacity-50 pt-1"
+      >
+        ${o.label}
+      </div>`;
+    }
+    const hsl = o.color ?? "199 89% 48%";
+    const isSelected = String(o.value) === selected;
+    const lightness = parseInt(hsl.split(" ")[2] ?? "50");
+    const textColor = lightness > 50 ? "hsl(0 0% 10%)" : "hsl(0 0% 100%)";
+    return html`<input
+      type="radio"
+      name="${groupName}"
+      class="btn btn-sm flex-none"
+      aria-label="${o.label}"
+      value="${o.value}"
+      style="background-color: hsl(${hsl}); color: ${textColor}; border: 2px solid ${isSelected
+        ? "#fff"
+        : "transparent"}; outline: ${isSelected
+        ? "2px solid hsl(" + hsl + ")"
+        : "none"}; outline-offset: 2px;"
+      ?checked="${isSelected}"
+      ?disabled="${!enabled}"
+      @change="${(e: Event) => {
+        const input = e.target as HTMLInputElement;
+        if (!input.checked) return;
+        onSelect(input.value, input.getRootNode() as ShadowRoot);
+      }}"
+    />`;
+  });
+}
+
+function renderThemeAccentControl(
   host: HTMLElement,
   def: HubSettingDef,
-  initial: string,
   enabled: boolean,
 ): void {
-  let selected = initial;
+  let isSchedule = false;
+  let selected = "";
+  let darkPreset = "";
+  let lightPreset = "";
+  let sunTimes: CampusSunTimes | null = null;
+
+  const presetMode = (value: string): "dark" | "light" | null => {
+    const preset = THEMES[value];
+    if (value === "light") return "light";
+    if (value === "dark") return "dark";
+    if (preset?.light && !preset?.dark) return "light";
+    if (preset?.dark && !preset?.light) return "dark";
+    return null;
+  };
+
+  const setSchedule = (on: boolean) => {
+    const next = on ? "schedule" : (presetMode(selected) ?? "dark");
+    void chrome.storage.local
+      .set({ BETTER_INTRA_THEME: next })
+      .then(() => init());
+  };
+
+  const init = async () => {
+    const themeMode = await getConfig("BETTER_INTRA_THEME");
+    isSchedule = themeMode === "schedule";
+    selected = await getConfig("PROFILE_THEME_PRESET");
+    darkPreset = await getConfig("THEME_SCHEDULE_DARK_PRESET");
+    lightPreset = await getConfig("THEME_SCHEDULE_LIGHT_PRESET");
+    const campusId = await getConfig("CLUSTERS_CAMPUS");
+    sunTimes = await getCampusSunTimes(campusId);
+    draw();
+  };
 
   const draw = () => {
     render(
       html`<div class="flex flex-col gap-3 w-full">
-        <div class="flex flex-wrap gap-1 w-full">
-          ${(def.options ?? []).map((raw) => {
-            const o = raw as {
-              label?: string;
-              value?: string;
-              color?: string;
-              divider?: boolean;
-            };
-            if (o.divider) {
-              return html`<div class="w-full h-px bg-base-300 my-1"></div>`;
-            }
-            if (o.label && !o.value) {
-              return html`<div
-                class="w-full text-xs font-bold uppercase opacity-50 pt-1"
+        ${isSchedule
+          ? html`<div class="flex flex-col gap-1">
+              <span class="text-[11px] opacity-60"
+                >Pick one dark theme and one light theme.</span
               >
-                ${o.label}
-              </div>`;
-            }
-            const hsl = o.color ?? "199 89% 48%";
-            const isSelected = String(o.value) === selected;
-            const lightness = parseInt(hsl.split(" ")[2] ?? "50");
-            const textColor =
-              lightness > 50 ? "hsl(0 0% 10%)" : "hsl(0 0% 100%)";
-            return html`<input
-              type="radio"
-              name="${def.key}"
-              class="btn btn-sm flex-none"
-              aria-label="${o.label}"
-              value="${o.value}"
-              style="background-color: hsl(${hsl}); color: ${textColor}; border: 2px solid ${isSelected
-                ? "#fff"
-                : "transparent"}; outline: ${isSelected
-                ? "2px solid hsl(" + hsl + ")"
-                : "none"}; outline-offset: 2px;"
-              ?checked="${isSelected}"
-              ?disabled="${!enabled}"
-              @change="${(e: Event) => {
-                const input = e.target as HTMLInputElement;
-                if (!input.checked) return;
-                selected = input.value;
-                saveSetting(def.key!, input.value);
-                applyThemePresetSideEffects(
-                  input.value,
-                  input.getRootNode() as ShadowRoot,
-                );
-                draw();
-              }}"
-            />`;
-          })}
-        </div>
-        <div class="w-full">
+              <div class="flex flex-wrap gap-1 w-full">
+                ${(() => {
+                  let inLight = false;
+                  return (def.options ?? []).map((raw) => {
+                    const o = raw as {
+                      label?: string;
+                      value?: string;
+                      color?: string;
+                      divider?: boolean;
+                    };
+                    if (o.divider) {
+                      return html`<div
+                        class="w-full h-px bg-base-300 my-1"
+                      ></div>`;
+                    }
+                    if (o.label && !o.value) {
+                      if (o.label === "Light") inLight = true;
+                      return html`<div
+                        class="w-full text-xs font-bold uppercase opacity-50 pt-1"
+                      >
+                        ${o.label}
+                      </div>`;
+                    }
+                    const hsl = o.color ?? "199 89% 48%";
+                    const isDarkSel = String(o.value) === darkPreset;
+                    const isLightSel = String(o.value) === lightPreset;
+                    const slotIsLight = inLight;
+                    const lightness = parseInt(hsl.split(" ")[2] ?? "50");
+                    const textColor =
+                      lightness > 50 ? "hsl(0 0% 10%)" : "hsl(0 0% 100%)";
+                    return html`<button
+                      type="button"
+                      class="btn btn-sm flex-none relative"
+                      aria-label="${o.label}"
+                      style="background-color: hsl(${hsl}); color: ${textColor}; border: 2px solid ${isDarkSel
+                        ? "#3b82f6"
+                        : isLightSel
+                          ? "#f59e0b"
+                          : "transparent"}; outline: ${isDarkSel || isLightSel
+                        ? "2px solid " + (isDarkSel ? "#3b82f6" : "#f59e0b")
+                        : "none"}; outline-offset: 2px;"
+                      @click="${() => {
+                        if (slotIsLight) {
+                          lightPreset = o.value ?? "";
+                          void chrome.storage.local.set({
+                            THEME_SCHEDULE_LIGHT_PRESET: o.value,
+                          });
+                          if (
+                            !document.documentElement.classList.contains("dark")
+                          ) {
+                            void chrome.storage.local.set({
+                              PROFILE_THEME_PRESET: o.value,
+                            });
+                          }
+                        } else {
+                          darkPreset = o.value ?? "";
+                          void chrome.storage.local.set({
+                            THEME_SCHEDULE_DARK_PRESET: o.value,
+                          });
+                          if (
+                            document.documentElement.classList.contains("dark")
+                          ) {
+                            void chrome.storage.local.set({
+                              PROFILE_THEME_PRESET: o.value,
+                            });
+                          }
+                        }
+                        draw();
+                      }}"
+                    >
+                      ${o.label}
+                      ${isDarkSel
+                        ? html`<span
+                            class="absolute -top-1.5 -right-1.5 text-[8px] font-bold uppercase px-1 rounded-full"
+                            style="background:#3b82f6;color:#fff;"
+                            >dark</span
+                          >`
+                        : ""}
+                      ${isLightSel
+                        ? html`<span
+                            class="absolute -top-1.5 -right-1.5 text-[8px] font-bold uppercase px-1 rounded-full"
+                            style="background:#f59e0b;color:#fff;"
+                            >light</span
+                          >`
+                        : ""}
+                    </button>`;
+                  });
+                })()}
+              </div>
+            </div>`
+          : html`<div class="flex flex-wrap gap-1 w-full">
+              ${renderPresetSwatches(
+                def.options,
+                selected,
+                enabled,
+                def.key ?? "accent",
+                (value) => {
+                  selected = value;
+                  saveSetting(def.key!, value);
+                  void applyThemePresetSideEffects(
+                    value,
+                    host.getRootNode() as ShadowRoot,
+                  );
+                  draw();
+                },
+              )}
+            </div>`}
+        <div class="flex flex-wrap gap-2 w-full">
           <button
             type="button"
-            class="btn btn-sm btn-outline"
+            class="text-left"
+            style="display:flex; align-items:center; gap:0.5rem; padding:0.6rem 0.9rem; border-radius:0.75rem; border:1px solid var(--color-base-300); background:var(--color-base-100); cursor:pointer;"
+            @click="${openCommunityThemesDialog}"
+          >
+            <span style="font-size:0.875rem; font-weight:600;"
+              >Community themes</span
+            >
+          </button>
+<label
+              class="cursor-pointer"
+              style="display:flex; flex-direction:row; align-items:center; gap:0.5rem; padding:0.6rem 0.9rem; border-radius:0.75rem; border:1px solid var(--color-base-300); background:var(--color-base-100);"
+            >
+              <input
+                type="checkbox"
+                class="toggle toggle-primary"
+                ?checked="${isSchedule}"
+                ?disabled="${!enabled}"
+                @change="${(e: Event) =>
+                  setSchedule((e.target as HTMLInputElement).checked)}"
+              />
+              <span
+                style="display:flex; flex-direction:column; align-items:flex-start;"
+              >
+                <span style="font-size:0.875rem; font-weight:600;">Auto</span>
+                ${sunTimes
+                  ? html`<span
+                      style="display:flex; align-items:center; gap:0.25rem; font-size:0.75rem; opacity:0.7;"
+                    >
+                      <span
+                        style="display:inline-flex; width:0.85rem; height:0.85rem;"
+                        >${unsafeHTML(SUNSET_SVG)}</span
+                      >${sunTimes.sunset}
+                      <span
+                        style="display:inline-flex; width:0.85rem; height:0.85rem; margin-left:0.25rem;"
+                        >${unsafeHTML(SUNRISE_SVG)}</span
+                      >${sunTimes.sunrise}
+                    </span>`
+                  : ""}
+              </span>
+            </label>
+          <button
+            type="button"
+            class="text-left"
+            style="display:flex; align-items:center; gap:0.5rem; padding:0.6rem 0.9rem; border-radius:0.75rem; border:1px solid var(--color-base-300); background:var(--color-base-100); cursor:pointer;"
             ?disabled="${!enabled}"
             @click="${() => openThemeEditor(def.options ?? [])}"
           >
-            Customize theme colors
+            <span style="font-size:0.875rem; font-weight:600;"
+              >Customize colors</span
+            >
           </button>
         </div>
       </div>`,
@@ -228,7 +430,24 @@ function renderThemePresetControl(
     );
   };
 
-  draw();
+  const onStorage = (
+    changes: Record<string, chrome.storage.StorageChange>,
+    area: string,
+  ) => {
+    if (
+      area === "local" &&
+      (changes.BETTER_INTRA_THEME ||
+        changes.PROFILE_THEME_PRESET ||
+        changes.THEME_SCHEDULE_DARK_PRESET ||
+        changes.THEME_SCHEDULE_LIGHT_PRESET)
+    ) {
+      void init();
+    }
+  };
+
+  chrome.storage.onChanged.addListener(onStorage);
+
+  void init();
 }
 
 function renderFontImportControl(
@@ -856,18 +1075,13 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
           </div>`;
         }
 
-        case "theme-preset":
+        case "theme-accent":
           return html`<div
             class="w-full"
             ${ref((el) => {
               if (el)
                 queueMicrotask(() =>
-                  renderThemePresetControl(
-                    el as HTMLElement,
-                    def,
-                    String(value),
-                    enabled,
-                  ),
+                  renderThemeAccentControl(el as HTMLElement, def, enabled),
                 );
             })}
           ></div>`;

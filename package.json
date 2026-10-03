@@ -22,6 +22,7 @@
   "devDependencies": {
     "@types/chrome": "^0.3.0",
     "@types/sortablejs": "^1.15.9",
+    "@types/suncalc": "^1.9.2",
     "@vitest/ui": "^5.0.2",
     "concurrently": "^10.0.5",
     "cross-env": "^10.1.0",
@@ -40,7 +41,8 @@
     "generate-random-username": "^2.2.0",
     "lit-html": "^3.3.3",
     "qrcode-generator": "^2.0.4",
-    "sortablejs": "^1.15.7"
+    "sortablejs": "^1.15.7",
+    "suncalc": "^2.1.0"
   },
   "allowScripts": {
     "fsevents": true

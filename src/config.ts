@@ -21,7 +21,7 @@ export interface CustomTheme {
 export interface BetterIntraConfig {
   // General Settings
   ACTIVE_SCRIPTS: string[];
-  BETTER_INTRA_THEME: "dark" | "light" | "system";
+  BETTER_INTRA_THEME: "dark" | "light" | "system" | "schedule";
   GENERAL_FONT: string;
   GENERAL_FONT_SCALE: number;
   GENERAL_FONT_FILE: string;
@@ -78,6 +78,8 @@ export interface BetterIntraConfig {
   PROFILE_USE_CUSTOM_COLOR: boolean;
   PROFILE_THEME_PRESET: string;
   PROFILE_THEME_OVERRIDES: Record<string, CustomTheme>;
+  THEME_SCHEDULE_DARK_PRESET: string;
+  THEME_SCHEDULE_LIGHT_PRESET: string;
   PROFILE_SHOW_MARKS: boolean;
   PROFILE_SHOW_ROULETTE: boolean;
   PROFILE_SHOW_ROULETTE_HISTORY: boolean;
@@ -210,6 +212,8 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   PROFILE_USE_CUSTOM_COLOR: true,
   PROFILE_THEME_PRESET: "dark",
   PROFILE_THEME_OVERRIDES: {},
+  THEME_SCHEDULE_DARK_PRESET: "dark",
+  THEME_SCHEDULE_LIGHT_PRESET: "light",
   PROFILE_SHOW_MARKS: true,
   PROFILE_SHOW_ROULETTE: true,
   PROFILE_SHOW_ROULETTE_HISTORY: true,
@@ -311,6 +315,8 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "PROFILE_USE_CUSTOM_COLOR",
   "PROFILE_THEME_PRESET",
   "PROFILE_THEME_OVERRIDES",
+  "THEME_SCHEDULE_DARK_PRESET",
+  "THEME_SCHEDULE_LIGHT_PRESET",
   "PROFILE_SHOW_MARKS",
   "PROFILE_SHOW_ROULETTE",
   "PROFILE_SHOW_ROULETTE_HISTORY",

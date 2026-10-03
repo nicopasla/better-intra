@@ -10,6 +10,11 @@ import {
   modeVarsFromResolved,
   resolvePalette,
 } from "./custom-theme.ts";
+import {
+  getCampusLocation,
+  isDarkAtCampus,
+  type CampusLocation,
+} from "./campus-coords.ts";
 import themev3 from "./theme-dark-v3.css?inline";
 import themev2 from "./theme-dark-v2.css?inline";
 import themeLightV3 from "./theme-light-default-v3.css?inline";
@@ -205,7 +210,64 @@ export async function getEffectiveTheme(): Promise<"dark" | "light"> {
       : "light";
   }
 
+  if (savedTheme === "schedule") {
+    return currentScheduledMode();
+  }
+
   return (savedTheme as "dark" | "light") || "light";
+}
+
+async function getCampusSchedule(): Promise<{
+  location: CampusLocation | null;
+  timezone: string;
+}> {
+  const campusId = await getConfig("CLUSTERS_CAMPUS");
+  const location = await getCampusLocation(campusId);
+  const timezone = location?.timezone ?? "Europe/Paris";
+  return { location, timezone };
+}
+
+async function currentScheduledMode(): Promise<"dark" | "light"> {
+  const { location, timezone } = await getCampusSchedule();
+  return isDarkAtCampus(location, timezone) ? "dark" : "light";
+}
+
+let scheduleTimer: number | null = null;
+
+function stopScheduleTimer(): void {
+  if (scheduleTimer !== null) {
+    window.clearInterval(scheduleTimer);
+    scheduleTimer = null;
+  }
+}
+
+async function checkScheduledFlip(): Promise<void> {
+  const savedTheme = await getConfig("BETTER_INTRA_THEME");
+  if (savedTheme !== "schedule") {
+    stopScheduleTimer();
+    return;
+  }
+  const mode = await currentScheduledMode();
+  const preset = await getConfig(
+    mode === "dark"
+      ? "THEME_SCHEDULE_DARK_PRESET"
+      : "THEME_SCHEDULE_LIGHT_PRESET",
+  );
+  const currentPreset = await getConfig("PROFILE_THEME_PRESET");
+  if (currentPreset !== preset) {
+    await chrome.storage.local.set({ PROFILE_THEME_PRESET: preset });
+  }
+  if (mode !== currentMode()) {
+    applyTheme(mode);
+  }
+}
+
+function startScheduleTimer(): void {
+  if (scheduleTimer !== null) return;
+  scheduleTimer = window.setInterval(() => {
+    void checkScheduledFlip();
+  }, 60_000);
+  void checkScheduledFlip();
 }
 
 export async function getIsLight(): Promise<boolean> {
@@ -225,6 +287,12 @@ export async function initThemeManager() {
   const initialTheme = await getEffectiveTheme();
   if (initialTheme !== cachedTheme) {
     applyTheme(initialTheme);
+  }
+
+  if ((await getConfig("BETTER_INTRA_THEME")) === "schedule") {
+    startScheduleTimer();
+  } else {
+    stopScheduleTimer();
   }
 
   if (themeManagerInitialized) return;

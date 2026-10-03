@@ -103,7 +103,7 @@ function renderAccountTab(
 
   return html`
     <div
-      class="card bg-base-200 shadow-sm p-5 sm:p-6 w-full h-full min-h-0 flex flex-col gap-4"
+      class="card bg-base-200 shadow-sm p-5 sm:p-6 w-full h-full min-h-0 flex flex-col gap-4 overflow-y-auto"
     >
       <div>
         <span class="text-base font-medium">Account</span>
@@ -178,7 +178,7 @@ function renderAccountTab(
         : ""}
 
       <div
-        class="stats stats-vertical sm:stats-horizontal bg-base-300/40 border border-base-300 rounded-xl w-full"
+        class="stats stats-vertical sm:stats-horizontal shrink-0 bg-base-300/40 border border-base-300 rounded-xl w-full"
       >
         <div class="stat" style="padding:0.75rem 1rem;">
           <div class="stat-title opacity-70" style="font-size:0.8rem;">
@@ -229,8 +229,10 @@ function renderAccountTab(
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0">
-        <div class="rounded-xl bg-base-300/40 p-4 flex flex-col gap-3 min-h-0">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:flex-1 lg:min-h-0">
+        <div
+          class="rounded-xl bg-base-300/40 p-4 flex flex-col gap-3 lg:min-h-0"
+        >
           <div class="flex items-center justify-between gap-3">
             <div class="flex flex-col">
               <span class="text-sm font-semibold">Sessions</span>
@@ -244,7 +246,7 @@ function renderAccountTab(
           ${state.sessions.length === 0
             ? html`<p class="text-xs opacity-50">No active sessions.</p>`
             : html`<ul
-                class="list bg-base-100 rounded-box border border-base-300 flex-1 min-h-0 overflow-y-auto"
+                class="list bg-base-100 rounded-box border border-base-300 max-h-64 overflow-y-auto lg:max-h-none lg:flex-1 lg:min-h-0"
               >
                 ${state.sessions.map(
                   (s) => html`
@@ -307,7 +309,7 @@ function renderAccountTab(
             : ""}
         </div>
 
-        <div class="flex flex-col gap-4 min-h-0">
+        <div class="flex flex-col gap-4 lg:min-h-0">
           <div class="rounded-xl bg-base-300/40 p-4 flex flex-col gap-3">
             <div class="flex items-center justify-between gap-3">
               <div class="flex flex-col">

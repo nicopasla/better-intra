@@ -133,6 +133,36 @@
   transition: color 0.2s ease;
 }
 
+:host(#hub-shadow-wrapper) .tab {
+  white-space: nowrap;
+}
+
+:host(#hub-shadow-wrapper) .tabs>.tab.hub-tab-hidden {
+  display: none !important;
+}
+
+.hub-tabs-summary svg,
+.hub-tabs-summary svg path,
+.hub-tabs-menu svg,
+.hub-tabs-menu svg path {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor !important;
+  stroke: none;
+}
+
+.hub-tabs-summary::-webkit-details-marker {
+  display: none;
+}
+
+.hub-tabs-chevron {
+  transition: transform 0.2s ease;
+}
+
+details[data-hub-tabs-compact][open]>summary .hub-tabs-chevron {
+  transform: rotate(180deg);
+}
+
 .tab:has(input:checked) {
   color: var(--p) !important;
 }

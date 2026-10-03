@@ -430,7 +430,9 @@ export function renderAboutPanel(): ReturnType<typeof html> {
                     <div
                       class="flex flex-col gap-3 p-4 bg-base-200 rounded-xl border border-base-300"
                     >
-                      <div class="flex items-start justify-between gap-4">
+                      <div
+                        class="flex flex-col md:flex-row md:items-start items-center justify-between gap-4"
+                      >
                         <div
                           class="flex flex-col items-center rounded-xl bg-base-100 px-6 py-3"
                           style="border: 2px solid #00babc"
@@ -445,12 +447,14 @@ export function renderAboutPanel(): ReturnType<typeof html> {
                         </div>
                         ${s.history && s.history.length > 1
                           ? html`<div
-                              class="self-stretch shrink-0 flex min-w-40"
+                              class="self-stretch shrink-0 flex min-w-40 w-full md:w-auto"
                             >
                               ${renderGrowthChart(s.history)}
                             </div>`
                           : ""}
-                        <div class="flex items-start justify-end gap-6">
+                        <div
+                          class="flex flex-wrap items-center md:items-start justify-center md:justify-end gap-3 md:gap-6"
+                        >
                           ${[
                             {
                               label: "today",

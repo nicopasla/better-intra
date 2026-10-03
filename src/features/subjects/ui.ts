@@ -23,8 +23,7 @@ export function renderSubjectBadge(
     "data-theme",
     document.documentElement.classList.contains("dark") ? "dark" : "light",
   );
-  wrap.style.cssText =
-    "margin-top: 0.75rem; width: 100%; box-sizing: border-box;";
+  wrap.style.cssText = "margin-top: 10px; width: 100%; box-sizing: border-box;";
 
   const isDark = document.documentElement.classList.contains("dark");
   const useError = tone === "error";
@@ -50,17 +49,17 @@ export function renderSubjectBadge(
   render(
     html`<div
       class="border-t"
-      style="border-color: ${borderColor}; padding-top: 0.75rem;"
+      style="border-color: ${borderColor}; padding-top: 10px;"
     >
       <span
-        style="display: flex; flex-direction: column; align-items: center; gap: 0.35rem; width: 100%; padding: 1rem 1.8rem; border-radius: 0.5rem; border: 1px solid ${borderColor}; background: ${badgeBg}; color: ${badgeFg}; white-space: normal;"
+        style="display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; padding: 10px 20px; border-radius: 8px; border: 1px solid ${borderColor}; background: ${badgeBg}; color: ${badgeFg}; white-space: normal;"
       >
         <span
-          style="font-size: 1.15rem; font-weight: 700; line-height: 1; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.9;"
+          style="font-size: 14px; font-weight: 700; line-height: 1; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.9;"
           >${label}</span
         >
         <span
-          style="font-size: 1.6rem; font-weight: 800; line-height: 1; white-space: nowrap; font-family: var(--font-sans);"
+          style="font-size: 18px; font-weight: 800; line-height: 1; white-space: nowrap; font-family: var(--font-sans);"
           >${when}</span
         >
       </span>

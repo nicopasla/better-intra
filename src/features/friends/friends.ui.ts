@@ -20,6 +20,7 @@ import {
 import { bindTooltips } from "../../utils/tooltip.ts";
 import { CLUSTERS, getClusterData } from "../clusters/clusters.data.ts";
 import FRIENDS_SVG from "../../assets/svg/friends.svg?raw";
+import GHOST_SVG from "../../assets/svg/ghost.svg?raw";
 import WARNING_SVG from "../../assets/svg/triangle-exclamation.svg?raw";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 import GLOBE_SVG from "../../assets/svg/globe-lucide.svg?raw";
@@ -336,8 +337,9 @@ function clusterUrl(location: string): string {
 function renderEmpty() {
   return html`
     <div class="flex flex-col items-center gap-2 py-16 opacity-40">
-      <span class="w-16 h-16 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
-        >${unsafeHTML(FRIENDS_SVG)}</span
+      <span
+        class="w-16 h-16 [&>svg]:w-full [&>svg]:h-full [&>svg]:stroke-current"
+        >${unsafeHTML(GHOST_SVG)}</span
       >
       <p class="text-sm font-bold">No friends yet</p>
       <p class="text-xs">Add one using the input below</p>
@@ -1000,8 +1002,8 @@ function renderWidget(state: WidgetState) {
                             class="flex flex-col items-center gap-2 py-16 opacity-40"
                           >
                             <span
-                              class="w-16 h-16 [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
-                              >${unsafeHTML(GLOBE_SVG)}</span
+                              class="w-16 h-16 [&>svg]:w-full [&>svg]:h-full [&>svg]:stroke-current"
+                              >${unsafeHTML(GHOST_SVG)}</span
                             >
                             <p class="text-sm font-bold">No friends online</p>
                             <p class="text-xs">

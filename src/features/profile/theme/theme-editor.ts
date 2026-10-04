@@ -133,7 +133,8 @@ export function openThemeEditor(options: readonly FeatureCardOption[]): void {
       { label: "Text on hover", fg: resolved.text, bg: resolved.hover },
     ].map((c) => {
       const ratio = contrastRatio(c.fg, c.bg);
-      const tone = ratio >= 4.5 ? "#22c55e" : ratio >= 3 ? "#f59e0b" : "#ef4444";
+      const tone =
+        ratio >= 4.5 ? "#22c55e" : ratio >= 3 ? "#f59e0b" : "#ef4444";
       return { ...c, ratio, tone };
     });
     render(
@@ -218,23 +219,24 @@ export function openThemeEditor(options: readonly FeatureCardOption[]): void {
 
         <div class="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
           <div class="flex flex-col gap-1.5">
-            <span class="text-xs font-bold uppercase opacity-50"
-              >Contrast</span
-            >
+            <span class="text-xs font-bold uppercase opacity-50">Contrast</span>
             ${contrastChecks.map(
-              (c) => html`<div
-                class="flex items-center justify-between gap-2 text-sm"
-              >
-                <span>${c.label}</span>
-                <span class="flex items-center gap-1.5">
-                  <span
-                    class="w-2.5 h-2.5 rounded-full"
-                    style="background:${c.tone}"
-                    data-tip="WCAG ratio ${c.ratio.toFixed(1)}:1"
-                  ></span>
-                  <span class="font-mono text-xs">${c.ratio.toFixed(1)}:1</span>
-                </span>
-              </div>`,
+              (c) =>
+                html`<div
+                  class="flex items-center justify-between gap-2 text-sm"
+                >
+                  <span>${c.label}</span>
+                  <span class="flex items-center gap-1.5">
+                    <span
+                      class="w-2.5 h-2.5 rounded-full"
+                      style="background:${c.tone}"
+                      data-tip="WCAG ratio ${c.ratio.toFixed(1)}:1"
+                    ></span>
+                    <span class="font-mono text-xs"
+                      >${c.ratio.toFixed(1)}:1</span
+                    >
+                  </span>
+                </div>`,
             )}
           </div>
 
@@ -324,7 +326,7 @@ export function openThemeEditor(options: readonly FeatureCardOption[]): void {
                     : "text-error"} truncate"
                   >${shareResult.ok
                     ? "Shared! 🎉"
-                    : shareResult.error ?? "Couldn't share"}</span
+                    : (shareResult.error ?? "Couldn't share")}</span
                 >`
               : ""}
           </div>
@@ -453,18 +455,19 @@ export function openCommunityThemesDialog(): void {
           <span class="text-sm font-semibold">Filter</span>
           <div class="join join-horizontal">
             ${(["all", "dark", "light"] as const).map(
-              (m) => html`<button
-                type="button"
-                class="btn btn-xs join-item ${filter === m
-                  ? "btn-primary"
-                  : "btn-ghost"}"
-                @click="${() => {
-                  filter = m;
-                  draw();
-                }}"
-              >
-                ${m === "all" ? "All" : m === "dark" ? "Dark" : "Light"}
-              </button>`,
+              (m) =>
+                html`<button
+                  type="button"
+                  class="btn btn-xs join-item ${filter === m
+                    ? "btn-primary"
+                    : "btn-ghost"}"
+                  @click="${() => {
+                    filter = m;
+                    draw();
+                  }}"
+                >
+                  ${m === "all" ? "All" : m === "dark" ? "Dark" : "Light"}
+                </button>`,
             )}
           </div>
         </div>
@@ -486,83 +489,142 @@ export function openCommunityThemesDialog(): void {
                       No ${filter} themes yet.
                     </p>`
                   : html`<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    ${visible.map((t) => {
-                      const p = t.mode === "light" ? t.colors.light : t.colors.dark;
-                      return html`<button
-                        type="button"
-                        class="flex flex-col items-stretch gap-2 rounded-xl border border-base-300 p-2 text-left hover:border-base-content/40 transition-colors"
-                        style="background:${hex(p, "page", "#1f2937")}; color:${hex(p, "text", "#e5e7eb")};"
-                        @click="${() => apply(t)}"
-                        data-tip="Apply ${t.name}"
-                      >
-                        <div
-                          class="rounded-lg overflow-hidden border"
-                          style="border-color:${hex(p, "border", "#374151")};"
+                      ${visible.map((t) => {
+                        const p =
+                          t.mode === "light" ? t.colors.light : t.colors.dark;
+                        return html`<div
+                          role="button"
+                          tabindex="0"
+                          class="flex flex-col items-stretch gap-2 rounded-xl border border-base-300 p-2 text-left cursor-pointer hover:border-base-content/40 transition-colors"
+                          style="background:${hex(
+                            p,
+                            "page",
+                            "#1f2937",
+                          )}; color:${hex(p, "text", "#e5e7eb")};"
+                          @click="${() => apply(t)}"
+                          data-tip="Apply ${t.name}"
                         >
                           <div
-                            class="flex items-center gap-1 px-2 h-6"
-                            style="background:${hex(p, "header", hex(p, "page", "#111827"))};"
-                          >
-                            <span
-                              class="w-3 h-3 rounded-full flex-none"
-                              style="background:${hex(p, "accent", "#00babc")};"
-                            ></span>
-                            <span
-                              class="flex-1 h-2 rounded"
-                              style="background:${hex(p, "input", hex(p, "page", "#1f2937"))};"
-                            ></span>
-                          </div>
-                          <div class="flex items-center gap-1.5 px-2 pt-2">
-                            <span
-                              class="w-5 h-5 rounded-full flex-none"
-                              style="background:${hex(p, "accent", "#00babc")};"
-                            ></span>
-                            <div class="flex flex-col gap-1">
-                              <span
-                                class="h-1.5 w-12 rounded"
-                                style="background:${hex(p, "text", "#e5e7eb")}; opacity:.8;"
-                              ></span>
-                              <span
-                                class="h-1.5 w-8 rounded"
-                                style="background:${hex(p, "textMuted", "#9ca3af")};"
-                              ></span>
-                            </div>
-                            <span
-                              class="ml-auto text-[8px] px-1.5 py-0.5 rounded"
-                              style="background:${hex(p, "accent", "#00babc")}; color:${hex(p, "accentText", "#ffffff")};"
-                              >button</span
-                            >
-                          </div>
-                          <div
-                            class="h-1.5 rounded-full mx-2 my-2 overflow-hidden"
-                            style="background:${hex(p, "hover", hex(p, "page", "#1f2937"))};"
+                            class="rounded-lg overflow-hidden border"
+                            style="border-color:${hex(p, "border", "#374151")};"
                           >
                             <div
-                              class="h-full w-2/3"
-                              style="background:${hex(p, "accent", "#00babc")};"
-                            ></div>
+                              class="flex items-center gap-1 px-2 h-6"
+                              style="background:${hex(
+                                p,
+                                "header",
+                                hex(p, "page", "#111827"),
+                              )};"
+                            >
+                              <span
+                                class="w-3 h-3 rounded-full flex-none"
+                                style="background:${hex(
+                                  p,
+                                  "accent",
+                                  "#00babc",
+                                )};"
+                              ></span>
+                              <span
+                                class="flex-1 h-2 rounded"
+                                style="background:${hex(
+                                  p,
+                                  "input",
+                                  hex(p, "page", "#1f2937"),
+                                )};"
+                              ></span>
+                            </div>
+                            <div class="flex items-center gap-1.5 px-2 pt-2">
+                              <span
+                                class="w-5 h-5 rounded-full flex-none"
+                                style="background:${hex(
+                                  p,
+                                  "accent",
+                                  "#00babc",
+                                )};"
+                              ></span>
+                              <div class="flex flex-col gap-1">
+                                <span
+                                  class="h-1.5 w-12 rounded"
+                                  style="background:${hex(
+                                    p,
+                                    "text",
+                                    "#e5e7eb",
+                                  )}; opacity:.8;"
+                                ></span>
+                                <span
+                                  class="h-1.5 w-8 rounded"
+                                  style="background:${hex(
+                                    p,
+                                    "textMuted",
+                                    "#9ca3af",
+                                  )};"
+                                ></span>
+                              </div>
+                              <span
+                                class="ml-auto text-[8px] px-1.5 py-0.5 rounded"
+                                style="background:${hex(
+                                  p,
+                                  "accent",
+                                  "#00babc",
+                                )}; color:${hex(p, "accentText", "#ffffff")};"
+                                >button</span
+                              >
+                            </div>
+                            <div
+                              class="h-1.5 rounded-full mx-2 my-2 overflow-hidden"
+                              style="background:${hex(
+                                p,
+                                "hover",
+                                hex(p, "page", "#1f2937"),
+                              )};"
+                            >
+                              <div
+                                class="h-full w-2/3"
+                                style="background:${hex(
+                                  p,
+                                  "accent",
+                                  "#00babc",
+                                )};"
+                              ></div>
+                            </div>
                           </div>
-                        </div>
-                        <div class="flex items-center justify-between gap-1 min-w-0">
-                          <span class="text-sm font-semibold truncate"
-                            >${t.name}</span
+                          <div
+                            class="flex items-center justify-between gap-1 min-w-0"
                           >
+                            <span class="text-sm font-semibold truncate"
+                              >${t.name}</span
+                            >
+                            <span
+                              class="badge badge-sm flex-none ${t.mode ===
+                              "light"
+                                ? "badge-ghost"
+                                : "badge-neutral"}"
+                              style="font-size:.6rem; text-transform:uppercase;"
+                              >${t.mode}</span
+                            >
+                          </div>
                           <span
-                            class="badge badge-sm flex-none ${t.mode === "light"
-                              ? "badge-ghost"
-                              : "badge-neutral"}"
-                            style="font-size:.6rem; text-transform:uppercase;"
-                            >${t.mode}</span
+                            class="flex items-center gap-1 text-xs opacity-60 min-w-0"
                           >
-                        </div>
-                        <span class="text-xs opacity-60 truncate"
-                          >by ${t.author}${t.createdAt
-                            ? ` · ${formatAbsoluteDateTime(t.createdAt)}`
-                            : ""}</span
-                        >
-                      </button>`;
-                    })}
-                  </div>`}
+                            <a
+                              href="https://profile-v3.intra.42.fr/users/${t.author}"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="truncate hover:opacity-100 hover:underline"
+                              title="${t.author}"
+                              @click="${(e: Event) => e.stopPropagation()}"
+                              >by ${t.author}</a
+                            >
+                            ${t.createdAt
+                              ? html`<span class="flex-none"
+                                  >·
+                                  ${formatAbsoluteDateTime(t.createdAt)}</span
+                                >`
+                              : ""}
+                          </span>
+                        </div>`;
+                      })}
+                    </div>`}
         </div>
       </div>`,
       shadow,

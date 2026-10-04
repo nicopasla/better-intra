@@ -210,6 +210,10 @@ export type HubSettingDef = {
   grid?: boolean;
   colSpan?: number;
   fullWidth?: boolean;
+  group?: string;
+  groupLabel?: string;
+  groupInline?: boolean;
+  groupFlex?: number;
   dependsOn?: ConfigKey;
   requiresCloud?: boolean;
   min?: number;
@@ -375,6 +379,8 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       desc: "Font applied to the whole Intra interface, including Better Intra.",
       kind: "font-preset",
       fullWidth: true,
+      group: "fonts",
+      groupLabel: "Fonts",
       defaultValue: CONFIG_DEFAULT.GENERAL_FONT,
       options: SANS_FONTS.map((f) => ({
         label: f.label,
@@ -385,11 +391,26 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     {
       feature: "appearance",
       subTab: "theme",
+      key: "GENERAL_FONT_FILE_NAME",
+      label: "Imported font",
+      desc: "Use a font file from your computer (.woff2, .woff, .ttf, .otf). Maximum 4 MB, stored locally only.",
+      kind: "font-import",
+      fullWidth: true,
+      group: "fonts",
+      groupFlex: 1,
+      defaultValue: CONFIG_DEFAULT.GENERAL_FONT_FILE_NAME,
+    },
+    {
+      feature: "appearance",
+      subTab: "theme",
       key: "GENERAL_FONT_SCALE",
       label: "Font size",
       desc: "Scales all text across Intra and Better Intra. Lower it if the selected font feels too big.",
       kind: "font-scale",
       fullWidth: true,
+      group: "fonts",
+      groupInline: true,
+      groupFlex: 1,
       defaultValue: CONFIG_DEFAULT.GENERAL_FONT_SCALE,
       options: [
         { label: "Aa", value: "80" },
@@ -398,16 +419,6 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
         { label: "Aa", value: "110" },
         { label: "Aa", value: "125" },
       ],
-    },
-    {
-      feature: "appearance",
-      subTab: "theme",
-      key: "GENERAL_FONT_FILE_NAME",
-      label: "Imported font",
-      desc: "Use a font file from your computer (.woff2, .woff, .ttf, .otf). Maximum 4 MB, stored locally only.",
-      kind: "font-import",
-      fullWidth: true,
-      defaultValue: CONFIG_DEFAULT.GENERAL_FONT_FILE_NAME,
     },
     {
       feature: "appearance",

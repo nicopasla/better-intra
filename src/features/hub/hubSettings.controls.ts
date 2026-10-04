@@ -381,38 +381,38 @@ function renderThemeAccentControl(
               >Community themes</span
             >
           </button>
-<label
-              class="cursor-pointer"
-              style="display:flex; flex-direction:row; align-items:center; gap:0.5rem; padding:0.6rem 0.9rem; border-radius:0.75rem; border:1px solid var(--color-base-300); background:var(--color-base-100);"
+          <label
+            class="cursor-pointer"
+            style="display:flex; flex-direction:row; align-items:center; gap:0.5rem; padding:0.6rem 0.9rem; border-radius:0.75rem; border:1px solid var(--color-base-300); background:var(--color-base-100);"
+          >
+            <input
+              type="checkbox"
+              class="toggle toggle-primary"
+              ?checked="${isSchedule}"
+              ?disabled="${!enabled}"
+              @change="${(e: Event) =>
+                setSchedule((e.target as HTMLInputElement).checked)}"
+            />
+            <span
+              style="display:flex; flex-direction:column; align-items:flex-start;"
             >
-              <input
-                type="checkbox"
-                class="toggle toggle-primary"
-                ?checked="${isSchedule}"
-                ?disabled="${!enabled}"
-                @change="${(e: Event) =>
-                  setSchedule((e.target as HTMLInputElement).checked)}"
-              />
-              <span
-                style="display:flex; flex-direction:column; align-items:flex-start;"
-              >
-                <span style="font-size:0.875rem; font-weight:600;">Auto</span>
-                ${sunTimes
-                  ? html`<span
-                      style="display:flex; align-items:center; gap:0.25rem; font-size:0.75rem; opacity:0.7;"
-                    >
-                      <span
-                        style="display:inline-flex; width:0.85rem; height:0.85rem;"
-                        >${unsafeHTML(SUNSET_SVG)}</span
-                      >${sunTimes.sunset}
-                      <span
-                        style="display:inline-flex; width:0.85rem; height:0.85rem; margin-left:0.25rem;"
-                        >${unsafeHTML(SUNRISE_SVG)}</span
-                      >${sunTimes.sunrise}
-                    </span>`
-                  : ""}
-              </span>
-            </label>
+              <span style="font-size:0.875rem; font-weight:600;">Auto</span>
+              ${sunTimes
+                ? html`<span
+                    style="display:flex; align-items:center; gap:0.25rem; font-size:0.75rem; opacity:0.7;"
+                  >
+                    <span
+                      style="display:inline-flex; width:0.85rem; height:0.85rem;"
+                      >${unsafeHTML(SUNSET_SVG)}</span
+                    >${sunTimes.sunset}
+                    <span
+                      style="display:inline-flex; width:0.85rem; height:0.85rem; margin-left:0.25rem;"
+                      >${unsafeHTML(SUNRISE_SVG)}</span
+                    >${sunTimes.sunrise}
+                  </span>`
+                : ""}
+            </span>
+          </label>
           <button
             type="button"
             class="text-left"
@@ -1100,7 +1100,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                 ?disabled="${!enabled}"
                 style="font-family: ${fontFamily}; font-size: 0.95rem; border: 2px solid ${selected
                   ? "var(--color-primary)"
-                  : "transparent"};"
+                  : "var(--color-base-300)"};"
                 @mousedown="${(e: Event) => e.stopPropagation()}"
                 @click="${(e: Event) => {
                   e.stopPropagation();
@@ -1114,7 +1114,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                       el.style.border =
                         el.dataset.fontOption === o.value
                           ? "2px solid var(--color-primary)"
-                          : "2px solid transparent";
+                          : "2px solid var(--color-base-300)";
                     });
                 }}"
               >
@@ -1136,7 +1136,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                 ?disabled="${!enabled}"
                 style="font-size: ${previewSize}px; border: 2px solid ${selected
                   ? "var(--color-primary)"
-                  : "transparent"};"
+                  : "var(--color-base-300)"};"
                 @mousedown="${(e: Event) => e.stopPropagation()}"
                 @click="${(e: Event) => {
                   e.stopPropagation();
@@ -1150,7 +1150,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                       el.style.border =
                         el.dataset.fontScale === o.value
                           ? "2px solid var(--color-primary)"
-                          : "2px solid transparent";
+                          : "2px solid var(--color-base-300)";
                     });
                 }}"
               >
@@ -1384,8 +1384,6 @@ function renderSetting(def: HubSettingDef, enabled: boolean, hidden?: boolean) {
   }
 
   const COLSPAN_CLASSES = ["col-span-1", "col-span-2", "col-span-3"] as const;
-  const isFullWidth =
-    def.fullWidth ?? (def.kind === "url" || def.kind === "shortcuts");
   const gridClass =
     def.colSpan != null
       ? (COLSPAN_CLASSES[def.colSpan - 1] ?? "col-span-full")
@@ -1399,22 +1397,80 @@ function renderSetting(def: HubSettingDef, enabled: boolean, hidden?: boolean) {
         : "opacity-40 grayscale"}"
     data-search="${searchHaystack(def)}"
   >
-    <div
-      class="flex ${isFullWidth
-        ? "flex-col"
-        : "flex-col sm:flex-row sm:items-center"} justify-between gap-3 sm:gap-4"
-    >
-      <div class="flex flex-col">
-        <span class="text-sm">${def.label}</span>
-        ${def.desc
-          ? html`<span class="text-xs opacity-50">${def.desc}</span>`
-          : ""}
-      </div>
-      <div
-        class="${isFullWidth ? "w-full" : "flex-none self-end sm:self-auto"}"
-      >
-        ${renderSettingControl(def, enabled)}
-      </div>
+    ${renderSettingInner(def, enabled)}
+  </div>`;
+}
+
+function renderSettingInner(def: HubSettingDef, enabled: boolean) {
+  const isFullWidth =
+    def.fullWidth ?? (def.kind === "url" || def.kind === "shortcuts");
+  return html`<div
+    class="flex ${isFullWidth
+      ? "flex-col"
+      : "flex-col sm:flex-row sm:items-center"} justify-between gap-3 sm:gap-4"
+  >
+    <div class="flex flex-col">
+      <span class="text-sm">${def.label}</span>
+      ${def.desc
+        ? html`<span class="text-xs opacity-50">${def.desc}</span>`
+        : ""}
+    </div>
+    <div class="${isFullWidth ? "w-full" : "flex-none self-end sm:self-auto"}">
+      ${renderSettingControl(def, enabled)}
+    </div>
+  </div>`;
+}
+
+interface ResolvedSetting {
+  def: HubSettingDef;
+  enabled: boolean;
+  hidden: boolean;
+}
+
+function renderGroupEntry(e: ResolvedSetting) {
+  return html`<div
+    class="flex flex-col gap-1.5 h-full rounded-lg p-3"
+    style="border:1px solid color-mix(in oklab, var(--color-base-content) 22%, transparent); background:color-mix(in oklab, var(--color-base-content) 3%, transparent);"
+  >
+    <span class="text-xs opacity-60">${e.def.label}</span>
+    <div class="${e.enabled ? "" : "opacity-40 grayscale"}">
+      ${renderSettingControl(e.def, e.enabled)}
+    </div>
+  </div>`;
+}
+
+function renderSettingGroup(label: string, entries: ResolvedSetting[]) {
+  const allHidden = entries.every((e) => e.hidden);
+  const rows: ResolvedSetting[][] = [];
+  for (const e of entries) {
+    if (e.def.groupInline && rows.length > 0) rows[rows.length - 1].push(e);
+    else rows.push([e]);
+  }
+  return html`<div
+    class="card bg-base-200 shadow-sm p-3 sm:p-4 col-span-full ${allHidden
+      ? "hidden"
+      : ""}"
+    data-search="${entries.map((e) => searchHaystack(e.def)).join(" ")}"
+  >
+    <span class="text-sm font-semibold">${label}</span>
+    <div class="flex flex-col gap-3 mt-3">
+      ${rows.map((row) =>
+        row.length === 1
+          ? renderGroupEntry(row[0])
+          : html`<div class="flex flex-col sm:flex-row gap-3">
+              ${row.map((e) => {
+                const gf = e.def.groupFlex ?? 1;
+                const flexStyle =
+                  gf === 0 ? "flex:0 0 auto;" : `flex:${gf} 1 0%;`;
+                return html`<div
+                  class="min-w-0"
+                  style="${flexStyle}${gf === 0 ? "margin-left:auto;" : ""}"
+                >
+                  ${renderGroupEntry(e)}
+                </div>`;
+              })}
+            </div>`,
+      )}
     </div>
   </div>`;
 }
@@ -1426,15 +1482,34 @@ export function renderSettingList(
   disabledDeps: Set<string>,
   hiddenDeps: Set<string>,
 ) {
-  return defs.map((def) => {
-    const hidden = !!(def.key && hiddenDeps.has(def.key));
-    return renderSetting(
-      def,
+  const resolve = (def: HubSettingDef): ResolvedSetting => ({
+    def,
+    hidden: !!(def.key && hiddenDeps.has(def.key)),
+    enabled:
       isAlwaysEnabled ||
-        (enabled &&
-          !(def.key && disabledDeps.has(def.key)) &&
-          !(def.requiresCloud && disabledDeps.has("__CLOUD__"))),
-      hidden,
-    );
+      (enabled &&
+        !(def.key && disabledDeps.has(def.key)) &&
+        !(def.requiresCloud && disabledDeps.has("__CLOUD__"))),
   });
+
+  const out: unknown[] = [];
+  for (let i = 0; i < defs.length; i++) {
+    const def = defs[i];
+    if (def.group && def.kind !== "divider") {
+      const entries: ResolvedSetting[] = [];
+      let label = def.groupLabel ?? def.group;
+      let j = i;
+      while (j < defs.length && defs[j].group === def.group) {
+        if (defs[j].groupLabel) label = defs[j].groupLabel!;
+        entries.push(resolve(defs[j]));
+        j++;
+      }
+      i = j - 1;
+      out.push(renderSettingGroup(label, entries));
+    } else {
+      const { enabled: rowEnabled, hidden } = resolve(def);
+      out.push(renderSetting(def, rowEnabled, hidden));
+    }
+  }
+  return out;
 }

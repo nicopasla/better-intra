@@ -3,7 +3,8 @@ import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { sharedCSS } from "../../assets/shared-styles.ts";
 import { adoptShadowCss } from "../../utils/shadow-styles.ts";
 import { waitFor } from "../../utils/wait-for.ts";
-import { getEffectiveTheme } from "../profile/theme/theme-manager.ts";
+import { getEffectiveTheme, THEMES } from "../profile/theme/theme-manager.ts";
+import { getConfig } from "../../config.ts";
 import {
   getTrackerState,
   computeWeekProgress,
@@ -60,47 +61,19 @@ function renderCard(
       <div class="card shadow-sm">
         <div class="card-body p-3 gap-2">
           <div class="flex items-center">
-            <select
-              class="select select-xs select-ghost font-bold text-sm w-auto max-w-48"
-              @change="${(e: Event) => {
-                const val = (e.target as HTMLSelectElement).value;
-                saveTrackerMode(val).then(() => window.location.reload());
-              }}"
-            >
-              <option value="off" ?selected="${!TRACKER_MODES.includes(trackerState.mode)}">
-                Off
-              </option>
-              <optgroup label="Phoenix">
-              ${["phoenix-1", "phoenix-2", "phoenix-3", "phoenix-4"].map(
-                (m) => {
-                  const s = getTrackerStateSync(m);
-                  const selected = m === trackerState.mode;
-                  return html`
-                    <option value="${m}" ?selected="${selected}">
-                      ${s?.label}
-                    </option>
-                  `;
-                },
-              )}
-              </optgroup>
-              <optgroup label="Pegasus">
-              ${[
-                "pegasus-bronze",
-                "pegasus-silver",
-                "pegasus-gold",
-                "pegasus-diamond",
-                "pegasus-vibranium",
-              ].map((m) => {
+            <div class="flex flex-wrap gap-1">
+              ${TRACKER_MODES.map((m) => {
                 const s = getTrackerStateSync(m);
-                const selected = m === trackerState.mode;
-                return html`
-                  <option value="${m}" ?selected="${selected}">
-                    ${s?.label}
-                  </option>
-                `;
+                const active = m === trackerState.mode;
+                return html`<button
+                  type="button"
+                  class="btn btn-xs ${active ? "btn-primary" : "btn-ghost"}"
+                  @click="${() => saveTrackerMode(m)}"
+                >
+                  ${s?.label ?? m}
+                </button>`;
               })}
-              </optgroup>
-            </select>
+            </div>
             <div class="flex-1"></div>
           </div>
           </div>
@@ -230,10 +203,11 @@ function updateBadgeIndicator() {
 }
 
 function renderPopover() {
-  if (!_state || !_badgeEl) return;
+  if (!_badgeEl) return;
   if (_popoverHost) closePopover();
 
-  const progress = lastStats ? computeWeekProgress(lastStats, _state) : null;
+  const progress =
+    _state && lastStats ? computeWeekProgress(lastStats, _state) : null;
 
   _popoverHost = document.createElement("div");
   _popoverHost.style.cssText = "position:absolute;z-index:99999;width:200px;";
@@ -249,72 +223,85 @@ function renderPopover() {
     const theme = await getEffectiveTheme();
     const daisyTheme = theme === "light" ? "light" : "dark";
     const t = _state!.thresholds;
+    const presetKey = await getConfig("PROFILE_THEME_PRESET");
+    const preset = THEMES[presetKey] ?? THEMES["dark"];
+    const primaryColor = `hsl(${preset.primary})`;
+    const primaryContent = `hsl(${preset.primaryForeground})`;
     render(
       html`
         <div data-theme="${daisyTheme}">
           <div class="card card-compact ft-popover bg-base-100">
             <div class="card-body p-3">
-              <div class="mb-1">
-                <select
-                  class="select select-xs select-ghost w-full"
-                  @change="${(e: Event) => {
-                    const val = (e.target as HTMLSelectElement).value;
-                    saveTrackerMode(val).then(() => window.location.reload());
-                  }}"
-                >
-                  ${TRACKER_MODES.filter((m) => m.startsWith(_badgeType!)).map(
-                    (m) => {
-                      const s = getTrackerStateSync(m);
-                      const selected = m === _state!.mode;
-                      return html`
-                        <option value="${m}" ?selected="${selected}">
-                          ${s?.label.replace(/^(Phoenix|Pegasus) - /, "")}
-                        </option>
-                      `;
-                    },
-                  )}
-                </select>
+              <div class="mb-1 flex flex-wrap items-center gap-1">
+                ${TRACKER_MODES.filter((m) => m.startsWith(_badgeType!)).map(
+                  (m, i) => {
+                    const s = getTrackerStateSync(m);
+                    const active = m === _state!.mode;
+                    const shortLabel =
+                      s?.label.replace(/^(Phoenix|Pegasus) - /, "") ?? m;
+                    if (active) {
+                      return html`<button
+                        type="button"
+                        class="btn btn-md"
+                        style="background-color:${primaryColor};border-color:${primaryColor};color:${primaryContent};"
+                        @click="${() => setTrackerMode(m)}"
+                      >
+                        ${shortLabel}
+                      </button>`;
+                    }
+                    return html`<button
+                      type="button"
+                      class="btn btn-xs btn-ghost btn-square"
+                      title="${shortLabel}"
+                      @click="${() => setTrackerMode(m)}"
+                    >
+                      ${i + 1}
+                    </button>`;
+                  },
+                )}
               </div>
-              <div class="grid grid-cols-2 gap-2">
-                ${progress
-                  ? html`
-                      <div
-                        class="card card-compact"
-                        style="background:${progress.daysDone >= t.days
-                          ? "rgba(16,185,129,0.15)"
-                          : "rgba(239,68,68,0.15)"}"
-                      >
-                        <div class="card-body p-2 items-center text-center">
-                          <span class="text-xs opacity-60">Days</span>
-                          <span class="font-bold tabular-nums font-mono"
-                            >${progress.daysDone}/${t.days}</span
+              ${_state
+                ? html`<div class="grid grid-cols-2 gap-2">
+                    ${progress
+                      ? html`
+                          <div
+                            class="card card-compact"
+                            style="background:${progress.daysDone >= t.days
+                              ? "rgba(16,185,129,0.15)"
+                              : "rgba(239,68,68,0.15)"}"
                           >
-                        </div>
-                      </div>
-                      <div
-                        class="card card-compact"
-                        style="background:${progress.hoursDone >= t.hours
-                          ? "rgba(16,185,129,0.15)"
-                          : "rgba(239,68,68,0.15)"}"
-                      >
-                        <div class="card-body p-2 items-center text-center">
-                          <span class="text-xs opacity-60">Hours</span>
-                          <span class="font-bold tabular-nums font-mono"
-                            >${formatHours(progress.hoursDone)}/${formatHours(
-                              t.hours,
-                            )}</span
+                            <div class="card-body p-2 items-center text-center">
+                              <span class="text-xs opacity-60">Days</span>
+                              <span class="font-bold tabular-nums font-mono"
+                                >${progress.daysDone}/${t.days}</span
+                              >
+                            </div>
+                          </div>
+                          <div
+                            class="card card-compact"
+                            style="background:${progress.hoursDone >= t.hours
+                              ? "rgba(16,185,129,0.15)"
+                              : "rgba(239,68,68,0.15)"}"
                           >
-                        </div>
-                      </div>
-                    `
-                  : html`
-                      <div
-                        class="col-span-2 text-center text-xs opacity-50 py-2"
-                      >
-                        No logtime data yet.
-                      </div>
-                    `}
-              </div>
+                            <div class="card-body p-2 items-center text-center">
+                              <span class="text-xs opacity-60">Hours</span>
+                              <span class="font-bold tabular-nums font-mono"
+                                >${formatHours(
+                                  progress.hoursDone,
+                                )}/${formatHours(t.hours)}</span
+                              >
+                            </div>
+                          </div>
+                        `
+                      : html`
+                          <div
+                            class="col-span-2 text-center text-xs opacity-50 py-2"
+                          >
+                            No logtime data yet.
+                          </div>
+                        `}
+                  </div>`
+                : ""}
             </div>
           </div>
         </div>
@@ -335,6 +322,13 @@ function renderPopover() {
   _popoverHost.addEventListener("mouseleave", () => {
     _popoverTimer = setTimeout(closePopover, 100);
   });
+}
+
+async function setTrackerMode(mode: string) {
+  await saveTrackerMode(mode);
+  _state = await getTrackerState();
+  updateBadgeIndicator();
+  renderPopover();
 }
 
 function closePopover() {

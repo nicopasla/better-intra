@@ -206,7 +206,7 @@ async function createModal(
         font-family: ${INTRA_FONT};
       }
       input,
-      button,
+      button:not([data-font-option]),
       select,
       textarea,
       .tab,

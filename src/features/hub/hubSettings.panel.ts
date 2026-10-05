@@ -88,6 +88,7 @@ export function bindPanelControls(root: ParentNode, shadow: ShadowRoot): void {
         title: `Reset ${name}`,
         message: `Reset all ${name} settings? This can't be undone.`,
         confirmLabel: "Reset",
+        danger: true,
       });
       if (!ok) return;
       await resetFeatureSettings(shadow, id);

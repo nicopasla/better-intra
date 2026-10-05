@@ -8,6 +8,7 @@ interface ConfirmDialogOptions {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  danger?: boolean;
 }
 
 interface AlertDialogOptions {
@@ -39,6 +40,7 @@ export async function showConfirmDialog(
     message,
     confirmLabel = "Confirm",
     cancelLabel = "Cancel",
+    danger = false,
   } = options;
 
   const dialog = createDialogElement();
@@ -83,13 +85,17 @@ export async function showConfirmDialog(
         </div>
         <div class="flex gap-2 mt-2 w-full">
           <button
-            class="btn btn-md flex-1 btn-success font-bold"
+            class="btn btn-md flex-1 ${danger
+              ? "btn-ghost"
+              : "btn-error"} font-bold"
             @click="${() => resolve(false)}"
           >
             ${cancelLabel}
           </button>
           <button
-            class="btn btn-md flex-1 btn-error font-bold"
+            class="btn btn-md flex-1 ${danger
+              ? "btn-error"
+              : "btn-success"} font-bold"
             @click="${() => resolve(true)}"
           >
             ${confirmLabel}

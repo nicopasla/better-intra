@@ -1318,6 +1318,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                   message:
                     "This will clear ALL Better Intra settings and reload. Continue?",
                   confirmLabel: "Reset",
+                  danger: true,
                 });
                 if (ok) {
                   await chrome.storage.local.clear();

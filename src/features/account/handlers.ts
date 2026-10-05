@@ -55,6 +55,7 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
       message: "Disconnect and clear your cloud session data locally?",
       confirmLabel: "Disconnect",
       cancelLabel: "Cancel",
+      danger: true,
     });
     if (!confirmed) return;
     // Clearing CLOUD_TOKEN closes the popup and makes the background reload
@@ -69,6 +70,7 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
         "This will permanently delete ALL your saved settings and sessions from the cloud. Are you sure?",
       confirmLabel: "Wipe",
       cancelLabel: "Cancel",
+      danger: true,
     });
     if (!confirmed) return;
 
@@ -255,6 +257,7 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
       message: `Sign out ${session?.label || "this device"}?`,
       confirmLabel: "Revoke",
       cancelLabel: "Cancel",
+      danger: true,
     });
     if (!confirmed) return;
 
@@ -295,6 +298,7 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
       }?`,
       confirmLabel: "Sign out",
       cancelLabel: "Cancel",
+      danger: true,
     });
     if (!confirmed) return;
 

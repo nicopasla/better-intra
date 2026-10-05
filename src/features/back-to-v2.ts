@@ -36,6 +36,7 @@ export function initBackToV2Confirm(): void {
             "You're leaving the new v3 profile. Better Intra is designed for v3, so its customizations won't apply on v2.",
           confirmLabel: "Switch to v2",
           cancelLabel: "Stay on v3",
+          danger: true,
         });
         if (ok) {
           window.location.href = anchor.href;

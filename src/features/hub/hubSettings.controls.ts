@@ -1123,8 +1123,17 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
             })}
           </div>`;
 
-        case "font-scale":
-          return html`<div class="flex flex-wrap gap-1 w-full items-end">
+        case "font-scale": {
+          const setBorders = (container: Element | null, active: string) => {
+            container?.querySelectorAll("[data-font-scale]").forEach((b) => {
+              const el = b as HTMLButtonElement;
+              el.style.border =
+                el.dataset.fontScale === active
+                  ? "2px solid var(--color-primary)"
+                  : "2px solid var(--color-base-300)";
+            });
+          };
+          return html`<div class="flex flex-wrap gap-1 w-full items-center">
             ${(def.options ?? []).map((o) => {
               const selected = String(o.value) === String(value);
               const previewSize = Number(o.value) * 0.15;
@@ -1142,22 +1151,47 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                   e.stopPropagation();
                   const btn = e.currentTarget as HTMLButtonElement;
                   saveSetting(def.key!, Number(o.value));
-                  btn
-                    .closest(".flex")!
-                    .querySelectorAll("[data-font-scale]")
-                    .forEach((b) => {
-                      const el = b as HTMLButtonElement;
-                      el.style.border =
-                        el.dataset.fontScale === o.value
-                          ? "2px solid var(--color-primary)"
-                          : "2px solid var(--color-base-300)";
-                    });
+                  const container = btn.closest(".flex");
+                  setBorders(container, o.value ?? "");
+                  const input = container?.querySelector<HTMLInputElement>(
+                    "[data-font-scale-input]",
+                  );
+                  if (input) input.value = String(o.value);
                 }}"
               >
                 ${o.label}
               </button>`;
             })}
+            <label
+              class="input input-sm input-accent w-16 flex-none flex items-center gap-0.5"
+            >
+              <input
+                type="number"
+                class="w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                min="70"
+                max="150"
+                step="1"
+                .value="${String(value)}"
+                data-font-scale-input
+                ?disabled="${!enabled}"
+                @mousedown="${(e: Event) => e.stopPropagation()}"
+                @click="${(e: Event) => e.stopPropagation()}"
+                @change="${(e: Event) => {
+                  e.stopPropagation();
+                  const input = e.currentTarget as HTMLInputElement;
+                  const clamped = Math.min(
+                    150,
+                    Math.max(70, Math.round(Number(input.value) || 100)),
+                  );
+                  input.value = String(clamped);
+                  saveSetting(def.key!, clamped);
+                  setBorders(input.closest(".flex"), String(clamped));
+                }}"
+              />
+              <span class="opacity-70">%</span>
+            </label>
           </div>`;
+        }
 
         case "font-import":
           return html`<div

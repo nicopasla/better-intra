@@ -7,6 +7,7 @@ import { bindTooltips } from "../../utils/tooltip.ts";
 import { getIsLight } from "./theme/theme-manager.ts";
 import ARROW_SHARE_SVG from "../../assets/svg/arrow_share.svg?raw";
 import { initShortcutButtons, initFriendBadge } from "./personal-info.ts";
+import { getLoginFromPage } from "../../utils/profile-login.ts";
 
 const PROFILE_CARD_CLASS = "ft-profile-card";
 const SHADOW_HOST_ID = "profile-badges-shadow";
@@ -14,6 +15,209 @@ const INFO_CARD_ID = "ft-info-card";
 
 let _badgeTheme: string = "dark";
 let _cursusListenerInitialized = false;
+
+let _exactLogin: string | null = null;
+let _exactRunPromise: Promise<void> | null = null;
+const _exactAttempted = new Set<string>();
+const _exactTries = new Map<string, number>();
+const _exactCache = new Map<string, string>();
+
+/** Reads the exact number from a Radix tooltip by briefly opening its trigger. */
+async function readTooltipExact(trigger: HTMLElement): Promise<string | null> {
+  const pointerInit: PointerEventInit = {
+    bubbles: true,
+    cancelable: true,
+    pointerType: "mouse",
+    pointerId: 1,
+    isPrimary: true,
+    button: -1,
+    buttons: 0,
+  };
+  const pointer = (type: string, bubbles = true) => {
+    try {
+      trigger.dispatchEvent(
+        new PointerEvent(type, { ...pointerInit, bubbles }),
+      );
+    } catch {
+      // ignore
+    }
+  };
+  const mouse = (type: string, bubbles: boolean) =>
+    trigger.dispatchEvent(
+      new MouseEvent(type, {
+        bubbles,
+        cancelable: true,
+        button: -1,
+        buttons: 0,
+      }),
+    );
+
+  // Focus opens the tooltip immediately (Radix opens on focus, no hover delay).
+  try {
+    trigger.focus({ preventScroll: true });
+    trigger.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    trigger.dispatchEvent(new FocusEvent("focus", { bubbles: false }));
+  } catch {
+    // ignore
+  }
+
+  pointer("pointerenter", false);
+  pointer("pointerover", true);
+  pointer("pointermove", true);
+  mouse("mouseenter", false);
+  mouse("mouseover", true);
+  mouse("mousemove", true);
+
+  let text: string | null = null;
+  try {
+    const deadline = Date.now() + 600;
+    while (Date.now() < deadline) {
+      const exact = readTriggerTooltip(trigger);
+      if (exact) {
+        text = exact;
+        break;
+      }
+      await new Promise((r) => setTimeout(r, 40));
+    }
+  } finally {
+    pointer("pointerleave", false);
+    pointer("pointerout", true);
+    mouse("mouseleave", false);
+    mouse("mouseout", true);
+    try {
+      trigger.blur();
+    } catch {
+      // ignore
+    }
+  }
+  return text;
+}
+
+/** Extracts the numeric text from the tooltip bound to a specific trigger. */
+function readTriggerTooltip(trigger: HTMLElement): string | null {
+  const id = trigger.getAttribute("aria-describedby");
+  if (id) {
+    const el = document.getElementById(id);
+    if (el) {
+      const raw = (el.textContent ?? "").trim();
+      if (/\d/.test(raw)) return raw;
+    }
+  }
+  // Fallback only when this trigger itself is open, so a stale tooltip from
+  // another stat can't be misattributed.
+  const state = trigger.getAttribute("data-state");
+  if (state === "open" || state === "delayed-open") {
+    const el = document.querySelector<HTMLElement>('[role="tooltip"]');
+    const raw = (el?.textContent ?? "").trim();
+    if (/\d/.test(raw)) return raw;
+  }
+  return null;
+}
+
+/** True when a stat value is abbreviated for display (e.g. "4.1k", "1.2M"). */
+function isAbbreviated(value: string): boolean {
+  return /\d\s*[kKmM]\b/.test(value) || /\d[.,]\d+\s*[kKmM]$/.test(value);
+}
+
+/** Patches a stat's exact value into both the info card badge and the native stats bar. */
+function setStatValue(label: string, text: string): void {
+  const target = label.trim();
+
+  const wrapper = document
+    .getElementById(SHADOW_HOST_ID)
+    ?.shadowRoot?.getElementById(INFO_CARD_ID);
+  wrapper?.querySelectorAll<HTMLElement>("[data-ft-badge]").forEach((badge) => {
+    const badgeLabel = badge.querySelector<HTMLElement>(".label");
+    if (badgeLabel?.textContent?.trim() !== target) return;
+    const value = badge.querySelector<HTMLElement>(".value");
+    if (value) value.textContent = text;
+  });
+
+  const statsBar = document.querySelector<HTMLElement>(".border-t-neutral-600");
+  if (!statsBar) return;
+  for (const child of statsBar.children) {
+    const el = child as HTMLElement;
+    const nodes = el.querySelectorAll<HTMLElement>("b, span, strong");
+    if (nodes.length < 2) continue;
+    if ((nodes[0].textContent?.trim() ?? "") !== target) continue;
+    const valueEl = nodes[nodes.length - 1];
+    if (valueEl && valueEl.textContent !== text) valueEl.textContent = text;
+    return;
+  }
+}
+
+function buildExactPending(): {
+  label: string;
+  value: string;
+  trigger: HTMLElement;
+}[] {
+  const statsBar = document.querySelector<HTMLElement>(".border-t-neutral-600");
+  const pending: { label: string; value: string; trigger: HTMLElement }[] = [];
+  if (!statsBar) return pending;
+  for (const child of statsBar.children) {
+    const el = child as HTMLElement;
+    const nodes = el.querySelectorAll<HTMLElement>("b, span, strong");
+    if (nodes.length < 2) continue;
+    const label = nodes[0].textContent?.trim() ?? "";
+    const value = nodes[nodes.length - 1].textContent?.trim() ?? "";
+    if (!label || !value || _exactAttempted.has(label)) continue;
+    if (!isAbbreviated(value)) continue;
+
+    const valueNode = nodes[nodes.length - 1];
+    const explicit = el.matches("[data-state]")
+      ? el
+      : el.querySelector<HTMLElement>("[data-state]");
+    pending.push({ label, value, trigger: explicit ?? valueNode ?? el });
+  }
+  return pending;
+}
+
+/** Reads the exact (un-rounded) value of each stats-bar stat from its native tooltip. */
+function enrichExactStats(): Promise<void> {
+  if (_exactRunPromise) return _exactRunPromise;
+  _exactRunPromise = runExactEnrichment().finally(() => {
+    _exactRunPromise = null;
+  });
+  return _exactRunPromise;
+}
+
+async function runExactEnrichment(): Promise<void> {
+  const login = getLoginFromPage();
+  if (_exactLogin !== login) {
+    _exactLogin = login;
+    _exactAttempted.clear();
+    _exactTries.clear();
+    _exactCache.clear();
+  }
+
+  const started = Date.now();
+  while (Date.now() - started < 3000) {
+    const pending = buildExactPending();
+    if (pending.length === 0) return;
+
+    let needsRetry = false;
+    for (const item of pending) {
+      const tries = (_exactTries.get(item.label) ?? 0) + 1;
+      _exactTries.set(item.label, tries);
+
+      const exact = await readTooltipExact(item.trigger);
+      if (!exact) {
+        // Tooltip not ready/hydrated yet — retry quickly a few times.
+        if (tries >= 6) _exactAttempted.add(item.label);
+        else needsRetry = true;
+        continue;
+      }
+      _exactAttempted.add(item.label);
+      const raw = exact.replace(/[^\d]/g, "") || exact;
+      if (raw === item.value) continue;
+      _exactCache.set(item.label, raw);
+      setStatValue(item.label, raw);
+    }
+
+    if (!needsRetry) return;
+    await new Promise((r) => setTimeout(r, 150));
+  }
+}
 
 function extractItems(statsBar: HTMLElement) {
   const items: { label: string; value: string }[] = [];
@@ -74,7 +278,7 @@ function populateMainBadges(
 
     const value = document.createElement("span");
     value.className = "value text-lg font-semibold font-mono";
-    value.textContent = item.value;
+    value.textContent = _exactCache.get(item.label) ?? item.value;
 
     if (item.label.includes("₳")) {
       badge.style.cursor = "pointer";
@@ -230,6 +434,7 @@ function pollForUpdatedStats(attempts = 0) {
   if (items.length >= 3 || (items.length >= 1 && attempts >= 8)) {
     populateMainBadges(wrapper, items);
     injectGivePointsButton(statsBar, wrapper);
+    void enrichExactStats();
     return;
   }
   if (attempts < 30) {
@@ -338,6 +543,7 @@ function startStatsPolling(profileCard: HTMLElement, attempts: number) {
         .getElementById(SHADOW_HOST_ID)
         ?.shadowRoot?.getElementById(INFO_CARD_ID);
       if (wrapper) injectGivePointsButton(statsBar, wrapper);
+      void enrichExactStats();
       if (items.length < 3) pollForUpdatedStats();
       return;
     }
@@ -622,11 +828,17 @@ export async function initProfileCardStyling() {
 
   const useModern = await getConfig("PROFILE_USE_MODERN_INFO_CARD");
   if (useModern) {
-    profileCard
-      .querySelector<HTMLElement>(".border-t-neutral-600")
-      ?.style.setProperty("display", "none", "important");
     moveStatsBar(profileCard);
     listenForCursusChange();
+    // Keep the native bar in the DOM until the exact values are read (its
+    // tooltip triggers aren't hoverable once hidden), then hide it.
+    void enrichExactStats().finally(() => {
+      profileCard
+        .querySelector<HTMLElement>(".border-t-neutral-600")
+        ?.style.setProperty("display", "none", "important");
+    });
+  } else {
+    void enrichExactStats();
   }
 
   void initShortcutButtons();

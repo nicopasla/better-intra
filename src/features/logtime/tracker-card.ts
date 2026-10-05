@@ -204,15 +204,20 @@ function updateBadgeIndicator() {
 
 function renderPopover() {
   if (!_badgeEl) return;
+  if (_popoverTimer) {
+    clearTimeout(_popoverTimer);
+    _popoverTimer = null;
+  }
   if (_popoverHost) closePopover();
 
   const progress =
     _state && lastStats ? computeWeekProgress(lastStats, _state) : null;
 
-  _popoverHost = document.createElement("div");
-  _popoverHost.style.cssText = "position:absolute;z-index:99999;width:200px;";
+  const host = document.createElement("div");
+  host.style.cssText = "position:absolute;z-index:99999;width:200px;";
+  _popoverHost = host;
 
-  const shadow = _popoverHost.attachShadow({ mode: "open" });
+  const shadow = host.attachShadow({ mode: "open" });
   adoptShadowCss(
     shadow,
     `.ft-popover { box-shadow: 0 4px 24px rgba(0,0,0,0.3); }
@@ -221,9 +226,12 @@ function renderPopover() {
 
   (async () => {
     const theme = await getEffectiveTheme();
+    const state = _state;
+    if (_popoverHost !== host || !state) return;
     const daisyTheme = theme === "light" ? "light" : "dark";
-    const t = _state!.thresholds;
+    const t = state.thresholds;
     const presetKey = await getConfig("PROFILE_THEME_PRESET");
+    if (_popoverHost !== host) return;
     const preset = THEMES[presetKey] ?? THEMES["dark"];
     const primaryColor = `hsl(${preset.primary})`;
     const primaryContent = `hsl(${preset.primaryForeground})`;
@@ -236,7 +244,7 @@ function renderPopover() {
                 ${TRACKER_MODES.filter((m) => m.startsWith(_badgeType!)).map(
                   (m, i) => {
                     const s = getTrackerStateSync(m);
-                    const active = m === _state!.mode;
+                    const active = m === state.mode;
                     const shortLabel =
                       s?.label.replace(/^(Phoenix|Pegasus) - /, "") ?? m;
                     if (active) {
@@ -309,17 +317,18 @@ function renderPopover() {
       shadow,
     );
 
-    const rect = _badgeEl!.getBoundingClientRect();
-    _popoverHost!.style.top = `${rect.bottom + 6 + window.scrollY}px`;
-    _popoverHost!.style.left = `${Math.min(rect.left + window.scrollX, document.documentElement.scrollWidth - 276)}px`;
+    const rect = _badgeEl?.getBoundingClientRect();
+    if (_popoverHost !== host || !rect) return;
+    host.style.top = `${rect.bottom + 6 + window.scrollY}px`;
+    host.style.left = `${Math.min(rect.left + window.scrollX, document.documentElement.scrollWidth - 276)}px`;
   })();
 
-  document.body.appendChild(_popoverHost);
+  document.body.appendChild(host);
 
-  _popoverHost.addEventListener("mouseenter", () => {
+  host.addEventListener("mouseenter", () => {
     if (_popoverTimer) clearTimeout(_popoverTimer);
   });
-  _popoverHost.addEventListener("mouseleave", () => {
+  host.addEventListener("mouseleave", () => {
     _popoverTimer = setTimeout(closePopover, 100);
   });
 }
@@ -332,6 +341,10 @@ async function setTrackerMode(mode: string) {
 }
 
 function closePopover() {
+  if (_popoverTimer) {
+    clearTimeout(_popoverTimer);
+    _popoverTimer = null;
+  }
   if (!_popoverHost) return;
   _popoverHost.remove();
   _popoverHost = null;

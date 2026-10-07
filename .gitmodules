@@ -1,3 +1,6 @@
 [submodule "better-intra-worker"]
 	path = better-intra-worker
 	url = https://github.com/nicopasla/better-intra-worker.git
+[submodule "better-intra-pwa"]
+	path = better-intra-pwa
+	url = https://github.com/nicopasla/better-intra-pwa.git

@@ -1,7 +1,7 @@
 {
   "entries": [
     {
-      "version": "1.10.0",
+      "version": "1.11.0",
       "highlights": [
         "A brand-new theme picker: choose from built-in themes, community themes, or your own saved looks, all in one place.",
         "Community themes — browse looks shared by other students, like your favourites, and share your own creations.",
@@ -12,7 +12,20 @@
       ]
     },
     {
+      "version": "1.10.0",
+      "date": "2026-09-28",
+      "highlights": [
+        "A new Account tab: manage your cloud account, list your devices, and revoke sessions.",
+        "Cloud backups with a three-way merge and a conflict review screen, plus manual or automatic push.",
+        "A first-run welcome screen with a guided tour and font selection.",
+        "Logtime streaks with a chip, popover, and date ranges.",
+        "Faster Students browsing with server-side pagination and wallet/evaluation badges.",
+        "New Seishin and Twilight themes, plus a guided tour for the cluster map."
+      ]
+    },
+    {
       "version": "1.9.1",
+      "date": "2026-09-24",
       "highlights": [
         "Faster startup — the extension does less background work and shares its styles more efficiently.",
         "Smoother profiles, marks, and project badges that stay in sync after the page re-renders.",
@@ -21,11 +34,96 @@
     },
     {
       "version": "1.9.0",
+      "date": "2026-09-23",
       "highlights": [
         "A reorganized settings window with an Appearance tab and a search bar to find any option quickly.",
         "A multi-year calendar for piscine students.",
-        "A polished About page with community stats and a growth chart.",
-        "Fixes for friends, announcements, and campus data."
+        "Theme sharing, custom fonts applied across the whole site, and a V2 blackhole countdown mode.",
+        "A polished About page with community stats and a growth chart."
+      ]
+    },
+    {
+      "version": "1.8.0",
+      "date": "2026-08-10",
+      "highlights": [
+        "Cluster maps for every 42 campus — see seat occupancy and who is online right now.",
+        "A new Students browser with filters, sorting, and one-click login copying.",
+        "Piscine navigation cards, an announcement banner, and campus timezones.",
+        "Friends widget improvements and richer tooltips across the extension."
+      ]
+    },
+    {
+      "version": "1.7.0",
+      "date": "2026-08-01",
+      "highlights": [
+        "A full Students dialog with sorting, filtering, and detailed badges.",
+        "A star total badge in the marks section.",
+        "Redesigned logtime buttons and project sort controls that follow your theme."
+      ]
+    },
+    {
+      "version": "1.6.0",
+      "date": "2026-07-19",
+      "highlights": [
+        "Full historical logtime with compact and heatmap calendar views.",
+        "A tracker card with mode selection and live progress.",
+        "A styled personal info card with campus flags and a custom nav-bar avatar.",
+        "Drag-to-reorder hub settings, cluster map zoom, and GitHub star/follower counts."
+      ]
+    },
+    {
+      "version": "1.5.0",
+      "date": "2026-07-12",
+      "highlights": [
+        "The Friends feature: a floating button with medals and custom avatars.",
+        "Automatic campus detection and per-campus cluster configuration.",
+        "New light themes (Soap, Citrus, Neon) alongside the dark ones.",
+        "Cloud sync with auto-push, plus export, import, and reset for your settings."
+      ]
+    },
+    {
+      "version": "1.4.0",
+      "date": "2026-07-09",
+      "highlights": [
+        "Calendar sync: subscribe to your 42 events through an ICS link, with a scannable QR code.",
+        "Project badges and detailed evaluation stats.",
+        "Your subscribed events now appear inside the logtime calendar."
+      ]
+    },
+    {
+      "version": "1.3.0",
+      "date": "2026-07-06",
+      "highlights": [
+        "13 profile themes to make the intranet yours.",
+        "A redesigned Discord settings panel and a cleaner bar under your level.",
+        "Click your money badge to open the shop, and an option to disable the new info card."
+      ]
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-06-16",
+      "highlights": [
+        "Freeze info, a custom achievements card, and a pending evaluations card.",
+        "Discord connect with OAuth2, plus evaluation notifications.",
+        "Marks sorting and caching for themes and profile visuals."
+      ]
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-06-04",
+      "highlights": [
+        "A Friends menu to track your friends' levels and activity.",
+        "An account settings menu in the sidebar.",
+        "Pool-month badges on profiles."
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-05-17",
+      "highlights": [
+        "The first public release of Better Intra.",
+        "Dark mode for the whole intranet, an About panel, and cloud sync.",
+        "Logtime, clusters, shortcuts, and profile customization from day one."
       ]
     }
   ]

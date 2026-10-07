@@ -37,6 +37,7 @@ export function openChangelogDialog(): void {
   let entries: ChangelogEntry[] = [];
   let loading = true;
   let error = false;
+  let expanded = false;
   let dialogPreset = document.documentElement.classList.contains("dark")
     ? "dark"
     : "light";
@@ -91,7 +92,7 @@ export function openChangelogDialog(): void {
       </div>`;
     }
     return html`<div class="flex flex-col gap-6">
-      ${entries.map(
+      ${(expanded ? entries : entries.slice(0, MAX_VERSIONS)).map(
         (entry, i) =>
           html`<div class="flex flex-col gap-2">
             <div class="flex items-center gap-2">
@@ -119,6 +120,20 @@ export function openChangelogDialog(): void {
             </ul>
           </div>`,
       )}
+      ${entries.length > MAX_VERSIONS
+        ? html`<button
+            type="button"
+            class="btn btn-sm btn-ghost self-center"
+            @click=${() => {
+              expanded = !expanded;
+              draw();
+            }}
+          >
+            ${expanded
+              ? "Show fewer"
+              : `Show older versions (${entries.length - MAX_VERSIONS})`}
+          </button>`
+        : ""}
     </div>`;
   };
 

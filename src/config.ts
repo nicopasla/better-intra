@@ -37,6 +37,7 @@ export interface BetterIntraConfig {
   GENERAL_FONT_FILE_NAME: string;
   GENERAL_FONT_FILE_HISTORY: { name: string; dataUri: string }[];
   DISABLE_ANIMATIONS: boolean;
+  CHANGELOG_LAST_SEEN_VERSION: string;
 
   // Cloud Sync Settings
   CLOUD_SYNC_ENABLED: boolean;
@@ -186,6 +187,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   LOGTIME_SHOW_AVERAGE: true,
   LOGTIME_SHOW_GOAL: true,
   DISABLE_ANIMATIONS: false,
+  CHANGELOG_LAST_SEEN_VERSION: "",
   LOGTIME_SHOW_TACOS: false,
   LOGTIME_SHOW_TOTAL_TACOS: false,
   LOGTIME_SHOW_STREAK: true,

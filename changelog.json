@@ -1,0 +1,32 @@
+{
+  "entries": [
+    {
+      "version": "1.10.0",
+      "highlights": [
+        "A brand-new theme picker: choose from built-in themes, community themes, or your own saved looks, all in one place.",
+        "Community themes — browse looks shared by other students, like your favourites, and share your own creations.",
+        "Automatic light & dark: let Better Intra follow the sunrise and sunset at your campus.",
+        "Exact numbers — your wallet, rank, and score now show the precise value instead of a rounded 2.0k.",
+        "More fonts, organized in a dedicated Fonts card, with a percentage size slider.",
+        "Quality of life: clearer confirmation dialogs, clickable theme authors, and a tidier logtime tracker."
+      ]
+    },
+    {
+      "version": "1.9.1",
+      "highlights": [
+        "Faster startup — the extension does less background work and shares its styles more efficiently.",
+        "Smoother profiles, marks, and project badges that stay in sync after the page re-renders.",
+        "Smaller, more reliable hover tooltips."
+      ]
+    },
+    {
+      "version": "1.9.0",
+      "highlights": [
+        "A reorganized settings window with an Appearance tab and a search bar to find any option quickly.",
+        "A multi-year calendar for piscine students.",
+        "A polished About page with community stats and a growth chart.",
+        "Fixes for friends, announcements, and campus data."
+      ]
+    }
+  ]
+}

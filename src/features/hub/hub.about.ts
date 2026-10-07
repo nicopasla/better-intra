@@ -4,6 +4,7 @@ import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { directive, Directive } from "lit-html/directive.js";
 import type { PartInfo } from "lit-html/directive.js";
 import { HUB_INFO } from "../hub/hubSettings.data.ts";
+import { openChangelogDialog } from "./changelog.ts";
 
 import GITHUB_SVG from "../../assets/svg/github.svg?raw";
 import ICON_SVG from "../../assets/svg/icon.svg?raw";
@@ -381,6 +382,13 @@ export function renderAboutPanel(): ReturnType<typeof html> {
                 >
                   <span>v${HUB_INFO.version}</span>
                 </a>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-primary font-bold"
+                  @click=${openChangelogDialog}
+                >
+                  What's new
+                </button>
                 <a
                   href="https://github.com/nicopasla/better-intra"
                   target="_blank"

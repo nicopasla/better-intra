@@ -1,9 +1,11 @@
 import { html, render } from "lit-html";
-import { FeatureId } from "./hubSettings.data.ts";
+import { FeatureId, HUB_INFO } from "./hubSettings.data.ts";
 import { getConfig } from "../../config.ts";
 import GEAR_SVG from "../../assets/svg/settings_gear.svg?raw";
 import USERS_SVG from "../../assets/svg/users.svg?raw";
 import GLOBE_OUTLINE_SVG from "../../assets/svg/globe-outline.svg?raw";
+import SPARKLES_SVG from "../../assets/svg/sparkles.svg?raw";
+import { openChangelogDialog } from "./changelog.ts";
 import { getIsLight } from "../profile/theme/theme-manager.ts";
 import { getActiveFeatures } from "./hubSettings.storage.ts";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
@@ -150,8 +152,53 @@ function renderClustersButton(
   </a>`;
 }
 
+function renderChangelogButton(
+  onClick: (e: Event) => void,
+  color: string,
+): ReturnType<typeof html> {
+  return html`<a
+    id="ft-changelog-btn"
+    class="relative py-5 w-full flex justify-center hover:opacity-100 opacity-40"
+    style="color:${color};"
+    href="#"
+    data-tip="What's new"
+    data-tip-pos="right"
+    @click="${(e: Event) => {
+      e.preventDefault();
+      onClick(e);
+    }}"
+  >
+    ${unsafeHTML(
+      SPARKLES_SVG.replace(
+        "<svg",
+        `<svg width="24" height="24" stroke="${color}"`,
+      ),
+    )}
+    <span
+      class="absolute w-2 h-2 rounded-full bg-primary"
+      style="top:14px; left:calc(50% + 7px);"
+    ></span>
+  </a>`;
+}
+
+let changelogSeenListener = false;
+
+function ensureChangelogSeenListener(): void {
+  if (changelogSeenListener) return;
+  changelogSeenListener = true;
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "local" && changes.CHANGELOG_LAST_SEEN_VERSION) {
+      document.getElementById("ft-changelog-btn")?.remove();
+    }
+  });
+  document.addEventListener("ft-changelog-seen", () => {
+    document.getElementById("ft-changelog-btn")?.remove();
+  });
+}
+
 export function mountGearButton(): void {
   ensureSidebarButtonStyles();
+  ensureChangelogSeenListener();
 
   const open = async () => {
     const { openHubModal } = await import("./hubSettings.ui.ts");
@@ -215,6 +262,26 @@ export function mountGearButton(): void {
       } else {
         sidebar.appendChild(button);
       }
+    }
+
+    const seenChangelog =
+      (await getConfig("CHANGELOG_LAST_SEEN_VERSION")) === HUB_INFO.version;
+    const changelogBtn = document.getElementById("ft-changelog-btn");
+    if (!seenChangelog && !changelogBtn) {
+      const container = document.createElement("div");
+      render(
+        renderChangelogButton(() => openChangelogDialog(), color),
+        container,
+      );
+      const button = container.firstElementChild!;
+      const gearBtn = document.getElementById("hub-gear-btn");
+      if (gearBtn) {
+        gearBtn.before(button);
+      } else {
+        sidebar.appendChild(button);
+      }
+    } else if (seenChangelog && changelogBtn) {
+      changelogBtn.remove();
     }
   })();
 

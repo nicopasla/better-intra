@@ -192,12 +192,10 @@ export function openChangelogDialog(): void {
       });
       if (!res.ok) throw new Error("bad status");
       const data = (await res.json()) as { entries?: ChangelogEntry[] };
-      entries = (data.entries ?? [])
-        .filter(
-          (e) =>
-            e && typeof e.version === "string" && Array.isArray(e.highlights),
-        )
-        .slice(0, MAX_VERSIONS);
+      entries = (data.entries ?? []).filter(
+        (e) =>
+          e && typeof e.version === "string" && Array.isArray(e.highlights),
+      );
     } catch {
       error = true;
     }

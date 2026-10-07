@@ -24,8 +24,9 @@ import GHOST_SVG from "../../assets/svg/ghost.svg?raw";
 import WARNING_SVG from "../../assets/svg/triangle-exclamation.svg?raw";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 import GLOBE_SVG from "../../assets/svg/globe-lucide.svg?raw";
-import USER_SVG from "../../assets/svg/user-lucide.svg?raw";
-import STAR_SVG from "../../assets/svg/star-lucide.svg?raw";
+import SORT_AZ_SVG from "../../assets/svg/sort-az.svg?raw";
+import SORT_ZA_SVG from "../../assets/svg/sort-za.svg?raw";
+import RANKING_SVG from "../../assets/svg/ranking.svg?raw";
 import WALLET_SVG from "../../assets/svg/wallet.svg?raw";
 import EVAL_SVG from "../../assets/svg/eval.svg?raw";
 import TRASH_SVG from "../../assets/svg/trash.svg?raw";
@@ -379,12 +380,18 @@ const SORT_DEFAULTS: Record<SortMode, SortDir> = {
   correction: "desc",
 };
 
-const SORT_ICONS: Record<SortMode, string> = {
-  name: USER_SVG,
-  level: STAR_SVG,
+const SORT_ICONS: Record<Exclude<SortMode, "name">, string> = {
+  level: RANKING_SVG,
   wallet: WALLET_SVG,
   correction: EVAL_SVG,
 };
+
+function sortModeIcon(mode: SortMode, dir: SortDir): string {
+  if (mode === "name") {
+    return dir === "asc" ? SORT_AZ_SVG : SORT_ZA_SVG;
+  }
+  return SORT_ICONS[mode];
+}
 
 function sortFriends(
   friends: FriendData[],
@@ -489,7 +496,11 @@ function renderSortControl(
           >
             <span
               class="w-4 h-4 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
-              >${unsafeHTML(svgIcon(SORT_ICONS[m]))}</span
+              >${unsafeHTML(
+                svgIcon(
+                  sortModeIcon(m, current === m ? dir : SORT_DEFAULTS[m]),
+                ),
+              )}</span
             >
           </button>
         `,

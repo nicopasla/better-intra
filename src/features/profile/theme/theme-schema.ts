@@ -4,6 +4,7 @@ export interface CommunityTheme {
   author: string;
   mode: "dark" | "light";
   colors: { dark: Record<string, string>; light: Record<string, string> };
+  likes?: number;
   createdAt?: number;
 }
 
@@ -50,6 +51,7 @@ export function sanitizeTheme(raw: unknown): CommunityTheme | null {
     author,
     mode: t.mode === "light" ? "light" : "dark",
     colors: { dark: dark ?? {}, light: light ?? {} },
+    likes: typeof t.likes === "number" ? t.likes : undefined,
     createdAt: typeof t.createdAt === "number" ? t.createdAt : undefined,
   };
 }

@@ -4,9 +4,6 @@ import { hashLogin } from "../../../utils/crypto.ts";
 import { sanitizeTheme, type CommunityTheme } from "./theme-schema.ts";
 
 const GALLERY_URL = `${WORKER_URL}/api/v1/public/themes`;
-const TTL = 5 * 60_000;
-
-let cache: { themes: CommunityTheme[]; ts: number } | null = null;
 
 export interface CommunityThemesResult {
   themes: CommunityTheme[];
@@ -14,24 +11,22 @@ export interface CommunityThemesResult {
 }
 
 export async function fetchCommunityThemes(
-  force = false,
+  q = "",
 ): Promise<CommunityThemesResult> {
-  if (!force && cache && Date.now() - cache.ts < TTL) {
-    return { themes: cache.themes, error: false };
-  }
+  const query = q.trim();
+  const url = query
+    ? `${GALLERY_URL}?q=${encodeURIComponent(query)}`
+    : GALLERY_URL;
   try {
-    const res = await fetch(GALLERY_URL, {
-      cache: force ? "no-store" : undefined,
-    });
-    if (!res.ok) return { themes: cache?.themes ?? [], error: true };
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return { themes: [], error: true };
     const data = (await res.json()) as { themes?: unknown[] };
     const themes = (data.themes ?? [])
       .map(sanitizeTheme)
       .filter((t): t is CommunityTheme => !!t);
-    cache = { themes, ts: Date.now() };
     return { themes, error: false };
   } catch {
-    return { themes: cache?.themes ?? [], error: true };
+    return { themes: [], error: true };
   }
 }
 
@@ -75,18 +70,54 @@ export async function shareCommunityTheme(input: {
         },
       },
     );
-    if (res.ok) {
-      await fetchCommunityThemes(true);
-      return { ok: true };
-    }
+    if (res.ok) return { ok: true };
     if (res.status === 401) {
       return {
         ok: false,
         error: "Session expired — reconnect your 42 account.",
       };
     }
+    if (res.status === 409) {
+      return { ok: false, error: "That theme name is already taken." };
+    }
     return { ok: false, error: "Couldn't share the theme." };
   } catch {
     return { ok: false, error: "Network error — try again later." };
+  }
+}
+
+/** Anonymous like counter: `delta` is +1 to like, -1 to undo. */
+export async function likeTheme(
+  id: string,
+  delta: 1 | -1,
+): Promise<{ ok: boolean; likes?: number }> {
+  try {
+    const res = await workerFetch(
+      `/api/v1/themes/${encodeURIComponent(id)}/like?delta=${delta}`,
+      { method: "POST" },
+    );
+    if (!res.ok) return { ok: false };
+    const data = (await res.json()) as { likes?: number };
+    return { ok: true, likes: data.likes };
+  } catch {
+    return { ok: false };
+  }
+}
+
+export async function hideTheme(id: string): Promise<{ ok: boolean }> {
+  const [token, login] = await Promise.all([
+    getConfig("CLOUD_TOKEN"),
+    getConfig("CLOUD_LOGIN"),
+  ]);
+  if (!token || !login) return { ok: false };
+  const hashedLogin = await hashLogin(login);
+  try {
+    const res = await workerFetch(
+      `/api/v1/themes/${encodeURIComponent(id)}/hide?login=${encodeURIComponent(hashedLogin)}`,
+      { method: "POST", token },
+    );
+    return { ok: res.ok };
+  } catch {
+    return { ok: false };
   }
 }

@@ -13,63 +13,35 @@ function presetCss(): string {
   );
 }
 
-describe("applyThemePreset overrides", () => {
-  it("writes the chosen input color for a builtin dark theme", async () => {
+describe("applyThemePreset", () => {
+  it("writes the built-in preset colors", async () => {
     document.documentElement.classList.add("dark");
-    await chrome.storage.local.set({
-      PROFILE_THEME_PRESET: "dark",
-      PROFILE_THEME_OVERRIDES: {
-        dark: { dark: { input: "#ff0000", sidebar: "#00ff00" } },
-      },
-    });
-
+    await chrome.storage.local.set({ PROFILE_THEME_PRESET: "dracula" });
     await applyThemePreset();
-
-    const css = presetCss();
-    expect(css).toContain("--bi-input: 0 100% 50% !important");
-    expect(css).toContain("--bi-sidebar: 120 100% 50% !important");
-    expect(css).toContain("--input: 0 100% 50% !important");
+    expect(presetCss()).toContain("--background:");
   });
 
-  it("writes the chosen input color for a named theme", async () => {
+  it("applies a saved (mine) theme's stored palette", async () => {
     document.documentElement.classList.add("dark");
     await chrome.storage.local.set({
-      PROFILE_THEME_PRESET: "dracula",
-      PROFILE_THEME_OVERRIDES: {
-        dracula: { dark: { input: "#ff0000" } },
-      },
+      PROFILE_THEME_PRESET: "mine-x",
+      PROFILE_THEME_CUSTOMS: [
+        {
+          id: "mine-x",
+          name: "X",
+          colors: { dark: { page: "#ff0000" }, light: {} },
+        },
+      ],
     });
 
     await applyThemePreset();
 
-    expect(presetCss()).toContain("--bi-input: 0 100% 50% !important");
+    expect(presetCss()).toContain("--background: 0 100% 50% !important");
   });
 
-  it("writes the chosen input color for seishin (dark-only)", async () => {
-    document.documentElement.classList.add("dark");
-    await chrome.storage.local.set({
-      PROFILE_THEME_PRESET: "seishin",
-      PROFILE_THEME_OVERRIDES: {
-        seishin: { dark: { input: "#ff0000" } },
-      },
-    });
-
+  it("clears styles for an unknown theme id", async () => {
+    await chrome.storage.local.set({ PROFILE_THEME_PRESET: "nope" });
     await applyThemePreset();
-
-    expect(presetCss()).toContain("--bi-input: 0 100% 50% !important");
-    expect(presetCss()).toContain("--input: 0 100% 50% !important");
-  });
-
-  it("does not apply dark overrides while in light mode", async () => {
-    await chrome.storage.local.set({
-      PROFILE_THEME_PRESET: "light",
-      PROFILE_THEME_OVERRIDES: {
-        light: { dark: { input: "#ff0000" } },
-      },
-    });
-
-    await applyThemePreset();
-
-    expect(presetCss()).not.toContain("--bi-input: 0 100% 50% !important");
+    expect(presetCss()).toBe("");
   });
 });

@@ -13,6 +13,15 @@ export interface CustomTheme {
   light: CustomThemePalette;
 }
 
+/** A personalized theme saved from a built-in preset or the community. */
+export interface CustomThemeEntry {
+  id: string;
+  name: string;
+  author?: string;
+  mode?: "dark" | "light";
+  colors: CustomTheme;
+}
+
 /**
  * Defines the complete shape and types for all configuration options.
  * Using a strict interface ensures type safety across the application
@@ -77,7 +86,8 @@ export interface BetterIntraConfig {
   PROFILE_CARD_ORDER: string[];
   PROFILE_USE_CUSTOM_COLOR: boolean;
   PROFILE_THEME_PRESET: string;
-  PROFILE_THEME_OVERRIDES: Record<string, CustomTheme>;
+  PROFILE_THEME_LIKES: string[];
+  PROFILE_THEME_CUSTOMS: CustomThemeEntry[];
   THEME_SCHEDULE_DARK_PRESET: string;
   THEME_SCHEDULE_LIGHT_PRESET: string;
   PROFILE_SHOW_MARKS: boolean;
@@ -211,7 +221,8 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   ],
   PROFILE_USE_CUSTOM_COLOR: true,
   PROFILE_THEME_PRESET: "dark",
-  PROFILE_THEME_OVERRIDES: {},
+  PROFILE_THEME_LIKES: [],
+  PROFILE_THEME_CUSTOMS: [],
   THEME_SCHEDULE_DARK_PRESET: "dark",
   THEME_SCHEDULE_LIGHT_PRESET: "light",
   PROFILE_SHOW_MARKS: true,
@@ -314,7 +325,7 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "PROFILE_CARD_ORDER",
   "PROFILE_USE_CUSTOM_COLOR",
   "PROFILE_THEME_PRESET",
-  "PROFILE_THEME_OVERRIDES",
+  "PROFILE_THEME_CUSTOMS",
   "THEME_SCHEDULE_DARK_PRESET",
   "THEME_SCHEDULE_LIGHT_PRESET",
   "PROFILE_SHOW_MARKS",

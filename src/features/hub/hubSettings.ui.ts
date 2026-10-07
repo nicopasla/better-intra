@@ -449,13 +449,19 @@ async function createModal(
 
   const hubContainer = shadow.querySelector("[data-theme]");
 
-  const presetKey = (await getConfig("PROFILE_THEME_PRESET")) || "dark";
-  const validPreset = HUB_SETTING_DEFS.appearance
-    .find((s) => s.key === "PROFILE_THEME_PRESET")
-    ?.options?.some((o) => o.value === presetKey)
-    ? presetKey
-    : "dark";
-  hubContainer?.setAttribute("data-theme", validPreset);
+  const applyHubTheme = async () => {
+    const presetKey = (await getConfig("PROFILE_THEME_PRESET")) || "dark";
+    hubContainer?.setAttribute("data-theme", presetKey);
+  };
+  await applyHubTheme();
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (
+      area === "local" &&
+      (changes.PROFILE_THEME_PRESET || changes.PROFILE_THEME_CUSTOMS)
+    ) {
+      void applyHubTheme();
+    }
+  });
 
   const reloadBtn = shadow.querySelector("#hub-reload");
   reloadBtn?.addEventListener("click", async () => {

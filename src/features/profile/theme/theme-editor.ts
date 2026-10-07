@@ -1,22 +1,24 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { adoptShadowStyles } from "../../../utils/shadow-styles.ts";
-import { formatAbsoluteDateTime } from "../../../utils/dates.ts";
-import { getConfig, type CustomTheme } from "../../../config.ts";
+import type { CustomThemeEntry } from "../../../config.ts";
 import { contrastRatio } from "../../../utils/color.ts";
 import { applyThemePreset } from "./theme-manager.ts";
 import {
+  buildDaisyThemeCss,
   CUSTOM_THEME_GROUPS,
   CUSTOM_THEME_ROLES,
   resolvePalette,
 } from "./custom-theme.ts";
 import {
-  fetchCommunityThemes,
+  getCustomById,
+  upsertCustom,
+  deleteCustom,
+} from "./custom-themes-store.ts";
+import {
   shareCommunityTheme,
   type ShareResult,
 } from "./community-themes.ts";
-import type { CommunityTheme } from "./theme-schema.ts";
-import type { FeatureCardOption } from "../../hub/hubSettings.data.ts";
 import X_SVG from "../../../assets/svg/x.svg?raw";
 
 const DIALOG_ID = "ft-theme-editor";
@@ -24,88 +26,68 @@ const DIALOG_ID = "ft-theme-editor";
 const renderCloseIcon = () =>
   unsafeHTML(X_SVG.replace("<svg", '<svg width="20" height="20"'));
 
-/**
- * Theme editor dialog: every named preset plus "custom" can be recolored
- * per component. Colors are stored as overrides keyed by preset id.
- */
-export function openThemeEditor(options: readonly FeatureCardOption[]): void {
+/** Edit a saved (mine) theme: colors, name, share, delete. */
+export async function openThemeEditor(themeId: string): Promise<void> {
   document.getElementById(DIALOG_ID)?.remove();
+
+  let entry = (await getCustomById(themeId)) ?? null;
+  if (!entry) return;
 
   const dialog = document.createElement("dialog");
   dialog.id = DIALOG_ID;
   dialog.className = "bg-transparent backdrop:bg-black/50";
-  dialog.style.margin = "auto";
-  dialog.style.padding = "0";
-  dialog.style.border = "none";
-  dialog.style.maxWidth = "46rem";
-  dialog.style.width = "calc(100dvw - 2rem)";
+  dialog.style.cssText =
+    "margin:auto; padding:0; border:none; max-width:46rem; width:calc(100dvw - 2rem);";
 
   const host = document.createElement("div");
   const shadow = host.attachShadow({ mode: "open" });
   adoptShadowStyles(shadow);
 
-  let presetKey = "dark";
-  let mode: "dark" | "light" = "dark";
-  let overrides: Record<string, CustomTheme> = {};
-  let ready = false;
+  // Own palette for the dialog chrome, so it previews the theme being edited
+  // (and stays styled even when this theme isn't the active one).
+  const themeStyle = document.createElement("style");
+  themeStyle.setAttribute("data-ft-editor-theme", "1");
+  shadow.appendChild(themeStyle);
 
+  let mode: "dark" | "light" = document.documentElement.classList.contains(
+    "dark",
+  )
+    ? "dark"
+    : "light";
+  let name = entry.name;
   let shareOpen = false;
-  let shareName = "";
   let sharing = false;
   let shareResult: ShareResult | null = null;
 
-  const baseKey = (key: string) => (key === "custom" ? undefined : key);
-  const currentPalette = () => overrides[presetKey]?.[mode] ?? {};
-  const resolve = () =>
-    resolvePalette(currentPalette(), mode === "dark", baseKey(presetKey));
+  const palette = () => entry.colors[mode] ?? {};
+  const resolved = () => resolvePalette(palette(), mode === "dark", undefined);
 
-  /** Persist and re-apply immediately so the page updates while editing. */
-  const persist = () => {
-    void chrome.storage.local
-      .set({ PROFILE_THEME_OVERRIDES: overrides })
-      .then(() => applyThemePreset());
+  const persist = async () => {
+    entry.name = name;
+    await upsertCustom(entry);
+    await applyThemePreset();
   };
 
   const setColor = (roleId: string, hex: string) => {
-    const entry = overrides[presetKey] ?? { dark: {}, light: {} };
-    entry[mode] = { ...entry[mode], [roleId]: hex };
-    overrides[presetKey] = entry;
-    persist();
-  };
-
-  const choosePreset = (value: string) => {
-    presetKey = value;
-    void chrome.storage.local.set({ PROFILE_THEME_PRESET: value });
-    draw();
-  };
-
-  const resetPreset = () => {
-    delete overrides[presetKey];
-    persist();
-    draw();
-  };
-
-  const toggleShare = () => {
-    shareOpen = !shareOpen;
-    shareName = "";
-    shareResult = null;
-    draw();
+    entry.colors = {
+      ...entry.colors,
+      [mode]: { ...entry.colors[mode], [roleId]: hex },
+    };
+    void persist();
   };
 
   const doShare = async () => {
-    const name = shareName.trim();
-    if (!name || sharing) return;
+    const themeName = name.trim();
+    if (!themeName || sharing) return;
     sharing = true;
     shareResult = null;
     draw();
-    const base = baseKey(presetKey);
-    const palette = overrides[presetKey] ?? { dark: {}, light: {} };
     shareResult = await shareCommunityTheme({
-      name,
+      name: themeName,
       mode,
       colors: {
-        dark: resolvePalette(palette.dark, true, base),
-        light: resolvePalette(palette.light, false, base),
+        dark: resolvePalette(entry.colors.dark, true, undefined),
+        light: resolvePalette(entry.colors.light, false, undefined),
       },
     });
     sharing = false;
@@ -113,8 +95,9 @@ export function openThemeEditor(options: readonly FeatureCardOption[]): void {
     draw();
   };
 
-  const previewOnIntra = () => {
-    window.open(window.location.href, "_blank", "noopener,noreferrer");
+  const doDelete = async () => {
+    await deleteCustom(entry.id);
+    close();
   };
 
   const close = () => {
@@ -123,85 +106,53 @@ export function openThemeEditor(options: readonly FeatureCardOption[]): void {
   };
 
   const draw = () => {
-    if (!ready) return;
-    const resolved = resolve();
+    themeStyle.textContent = buildDaisyThemeCss(
+      palette(),
+      mode === "dark",
+      undefined,
+      entry.id,
+    );
+    const res = resolved();
     const contrastChecks = [
-      { label: "Text on accent", fg: resolved.accentText, bg: resolved.accent },
-      { label: "Text on page", fg: resolved.text, bg: resolved.page },
-      { label: "Text on cards", fg: resolved.text, bg: resolved.card },
-      { label: "Secondary text", fg: resolved.textMuted, bg: resolved.page },
-      { label: "Text on hover", fg: resolved.text, bg: resolved.hover },
+      { label: "Text on accent", fg: res.accentText, bg: res.accent },
+      { label: "Text on page", fg: res.text, bg: res.page },
+      { label: "Text on cards", fg: res.text, bg: res.card },
+      { label: "Secondary text", fg: res.textMuted, bg: res.page },
+      { label: "Text on hover", fg: res.text, bg: res.hover },
     ].map((c) => {
       const ratio = contrastRatio(c.fg, c.bg);
       const tone =
         ratio >= 4.5 ? "#22c55e" : ratio >= 3 ? "#f59e0b" : "#ef4444";
       return { ...c, ratio, tone };
     });
+
     render(
       html`<div
-        data-theme="${presetKey}"
+        data-theme="${entry.id}"
         class="bg-base-100 text-base-content rounded-2xl shadow-2xl flex flex-col overflow-hidden"
         style="max-height: min(88vh, 52rem);"
       >
         <div
           class="flex items-center justify-between gap-3 px-5 py-3 border-b border-base-300"
         >
-          <h3 class="font-bold text-lg">Theme editor</h3>
-          <button
-            type="button"
-            class="btn btn-circle btn-ghost btn-sm"
-            @click=${close}
-            aria-label="Close"
-          >
-            ${renderCloseIcon()}
-          </button>
-        </div>
-
-        <div class="px-5 py-3 border-b border-base-300 flex flex-col gap-3">
-          <div class="flex flex-wrap gap-1">
-            ${options.map((raw) => {
-              const o = raw as {
-                label?: string;
-                value?: string;
-                color?: string;
-                divider?: boolean;
-              };
-              if (o.divider) {
-                return html`<div class="w-full h-px bg-base-300 my-1"></div>`;
-              }
-              if (o.label && !o.value) {
-                return html`<div
-                  class="w-full text-xs font-bold uppercase opacity-50 pt-1"
-                >
-                  ${o.label}
-                </div>`;
-              }
-              const hsl = o.color ?? "199 89% 48%";
-              const isSelected = String(o.value) === presetKey;
-              const lightness = parseInt(hsl.split(" ")[2] ?? "50");
-              const textColor =
-                lightness > 50 ? "hsl(0 0% 10%)" : "hsl(0 0% 100%)";
-              return html`<button
-                type="button"
-                class="btn btn-sm flex-none"
-                style="background-color: hsl(${hsl}); color: ${textColor}; border: 2px solid ${isSelected
-                  ? "#fff"
-                  : "transparent"}; outline: ${isSelected
-                  ? "2px solid hsl(" + hsl + ")"
-                  : "none"}; outline-offset: 2px;"
-                @click=${() => choosePreset(o.value!)}
-              >
-                ${o.label}
-              </button>`;
-            })}
-          </div>
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex gap-1">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <input
+              type="text"
+              class="input input-sm input-bordered w-40"
+              maxlength="40"
+              placeholder="Theme name"
+              .value="${name}"
+              @input="${(e: Event) => {
+                name = (e.target as HTMLInputElement).value;
+              }}"
+              @change="${() => void persist()}"
+            />
+            <div class="join join-horizontal">
               ${(["dark", "light"] as const).map(
                 (m) =>
                   html`<button
                     type="button"
-                    class="btn btn-xs ${mode === m
+                    class="btn btn-xs join-item ${mode === m
                       ? "btn-primary"
                       : "btn-ghost"}"
                     @click=${() => {
@@ -213,8 +164,15 @@ export function openThemeEditor(options: readonly FeatureCardOption[]): void {
                   </button>`,
               )}
             </div>
-            <span class="text-xs opacity-50">Editing ${mode} colors</span>
           </div>
+          <button
+            type="button"
+            class="btn btn-circle btn-ghost btn-sm"
+            @click=${close}
+            aria-label="Close"
+          >
+            ${renderCloseIcon()}
+          </button>
         </div>
 
         <div class="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
@@ -259,7 +217,7 @@ export function openThemeEditor(options: readonly FeatureCardOption[]): void {
                     <input
                       type="color"
                       class="input input-accent p-1 w-12 h-8 flex-none"
-                      .value="${resolved[role.id]}"
+                      .value="${res[role.id]}"
                       @input="${(e: Event) =>
                         setColor(
                           role.id,
@@ -278,36 +236,29 @@ export function openThemeEditor(options: readonly FeatureCardOption[]): void {
           <div class="flex items-center gap-2 min-w-0">
             <button
               type="button"
-              class="btn btn-sm btn-ghost"
-              @click=${resetPreset}
+              class="btn btn-sm btn-ghost text-error"
+              @click="${() => void doDelete()}"
             >
-              Reset this theme
+              Delete
             </button>
             ${shareOpen
-              ? html`<input
-                    type="text"
-                    class="input input-sm input-bordered w-40"
-                    placeholder="Theme name"
-                    maxlength="40"
-                    .value="${shareName}"
-                    @input="${(e: Event) => {
-                      shareName = (e.target as HTMLInputElement).value;
-                      draw();
-                    }}"
-                    ?disabled="${sharing}"
-                  />
-                  <button
+              ? html`<button
                     type="button"
-                    class="btn btn-sm btn-primary ${sharing ? "loading" : ""}"
+                    class="btn btn-sm btn-primary ${sharing
+                      ? "loading"
+                      : ""}"
                     @click="${() => void doShare()}"
-                    ?disabled="${sharing || !shareName.trim()}"
+                    ?disabled="${sharing || !name.trim()}"
                   >
                     Share
                   </button>
                   <button
                     type="button"
                     class="btn btn-sm btn-ghost"
-                    @click="${toggleShare}"
+                    @click="${() => {
+                      shareOpen = false;
+                      draw();
+                    }}"
                     ?disabled="${sharing}"
                   >
                     Cancel
@@ -315,11 +266,15 @@ export function openThemeEditor(options: readonly FeatureCardOption[]): void {
               : html`<button
                   type="button"
                   class="btn btn-sm btn-outline"
-                  @click="${toggleShare}"
+                  @click="${() => {
+                    shareOpen = true;
+                    shareResult = null;
+                    draw();
+                  }}"
                 >
                   Share to community
                 </button>`}
-            ${shareResult && !shareOpen
+            ${shareResult
               ? html`<span
                   class="text-xs ${shareResult.ok
                     ? "text-success"
@@ -330,13 +285,6 @@ export function openThemeEditor(options: readonly FeatureCardOption[]): void {
                 >`
               : ""}
           </div>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline"
-            @click=${previewOnIntra}
-          >
-            Preview on intra
-          </button>
           <button type="button" class="btn btn-sm btn-primary" @click=${close}>
             Done
           </button>
@@ -346,300 +294,12 @@ export function openThemeEditor(options: readonly FeatureCardOption[]): void {
     );
   };
 
-  void (async () => {
-    const [savedPreset, savedOverrides] = await Promise.all([
-      getConfig("PROFILE_THEME_PRESET"),
-      getConfig("PROFILE_THEME_OVERRIDES"),
-    ]);
-    presetKey = savedPreset || "dark";
-    overrides = savedOverrides ?? {};
-    // Edit the palette that is actually applied on the page right now.
-    mode = document.documentElement.classList.contains("dark")
-      ? "dark"
-      : "light";
-    ready = true;
-    draw();
-  })();
-
   dialog.appendChild(host);
   document.body.appendChild(dialog);
   dialog.showModal();
-
-  dialog.addEventListener("click", (e) => {
-    if (e.target === dialog) close();
-  });
-}
-
-export function openCommunityThemesDialog(): void {
-  const DIALOG_ID = "ft-community-themes";
-  document.getElementById(DIALOG_ID)?.remove();
-
-  const dialog = document.createElement("dialog");
-  dialog.id = DIALOG_ID;
-  dialog.className = "bg-transparent backdrop:bg-black/50";
-  dialog.style.cssText =
-    "margin:auto; padding:0; border:none; max-width:52rem; width:calc(100dvw - 2rem);";
-
-  const host = document.createElement("div");
-  const shadow = host.attachShadow({ mode: "open" });
-  adoptShadowStyles(shadow);
-  dialog.appendChild(host);
-  document.body.appendChild(dialog);
-  dialog.showModal();
-
-  const daisyTheme = document.documentElement.classList.contains("dark")
-    ? "dark"
-    : "light";
-  let dialogPreset = daisyTheme;
-  void getConfig("PROFILE_THEME_PRESET").then((p) => {
-    dialogPreset = (p as string) || daisyTheme;
-    draw();
-  });
-
-  const close = () => {
-    dialog.close();
-    dialog.remove();
-  };
-
-  const hex = (pal: Record<string, string>, key: string, fb: string) =>
-    pal[key] ?? fb;
-
-  const apply = async (theme: CommunityTheme) => {
-    const existing = await getConfig("PROFILE_THEME_OVERRIDES");
-    await chrome.storage.local.set({
-      BETTER_INTRA_THEME: theme.mode,
-      PROFILE_THEME_PRESET: "custom",
-      PROFILE_THEME_OVERRIDES: {
-        ...existing,
-        custom: { dark: theme.colors.dark, light: theme.colors.light },
-      },
-      THEME_SCHEDULE_DARK_PRESET: "custom",
-      THEME_SCHEDULE_LIGHT_PRESET: "custom",
-    });
-    await applyThemePreset();
-    close();
-  };
-
-  let filter: "all" | "dark" | "light" = "all";
-  let loadedThemes: CommunityTheme[] = [];
-  let loadError = false;
-  let loading = true;
-
-  const draw = () => {
-    const visible =
-      filter === "all"
-        ? loadedThemes
-        : loadedThemes.filter((t) => t.mode === filter);
-    render(
-      html`<div
-        data-theme="${dialogPreset}"
-        class="bg-base-100 text-base-content rounded-2xl shadow-2xl flex flex-col overflow-hidden"
-        style="max-height:min(88vh,48rem);"
-      >
-        <div
-          class="flex items-center justify-between gap-3 px-5 py-3 border-b border-base-300"
-        >
-          <h3 class="font-bold text-lg">Community themes</h3>
-          <button
-            type="button"
-            class="btn btn-circle btn-ghost btn-sm"
-            @click=${close}
-            aria-label="Close"
-          >
-            ${renderCloseIcon()}
-          </button>
-        </div>
-        <div
-          class="flex items-center justify-between gap-3 px-5 py-2 border-b border-base-300"
-        >
-          <span class="text-sm font-semibold">Filter</span>
-          <div class="join join-horizontal">
-            ${(["all", "dark", "light"] as const).map(
-              (m) =>
-                html`<button
-                  type="button"
-                  class="btn btn-xs join-item ${filter === m
-                    ? "btn-primary"
-                    : "btn-ghost"}"
-                  @click="${() => {
-                    filter = m;
-                    draw();
-                  }}"
-                >
-                  ${m === "all" ? "All" : m === "dark" ? "Dark" : "Light"}
-                </button>`,
-            )}
-          </div>
-        </div>
-        <div class="flex-1 overflow-y-auto px-5 py-4">
-          ${loadError
-            ? html`<p class="text-sm opacity-60">
-                Couldn't load community themes.
-              </p>`
-            : loading
-              ? html`<div class="flex justify-center py-10">
-                  <span class="loading loading-spinner loading-md"></span>
-                </div>`
-              : loadedThemes.length === 0
-                ? html`<p class="text-sm opacity-60">
-                    No community themes yet.
-                  </p>`
-                : visible.length === 0
-                  ? html`<p class="text-sm opacity-60">
-                      No ${filter} themes yet.
-                    </p>`
-                  : html`<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      ${visible.map((t) => {
-                        const p =
-                          t.mode === "light" ? t.colors.light : t.colors.dark;
-                        return html`<div
-                          role="button"
-                          tabindex="0"
-                          class="flex flex-col items-stretch gap-2 rounded-xl border border-base-300 p-2 text-left cursor-pointer hover:border-base-content/40 transition-colors"
-                          style="background:${hex(
-                            p,
-                            "page",
-                            "#1f2937",
-                          )}; color:${hex(p, "text", "#e5e7eb")};"
-                          @click="${() => apply(t)}"
-                          data-tip="Apply ${t.name}"
-                        >
-                          <div
-                            class="rounded-lg overflow-hidden border"
-                            style="border-color:${hex(p, "border", "#374151")};"
-                          >
-                            <div
-                              class="flex items-center gap-1 px-2 h-6"
-                              style="background:${hex(
-                                p,
-                                "header",
-                                hex(p, "page", "#111827"),
-                              )};"
-                            >
-                              <span
-                                class="w-3 h-3 rounded-full flex-none"
-                                style="background:${hex(
-                                  p,
-                                  "accent",
-                                  "#00babc",
-                                )};"
-                              ></span>
-                              <span
-                                class="flex-1 h-2 rounded"
-                                style="background:${hex(
-                                  p,
-                                  "input",
-                                  hex(p, "page", "#1f2937"),
-                                )};"
-                              ></span>
-                            </div>
-                            <div class="flex items-center gap-1.5 px-2 pt-2">
-                              <span
-                                class="w-5 h-5 rounded-full flex-none"
-                                style="background:${hex(
-                                  p,
-                                  "accent",
-                                  "#00babc",
-                                )};"
-                              ></span>
-                              <div class="flex flex-col gap-1">
-                                <span
-                                  class="h-1.5 w-12 rounded"
-                                  style="background:${hex(
-                                    p,
-                                    "text",
-                                    "#e5e7eb",
-                                  )}; opacity:.8;"
-                                ></span>
-                                <span
-                                  class="h-1.5 w-8 rounded"
-                                  style="background:${hex(
-                                    p,
-                                    "textMuted",
-                                    "#9ca3af",
-                                  )};"
-                                ></span>
-                              </div>
-                              <span
-                                class="ml-auto text-[8px] px-1.5 py-0.5 rounded"
-                                style="background:${hex(
-                                  p,
-                                  "accent",
-                                  "#00babc",
-                                )}; color:${hex(p, "accentText", "#ffffff")};"
-                                >button</span
-                              >
-                            </div>
-                            <div
-                              class="h-1.5 rounded-full mx-2 my-2 overflow-hidden"
-                              style="background:${hex(
-                                p,
-                                "hover",
-                                hex(p, "page", "#1f2937"),
-                              )};"
-                            >
-                              <div
-                                class="h-full w-2/3"
-                                style="background:${hex(
-                                  p,
-                                  "accent",
-                                  "#00babc",
-                                )};"
-                              ></div>
-                            </div>
-                          </div>
-                          <div
-                            class="flex items-center justify-between gap-1 min-w-0"
-                          >
-                            <span class="text-sm font-semibold truncate"
-                              >${t.name}</span
-                            >
-                            <span
-                              class="badge badge-sm flex-none ${t.mode ===
-                              "light"
-                                ? "badge-ghost"
-                                : "badge-neutral"}"
-                              style="font-size:.6rem; text-transform:uppercase;"
-                              >${t.mode}</span
-                            >
-                          </div>
-                          <span
-                            class="flex items-center gap-1 text-xs opacity-60 min-w-0"
-                          >
-                            <a
-                              href="https://profile-v3.intra.42.fr/users/${t.author}"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              class="truncate hover:opacity-100 hover:underline"
-                              title="${t.author}"
-                              @click="${(e: Event) => e.stopPropagation()}"
-                              >by ${t.author}</a
-                            >
-                            ${t.createdAt
-                              ? html`<span class="flex-none"
-                                  >·
-                                  ${formatAbsoluteDateTime(t.createdAt)}</span
-                                >`
-                              : ""}
-                          </span>
-                        </div>`;
-                      })}
-                    </div>`}
-        </div>
-      </div>`,
-      shadow,
-    );
-  };
-
-  dialog.addEventListener("click", (e) => {
-    if (e.target === dialog) close();
-  });
-
   draw();
-  void fetchCommunityThemes().then(({ themes, error }) => {
-    loadedThemes = themes;
-    loadError = error;
-    loading = false;
-    draw();
+
+  dialog.addEventListener("click", (e) => {
+    if (e.target === dialog) close();
   });
 }

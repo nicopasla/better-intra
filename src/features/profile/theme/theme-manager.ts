@@ -50,9 +50,9 @@ function toKebab(str: string): string {
 }
 
 export async function applyThemePreset() {
-  const [presetKey, overrides] = await Promise.all([
+  const [themeId, customs] = await Promise.all([
     getConfig("PROFILE_THEME_PRESET"),
-    getConfig("PROFILE_THEME_OVERRIDES"),
+    getConfig("PROFILE_THEME_CUSTOMS"),
   ]);
   const isDark = document.documentElement.classList.contains("dark");
 
@@ -66,26 +66,24 @@ export async function applyThemePreset() {
     (document.head || document.documentElement).appendChild(styleEl);
   }
 
-  const isCustom = presetKey === "custom";
-  const isBuiltin = presetKey === "dark" || presetKey === "light";
-  const namedPreset = !isCustom && !isBuiltin ? THEMES[presetKey] : undefined;
-  const palette = overrides?.[presetKey]?.[isDark ? "dark" : "light"] ?? {};
-  const hasOverrides = Object.keys(palette).length > 0;
+  const mine = (customs ?? []).find((c) => c.id === themeId);
+  const builtinMap = themesJson as Record<string, unknown>;
+  const isBuiltin =
+    themeId === "dark" || themeId === "light" || !!builtinMap[themeId];
 
-  if (!isCustom && !namedPreset && !(isBuiltin && hasOverrides)) {
+  if (!mine && !isBuiltin) {
     styleEl.textContent = "";
     setCustomThemesEnabled(false);
     setCustomDaisyTheme(null);
-    const original = themesJson[presetKey as keyof typeof themesJson] as
-      | ThemePreset
-      | undefined;
-    if (original) THEMES[presetKey] = original;
     return;
   }
 
   setCustomThemesEnabled(true);
 
-  const baseKey = isCustom || isBuiltin ? undefined : presetKey;
+  const palette = mine ? mine.colors[isDark ? "dark" : "light"] : {};
+  const baseKey = mine || themeId === "dark" || themeId === "light"
+    ? undefined
+    : themeId;
   const vars = buildIntraVars(palette, isDark, baseKey);
   const resolved = resolvePalette(palette, isDark, baseKey);
   const composed: ThemePreset = {
@@ -96,32 +94,14 @@ export async function applyThemePreset() {
     light: modeVarsFromResolved(resolved),
   };
 
-  // Expose the composed colors to the ~7 places that read `THEMES[presetKey]`.
-  // Replace the entry (never mutate the shared themes.json objects).
-  const original = themesJson[
-    presetKey as keyof typeof themesJson
-  ] as ThemePreset;
-  if (isCustom) {
-    THEMES.custom = composed;
-  } else if (original) {
-    THEMES[presetKey] = hasOverrides
-      ? {
-          ...THEMES[presetKey],
-          primary: composed.primary,
-          primaryForeground: composed.primaryForeground,
-          ring: composed.ring,
-        }
-      : original;
-  }
+  // Expose the composed colors to the places that read `THEMES[themeId]`.
+  const original = themesJson[themeId as keyof typeof themesJson] as
+    | ThemePreset
+    | undefined;
+  THEMES[themeId] = mine ? composed : (original ?? composed);
 
-  if (isCustom) {
-    setCustomDaisyTheme(
-      buildDaisyThemeCss(palette, isDark, undefined, "custom"),
-    );
-  } else if (hasOverrides) {
-    setCustomDaisyTheme(
-      buildDaisyThemeCss(palette, isDark, baseKey, presetKey),
-    );
+  if (mine) {
+    setCustomDaisyTheme(buildDaisyThemeCss(palette, isDark, undefined, themeId));
   } else {
     setCustomDaisyTheme(null);
   }
@@ -135,6 +115,7 @@ export async function applyThemePreset() {
   styleEl.textContent = content;
   (document.head || document.documentElement).appendChild(styleEl);
 }
+
 
 function applyTheme(theme: "dark" | "light") {
   const isDark = theme === "dark";
@@ -306,7 +287,7 @@ export async function initThemeManager() {
     if (area === "local" && changes.PROFILE_THEME_PRESET) {
       void applyThemePreset();
     }
-    if (area === "local" && changes.PROFILE_THEME_OVERRIDES) {
+    if (area === "local" && changes.PROFILE_THEME_CUSTOMS) {
       void applyThemePreset();
     }
   });

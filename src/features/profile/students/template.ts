@@ -104,7 +104,9 @@ export interface StudentsTemplateHandlers {
   onClearFilters: () => void;
   onLoadMore: () => void;
   onRowPointerDown: (e: PointerEvent, login: string) => void;
+  onRowPointerMove: (e: PointerEvent) => void;
   onRowPointerUp: () => void;
+  onRowContextMenu: (e: Event, login: string) => void;
   onRowClick: (login: string) => void;
   onConnect: () => void;
   onToggleMaximize: () => void;
@@ -561,10 +563,10 @@ export function renderStudentsDialogTemplate(
         @click="${() => handlers.onRowClick(r.login)}"
         @pointerdown="${(e: PointerEvent) =>
           handlers.onRowPointerDown(e, r.login)}"
+        @pointermove="${handlers.onRowPointerMove}"
         @pointerup="${handlers.onRowPointerUp}"
-        @pointerleave="${handlers.onRowPointerUp}"
         @pointercancel="${handlers.onRowPointerUp}"
-        @contextmenu="${(e: Event) => e.preventDefault()}"
+        @contextmenu="${(e: Event) => handlers.onRowContextMenu(e, r.login)}"
       >
         <div class="row-head">${renderAvatar(r)} ${renderLogin(r)}</div>
         <div class="fullname">
@@ -585,10 +587,10 @@ export function renderStudentsDialogTemplate(
       @click="${() => handlers.onRowClick(r.login)}"
       @pointerdown="${(e: PointerEvent) =>
         handlers.onRowPointerDown(e, r.login)}"
+      @pointermove="${handlers.onRowPointerMove}"
       @pointerup="${handlers.onRowPointerUp}"
-      @pointerleave="${handlers.onRowPointerUp}"
       @pointercancel="${handlers.onRowPointerUp}"
-      @contextmenu="${(e: Event) => e.preventDefault()}"
+      @contextmenu="${(e: Event) => handlers.onRowContextMenu(e, r.login)}"
     >
       ${renderAvatar(r)} ${renderInfo(r)}
       <div class="row-meta">

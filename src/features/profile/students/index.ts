@@ -183,6 +183,11 @@ async function openStudentsDialogImpl() {
   let filterOptions: StudentsFilterOptions | null = null;
   let searchTimeout: number | null = null;
   let pressTimer: number | null = null;
+  let pressStartX = 0;
+  let pressStartY = 0;
+  let pressArmed = false;
+  let pressFired = false;
+  let lastPointerType = "";
   let longPressFired = false;
   let friendToast: { ok: boolean; message: string } | null = null;
   let friendToastTimer: number | null = null;
@@ -436,21 +441,54 @@ async function openStudentsDialogImpl() {
     }
   };
 
-  const startRowPress = (e: PointerEvent, login: string) => {
-    if (e.button !== 0) return;
-    longPressFired = false;
-    if (pressTimer !== null) window.clearTimeout(pressTimer);
-    pressTimer = window.setTimeout(() => {
-      pressTimer = null;
-      longPressFired = true;
-      void addStudentFriend(login);
-    }, LONG_PRESS_MS);
-  };
-
-  const cancelRowPress = () => {
+  const clearPress = () => {
     if (pressTimer !== null) {
       window.clearTimeout(pressTimer);
       pressTimer = null;
+    }
+    pressArmed = false;
+  };
+
+  const triggerLongPress = (login: string) => {
+    if (pressFired) return;
+    pressFired = true;
+    longPressFired = true;
+    clearPress();
+    try {
+      navigator.vibrate?.(15);
+    } catch {
+      /* unsupported */
+    }
+    void addStudentFriend(login);
+  };
+
+  const startRowPress = (e: PointerEvent, login: string) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    lastPointerType = e.pointerType || "";
+    pressArmed = true;
+    pressFired = false;
+    longPressFired = false;
+    pressStartX = e.clientX;
+    pressStartY = e.clientY;
+    if (pressTimer !== null) window.clearTimeout(pressTimer);
+    pressTimer = window.setTimeout(() => {
+      pressTimer = null;
+      triggerLongPress(login);
+    }, LONG_PRESS_MS);
+  };
+
+  const moveRowPress = (e: PointerEvent) => {
+    if (!pressArmed || pressTimer === null) return;
+    const dx = e.clientX - pressStartX;
+    const dy = e.clientY - pressStartY;
+    if (dx * dx + dy * dy > 144) clearPress();
+  };
+
+  const rowContextMenu = (e: Event, login: string) => {
+    e.preventDefault();
+    if (lastPointerType === "touch" || lastPointerType === "pen") {
+      pressArmed = true;
+      triggerLongPress(login);
     }
   };
 
@@ -547,7 +585,9 @@ async function openStudentsDialogImpl() {
       rerender();
     },
     onRowPointerDown: startRowPress,
-    onRowPointerUp: cancelRowPress,
+    onRowPointerMove: moveRowPress,
+    onRowPointerUp: clearPress,
+    onRowContextMenu: rowContextMenu,
     onRowClick: openRow,
     onConnect: () => {
       void loginWith42(async () => {

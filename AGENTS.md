@@ -58,6 +58,16 @@ daisyUI is scoped to shadow DOM roots (see `style.css` `root:` config). Only the
 
 Tests use Vitest with `jsdom` environment and global API. Run `npm test` (single pass) or `npm run test:watch` (watch mode). Test files: `tests/config.test.ts`, `tests/marks.test.ts`, `tests/visuals.test.ts`, `tests/friends.test.ts`. Setup: `tests/setup.ts`. Config: `vitest.config.ts`.
 
+## PWA versioning
+
+**Always bump the PWA version on every change**, following semver (keep `better-intra-pwa/package.json` and `package-lock.json` in sync, then rebuild):
+
+- **major** — breaking changes
+- **minor** — new features
+- **patch** — fixes
+
+The version is injected at build time as `__APP_VERSION__` (see `better-intra-pwa/vite.config.ts`) and shown in Settings → About & Debug. The extension package version is separate — do not bump it for PWA changes.
+
 ## Extension mechanics
 
 - Runs as a content script injected at `document_start` on `https://*.intra.42.fr/*`.

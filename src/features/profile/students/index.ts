@@ -10,6 +10,11 @@ import { makeResizable } from "../../../utils/resizable-dialog.ts";
 import { adoptShadowStyles } from "../../../utils/shadow-styles.ts";
 import { getEffectiveTheme } from "../theme/theme-manager.ts";
 import {
+  addFriend,
+  clearFriendsCache,
+  isFriend,
+} from "../../friends/friends.ts";
+import {
   INITIAL_VISIBLE_COUNT,
   WINDOW_STEP,
   fetchPiscines,
@@ -40,6 +45,8 @@ import type {
 let studentsOpening: Promise<void> | null = null;
 
 const TABS_OVERFLOW_TOLERANCE = 1;
+
+const LONG_PRESS_MS = 500;
 
 /**
  * Measure whether the inline tab strip would overflow its host. Uses an
@@ -175,8 +182,10 @@ async function openStudentsDialogImpl() {
   let activeCount = 0;
   let filterOptions: StudentsFilterOptions | null = null;
   let searchTimeout: number | null = null;
-  let copiedLogin: string | null = null;
-  let copiedLoginTimeout: number | null = null;
+  let pressTimer: number | null = null;
+  let longPressFired = false;
+  let friendToast: { ok: boolean; message: string } | null = null;
+  let friendToastTimer: number | null = null;
   let sentinelObserver: IntersectionObserver | null = null;
   let isMaximized = false;
   let tabsOverflowing = false;
@@ -228,7 +237,8 @@ async function openStudentsDialogImpl() {
       tabsResizeObserver = null;
     }
     if (searchTimeout !== null) window.clearTimeout(searchTimeout);
-    if (copiedLoginTimeout !== null) window.clearTimeout(copiedLoginTimeout);
+    if (friendToastTimer !== null) window.clearTimeout(friendToastTimer);
+    if (pressTimer !== null) window.clearTimeout(pressTimer);
     cleanupResize();
     dialog.close();
     dialog.remove();
@@ -401,6 +411,57 @@ async function openStudentsDialogImpl() {
     await load();
   };
 
+  const showFriendToast = (ok: boolean, message: string) => {
+    friendToast = { ok, message };
+    if (friendToastTimer !== null) window.clearTimeout(friendToastTimer);
+    friendToastTimer = window.setTimeout(() => {
+      friendToastTimer = null;
+      friendToast = null;
+      rerender();
+    }, 2500);
+    rerender();
+  };
+
+  const addStudentFriend = async (login: string) => {
+    try {
+      if (await isFriend(login)) {
+        showFriendToast(true, `${login} is already a friend`);
+        return;
+      }
+      await addFriend(login);
+      await clearFriendsCache();
+      showFriendToast(true, `Added ${login} to friends`);
+    } catch {
+      showFriendToast(false, `Could not add ${login}`);
+    }
+  };
+
+  const startRowPress = (e: PointerEvent, login: string) => {
+    if (e.button !== 0) return;
+    longPressFired = false;
+    if (pressTimer !== null) window.clearTimeout(pressTimer);
+    pressTimer = window.setTimeout(() => {
+      pressTimer = null;
+      longPressFired = true;
+      void addStudentFriend(login);
+    }, LONG_PRESS_MS);
+  };
+
+  const cancelRowPress = () => {
+    if (pressTimer !== null) {
+      window.clearTimeout(pressTimer);
+      pressTimer = null;
+    }
+  };
+
+  const openRow = (login: string) => {
+    if (longPressFired) {
+      longPressFired = false;
+      return;
+    }
+    window.open(`https://profile.intra.42.fr/users/${login}`, "_blank");
+  };
+
   const handlers: StudentsTemplateHandlers = {
     onSwitchTab: (t) => {
       void switchTab(t);
@@ -485,17 +546,9 @@ async function openStudentsDialogImpl() {
       }
       rerender();
     },
-    onCopyLogin: (login) => {
-      void navigator.clipboard.writeText(login);
-      copiedLogin = login;
-      if (copiedLoginTimeout !== null) window.clearTimeout(copiedLoginTimeout);
-      copiedLoginTimeout = window.setTimeout(() => {
-        copiedLoginTimeout = null;
-        copiedLogin = null;
-        rerender();
-      }, 1500);
-      rerender();
-    },
+    onRowPointerDown: startRowPress,
+    onRowPointerUp: cancelRowPress,
+    onRowClick: openRow,
     onConnect: () => {
       void loginWith42(async () => {
         await clearAuthFailed();
@@ -529,7 +582,7 @@ async function openStudentsDialogImpl() {
     activeCount,
     filterOptions,
     currentYear,
-    copiedLogin,
+    friendToast,
     isMaximized,
     tabsOverflowing,
   });

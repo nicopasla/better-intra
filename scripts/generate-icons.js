@@ -4,15 +4,18 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const svg = readFileSync(resolve(__dirname, "../src/assets/svg/icon.svg"));
+let svg = readFileSync(resolve(__dirname, "../src/assets/svg/icon.svg"), "utf8");
 
-const sizes = [16, 48, 128];
-const outDir = resolve(__dirname, "../public/icons");
+const fill = process.env.ICON_FILL || "#00babc";
+svg = svg.replace('fill="currentColor"', `fill="${fill}"`);
+
+const sizes = [16, 48, 128, 192, 512];
+const outDir = process.env.ICON_OUT_DIR || resolve(__dirname, "../public/icons");
 
 mkdirSync(outDir, { recursive: true });
 
 for (const size of sizes) {
-  await sharp(svg)
+  await sharp(Buffer.from(svg))
     .resize(size, size)
     .png()
     .toFile(resolve(outDir, `icon-${size}.png`));

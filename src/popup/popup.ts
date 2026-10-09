@@ -28,9 +28,9 @@ function renderPlaceholder(container: HTMLElement) {
         class="w-full flex flex-col items-center justify-center p-8 gap-4"
       >
         <div class="text-center flex flex-col items-center">
-          <span
-            class="size-16 flex items-center justify-center [&_svg]:size-full [&_polygon]:fill-current text-[#00babc]"
-          >
+<span
+          class="size-16 flex items-center justify-center [&_svg]:size-full [&_path]:fill-current text-[#00babc]"
+        >
             ${unsafeHTML(ICON_SVG)}
           </span>
           <h2 class="text-2xl font-bold mt-2">Better Intra</h2>
@@ -91,7 +91,7 @@ async function renderLauncher(container: HTMLElement) {
       >
         <div class="text-center flex flex-col items-center">
           <span
-            class="size-14 flex items-center justify-center [&_svg]:size-full [&_polygon]:fill-current text-[#00babc]"
+            class="size-14 flex items-center justify-center [&_svg]:size-full [&_path]:fill-current text-[#00babc]"
           >
             ${unsafeHTML(ICON_SVG)}
           </span>

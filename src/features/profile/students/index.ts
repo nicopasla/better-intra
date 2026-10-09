@@ -10,11 +10,6 @@ import { makeResizable } from "../../../utils/resizable-dialog.ts";
 import { adoptShadowStyles } from "../../../utils/shadow-styles.ts";
 import { getEffectiveTheme } from "../theme/theme-manager.ts";
 import {
-  addFriend,
-  clearFriendsCache,
-  isFriend,
-} from "../../friends/friends.ts";
-import {
   INITIAL_VISIBLE_COUNT,
   WINDOW_STEP,
   fetchPiscines,
@@ -45,8 +40,6 @@ import type {
 let studentsOpening: Promise<void> | null = null;
 
 const TABS_OVERFLOW_TOLERANCE = 1;
-
-const LONG_PRESS_MS = 500;
 
 /**
  * Measure whether the inline tab strip would overflow its host. Uses an
@@ -182,15 +175,6 @@ async function openStudentsDialogImpl() {
   let activeCount = 0;
   let filterOptions: StudentsFilterOptions | null = null;
   let searchTimeout: number | null = null;
-  let pressTimer: number | null = null;
-  let pressStartX = 0;
-  let pressStartY = 0;
-  let pressArmed = false;
-  let pressFired = false;
-  let lastPointerType = "";
-  let longPressFired = false;
-  let friendToast: { ok: boolean; message: string } | null = null;
-  let friendToastTimer: number | null = null;
   let sentinelObserver: IntersectionObserver | null = null;
   let isMaximized = false;
   let tabsOverflowing = false;
@@ -242,8 +226,6 @@ async function openStudentsDialogImpl() {
       tabsResizeObserver = null;
     }
     if (searchTimeout !== null) window.clearTimeout(searchTimeout);
-    if (friendToastTimer !== null) window.clearTimeout(friendToastTimer);
-    if (pressTimer !== null) window.clearTimeout(pressTimer);
     cleanupResize();
     dialog.close();
     dialog.remove();
@@ -416,87 +398,7 @@ async function openStudentsDialogImpl() {
     await load();
   };
 
-  const showFriendToast = (ok: boolean, message: string) => {
-    friendToast = { ok, message };
-    if (friendToastTimer !== null) window.clearTimeout(friendToastTimer);
-    friendToastTimer = window.setTimeout(() => {
-      friendToastTimer = null;
-      friendToast = null;
-      rerender();
-    }, 2500);
-    rerender();
-  };
-
-  const addStudentFriend = async (login: string) => {
-    try {
-      if (await isFriend(login)) {
-        showFriendToast(true, `${login} is already a friend`);
-        return;
-      }
-      await addFriend(login);
-      await clearFriendsCache();
-      showFriendToast(true, `Added ${login} to friends`);
-    } catch {
-      showFriendToast(false, `Could not add ${login}`);
-    }
-  };
-
-  const clearPress = () => {
-    if (pressTimer !== null) {
-      window.clearTimeout(pressTimer);
-      pressTimer = null;
-    }
-    pressArmed = false;
-  };
-
-  const triggerLongPress = (login: string) => {
-    if (pressFired) return;
-    pressFired = true;
-    longPressFired = true;
-    clearPress();
-    try {
-      navigator.vibrate?.(15);
-    } catch {
-      /* unsupported */
-    }
-    void addStudentFriend(login);
-  };
-
-  const startRowPress = (e: PointerEvent, login: string) => {
-    if (e.pointerType === "mouse" && e.button !== 0) return;
-    lastPointerType = e.pointerType || "";
-    pressArmed = true;
-    pressFired = false;
-    longPressFired = false;
-    pressStartX = e.clientX;
-    pressStartY = e.clientY;
-    if (pressTimer !== null) window.clearTimeout(pressTimer);
-    pressTimer = window.setTimeout(() => {
-      pressTimer = null;
-      triggerLongPress(login);
-    }, LONG_PRESS_MS);
-  };
-
-  const moveRowPress = (e: PointerEvent) => {
-    if (!pressArmed || pressTimer === null) return;
-    const dx = e.clientX - pressStartX;
-    const dy = e.clientY - pressStartY;
-    if (dx * dx + dy * dy > 144) clearPress();
-  };
-
-  const rowContextMenu = (e: Event, login: string) => {
-    e.preventDefault();
-    if (lastPointerType === "touch" || lastPointerType === "pen") {
-      pressArmed = true;
-      triggerLongPress(login);
-    }
-  };
-
   const openRow = (login: string) => {
-    if (longPressFired) {
-      longPressFired = false;
-      return;
-    }
     window.open(`https://profile.intra.42.fr/users/${login}`, "_blank");
   };
 
@@ -584,10 +486,6 @@ async function openStudentsDialogImpl() {
       }
       rerender();
     },
-    onRowPointerDown: startRowPress,
-    onRowPointerMove: moveRowPress,
-    onRowPointerUp: clearPress,
-    onRowContextMenu: rowContextMenu,
     onRowClick: openRow,
     onConnect: () => {
       void loginWith42(async () => {
@@ -622,7 +520,6 @@ async function openStudentsDialogImpl() {
     activeCount,
     filterOptions,
     currentYear,
-    friendToast,
     isMaximized,
     tabsOverflowing,
   });

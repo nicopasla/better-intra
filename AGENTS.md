@@ -60,7 +60,7 @@ Tests use Vitest with `jsdom` environment and global API. Run `npm test` (single
 
 ## PWA versioning
 
-**Always bump the PWA version on every change**, following semver (keep `better-intra-pwa/package.json` and `package-lock.json` in sync, then rebuild):
+**Bump the PWA version at commit time**, following semver (keep `better-intra-pwa/package.json` and `package-lock.json` in sync, then rebuild). Do **not** bump for uncommitted edits — a batch of changes since the last commit shares the current version and gets a single bump when committed.
 
 - **major** — breaking changes
 - **minor** — new features

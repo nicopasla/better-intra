@@ -37,6 +37,9 @@ export function generateIcs(
     begin_at: string;
     end_at: string;
     location?: string;
+    description?: string;
+    nbr_subscribers?: number;
+    max_subscribers?: number | null;
   }[],
 ): string {
   const lines: string[] = [];
@@ -61,6 +64,9 @@ export function generateIcs(
       `DTEND:${formatIcsDate(ev.end_at)}`,
       `SUMMARY:${escapeIcs(ev.name)}`,
       ev.location ? `LOCATION:${escapeIcs(ev.location)}` : "",
+      ev.description ? `DESCRIPTION:${escapeIcs(ev.description)}` : "",
+      ev.nbr_subscribers != null ? `X-SUBSCRIBERS:${ev.nbr_subscribers}` : "",
+      ev.max_subscribers != null ? `X-MAX-SUBSCRIBERS:${ev.max_subscribers}` : "",
       `URL:${url}`,
       "BEGIN:VALARM",
       "TRIGGER:-PT15M",
@@ -83,6 +89,9 @@ export async function syncCalendarIcs(
     begin_at: string;
     end_at: string;
     location?: string;
+    description?: string;
+    nbr_subscribers?: number;
+    max_subscribers?: number | null;
   }[],
   force = false,
 ): Promise<void> {

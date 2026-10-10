@@ -38,6 +38,9 @@ export interface CalendarEvent {
   begin_at: string;
   end_at: string;
   location: string;
+  description?: string;
+  nbr_subscribers?: number;
+  max_subscribers?: number | null;
   is_subscribed: boolean;
 }
 

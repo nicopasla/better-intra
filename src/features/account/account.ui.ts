@@ -1,6 +1,10 @@
 import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
-import { fetchSessions, getCloudLogin } from "./account.ts";
+import {
+  fetchSessions,
+  getCloudLogin,
+  type SessionSummary,
+} from "./account.ts";
 import { getConfig } from "../../config.ts";
 import { formatRelative } from "../../utils/dates.ts";
 import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
@@ -21,6 +25,39 @@ function formatSessionDate(ts: number): string {
 
 function monogram(value: string): string {
   return (value.trim().charAt(0) || "?").toUpperCase();
+}
+
+interface SessionGroup {
+  key: string;
+  sessions: SessionSummary[];
+  primary: SessionSummary;
+  current: boolean;
+}
+
+function sessionRecency(s: SessionSummary): number {
+  return s.lastUsedAt ?? s.createdAt ?? 0;
+}
+
+/**
+ * Collapses sessions that belong to the same device, so repeated logins from
+ * one browser/phone render as a single row instead of an ambiguous pile.
+ */
+function groupSessions(sessions: SessionSummary[]): SessionGroup[] {
+  const map = new Map<string, SessionGroup>();
+  for (const s of sessions) {
+    const key = (s.name || s.label || "").trim().toLowerCase() || `id:${s.id}`;
+    let group = map.get(key);
+    if (!group) {
+      group = { key, sessions: [], primary: s, current: false };
+      map.set(key, group);
+    }
+    group.sessions.push(s);
+    if (s.current) group.current = true;
+    if (sessionRecency(s) > sessionRecency(group.primary)) group.primary = s;
+  }
+  return [...map.values()].sort(
+    (a, b) => sessionRecency(b.primary) - sessionRecency(a.primary),
+  );
 }
 
 function syncButton(
@@ -58,6 +95,7 @@ function renderAccountTab(
   const isConnected = state.activeSessions > 0;
   const sessionsMax = state.sessionsMax || 20;
   const othersCount = state.sessions.filter((s) => !s.current).length;
+  const groups = groupSessions(state.sessions);
 
   if (!state.token) {
     return html`
@@ -248,8 +286,10 @@ function renderAccountTab(
             : html`<ul
                 class="list bg-base-100 rounded-box border border-base-300 max-h-64 overflow-y-auto lg:max-h-none lg:flex-1 lg:min-h-0"
               >
-                ${state.sessions.map(
-                  (s) => html`
+                ${groups.map((g) => {
+                  const others = g.sessions.filter((s) => !s.current);
+                  const busy = state.revokingGroup === g.key;
+                  return html`
                     <li class="list-row items-center">
                       <div class="avatar avatar-placeholder">
                         <div
@@ -257,7 +297,9 @@ function renderAccountTab(
                           style="display:grid;place-items:center;"
                         >
                           <span class="text-xs font-bold"
-                            >${monogram(s.name || s.label)}</span
+                            >${monogram(
+                              g.primary.name || g.primary.label,
+                            )}</span
                           >
                         </div>
                       </div>
@@ -265,35 +307,49 @@ function renderAccountTab(
                         <div
                           class="flex items-center gap-2 text-sm font-semibold"
                         >
-                          <span class="truncate">${s.label}</span>
-                          ${s.current
+                          <span class="truncate">${g.primary.label}</span>
+                          ${g.current
                             ? html`<span class="badge badge-success badge-sm"
                                 >This session</span
                               >`
                             : ""}
+                          ${g.sessions.length > 1
+                            ? html`<span class="badge badge-ghost badge-sm"
+                                >${g.sessions.length}</span
+                              >`
+                            : ""}
                         </div>
                         <div class="text-xs opacity-50 truncate">
-                          ${s.name ? `${s.name} · ` : ""}${s.country ||
-                          "Unknown location"}
-                          · ${formatSessionDate(s.createdAt)}
+                          ${g.primary.name ? `${g.primary.name} · ` : ""}${g
+                            .primary.country || "Unknown location"}
+                          ·
+                          ${sessionRecency(g.primary)
+                            ? `Last used ${formatRelative(
+                                sessionRecency(g.primary),
+                              )}`
+                            : formatSessionDate(g.primary.createdAt)}
                         </div>
                       </div>
-                      ${s.current
+                      ${others.length === 0
                         ? ""
                         : html`<button
-                            class="btn btn-xs btn-ghost text-error font-bold ${state.revokingId ===
-                            s.id
+                            class="btn btn-xs btn-ghost text-error font-bold ${busy
                               ? "loading"
                               : ""}"
                             type="button"
-                            ?disabled="${state.revokingId === s.id}"
-                            @click="${() => handlers.handleRevokeSession(s.id)}"
+                            ?disabled="${busy}"
+                            @click="${() =>
+                              handlers.handleRevokeGroup(
+                                others.map((s) => s.id),
+                                g.primary.label,
+                                g.key,
+                              )}"
                           >
                             Revoke
                           </button>`}
                     </li>
-                  `,
-                )}
+                  `;
+                })}
               </ul>`}
           ${othersCount > 0
             ? html`<button

@@ -287,6 +287,44 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
     updateUI();
   };
 
+  const handleRevokeGroup = async (
+    ids: string[],
+    label: string,
+    key: string,
+  ) => {
+    if (ids.length === 0) return;
+
+    const confirmed = await showConfirmDialog({
+      title: ids.length > 1 ? "Revoke device sessions" : "Revoke session",
+      message:
+        ids.length > 1
+          ? `Sign out ${ids.length} sessions for ${label || "this device"}?`
+          : `Sign out ${label || "this device"}?`,
+      confirmLabel: "Revoke",
+      cancelLabel: "Cancel",
+      danger: true,
+    });
+    if (!confirmed) return;
+
+    state.revokingGroup = key;
+    updateUI();
+    const results = await Promise.all(ids.map((id) => revokeSession(id)));
+    state.revokingGroup = null;
+
+    const { sessions, max } = await fetchSessions();
+    state.sessions = sessions;
+    state.sessionsMax = max;
+    state.activeSessions = sessions.length;
+    updateUI();
+
+    if (results.some((ok) => !ok)) {
+      await showAlertDialog({
+        title: "Some sessions weren't revoked",
+        message: "Please try again.",
+      });
+    }
+  };
+
   const handleRevokeOthers = async () => {
     const others = state.sessions.filter((s) => !s.current);
     if (others.length === 0) return;
@@ -335,6 +373,7 @@ export function createHandlers(state: AccountState, updateUI: () => void) {
     handlePull,
     handleToggleAutoPush,
     handleRevokeSession,
+    handleRevokeGroup,
     handleRevokeOthers,
     handleReviewConflict,
     handleDismissReview,

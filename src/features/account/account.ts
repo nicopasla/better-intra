@@ -164,6 +164,7 @@ export interface SessionSummary {
   name?: string;
   country?: string;
   createdAt: number;
+  lastUsedAt?: number;
   current: boolean;
 }
 

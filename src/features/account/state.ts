@@ -15,6 +15,7 @@ export interface AccountState {
   sessions: SessionSummary[];
   sessionsMax: number;
   revokingId: string | null;
+  revokingGroup: string | null;
   revokingOthers: boolean;
   autoPush: boolean;
   lastSynced: number | null;
@@ -36,6 +37,7 @@ export function createInitialState(): AccountState {
     sessions: [],
     sessionsMax: 0,
     revokingId: null,
+    revokingGroup: null,
     revokingOthers: false,
     autoPush: false,
     lastSynced: null,

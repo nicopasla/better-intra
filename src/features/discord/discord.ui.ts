@@ -96,16 +96,6 @@ export function renderDiscordPanel() {
             evalActive = true;
           }
         } catch {}
-      } else if (!shouldBeRegistered && evalActive) {
-        try {
-          const hashed = await hashLogin(login);
-          await workerFetch(
-            `/api/v1/private/evaluations?login=${encodeURIComponent(hashed)}&action=unregister`,
-            { token },
-          );
-        } catch {}
-        await chrome.storage.local.set({ DISCORD_EVAL_REGISTERED: false });
-        evalActive = false;
       }
 
       const authUrl = has42

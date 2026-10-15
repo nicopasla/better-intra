@@ -2,7 +2,6 @@ import { hashLogin } from "./utils/crypto";
 import { WORKER_URL, workerFetch } from "./utils/worker";
 import { subjectMeta } from "./features/subjects/meta";
 
-
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === "install") {
     chrome.storage.local.set({ PENDING_WELCOME: true });
@@ -14,12 +13,6 @@ chrome.runtime.onInstalled.addListener((details) => {
 chrome.storage.onChanged.addListener((changes) => {
   if ("DISCORD_ENABLED" in changes || "DISCORD_ID" in changes) {
     syncDiscord();
-  }
-  if ("DISCORD_ID" in changes && !changes.DISCORD_ID.newValue) {
-    syncRegistration();
-  }
-  if ("DISCORD_ENABLED" in changes && !changes.DISCORD_ENABLED.newValue) {
-    syncRegistration();
   }
   if (
     "DISCORD_QUIET_ENABLED" in changes ||
@@ -40,31 +33,6 @@ async function shouldReloadOnTokenChange(): Promise<boolean> {
     "WELCOME_ACTIVE_UNTIL",
   )) as { WELCOME_ACTIVE_UNTIL?: number };
   return !WELCOME_ACTIVE_UNTIL || Date.now() >= WELCOME_ACTIVE_UNTIL;
-}
-
-async function syncRegistration() {
-  const store = await chrome.storage.local.get([
-    "CLOUD_TOKEN",
-    "CLOUD_LOGIN",
-    "DISCORD_ENABLED",
-    "DISCORD_ID",
-  ]);
-  const token = String(store.CLOUD_TOKEN || "");
-  const cloudLogin = String(store.CLOUD_LOGIN || "");
-  if (!token || !cloudLogin) return;
-
-  const discordEnabled = store.DISCORD_ENABLED === true;
-  const discordId = String(store.DISCORD_ID || "").trim();
-  if (discordEnabled && discordId) return;
-
-  const hashedLogin = await hashLogin(cloudLogin);
-  const path = `/api/v1/private/evaluations?login=${encodeURIComponent(hashedLogin)}&action=unregister`;
-
-  try {
-    await workerFetch(path, { token });
-  } catch {
-    console.warn("syncRegistration: fetch failed");
-  }
 }
 
 async function syncDiscord() {

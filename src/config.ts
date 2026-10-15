@@ -158,10 +158,11 @@ export interface BetterIntraConfig {
     string,
     {
       lastUrl?: string;
-      changedAt?: number;
+      versionDate?: number;
       checkedAt?: number;
     }
   >;
+  SUBJECT_TRACKER_STATE_VERSION: number;
 
   // Project Page
   PROJECT_PAGE_REDESIGN: boolean;
@@ -284,6 +285,7 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   ADVANCED_OPEN_LINKS_NEW_TAB: true,
 
   SUBJECT_TRACKER_STATE: {},
+  SUBJECT_TRACKER_STATE_VERSION: 0,
   SUBJECT_TRACKER_ENABLED: true,
   SUBJECT_TRACKER_SEND_DATA: true,
   PROJECT_PAGE_REDESIGN: false,

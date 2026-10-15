@@ -1,11 +1,12 @@
 import { getConfig } from "../../config.ts";
 import { workerFetch } from "../../utils/worker.ts";
 import { hashLogin } from "../../utils/crypto.ts";
-import { decide, normalizeUrl } from "./fingerprint.ts";
+import { normalizeUrl } from "./fingerprint.ts";
 import { renderSubjectBadge } from "./ui.ts";
 import { subjectBadgeInfo, type LocalSubjectState } from "./badge.ts";
 
 const CHECK_COOLDOWN_MS = 15 * 60 * 1000;
+const STATE_VERSION = 2;
 
 type SubjectTrackerState = Record<string, LocalSubjectState>;
 
@@ -14,6 +15,8 @@ interface WorkerStateEntry {
   tracked: boolean;
   name?: string;
   url?: string | null;
+  createdAt?: number | null;
+  modifiedAt?: number | null;
   lastChangedAt?: number | null;
 }
 
@@ -21,6 +24,9 @@ interface WorkerReportEntry {
   slug: string;
   status: "first" | "known" | "changed" | "unknown";
   name?: string;
+  url?: string | null;
+  createdAt?: number | null;
+  modifiedAt?: number | null;
   lastChangedAt?: number | null;
 }
 
@@ -49,6 +55,29 @@ function findSubjectAnchor(): HTMLAnchorElement | null {
 async function readLocalState(): Promise<SubjectTrackerState> {
   const raw = await getConfig("SUBJECT_TRACKER_STATE");
   return (raw && typeof raw === "object" ? raw : {}) as SubjectTrackerState;
+}
+
+/**
+ * Drops state written by older builds, which stored a fabricated "now" date
+ * (and later a change timestamp) that is no longer meaningful. The badge now
+ * only reflects the real date shared by the registry.
+ */
+async function migrateState(): Promise<void> {
+  const version = await getConfig("SUBJECT_TRACKER_STATE_VERSION");
+  if (version >= STATE_VERSION) return;
+  await chrome.storage.local.set({
+    SUBJECT_TRACKER_STATE: {},
+    SUBJECT_TRACKER_STATE_VERSION: STATE_VERSION,
+  });
+}
+
+function apiDate(
+  entry:
+    | { createdAt?: number | null; modifiedAt?: number | null }
+    | null
+    | undefined,
+): number | undefined {
+  return entry?.modifiedAt ?? entry?.createdAt ?? undefined;
 }
 
 async function cloudClient(): Promise<CloudClient | null> {
@@ -118,6 +147,8 @@ export async function initSubjectTracker(): Promise<void> {
   const anchor = await waitForSubject(findSubjectAnchor());
   if (!anchor) return;
 
+  await migrateState();
+
   const url = anchor.href;
   const state = await readLocalState();
   const local = state[slug] ?? {};
@@ -136,50 +167,41 @@ export async function initSubjectTracker(): Promise<void> {
       // Worker unreachable → keep the latest local knowledge.
       nextLocal = {
         lastUrl: local.lastUrl ?? normalizeUrl(url),
-        changedAt: local.changedAt,
+        versionDate: local.versionDate,
         checkedAt: Date.now(),
       };
     } else if (!entry.tracked) {
-      // Never-seen slug → register the link. No baseline date → no badge.
+      // Never-seen slug → register the link. No update recorded → no badge.
       const report = await reportToWorker(slug, client, url);
       nextLocal = {
         lastUrl: normalizeUrl(url),
-        changedAt: report?.lastChangedAt ?? local.changedAt,
+        versionDate: apiDate(report),
         checkedAt: Date.now(),
       };
     } else if (entry.url && normalizeUrl(entry.url) !== normalizeUrl(url)) {
-      // The shared link differs from the one we see → record the change.
+      // The shared link differs from the one we see → let the registry verify
+      // the change against the 42 API and return the real update date.
       const report = await reportToWorker(slug, client, url);
       nextLocal = {
         lastUrl: normalizeUrl(url),
-        changedAt: report?.lastChangedAt ?? Date.now(),
+        versionDate: apiDate(report) ?? local.versionDate,
         checkedAt: Date.now(),
       };
     } else {
-      // Same link → surface the shared change date, if any.
+      // Same link → surface the shared update date, if any.
       nextLocal = {
         lastUrl: normalizeUrl(url),
-        changedAt: entry.lastChangedAt ?? local.changedAt,
+        versionDate: apiDate(entry),
         checkedAt: Date.now(),
       };
     }
   } else {
-    // No cloud session → pure local comparison of the link.
-    const prev = local.lastUrl ? { url: local.lastUrl } : null;
-    if (decide(prev, { url }) === "changed") {
-      nextLocal = {
-        lastUrl: normalizeUrl(url),
-        changedAt: Date.now(),
-        checkedAt: Date.now(),
-      };
-    } else {
-      // No prior record → keep no change date so no badge shows.
-      nextLocal = {
-        lastUrl: normalizeUrl(url),
-        changedAt: local.changedAt,
-        checkedAt: Date.now(),
-      };
-    }
+    // No cloud session → no shared data to read, so no badge.
+    nextLocal = {
+      lastUrl: normalizeUrl(url),
+      versionDate: local.versionDate,
+      checkedAt: Date.now(),
+    };
   }
 
   await chrome.storage.local.set({

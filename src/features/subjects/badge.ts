@@ -2,7 +2,6 @@ import { formatRelativeTime, formatShortDate } from "./fingerprint.ts";
 
 export interface LocalSubjectState {
   lastUrl?: string;
-  versionDate?: number;
   changedAt?: number;
   checkedAt?: number;
 }
@@ -20,8 +19,7 @@ const DAY = 86_400_000;
 export function subjectBadgeInfo(
   local: LocalSubjectState | undefined,
 ): SubjectBadgeInfo | null {
-  if (!local) return null;
-  const date = local.versionDate ?? local.changedAt;
+  const date = local?.changedAt;
   if (!date) return null;
   const age = Date.now() - date;
   const recent = age <= 7 * DAY;

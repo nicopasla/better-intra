@@ -1,7 +1,7 @@
 import { getConfig } from "../../config.ts";
 import { workerFetch } from "../../utils/worker.ts";
 import { hashLogin } from "../../utils/crypto.ts";
-import { decide, normalizeUrl, parseSubjectLink } from "./fingerprint.ts";
+import { decide, normalizeUrl } from "./fingerprint.ts";
 import { renderSubjectBadge } from "./ui.ts";
 import { subjectBadgeInfo, type LocalSubjectState } from "./badge.ts";
 
@@ -13,9 +13,7 @@ interface WorkerStateEntry {
   slug: string;
   tracked: boolean;
   name?: string;
-  subjectId?: string | null;
-  createdAt?: number | null;
-  modifiedAt?: number | null;
+  url?: string | null;
   lastChangedAt?: number | null;
 }
 
@@ -23,10 +21,7 @@ interface WorkerReportEntry {
   slug: string;
   status: "first" | "known" | "changed" | "unknown";
   name?: string;
-  createdAt?: number | null;
-  modifiedAt?: number | null;
   lastChangedAt?: number | null;
-  subjectId?: string | null;
 }
 
 interface CloudClient {
@@ -100,14 +95,6 @@ async function reportToWorker(
   }
 }
 
-function versionDateOf(
-  createdAt: number | null | undefined,
-  modifiedAt: number | null | undefined,
-  fallback?: number,
-): number | undefined {
-  return modifiedAt ?? createdAt ?? fallback ?? undefined;
-}
-
 async function waitForSubject(
   anchor: HTMLAnchorElement | null,
 ): Promise<HTMLAnchorElement | null> {
@@ -146,60 +133,35 @@ export async function initSubjectTracker(): Promise<void> {
   if (client && sendData) {
     const entry = await getWorkerState(slug, client);
     if (entry === null) {
-      // Worker unreachable → fall back to latest local knowledge.
+      // Worker unreachable → keep the latest local knowledge.
       nextLocal = {
         lastUrl: local.lastUrl ?? normalizeUrl(url),
-        versionDate: local.versionDate,
         changedAt: local.changedAt,
         checkedAt: Date.now(),
       };
     } else if (!entry.tracked) {
-      // Never-seen slug → seed via the worker (reads the PDF metadata).
+      // Never-seen slug → register the link. No baseline date → no badge.
       const report = await reportToWorker(slug, client, url);
       nextLocal = {
         lastUrl: normalizeUrl(url),
-        versionDate:
-          report?.modifiedAt ??
-          report?.createdAt ??
-          local.versionDate ??
-          Date.now(),
-        changedAt: local.changedAt,
+        changedAt: report?.lastChangedAt ?? local.changedAt,
+        checkedAt: Date.now(),
+      };
+    } else if (entry.url && normalizeUrl(entry.url) !== normalizeUrl(url)) {
+      // The shared link differs from the one we see → record the change.
+      const report = await reportToWorker(slug, client, url);
+      nextLocal = {
+        lastUrl: normalizeUrl(url),
+        changedAt: report?.lastChangedAt ?? Date.now(),
         checkedAt: Date.now(),
       };
     } else {
-      const currentSubjectId = parseSubjectLink(url)?.subjectId ?? null;
-      const recordedSubjectId = entry.subjectId ?? null;
-      if (
-        currentSubjectId &&
-        recordedSubjectId &&
-        currentSubjectId !== recordedSubjectId
-      ) {
-        // Resource differs from the registry → report the change.
-        const report = await reportToWorker(slug, client, url);
-        const changed =
-          report?.status === "changed"
-            ? report
-            : {
-                modifiedAt: entry.modifiedAt,
-                lastChangedAt: entry.lastChangedAt,
-              };
-        nextLocal = {
-          lastUrl: normalizeUrl(url),
-          versionDate:
-            versionDateOf(changed.modifiedAt, undefined) ??
-            versionDateOf(entry.createdAt, entry.modifiedAt),
-          changedAt: changed.lastChangedAt ?? Date.now(),
-          checkedAt: Date.now(),
-        };
-      } else {
-        // Same link → show the recorded state (baseline or previous update).
-        nextLocal = {
-          lastUrl: normalizeUrl(url),
-          versionDate: versionDateOf(entry.createdAt, entry.modifiedAt),
-          changedAt: entry.lastChangedAt ?? undefined,
-          checkedAt: Date.now(),
-        };
-      }
+      // Same link → surface the shared change date, if any.
+      nextLocal = {
+        lastUrl: normalizeUrl(url),
+        changedAt: entry.lastChangedAt ?? local.changedAt,
+        checkedAt: Date.now(),
+      };
     }
   } else {
     // No cloud session → pure local comparison of the link.
@@ -211,10 +173,9 @@ export async function initSubjectTracker(): Promise<void> {
         checkedAt: Date.now(),
       };
     } else {
-      // No prior record and no known change → keep no date so no badge shows.
+      // No prior record → keep no change date so no badge shows.
       nextLocal = {
         lastUrl: normalizeUrl(url),
-        versionDate: local.versionDate,
         changedAt: local.changedAt,
         checkedAt: Date.now(),
       };

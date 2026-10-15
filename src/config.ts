@@ -158,7 +158,6 @@ export interface BetterIntraConfig {
     string,
     {
       lastUrl?: string;
-      versionDate?: number;
       changedAt?: number;
       checkedAt?: number;
     }

@@ -140,21 +140,18 @@ describe("maybeRenderBadge", () => {
     expect(document.getElementById("ft-subject-update-host")).toBeNull();
   });
 
+  it("renders nothing when there is no recorded change", () => {
+    const { anchor } = mount();
+    maybeRenderBadge("python-module-10", {}, anchor);
+    expect(document.getElementById("ft-subject-update-host")).toBeNull();
+  });
+
   it("appends the badge to the end of the project summary", () => {
     const { summary, anchor } = mount();
-    maybeRenderBadge("python-module-10", { versionDate: Date.now() }, anchor);
+    maybeRenderBadge("python-module-10", { changedAt: Date.now() }, anchor);
     const badge = document.getElementById("ft-subject-update-host");
     expect(badge).toBeTruthy();
     expect(summary.lastElementChild).toBe(badge);
-  });
-
-  it("writes 'Subject updated' with a relative time for a baseline date", () => {
-    const { anchor } = mount();
-    maybeRenderBadge("python-module-10", { versionDate: Date.now() }, anchor);
-    const badge = document.getElementById("ft-subject-update-host");
-    const shadowText = badge?.shadowRoot?.textContent ?? "";
-    expect(shadowText).toContain("Subject updated");
-    expect(shadowText).toContain("just now");
   });
 
   it("writes 'Subject updated' with relative time when a change was recorded", () => {
@@ -174,7 +171,7 @@ describe("maybeRenderBadge", () => {
     const { anchor } = mount();
     maybeRenderBadge(
       "python-module-10",
-      { versionDate: Date.UTC(2026, 7, 11, 16, 19, 24) },
+      { changedAt: Date.UTC(2026, 7, 11, 16, 19, 24) },
       anchor,
     );
     const badge = document.getElementById("ft-subject-update-host");
@@ -186,7 +183,7 @@ describe("maybeRenderBadge", () => {
 
   it("colors the badge red within 7 days", () => {
     const { anchor } = mount();
-    maybeRenderBadge("python-module-10", { versionDate: Date.now() }, anchor);
+    maybeRenderBadge("python-module-10", { changedAt: Date.now() }, anchor);
     const badge = document.getElementById("ft-subject-update-host");
     const pill = badge?.shadowRoot?.querySelector<HTMLElement>(
       'span[style*="background"]',
@@ -198,7 +195,7 @@ describe("maybeRenderBadge", () => {
     const { anchor } = mount();
     maybeRenderBadge(
       "python-module-10",
-      { versionDate: Date.now() - 45 * 86_400_000 },
+      { changedAt: Date.now() - 45 * 86_400_000 },
       anchor,
     );
     const badge = document.getElementById("ft-subject-update-host");

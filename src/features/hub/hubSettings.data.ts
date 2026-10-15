@@ -647,13 +647,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
           value: "SUBJECT_TRACKER_ENABLED",
           color: "warning",
           big: true,
-          desc: "Shows a badge on project pages when a subject has been updated, using update data shared by the community.",
-          subToggle: {
-            label: "Share with the community",
-            value: "SUBJECT_TRACKER_SEND_DATA",
-            requiresCloud: true,
-            desc: "Send subject links so everyone sees when subjects are updated - and you benefit from updates others have spotted.",
-          },
+          desc: "Shows a badge on project pages with the subject's latest update date, read from the subject file.",
         },
         {
           label: "Friends widget",

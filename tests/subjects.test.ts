@@ -1,93 +1,94 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import {
-  parseSubjectLink,
-  normalizeUrl,
-  decide,
   formatShortDate,
   formatRelativeTime,
 } from "../src/features/subjects/fingerprint";
+import { parsePdfDate, subjectMeta } from "../src/features/subjects/meta";
 import { maybeRenderBadge } from "../src/features/subjects/tracker";
 
-describe("parseSubjectLink", () => {
-  it("parses a cdn subject link", () => {
-    const link = parseSubjectLink(
-      "https://cdn.example.com/pdf/pdf/900001/en.subject.example.pdf",
-    );
-    expect(link).toEqual({
-      url: "https://cdn.example.com/pdf/pdf/900001/en.subject.example.pdf",
-      subjectId: "900001",
-      lang: "en",
-      filename: "en.subject.example.pdf",
+const URL_A = "https://cdn.example.com/pdf/pdf/900001/en.subject.example.pdf";
+const SEED_DATE = Date.UTC(2026, 7, 11, 14, 19, 24);
+const NEW_DATE = Date.UTC(2026, 8, 1, 8, 9, 0);
+
+function pdfBytes(text: string): Uint8Array {
+  return new Uint8Array([...text].map((c) => c.charCodeAt(0)));
+}
+
+function mockFetch(
+  handler: (url: string, init?: RequestInit) => Response,
+): string[] {
+  const calls: string[] = [];
+  (globalThis as any).fetch = vi.fn(async (url: string, init?: RequestInit) => {
+    calls.push(`${init?.method ?? "GET"} ${url}`);
+    return handler(url, init);
+  });
+  return calls;
+}
+
+describe("parsePdfDate", () => {
+  it("parses a full timestamp with a timezone offset", () => {
+    expect(parsePdfDate("D:20260811161924+02'00'")).toBe(SEED_DATE);
+  });
+
+  it("parses a date without time", () => {
+    expect(parsePdfDate("D:20260811")).toBe(Date.UTC(2026, 7, 11));
+  });
+
+  it("returns null for non-date input", () => {
+    expect(parsePdfDate("nonsense")).toBeNull();
+  });
+});
+
+describe("subjectMeta", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("prefers the Last-Modified header", async () => {
+    const calls = mockFetch((_url, init) => {
+      if (init?.method === "HEAD") {
+        return new Response(null, {
+          status: 200,
+          headers: { "last-modified": new Date(NEW_DATE).toUTCString() },
+        });
+      }
+      return new Response("unused", { status: 500 });
     });
+    expect(await subjectMeta(URL_A)).toBe(NEW_DATE);
+    expect(calls).toEqual([`HEAD ${URL_A}`]);
   });
 
-  it("rejects non-pdf attachments", () => {
-    expect(
-      parseSubjectLink(
-        "https://cdn.example.com/document/document/900003/generator.tar.gz",
-      ),
-    ).toBeNull();
+  it("falls back to the pdf metadata when the header is missing", async () => {
+    mockFetch((_url, init) => {
+      if (init?.method === "HEAD") return new Response(null, { status: 200 });
+      return new Response(
+        pdfBytes(
+          "<< /CreationDate (D:20260811161924+02'00') /ModDate (D:20260901100900+02'00') >>",
+        ),
+        { status: 200 },
+      );
+    });
+    expect(await subjectMeta(URL_A)).toBe(Date.UTC(2026, 8, 1, 8, 9, 0));
   });
 
-  it("normalizes away query strings and fragments", () => {
-    const link = parseSubjectLink(
-      "https://cdn.example.com/pdf/pdf/900002/en.subject.example.pdf?download=1#top",
-    );
-    expect(link?.url).toBe(
-      "https://cdn.example.com/pdf/pdf/900002/en.subject.example.pdf",
-    );
-    expect(link?.subjectId).toBe("900002");
+  it("falls back to the pdf metadata when the HEAD is rejected", async () => {
+    mockFetch((_url, init) => {
+      if (init?.method === "HEAD") return new Response(null, { status: 403 });
+      return new Response(
+        pdfBytes("<< /ModDate (D:20260811161924+02'00') >>"),
+        { status: 200 },
+      );
+    });
+    expect(await subjectMeta(URL_A)).toBe(SEED_DATE);
   });
 
-  it("returns null lang when the filename has no language prefix", () => {
-    const link = parseSubjectLink(
-      "https://cdn.example.com/pdf/pdf/900002/subject.example.pdf",
-    );
-    expect(link?.lang).toBeNull();
-  });
-});
-
-describe("normalizeUrl", () => {
-  it("keeps origin and path only", () => {
-    expect(normalizeUrl("https://x.intra.42.fr/a/b?q=1#h")).toBe(
-      "https://x.intra.42.fr/a/b",
-    );
-  });
-});
-
-describe("decide", () => {
-  const next = {
-    url: "https://cdn.example.com/pdf/pdf/900010/en.subject.example.pdf",
-    subjectId: "900010",
-    lang: "en",
-    createdAt: null,
-    modifiedAt: null,
-  };
-
-  it("returns first when there is no previous record", () => {
-    expect(decide(null, next)).toBe("first");
+  it("returns null when nothing can be read", async () => {
+    mockFetch(() => new Response("nope", { status: 500 }));
+    expect(await subjectMeta(URL_A)).toBeNull();
   });
 
-  it("returns first when the previous record has no url", () => {
-    expect(decide({ url: undefined }, next)).toBe("first");
-  });
-
-  it("returns known when the url is unchanged", () => {
-    expect(decide(next, next)).toBe("known");
-  });
-
-  it("returns changed when the url differs", () => {
-    expect(
-      decide(
-        {
-          url: "https://cdn.example.com/pdf/pdf/900010/en.subject.example.pdf",
-        },
-        {
-          ...next,
-          url: "https://cdn.example.com/pdf/pdf/900011/en.subject.example.pdf",
-        },
-      ),
-    ).toBe("changed");
+  it("returns null for a non-http url", async () => {
+    expect(await subjectMeta("javascript:alert(1)")).toBeNull();
   });
 });
 
@@ -136,19 +137,19 @@ describe("maybeRenderBadge", () => {
   }
 
   it("renders nothing without a button or a version date", () => {
-    maybeRenderBadge("foo", {}, null);
+    maybeRenderBadge({}, null);
     expect(document.getElementById("ft-subject-update-host")).toBeNull();
   });
 
-  it("renders nothing when there is no recorded update", () => {
+  it("renders nothing when there is no known update date", () => {
     const { anchor } = mount();
-    maybeRenderBadge("python-module-10", {}, anchor);
+    maybeRenderBadge({}, anchor);
     expect(document.getElementById("ft-subject-update-host")).toBeNull();
   });
 
   it("appends the badge to the end of the project summary", () => {
     const { summary, anchor } = mount();
-    maybeRenderBadge("python-module-10", { versionDate: Date.now() }, anchor);
+    maybeRenderBadge({ versionDate: Date.now() }, anchor);
     const badge = document.getElementById("ft-subject-update-host");
     expect(badge).toBeTruthy();
     expect(summary.lastElementChild).toBe(badge);
@@ -156,11 +157,7 @@ describe("maybeRenderBadge", () => {
 
   it("writes 'Subject updated' with relative time for a recent update", () => {
     const { anchor } = mount();
-    maybeRenderBadge(
-      "python-module-10",
-      { versionDate: Date.now() - 3 * 3_600_000 },
-      anchor,
-    );
+    maybeRenderBadge({ versionDate: Date.now() - 3 * 3_600_000 }, anchor);
     const badge = document.getElementById("ft-subject-update-host");
     const shadowText = badge?.shadowRoot?.textContent ?? "";
     expect(shadowText).toContain("Subject updated");
@@ -169,11 +166,7 @@ describe("maybeRenderBadge", () => {
 
   it("falls back to an absolute date after a week", () => {
     const { anchor } = mount();
-    maybeRenderBadge(
-      "python-module-10",
-      { versionDate: Date.UTC(2026, 7, 11, 16, 19, 24) },
-      anchor,
-    );
+    maybeRenderBadge({ versionDate: Date.UTC(2026, 7, 11, 16, 19, 24) }, anchor);
     const badge = document.getElementById("ft-subject-update-host");
     const shadowText = badge?.shadowRoot?.textContent ?? "";
     expect(shadowText).toContain("Subject updated");
@@ -183,7 +176,7 @@ describe("maybeRenderBadge", () => {
 
   it("colors the badge red within 7 days", () => {
     const { anchor } = mount();
-    maybeRenderBadge("python-module-10", { versionDate: Date.now() }, anchor);
+    maybeRenderBadge({ versionDate: Date.now() }, anchor);
     const badge = document.getElementById("ft-subject-update-host");
     const pill = badge?.shadowRoot?.querySelector<HTMLElement>(
       'span[style*="background"]',
@@ -193,11 +186,7 @@ describe("maybeRenderBadge", () => {
 
   it("colors the badge neutral after 30 days", () => {
     const { anchor } = mount();
-    maybeRenderBadge(
-      "python-module-10",
-      { versionDate: Date.now() - 45 * 86_400_000 },
-      anchor,
-    );
+    maybeRenderBadge({ versionDate: Date.now() - 45 * 86_400_000 }, anchor);
     const badge = document.getElementById("ft-subject-update-host");
     const pill = badge?.shadowRoot?.querySelector<HTMLElement>(
       'span[style*="background"]',

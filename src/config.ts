@@ -153,7 +153,6 @@ export interface BetterIntraConfig {
 
   // Subject Tracker
   SUBJECT_TRACKER_ENABLED: boolean;
-  SUBJECT_TRACKER_SEND_DATA: boolean;
   SUBJECT_TRACKER_STATE: Record<
     string,
     {
@@ -287,7 +286,6 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   SUBJECT_TRACKER_STATE: {},
   SUBJECT_TRACKER_STATE_VERSION: 0,
   SUBJECT_TRACKER_ENABLED: true,
-  SUBJECT_TRACKER_SEND_DATA: true,
   PROJECT_PAGE_REDESIGN: false,
 };
 

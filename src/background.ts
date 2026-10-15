@@ -1,5 +1,6 @@
 import { hashLogin } from "./utils/crypto";
 import { WORKER_URL, workerFetch } from "./utils/worker";
+import { subjectMeta } from "./features/subjects/meta";
 
 
 chrome.runtime.onInstalled.addListener((details) => {
@@ -140,6 +141,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     openHub()
       .catch(() => undefined)
       .finally(sendResponse);
+    return true;
+  }
+  if (message?.type === "FT_SUBJECT_META") {
+    subjectMeta(String(message?.url ?? ""))
+      .then((modifiedAt) => sendResponse({ modifiedAt }))
+      .catch(() => sendResponse({ modifiedAt: null }));
     return true;
   }
   return undefined;

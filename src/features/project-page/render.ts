@@ -153,6 +153,8 @@ function header(
 
 const FILE_ICON = svg`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>`;
 
+const DOWNLOAD_ICON = svg`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>`;
+
 function filesCard(
   attachments: ProjectInfo["attachments"],
 ): TemplateResult | string {
@@ -172,6 +174,12 @@ function filesCard(
               >
                 <span class="ft-pp-file-icon">${FILE_ICON}</span>
                 <span class="ft-pp-file-name">${a.name}</span>
+                <span
+                  class="ft-pp-file-download"
+                  title="Download"
+                  aria-hidden="true"
+                  >${DOWNLOAD_ICON}</span
+                >
               </a>`,
           )}
         </div>

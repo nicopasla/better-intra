@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [1.11.3] - 2026-10-15
+
+### Features 🎉
+
+- feat(project-page): add download icon to project files ([3e0b940](https://github.com/nicopasla/better-intra/commit/3e0b940))
+
+### Other Changes 🔄
+
+- refactor(subjects): scrape update date client-side and drop cloud ([3dba17b](https://github.com/nicopasla/better-intra/commit/3dba17b))
+
 ## [1.11.2] - 2026-10-13
 
 ### Features 🎉

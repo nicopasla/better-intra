@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "version": "1.11.3",
+      "date": "2026-10-15",
+      "highlights": [
+        "The subject tracker now shows each subject's real last-updated date, read straight from the subject file.",
+        "Project files now include a quick download button."
+      ]
+    },
+    {
       "version": "1.11.2",
       "date": "2026-10-13",
       "highlights": [

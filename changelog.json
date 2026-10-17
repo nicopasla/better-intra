@@ -1,6 +1,15 @@
 {
   "entries": [
     {
+      "version": "1.11.4",
+      "date": "2026-10-17",
+      "highlights": [
+        "Sort your friends by who was online most recently.",
+        "Turning Discord notifications off no longer disables your evaluation tracking.",
+        "Fixed the Intranet's own icons — nav bar, sidebar and article arrows — disappearing when a Better Intra font was selected."
+      ]
+    },
+    {
       "version": "1.11.3",
       "date": "2026-10-15",
       "highlights": [

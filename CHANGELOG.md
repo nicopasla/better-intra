@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [1.11.4] - 2026-10-17
+
+### Features 🎉
+
+- feat(friends): add last connected sort ([b41bef3](https://github.com/nicopasla/better-intra/commit/b41bef3))
+
+### Bug fixes 🐛
+
+- fix(discord): stop disabling evaluations when Discord is turned off ([b81b0e3](https://github.com/nicopasla/better-intra/commit/b81b0e3))
+- fix(font): keep intra icon fonts when forcing the selected font ([d9d7734](https://github.com/nicopasla/better-intra/commit/d9d7734))
+
 ## [1.11.3] - 2026-10-15
 
 ### Features 🎉
@@ -1412,8 +1423,10 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.2...HEAD
-[1.11.1]: https://github.com/nicopasla/better-intra/compare/v1.11.1...v1.11.2
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.4...HEAD
+[1.11.4]: https://github.com/nicopasla/better-intra/compare/v1.11.3...v1.11.4
+[1.11.3]: https://github.com/nicopasla/better-intra/compare/v1.11.2...v1.11.3
+[1.11.2]: https://github.com/nicopasla/better-intra/compare/v1.11.1...v1.11.2
 [1.11.1]: https://github.com/nicopasla/better-intra/compare/v1.11.0...v1.11.1
 [1.11.0]: https://github.com/nicopasla/better-intra/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/nicopasla/better-intra/compare/v1.9.1...v1.10.0

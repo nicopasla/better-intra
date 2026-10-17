@@ -148,7 +148,7 @@ export function sanitizeVisualUrls(urls: VisualUrls): VisualUrls {
           typeof ub.shape === "string" && BADGE_SHAPES.has(ub.shape)
             ? ub.shape
             : "rounded",
-        titleNewline: ub.titleNewline === true,
+        titleNewline: ub.titleNewline !== false,
         animation:
           typeof ub.animation === "string" && BADGE_ANIMATIONS.has(ub.animation)
             ? ub.animation

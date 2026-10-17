@@ -466,14 +466,15 @@ export const usernameBadgeCss = (
 ): string => {
   const c = badgeColors(badge);
   const b = badge ?? {};
+  const newline = b.titleNewline !== false;
   const lines = [
     "display: flex !important",
     "margin-left: auto !important",
     "margin-right: auto !important",
-    b.titleNewline
+    newline
       ? "flex-direction: column !important"
       : "align-items: center !important",
-    b.titleNewline ? "align-items: center !important" : "",
+    newline ? "align-items: center !important" : "",
     "width: fit-content !important",
     "max-width: 100% !important",
     `padding: ${c.pad}px ${c.pad * 2}px !important`,
@@ -511,7 +512,7 @@ export const usernameBadgeStylesheet = (
   if (badge?.animation === "marquee") {
     css +=
       `${selector} > [${MARQUEE_ATTR}] { display: inline-flex; white-space: nowrap; will-change: transform; ` +
-      (badge?.titleNewline
+      (badge?.titleNewline !== false
         ? "flex-direction: column; align-items: center; "
         : "align-items: center; ") +
       "animation: ft-badge-marquee 6s linear infinite; }\n";
@@ -1010,7 +1011,7 @@ export const applyImgs = (rawUrls: VisualUrls | null) => {
     "ft-name-badge-style",
     usernameBadgeStylesheet(NAME_BADGE_SELECTOR, usernameBadge),
   );
-  applyUsernameTitleLine(Boolean(usernameBadge.titleNewline));
+  applyUsernameTitleLine(usernameBadge.titleNewline !== false);
   applyUsernameMarquee(usernameBadge.animation === "marquee");
 
   if (urls.logtime) {

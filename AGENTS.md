@@ -16,7 +16,7 @@ npm run dev:firefox     # watch + web-ext hot-reload
 - **`src/features/`** — self-contained features: `logtime/`, `clusters/`, `profile/`, `shortcuts/`, `account/`, `friends/`, `hub/`.
 - **`src/config.ts`** — single source of truth for all chrome.storage keys; typed `BetterIntraConfig` interface + defaults.
 - **`manifests/manifest.{chrome,firefox}.json`** — per-browser manifests (merged with version from package.json at build time via Vite plugin).
-- **`better-intra-worker/`** — separate Cloudflare Worker (wrangler) for cloud settings sync. Has its own `package.json`.
+- **`better-intra-worker/`** — separate Cloudflare Worker (wrangler): cloud settings sync, D1-backed eval tracking, R2 image hosting, Web Push + Discord notifications. Has its own `package.json`.
 
 ## Build quirks
 
@@ -58,6 +58,8 @@ daisyUI is scoped to shadow DOM roots (see `style.css` `root:` config). Only the
 
 Tests use Vitest with `jsdom` environment and global API. Run `npm test` (single pass) or `npm run test:watch` (watch mode). Test files: `tests/config.test.ts`, `tests/marks.test.ts`, `tests/visuals.test.ts`, `tests/friends.test.ts`. Setup: `tests/setup.ts`. Config: `vitest.config.ts`.
 
+The worker (`better-intra-worker/`) has its own Vitest suite under `tests/` — run `npm test` within that directory.
+
 ## PWA versioning
 
 **Bump the PWA version at commit time**, following semver (keep `better-intra-pwa/package.json` and `package-lock.json` in sync, then rebuild). Do **not** bump for uncommitted edits — a batch of changes since the last commit shares the current version and gets a single bump when committed.
@@ -76,15 +78,16 @@ The version is injected at build time as `__APP_VERSION__` (see `better-intra-pw
 - Hooks `window.fetch` in `public/hook.js` (web accessible resource) to intercept `/locations_stats` for logtime data.
 - Settings stored in `chrome.storage.local` via typed `getConfig()` helper.
 - Cloud sync (optional) talks to `better-intra-worker` Cloudflare Worker via OAuth2 with 42 API.
-- Evaluations feature has a background service worker (`src/background.ts`) that polls the worker for pending notifications and shows Chrome notifications. Built separately via `vite.background.config.ts`.
-- Discord DM notifications are sent by the worker's 5-min cron — doesn't require browser to be open.
+- `src/background.ts` is a background service worker (built separately via `vite.background.config.ts`) that syncs Discord link / quiet-hours settings to the worker and reloads intra tabs. It does **not** poll for notifications.
+- Discord DMs and Web Push are sent by the worker during eval state transitions, driven by an external cron (cron-job.org) — doesn't require the browser to be open.
 
 ## Worker (`better-intra-worker/`)
 
-### Two KV namespaces
+Fetch-only Worker (no Durable Objects). Storage:
 
-- **`BETTER_INTRA_KV`** — user data (session tokens, settings, encrypted 42 token, discordId), app token cache, project map, friend IDs cache, online cache.
-- **`EVAL_KV`** — eval state keys (`EVAL_{hash}_{id}_role`), pending notifications (`PENDING_{hash}`), enabled users list (`EVAL_ENABLED_HASHES`), Discord-linked users list (`DISCORD_HASHES`).
+- **KV `BETTER_INTRA_KV`** — user blobs (session tokens, settings, encrypted 42 token, discordId), app token cache, project map, friend IDs cache, cluster SVG cache, calendar tokens, announcement, stats cache.
+- **D1 `better_intra_d1`** — eval tracking (`users.evals_enabled`, `eval_users`, `eval_states`, `eval_corrected`) plus caches (`online_cache`, `profile_stats_cache`, `logtime_history`, `calendar_ics`, `themes`, `campus_locations`, `cluster_occupancy_cache`, `projects`, `subjects`, …). See `schema.sql`.
+- **R2 `better_intra_images`** — uploaded images.
 
 ### Commands
 
@@ -93,13 +96,21 @@ cd better-intra-worker
 npm install
 npm run dev       # wrangler dev
 npm run deploy    # wrangler deploy
-npx wrangler kv:namespace create EVAL_KV       # first time, paste id into wrangler.json
-npx wrangler secret put DISCORD_BOT_TOKEN       # set Discord bot token
+npm test          # vitest
+npx wrangler d1 execute better-intra-d1 --file=schema.sql   # apply schema (first time)
+npx wrangler secret put DISCORD_BOT_TOKEN                   # set Discord bot token
 ```
 
-### Unified evaluations architecture
+Secrets include `CLIENT_SECRET`, `TOKEN_ENCRYPTION_KEY`, `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_SECRET`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `CRON_SECRET`, `PROXY_SECRET`, `ANNOUNCEMENT_SECRET`, `PROJECT_REFRESH_SECRET`.
 
-Worker cron (`*/5 * * * *`) fetches 42 API `/v2/me/scale_teams` for each user, detects state changes (`null → booked → revealed`), sends Discord DMs, and stores pending notifications in `EVAL_KV`. Extension background service worker polls `/evaluations?action=pending` every 5 min and shows Chrome notifications from whatever pending list the cron prepared. No 42 API call from the extension side.
+### Evaluations architecture
+
+Cron work does **not** use Cloudflare scheduled triggers — `triggers.crons` is intentionally empty and `scheduled()` is a no-op, because 42 challenges requests made from the scheduled context. Instead an external cron (cron-job.org) POSTs to `/api/v1/public/cron`, guarded by `CRON_SECRET` (`X-Cron-Key`) plus a cron-job.org source-IP allowlist. Jobs:
+
+- `main` → `handleMainCron` fetches 42 API `/v2/me/scale_teams`, detects transitions (`null → booked → revealed`), sends Discord DMs + Web Push, and persists state in D1 `eval_states` / `eval_corrected`.
+- `tick` → `handleRevealCatchup` + `handleTokenRefreshSweep`.
+
+The extension makes no 42 API calls for evals.
 
 ## CI
 

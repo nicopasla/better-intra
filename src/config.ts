@@ -121,7 +121,7 @@ export interface BetterIntraConfig {
   SHORTCUTS_ALIGNMENT: "left" | "center" | "right";
 
   FRIENDS_LIST: string[];
-  FRIENDS_SORT_MODE: "name" | "level" | "wallet" | "correction";
+  FRIENDS_SORT_MODE: "name" | "level" | "wallet" | "correction" | "recent";
   FRIENDS_SORT_DIR: "asc" | "desc";
   FRIENDS_ONLINE_ONLY: boolean;
   SHOW_FRIENDS_WIDGET: boolean;

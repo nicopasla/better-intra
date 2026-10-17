@@ -30,6 +30,8 @@ import FORTY_TWO_SVG from "../../assets/svg/42_Logo.svg?raw";
 import GLOBE_SVG from "../../assets/svg/globe-lucide.svg?raw";
 import SORT_AZ_SVG from "../../assets/svg/sort-az.svg?raw";
 import SORT_ZA_SVG from "../../assets/svg/sort-za.svg?raw";
+import CLOCK_ARROW_UP_SVG from "../../assets/svg/clock-arrow-up.svg?raw";
+import CLOCK_ARROW_DOWN_SVG from "../../assets/svg/clock-arrow-down.svg?raw";
 import RANKING_SVG from "../../assets/svg/ranking.svg?raw";
 import WALLET_SVG from "../../assets/svg/wallet.svg?raw";
 import EVAL_SVG from "../../assets/svg/eval.svg?raw";
@@ -374,7 +376,7 @@ function renderLoadError(onRefresh: () => void) {
   `;
 }
 
-type SortMode = "name" | "level" | "wallet" | "correction";
+type SortMode = "name" | "level" | "wallet" | "correction" | "recent";
 type SortDir = "asc" | "desc";
 
 const SORT_DEFAULTS: Record<SortMode, SortDir> = {
@@ -382,9 +384,10 @@ const SORT_DEFAULTS: Record<SortMode, SortDir> = {
   level: "desc",
   wallet: "desc",
   correction: "desc",
+  recent: "desc",
 };
 
-const SORT_ICONS: Record<Exclude<SortMode, "name">, string> = {
+const SORT_ICONS: Record<Exclude<SortMode, "name" | "recent">, string> = {
   level: RANKING_SVG,
   wallet: WALLET_SVG,
   correction: EVAL_SVG,
@@ -393,6 +396,9 @@ const SORT_ICONS: Record<Exclude<SortMode, "name">, string> = {
 function sortModeIcon(mode: SortMode, dir: SortDir): string {
   if (mode === "name") {
     return dir === "asc" ? SORT_AZ_SVG : SORT_ZA_SVG;
+  }
+  if (mode === "recent") {
+    return dir === "asc" ? CLOCK_ARROW_UP_SVG : CLOCK_ARROW_DOWN_SVG;
   }
   return SORT_ICONS[mode];
 }
@@ -418,6 +424,16 @@ function sortFriends(
       break;
     case "correction":
       sorted.sort((a, b) => (b.correctionPoints - a.correctionPoints) * dirMul);
+      break;
+    case "recent":
+      sorted.sort((a, b) => {
+        const at = a.lastOnlineTimestamp;
+        const bt = b.lastOnlineTimestamp;
+        if (at == null && bt == null) return 0;
+        if (at == null) return 1;
+        if (bt == null) return -1;
+        return (bt - at) * dirMul;
+      });
       break;
   }
   return sorted;
@@ -461,9 +477,16 @@ const SORT_LABELS: Record<SortMode, string> = {
   level: "Level",
   wallet: "Wallet",
   correction: "Evaluation",
+  recent: "Last connected",
 };
 
-const SORT_MODES: SortMode[] = ["name", "level", "wallet", "correction"];
+const SORT_MODES: SortMode[] = [
+  "name",
+  "level",
+  "wallet",
+  "correction",
+  "recent",
+];
 
 const svgIcon = (raw: string, size = 16) =>
   raw.replace("<svg", `<svg width="${size}" height="${size}"`);

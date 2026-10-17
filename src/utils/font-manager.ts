@@ -40,7 +40,13 @@ html {
 html, body {
   font-variant-numeric: tabular-nums;
 }
-html, body, html * {
+/* Icon elements are excluded: Font Awesome (.fa/.fas/.fal/...) and Intra's icon
+   fonts (iconf-*, icon-*, ...) set their family on the element, so forcing the
+   selected font here would replace the glyphs with boxes. Empty elements (the
+   usual i/span icon shape) are left alone for the same reason, while form
+   controls stay forced since their text isn't inherited. */
+html, body, input, textarea, select,
+html *:not(:empty):not(.fa):not(.fas):not(.far):not(.fal):not(.fad):not(.fab):not(.fak):not(.fa-solid):not(.fa-regular):not(.fa-light):not(.fa-thin):not(.fa-duotone):not(.fa-brands):not(.fa-sharp):not([class^="icon"]):not([class*=" icon"]) {
   font-family: var(--bi-font-sans, ${SYSTEM_SANS_STACK}) !important;
 }`;
   (document.head || document.documentElement).appendChild(style);

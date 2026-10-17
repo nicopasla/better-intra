@@ -1,11 +1,13 @@
 import { getConfig, getConfigMany } from "../../config.ts";
 import { ensureDocumentStyle } from "../../utils/style.ts";
+import { getLoginFromPage } from "../../utils/profile-login.ts";
 import { applyProfileLook, clearProfileLook } from "./theme/theme-manager.ts";
 import { sanitizeVisualUrls } from "./visuals-sanitize.ts";
 import {
   AVATAR_SELECTOR,
   BANNER_SELECTOR,
   BACKGROUND_SELECTOR,
+  NAME_BADGE_SELECTOR,
   TITLE_BADGE_SELECTOR,
 } from "./selectors.ts";
 
@@ -23,6 +25,16 @@ export interface VisualUrls {
   avatarPosY?: number;
   avatarScale?: number;
   badgeBg?: string;
+  usernameBadge?: {
+    bg?: string;
+    text?: string;
+    border?: string;
+    borderWidth?: number;
+    shape?: string;
+    titleNewline?: boolean;
+    animation?: string;
+    padding?: number;
+  } | null;
   theme?: { profileColor?: string } | null;
   look?: { preset?: string; theme?: string } | null;
   logtime?: {
@@ -125,6 +137,7 @@ const getVisualKey = (urls: VisualUrls) =>
     avatarPosY: urls.avatarPosY ?? 50,
     avatarScale: urls.avatarScale ?? 100,
     badgeBg: urls.badgeBg || "",
+    usernameBadge: urls.usernameBadge || null,
     theme: urls.theme || null,
     look: urls.look || null,
     logtime: urls.logtime || null,
@@ -249,6 +262,460 @@ export const badgeColorCss = (badgeBg?: string): string => {
   return `background-color: ${badgeBg} !important; border-color: ${badgeBg} !important;`;
 };
 
+const BADGE_RADIUS: Record<string, string> = {
+  square: "0.25rem",
+  rounded: "0.5rem",
+  pill: "9999px",
+};
+
+const MARQUEE_ATTR = "data-ft-marquee-inner";
+
+interface BadgeColors {
+  radius: string;
+  bg: string;
+  text: string;
+  border: string;
+  pad: number;
+}
+
+function badgeColors(badge: VisualUrls["usernameBadge"]): BadgeColors {
+  const radius =
+    BADGE_RADIUS[badge?.shape || "rounded"] || BADGE_RADIUS.rounded;
+  const bg = badge?.bg || "#00babc";
+  const text = badge?.text || "#ffffff";
+  return {
+    radius,
+    bg,
+    text,
+    border: badge?.border || bg,
+    pad: badge?.padding ?? 4,
+  };
+}
+
+interface BadgeAnimationCss {
+  element: string[];
+  after: string[];
+}
+
+function badgeAnimationCss(
+  badge: VisualUrls["usernameBadge"],
+  c: BadgeColors,
+): BadgeAnimationCss {
+  const element: string[] = [];
+  const after: string[] = [];
+
+  const ringMask = [
+    "padding: 2px",
+    "-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+    "-webkit-mask-composite: xor",
+    "mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+    "mask-composite: exclude",
+    "pointer-events: none",
+  ];
+
+  switch (badge?.animation) {
+    case "glow":
+      element.push(
+        `--ft-badge-glow: ${c.border}`,
+        "animation: ft-badge-glow 2s ease-in-out infinite !important",
+      );
+      break;
+    case "pulse":
+      element.push(
+        "transform-origin: center !important",
+        "animation: ft-badge-pulse 1.6s ease-in-out infinite !important",
+      );
+      break;
+    case "rainbow":
+      element.push("animation: ft-badge-rainbow 4s linear infinite !important");
+      break;
+    case "shimmer":
+      element.push(
+        "background-image: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.5) 50%, transparent 70%) !important",
+        "background-size: 250% 100% !important",
+        "background-repeat: no-repeat !important",
+        "animation: ft-badge-shimmer 2.2s linear infinite !important",
+      );
+      break;
+    case "float":
+      element.push(
+        "animation: ft-badge-float 3s ease-in-out infinite !important",
+      );
+      break;
+    case "wobble":
+      element.push(
+        "transform-origin: center !important",
+        "animation: ft-badge-wobble 2.4s ease-in-out infinite !important",
+      );
+      break;
+    case "bounce":
+      element.push(
+        "animation: ft-badge-bounce 1.5s cubic-bezier(0.28, 0.84, 0.42, 1) infinite !important",
+      );
+      break;
+    case "heartbeat":
+      element.push(
+        "transform-origin: center !important",
+        "animation: ft-badge-heartbeat 1.4s ease-in-out infinite !important",
+      );
+      break;
+    case "shake":
+      element.push(
+        "animation: ft-badge-shake 2.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite !important",
+      );
+      break;
+    case "flash":
+      element.push(
+        "animation: ft-badge-flash 1.8s ease-in-out infinite !important",
+      );
+      break;
+    case "rotate":
+      element.push(
+        "transform-origin: center !important",
+        "animation: ft-badge-rotate 3s linear infinite !important",
+      );
+      break;
+    case "gradient":
+      element.push(
+        `background-image: linear-gradient(90deg, ${c.bg}, ${c.border}, ${c.bg}) !important`,
+        "background-size: 300% 100% !important",
+        "animation: ft-badge-gradient 5s linear infinite !important",
+      );
+      break;
+    case "ping":
+      element.push("position: relative !important");
+      after.push(
+        'content: ""',
+        "position: absolute",
+        "inset: 0",
+        "border-radius: inherit",
+        `border: 1px solid ${c.border}`,
+        "pointer-events: none",
+        "animation: ft-badge-ping 1.8s ease-out infinite",
+      );
+      break;
+    case "ants":
+      element.push("position: relative !important");
+      after.push(
+        'content: ""',
+        "position: absolute",
+        "inset: 0",
+        "border-radius: inherit",
+        `background: repeating-linear-gradient(90deg, ${c.border} 0 6px, transparent 6px 12px)`,
+        ...ringMask,
+        "animation: ft-badge-ants 0.7s linear infinite",
+      );
+      break;
+    case "conic":
+      element.push("position: relative !important");
+      after.push(
+        'content: ""',
+        "position: absolute",
+        "inset: -2px",
+        "border-radius: inherit",
+        `background: conic-gradient(from var(--ft-badge-angle, 0deg), ${c.border}, transparent 25%, ${c.border} 50%, transparent 75%, ${c.border})`,
+        ...ringMask,
+        "animation: ft-badge-conic 3s linear infinite",
+      );
+      break;
+    case "typewriter":
+      element.push(
+        "mask-image: linear-gradient(90deg, #000 var(--ft-typing, 0%), transparent var(--ft-typing, 0%))",
+        "mask-repeat: no-repeat",
+        "-webkit-mask-image: linear-gradient(90deg, #000 var(--ft-typing, 0%), transparent var(--ft-typing, 0%))",
+        "-webkit-mask-repeat: no-repeat",
+        "animation: ft-badge-typing 4s steps(30, end) infinite !important",
+      );
+      break;
+    case "marquee":
+      element.push("overflow: hidden !important");
+      break;
+  }
+
+  // Promote animated layers so the compositor handles them off the main
+  // thread (transform/opacity/filter are compositable). Transform animations
+  // also need to escape the header's clipping/stacking so the badge is not
+  // hidden behind neighbouring elements while it moves.
+  if (
+    [
+      "pulse",
+      "float",
+      "wobble",
+      "bounce",
+      "heartbeat",
+      "shake",
+      "rotate",
+    ].includes(badge?.animation || "")
+  ) {
+    element.push(
+      "will-change: transform",
+      "position: relative !important",
+      "z-index: 1 !important",
+    );
+  } else if (badge?.animation === "flash") {
+    element.push("will-change: opacity");
+  } else if (badge?.animation === "rainbow") {
+    element.push("will-change: filter");
+  }
+
+  return { element, after };
+}
+
+export const usernameBadgeCss = (
+  badge?: VisualUrls["usernameBadge"],
+): string => {
+  const c = badgeColors(badge);
+  const b = badge ?? {};
+  const lines = [
+    "display: flex !important",
+    "margin-left: auto !important",
+    "margin-right: auto !important",
+    b.titleNewline
+      ? "flex-direction: column !important"
+      : "align-items: center !important",
+    b.titleNewline ? "align-items: center !important" : "",
+    "width: fit-content !important",
+    "max-width: 100% !important",
+    `padding: ${c.pad}px ${c.pad * 2}px !important`,
+    "line-height: 1.2 !important",
+    `border-radius: ${c.radius} !important`,
+    `background-color: ${c.bg} !important`,
+    `color: ${c.text} !important`,
+    `border: ${b.borderWidth ?? 1}px solid ${c.border} !important`,
+    ...badgeAnimationCss(b, c).element,
+  ];
+  return lines.filter(Boolean).join("; ") + ";";
+};
+
+export const usernameBadgeAfterCss = (
+  badge?: VisualUrls["usernameBadge"],
+): string => {
+  const after = badgeAnimationCss(badge, badgeColors(badge)).after;
+  return after.length ? after.join("; ") + ";" : "";
+};
+
+/** Full stylesheet for a badge under `selector` (element + optional ::after). */
+export const usernameBadgeStylesheet = (
+  selector: string,
+  badge?: VisualUrls["usernameBadge"],
+): string => {
+  const element = usernameBadgeCss(badge);
+  const after = usernameBadgeAfterCss(badge);
+  let css = `${selector} { ${element} }\n`;
+  if (after) css += `${selector}::after { ${after} }\n`;
+
+  // Marquee needs a real wrapper to translate (text-indent breaks on the
+  // two-line column layout); the preview always ships the wrapper with
+  // display:contents so layout is unchanged unless marquee is active.
+  css += `${selector} > [${MARQUEE_ATTR}] { display: contents; }\n`;
+  if (badge?.animation === "marquee") {
+    css +=
+      `${selector} > [${MARQUEE_ATTR}] { display: inline-flex; white-space: nowrap; will-change: transform; ` +
+      (badge?.titleNewline
+        ? "flex-direction: column; align-items: center; "
+        : "align-items: center; ") +
+      "animation: ft-badge-marquee 6s linear infinite; }\n";
+  }
+
+  css += `@media (prefers-reduced-motion: reduce) {\n${selector}, ${selector}::after, ${selector} > [${MARQUEE_ATTR}] { animation: none !important; }\n}`;
+  return css;
+};
+
+export const BADGE_PROPERTIES = `
+@property --ft-badge-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@property --ft-typing { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
+`;
+
+export const BADGE_KEYFRAMES = `
+@keyframes ft-badge-glow {
+  0%, 100% { box-shadow: 0 0 3px 0 var(--ft-badge-glow, #00babc); }
+  50% { box-shadow: 0 0 16px 4px var(--ft-badge-glow, #00babc); }
+}
+@keyframes ft-badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+@keyframes ft-badge-rainbow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+@keyframes ft-badge-shimmer {
+  0% { background-position: -150% 0; }
+  100% { background-position: 250% 0; }
+}
+@keyframes ft-badge-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes ft-badge-wobble {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+@keyframes ft-badge-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes ft-badge-heartbeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.12); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.08); }
+  60% { transform: scale(1); }
+}
+@keyframes ft-badge-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+@keyframes ft-badge-flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+@keyframes ft-badge-rotate {
+  to { transform: rotate(360deg); }
+}
+@keyframes ft-badge-gradient {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+@keyframes ft-badge-ping {
+  0% { opacity: 0.75; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.7); }
+}
+@keyframes ft-badge-ants {
+  0% { background-position: 0 0; }
+  100% { background-position: 12px 0; }
+}
+@keyframes ft-badge-conic {
+  to { --ft-badge-angle: 360deg; }
+}
+@keyframes ft-badge-typing {
+  0% { --ft-typing: 0%; }
+  60% { --ft-typing: 100%; }
+  100% { --ft-typing: 100%; }
+}
+@keyframes ft-badge-marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+`;
+
+export function ensureBadgeKeyframes(): void {
+  if (document.getElementById("ft-name-badge-keyframes")) return;
+  const style = document.createElement("style");
+  style.id = "ft-name-badge-keyframes";
+  style.textContent = BADGE_PROPERTIES + BADGE_KEYFRAMES;
+  document.head.appendChild(style);
+}
+
+const TITLE_LINE_ATTR = "data-ft-title-line";
+const ORIG_TEXT_ATTR = "data-ft-orig-text";
+
+const SEPARATORS = "\\s,;·•\\-–—:|/";
+
+const trimSep = (value: string): string =>
+  value
+    .replace(new RegExp(`^[${SEPARATORS}]+`), "")
+    .replace(new RegExp(`[${SEPARATORS}]+$`), "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+/**
+ * Splits the username line into two rows (username / custom title) while
+ * preserving the original text order. The page login identifies the username;
+ * everything else is the title. Falls back to the first comma when the login is
+ * unknown.
+ */
+function splitUsernameTitle(
+  text: string,
+): { first: string; second: string } | null {
+  const login = getLoginFromPage();
+  if (login) {
+    const escaped = login.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(`(^|[^\\w])(${escaped})(?=$|[^\\w])`, "i");
+    const m = re.exec(text);
+    if (m) {
+      const start = m.index + m[1].length;
+      const username = text.slice(start, start + login.length);
+      const before = trimSep(text.slice(0, start));
+      const after = trimSep(text.slice(start + login.length));
+
+      if (!before && !after) return null;
+      // Keep the original order: whatever comes first stays on the first row.
+      if (!before) return { first: username, second: after };
+      return {
+        first: before,
+        second: after ? `${username} ${after}` : username,
+      };
+    }
+  }
+
+  const idx = text.indexOf(",");
+  if (idx === -1) return null;
+  const first = text.slice(0, idx).trim();
+  const second = text.slice(idx + 1).trim();
+  if (!first || !second) return null;
+  return { first, second };
+}
+
+/**
+ * Puts the custom title on its own row inside the badge (username and title on
+ * separate rows, in their original order). The original text is cached so it
+ * can be restored when the option is off.
+ */
+export function applyUsernameTitleLine(newline: boolean): void {
+  const el = document.querySelector<HTMLElement>(NAME_BADGE_SELECTOR);
+  if (!el) return;
+  const split = el.querySelector<HTMLElement>(`[${TITLE_LINE_ATTR}]`);
+
+  if (!newline) {
+    if (!split) return;
+    const original = el.getAttribute(ORIG_TEXT_ATTR);
+    el.replaceChildren(
+      document.createTextNode(original ?? el.textContent ?? ""),
+    );
+    el.removeAttribute(ORIG_TEXT_ATTR);
+    return;
+  }
+
+  if (split) return;
+  const text = el.textContent ?? "";
+  const parts = splitUsernameTitle(text);
+  if (!parts) return;
+
+  el.setAttribute(ORIG_TEXT_ATTR, text);
+  el.replaceChildren(document.createTextNode(parts.first));
+  const span = document.createElement("span");
+  span.setAttribute(TITLE_LINE_ATTR, "true");
+  span.style.display = "block";
+  span.textContent = parts.second;
+  el.appendChild(span);
+}
+
+/**
+ * Wraps the badge content in a translating inner span so a marquee scrolls the
+ * whole content as one strip (works with either one or two lines). No-op when
+ * disabled, and idempotent while the wrapper is already present.
+ */
+export function applyUsernameMarquee(enabled: boolean): void {
+  const el = document.querySelector<HTMLElement>(NAME_BADGE_SELECTOR);
+  if (!el) return;
+  const wrap = el.querySelector<HTMLElement>(`[${MARQUEE_ATTR}]`);
+
+  if (!enabled) {
+    if (!wrap) return;
+    while (wrap.firstChild) el.insertBefore(wrap.firstChild, wrap);
+    wrap.remove();
+    return;
+  }
+  if (wrap) return;
+
+  const inner = document.createElement("span");
+  inner.setAttribute(MARQUEE_ATTR, "true");
+  while (el.firstChild) inner.appendChild(el.firstChild);
+  el.appendChild(inner);
+}
+
 export const needsReapply = (urls: VisualUrls) => {
   const avatar = document.querySelector(AVATAR_SELECTOR) as HTMLElement | null;
   const banner = document.querySelector(BANNER_SELECTOR) as HTMLElement | null;
@@ -306,11 +773,20 @@ export const needsReapply = (urls: VisualUrls) => {
     )
       return true;
   }
+  {
+    const expected = usernameBadgeStylesheet(
+      NAME_BADGE_SELECTOR,
+      urls.usernameBadge,
+    );
+    const style = document.getElementById("ft-name-badge-style");
+    if ((style?.textContent || "") !== expected) return true;
+  }
   return false;
 };
 
 export const injectCustomStyles = () => {
   injectAvatarPendingRule();
+  ensureBadgeKeyframes();
   ensureDocumentStyle(
     "ft-profile-host-styles",
     `
@@ -397,6 +873,16 @@ const setStyleForSelector = (id: string, selector: string, cssText: string) => {
     document.head.appendChild(style);
   }
   style.textContent = selector ? `${selector} { ${cssText} }` : "";
+};
+
+const setStylesheet = (id: string, cssText: string) => {
+  let style = document.getElementById(id);
+  if (!style) {
+    style = document.createElement("style");
+    style.id = id;
+    document.head.appendChild(style);
+  }
+  style.textContent = cssText;
 };
 
 const modeCss: Record<string, string> = {
@@ -518,6 +1004,14 @@ export const applyImgs = (rawUrls: VisualUrls | null) => {
     TITLE_BADGE_SELECTOR,
     badgeColorCss(urls.badgeBg),
   );
+
+  const usernameBadge = urls.usernameBadge ?? {};
+  setStylesheet(
+    "ft-name-badge-style",
+    usernameBadgeStylesheet(NAME_BADGE_SELECTOR, usernameBadge),
+  );
+  applyUsernameTitleLine(Boolean(usernameBadge.titleNewline));
+  applyUsernameMarquee(usernameBadge.animation === "marquee");
 
   if (urls.logtime) {
     const logtime = urls.logtime;
@@ -694,6 +1188,14 @@ const runUpdateVisuals = async () => {
         "PROFILE_AVATAR_POSITION_Y",
         "PROFILE_AVATAR_SCALE",
         "PROFILE_BADGE_BG",
+        "PROFILE_USERNAME_BADGE_BG",
+        "PROFILE_USERNAME_BADGE_TEXT",
+        "PROFILE_USERNAME_BADGE_BORDER",
+        "PROFILE_USERNAME_BADGE_BORDER_WIDTH",
+        "PROFILE_USERNAME_BADGE_SHAPE",
+        "PROFILE_USERNAME_BADGE_TITLE_NEWLINE",
+        "PROFILE_USERNAME_BADGE_ANIMATION",
+        "PROFILE_USERNAME_BADGE_PADDING",
       ] as const);
       visualCache = {
         avatar: c.PROFILE_IMAGE_URL,
@@ -709,6 +1211,16 @@ const runUpdateVisuals = async () => {
         avatarPosY: c.PROFILE_AVATAR_POSITION_Y,
         avatarScale: c.PROFILE_AVATAR_SCALE,
         badgeBg: c.PROFILE_BADGE_BG,
+        usernameBadge: {
+          bg: c.PROFILE_USERNAME_BADGE_BG,
+          text: c.PROFILE_USERNAME_BADGE_TEXT,
+          border: c.PROFILE_USERNAME_BADGE_BORDER,
+          borderWidth: c.PROFILE_USERNAME_BADGE_BORDER_WIDTH,
+          shape: c.PROFILE_USERNAME_BADGE_SHAPE,
+          titleNewline: c.PROFILE_USERNAME_BADGE_TITLE_NEWLINE,
+          animation: c.PROFILE_USERNAME_BADGE_ANIMATION,
+          padding: c.PROFILE_USERNAME_BADGE_PADDING,
+        },
       };
       // sanitise at ingestion so that needsReapply()/getVisualKey() compare
       // exactly what applyImgs() writes (otherwise a normalised URL would
@@ -724,6 +1236,12 @@ const runUpdateVisuals = async () => {
         !visualCache.badgeBg
       ) {
         avatarEl.style.setProperty("opacity", "1", "important");
+        if (!document.getElementById("profile-modal-host")) {
+          // No other visuals, but the username badge is always on.
+          applyImgs(visualCache);
+          lastAppliedUser = targetLogin;
+          lastAppliedKey = getVisualKey(visualCache);
+        }
       } else if (!document.getElementById("profile-modal-host")) {
         applyImgs(visualCache);
         lastAppliedUser = targetLogin;
@@ -739,6 +1257,7 @@ const runUpdateVisuals = async () => {
           cached.background ||
           cached.backgroundColor ||
           cached.badgeBg ||
+          cached.usernameBadge ||
           cached.theme ||
           cached.logtime)
       ) {
@@ -749,11 +1268,25 @@ const runUpdateVisuals = async () => {
         if (visualCache.avatar) attachToggleListener(avatarEl);
         revalidateVisuals(targetLogin, cached);
       } else {
+        // Show the default (neutral) username badge even for profiles with no
+        // cloud visuals, so everyone gets one.
+        const showDefaultBadge = () => {
+          const urls: VisualUrls = {
+            avatar: "",
+            banner: "",
+            bannerMode: "fill",
+            background: "",
+            backgroundMode: "fill",
+          };
+          applyImgs(urls);
+          lastAppliedUser = targetLogin;
+          lastAppliedKey = getVisualKey(urls);
+        };
         // Negative cache: a user without cloud visuals used to be re-fetched
         // on every mutation pass of the profile page.
         const knownEmptyAt = noVisualsCache.get(targetLogin);
         if (knownEmptyAt && Date.now() - knownEmptyAt < NO_VISUALS_TTL_MS) {
-          avatarEl.style.setProperty("opacity", "1", "important");
+          showDefaultBadge();
           return;
         }
         isFetching = true;
@@ -772,6 +1305,7 @@ const runUpdateVisuals = async () => {
               cloudUrls.background ||
               cloudUrls.backgroundColor ||
               cloudUrls.badgeBg ||
+              cloudUrls.usernameBadge ||
               cloudUrls.theme ||
               cloudUrls.logtime)
           ) {
@@ -783,7 +1317,7 @@ const runUpdateVisuals = async () => {
             if (cloudUrls.avatar) attachToggleListener(avatarEl);
           } else {
             if (cloudUrls) noVisualsCache.set(targetLogin, Date.now());
-            avatarEl.style.setProperty("opacity", "1", "important");
+            showDefaultBadge();
           }
         } finally {
           isFetching = false;

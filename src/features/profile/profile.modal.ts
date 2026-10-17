@@ -8,7 +8,13 @@ import {
   clearAuthFailed,
   syncMyVisuals,
 } from "../account/account.ts";
-import { applyImgs, injectCustomStyles, VisualUrls } from "./visuals.ts";
+import {
+  applyImgs,
+  injectCustomStyles,
+  VisualUrls,
+  BADGE_KEYFRAMES,
+  usernameBadgeStylesheet,
+} from "./visuals.ts";
 import {
   getTitleBadges,
   applyBadgeLayout,
@@ -43,10 +49,37 @@ interface FormState {
   badgeBg: string;
   badgeOrder: string[];
   badgeWrap: boolean;
+  badgeAlign: "left" | "center" | "right";
+  usernameBadgeBg: string;
+  usernameBadgeText: string;
+  usernameBadgeBorder: string;
+  usernameBadgeBorderWidth: number;
+  usernameBadgeShape: "square" | "rounded" | "pill";
+  usernameBadgeTitleNewline: boolean;
+  usernameBadgeAnimation:
+    | "none"
+    | "glow"
+    | "pulse"
+    | "rainbow"
+    | "shimmer"
+    | "float"
+    | "wobble"
+    | "bounce"
+    | "heartbeat"
+    | "shake"
+    | "flash"
+    | "rotate"
+    | "gradient"
+    | "ping"
+    | "ants"
+    | "conic"
+    | "typewriter"
+    | "marquee";
+  usernameBadgePadding: number;
   uploading: string;
 }
 
-type ProfileTab = "avatar" | "banner" | "background" | "badges";
+type ProfileTab = "avatar" | "banner" | "background" | "badges" | "username";
 
 let activeTab: ProfileTab = "avatar";
 let badgeSortable: { destroy: () => void } | null = null;
@@ -164,7 +197,7 @@ function renderModeRadios(
           html`<input
             type="radio"
             name="${name}"
-            class="btn btn-sm join-item flex-1"
+            class="btn join-item flex-1"
             aria-label="${m.charAt(0).toUpperCase() + m.slice(1)}"
             value="${m}"
             ?checked="${currentValue === m}"
@@ -174,6 +207,21 @@ function renderModeRadios(
       )}
     </div>
   `;
+}
+
+function usernameBadgePreviewBadge(
+  state: FormState,
+): NonNullable<VisualUrls["usernameBadge"]> {
+  return {
+    bg: state.usernameBadgeBg,
+    text: state.usernameBadgeText,
+    border: state.usernameBadgeBorder,
+    borderWidth: state.usernameBadgeBorderWidth,
+    shape: state.usernameBadgeShape,
+    titleNewline: state.usernameBadgeTitleNewline,
+    animation: state.usernameBadgeAnimation,
+    padding: state.usernameBadgePadding,
+  };
 }
 
 function renderPanelContent(
@@ -195,9 +243,10 @@ function renderPanelContent(
     { id: "banner", label: "Banner" },
     { id: "background", label: "Background" },
     { id: "badges", label: "Badges" },
+    { id: "username", label: "Username" },
   ];
 
-  const avatarPanel = html`
+  const avatarPanel = () => html`
     <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
       <div class="flex gap-5 items-start">
         <div class="flex-1 min-w-0">
@@ -216,7 +265,7 @@ function renderPanelContent(
               <input
                 type="radio"
                 name="PROFILE_AVATAR_BG_MODE"
-                class="btn btn-sm join-item flex-1"
+                class="btn join-item flex-1"
                 aria-label="Transparent"
                 value="transparent"
                 ?checked="${isTransparent}"
@@ -225,7 +274,7 @@ function renderPanelContent(
               <input
                 type="radio"
                 name="PROFILE_AVATAR_BG_MODE"
-                class="btn btn-sm join-item flex-1"
+                class="btn join-item flex-1"
                 aria-label="Color"
                 value="custom"
                 ?checked="${!isTransparent}"
@@ -239,7 +288,7 @@ function renderPanelContent(
               <input
                 type="color"
                 id="PROFILE_AVATAR_BG_COLOR"
-                class="input input-bordered input-sm p-1 h-8 w-14"
+                class="input input-bordered p-1 h-10 w-16"
                 .value="${isTransparent ? "#00bcba" : state.avatarBg}"
                 @input="${(e: Event) =>
                   onFormUpdate({
@@ -249,12 +298,12 @@ function renderPanelContent(
             </div>
           </div>
           <div class="pt-2">
-            <span class="text-xs opacity-60">Border</span>
+            <span class="text-sm opacity-70">Border</span>
             <div class="join w-full mt-1">
               <input
                 type="radio"
                 name="PROFILE_DECORATION"
-                class="btn btn-sm join-item flex-1"
+                class="btn join-item flex-1"
                 aria-label="None"
                 value="none"
                 ?checked="${state.decoration === "none"}"
@@ -263,7 +312,7 @@ function renderPanelContent(
               <input
                 type="radio"
                 name="PROFILE_DECORATION"
-                class="btn btn-sm join-item flex-1"
+                class="btn join-item flex-1"
                 aria-label="Solid"
                 value="solid"
                 ?checked="${state.decoration === "solid"}"
@@ -305,10 +354,10 @@ function renderPanelContent(
     </div>
   `;
 
-  const bannerPanel = html`
+  const bannerPanel = () => html`
     <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
       <div
-        class="text-xs font-semibold uppercase tracking-wider opacity-50 mb-3"
+        class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
       >
         Banner
       </div>
@@ -334,7 +383,7 @@ function renderPanelContent(
             </label>
             <input
               type="color"
-              class="input input-bordered w-full h-10 p-1"
+              class="input input-bordered w-full h-12 p-1"
               .value="${state.bannerColor}"
               @input="${(e: Event) =>
                 onFormUpdate({
@@ -347,7 +396,7 @@ function renderPanelContent(
         <input
           type="radio"
           name="PROFILE_BANNER_TYPE"
-          class="btn btn-sm join-item flex-1"
+          class="btn join-item flex-1"
           aria-label="Image"
           value="image"
           ?checked="${!state.bannerColor}"
@@ -356,7 +405,7 @@ function renderPanelContent(
         <input
           type="radio"
           name="PROFILE_BANNER_TYPE"
-          class="btn btn-sm join-item flex-1"
+          class="btn join-item flex-1"
           aria-label="Color"
           value="color"
           ?checked="${state.bannerColor !== ""}"
@@ -367,10 +416,10 @@ function renderPanelContent(
     </div>
   `;
 
-  const backgroundPanel = html`
+  const backgroundPanel = () => html`
     <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
       <div
-        class="text-xs font-semibold uppercase tracking-wider opacity-50 mb-3"
+        class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
       >
         Background
       </div>
@@ -398,7 +447,7 @@ function renderPanelContent(
             </label>
             <input
               type="color"
-              class="input input-bordered w-full h-10 p-1"
+              class="input input-bordered w-full h-12 p-1"
               .value="${state.backgroundColor}"
               @input="${(e: Event) =>
                 onFormUpdate({
@@ -411,7 +460,7 @@ function renderPanelContent(
         <input
           type="radio"
           name="PROFILE_BACKGROUND_TYPE"
-          class="btn btn-sm join-item flex-1"
+          class="btn join-item flex-1"
           aria-label="Image"
           value="image"
           ?checked="${!state.backgroundColor}"
@@ -421,7 +470,7 @@ function renderPanelContent(
         <input
           type="radio"
           name="PROFILE_BACKGROUND_TYPE"
-          class="btn btn-sm join-item flex-1"
+          class="btn join-item flex-1"
           aria-label="Color"
           value="color"
           ?checked="${state.backgroundColor !== ""}"
@@ -479,14 +528,236 @@ function renderPanelContent(
     });
   };
 
-  const badgesPanel = html`
+  const usernamePanel = () => html`
+    <div class="flex flex-col gap-3">
+      <div
+        class="grid grid-cols-1 lg:grid-cols-[1fr_18rem] gap-3 items-stretch"
+      >
+        <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
+          <div
+            class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
+          >
+            Colors
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <label class="form-control">
+              <span class="text-sm opacity-70 pb-1">Background</span>
+              <input
+                type="color"
+                class="input input-bordered w-full h-12 p-1"
+                .value="${state.usernameBadgeBg || "#00babc"}"
+                @input="${(e: Event) =>
+                  onFormUpdate({
+                    usernameBadgeBg: (e.target as HTMLInputElement).value,
+                  })}"
+              />
+            </label>
+            <label class="form-control">
+              <span class="text-sm opacity-70 pb-1">Text</span>
+              <input
+                type="color"
+                class="input input-bordered w-full h-12 p-1"
+                .value="${state.usernameBadgeText || "#ffffff"}"
+                @input="${(e: Event) =>
+                  onFormUpdate({
+                    usernameBadgeText: (e.target as HTMLInputElement).value,
+                  })}"
+              />
+            </label>
+            <label class="form-control">
+              <span class="text-sm opacity-70 pb-1">Border</span>
+              <input
+                type="color"
+                class="input input-bordered w-full h-12 p-1"
+                .value="${state.usernameBadgeBorder || "#00babc"}"
+                @input="${(e: Event) =>
+                  onFormUpdate({
+                    usernameBadgeBorder: (e.target as HTMLInputElement).value,
+                  })}"
+              />
+            </label>
+          </div>
+        </div>
+
+        <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
+          <div
+            class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
+          >
+            Layout &amp; motion
+          </div>
+          <div class="flex flex-col gap-3">
+            <label
+              class="form-control flex-row items-center justify-between gap-2"
+            >
+              <span class="text-sm opacity-70">Title on new line</span>
+              <input
+                type="checkbox"
+                class="toggle toggle-lg shrink-0"
+                .checked="${state.usernameBadgeTitleNewline}"
+                @change="${(e: Event) =>
+                  onFormUpdate({
+                    usernameBadgeTitleNewline: (e.target as HTMLInputElement)
+                      .checked,
+                  })}"
+              />
+            </label>
+            <label class="form-control">
+              <span class="text-sm opacity-70 pb-1">Animation</span>
+              <select
+                class="select select-bordered w-full"
+                @change="${(e: Event) =>
+                  onFormUpdate({
+                    usernameBadgeAnimation: (e.target as HTMLSelectElement)
+                      .value as FormState["usernameBadgeAnimation"],
+                  })}"
+              >
+                ${(
+                  [
+                    ["none", "None"],
+                    ["glow", "Glow"],
+                    ["pulse", "Pulse"],
+                    ["rainbow", "Rainbow"],
+                    ["shimmer", "Shimmer"],
+                    ["float", "Float"],
+                    ["wobble", "Wobble"],
+                    ["bounce", "Bounce"],
+                    ["heartbeat", "Heartbeat"],
+                    ["shake", "Shake"],
+                    ["flash", "Flash"],
+                    ["rotate", "Rotate"],
+                    ["gradient", "Gradient"],
+                    ["ping", "Ping"],
+                    ["ants", "Marching ants"],
+                    ["conic", "Conic border"],
+                    ["typewriter", "Typewriter"],
+                    ["marquee", "Marquee"],
+                  ] as const
+                ).map(
+                  ([value, label]) => html`
+                    <option
+                      value="${value}"
+                      ?selected="${state.usernameBadgeAnimation === value}"
+                    >
+                      ${label}
+                    </option>
+                  `,
+                )}
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
+          <div
+            class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
+          >
+            Shape &amp; size
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="form-control">
+              <span class="text-sm opacity-70 pb-1">Border width</span>
+              <input
+                type="number"
+                min="0"
+                max="8"
+                step="1"
+                class="input input-bordered w-full"
+                .value="${String(state.usernameBadgeBorderWidth)}"
+                @input="${(e: Event) =>
+                  onFormUpdate({
+                    usernameBadgeBorderWidth: Number(
+                      (e.target as HTMLInputElement).value,
+                    ),
+                  })}"
+              />
+            </label>
+            <label class="form-control">
+              <span class="text-sm opacity-70 pb-1">Padding</span>
+              <input
+                type="number"
+                min="0"
+                max="8"
+                step="1"
+                class="input input-bordered w-full"
+                .value="${String(state.usernameBadgePadding)}"
+                @input="${(e: Event) =>
+                  onFormUpdate({
+                    usernameBadgePadding: Number(
+                      (e.target as HTMLInputElement).value,
+                    ),
+                  })}"
+              />
+            </label>
+            <label class="form-control sm:col-span-2">
+              <span class="text-sm opacity-70 pb-1">Corners</span>
+              <div class="join w-full">
+                <input
+                  type="radio"
+                  name="PROFILE_USERNAME_BADGE_SHAPE"
+                  class="btn join-item flex-1"
+                  aria-label="Square"
+                  value="square"
+                  ?checked="${state.usernameBadgeShape === "square"}"
+                  @change="${() =>
+                    onFormUpdate({ usernameBadgeShape: "square" })}"
+                />
+                <input
+                  type="radio"
+                  name="PROFILE_USERNAME_BADGE_SHAPE"
+                  class="btn join-item flex-1"
+                  aria-label="Rounded"
+                  value="rounded"
+                  ?checked="${state.usernameBadgeShape === "rounded"}"
+                  @change="${() =>
+                    onFormUpdate({ usernameBadgeShape: "rounded" })}"
+                />
+                <input
+                  type="radio"
+                  name="PROFILE_USERNAME_BADGE_SHAPE"
+                  class="btn join-item flex-1"
+                  aria-label="Pill"
+                  value="pill"
+                  ?checked="${state.usernameBadgeShape === "pill"}"
+                  @change="${() =>
+                    onFormUpdate({ usernameBadgeShape: "pill" })}"
+                />
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div
+          class="rounded-box border border-base-300 bg-base-100/40 p-3 flex flex-col items-center gap-3"
+        >
+          <div
+            class="text-sm font-semibold uppercase tracking-wider opacity-50"
+          >
+            Preview
+          </div>
+          <div class="py-1 flex items-center justify-center">
+            <span id="ft-username-badge-preview">
+              <span data-ft-marquee-inner>
+                ${state.usernameBadgeTitleNewline
+                  ? html`username,<span style="display:block"
+                        >Custom title</span
+                      >`
+                  : "username, Custom title"}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const badgesPanel = () => html`
     <div class="flex flex-col gap-3">
       <div class="flex gap-3 flex-col sm:flex-row">
         <div
           class="rounded-box border border-base-300 bg-base-200/50 p-3 flex-1 flex flex-col justify-center"
         >
           <div
-            class="text-xs font-semibold uppercase tracking-wider opacity-50 mb-3"
+            class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
           >
             Background color
           </div>
@@ -494,7 +765,7 @@ function renderPanelContent(
             <div class="flex gap-2 items-center">
               <input
                 type="color"
-                class="input input-bordered w-full h-10 p-1"
+                class="input input-bordered w-full h-12 p-1"
                 .value="${state.badgeBg || "#00babc"}"
                 @input="${(e: Event) =>
                   onFormUpdate({
@@ -503,7 +774,7 @@ function renderPanelContent(
               />
               <button
                 type="button"
-                class="btn btn-ghost btn-sm shrink-0"
+                class="btn btn-ghost shrink-0"
                 @click="${() => onFormUpdate({ badgeBg: "" })}"
               >
                 Default
@@ -524,7 +795,7 @@ function renderPanelContent(
               >
               <input
                 type="checkbox"
-                class="toggle toggle-sm shrink-0"
+                class="toggle toggle-lg shrink-0"
                 .checked="${state.badgeWrap}"
                 @change="${(e: Event) =>
                   onFormUpdate({
@@ -534,11 +805,50 @@ function renderPanelContent(
             </label>
           </div>
         </div>
+
+        <div
+          class="rounded-box border border-base-300 bg-base-200/50 p-3 flex-1 flex flex-col justify-center"
+        >
+          <div
+            class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
+          >
+            Alignment
+          </div>
+          <div class="join w-full">
+            <input
+              type="radio"
+              name="PROFILE_BADGE_ALIGN"
+              class="btn join-item flex-1"
+              aria-label="Left"
+              value="left"
+              ?checked="${state.badgeAlign === "left"}"
+              @change="${() => onFormUpdate({ badgeAlign: "left" })}"
+            />
+            <input
+              type="radio"
+              name="PROFILE_BADGE_ALIGN"
+              class="btn join-item flex-1"
+              aria-label="Center"
+              value="center"
+              ?checked="${state.badgeAlign === "center"}"
+              @change="${() => onFormUpdate({ badgeAlign: "center" })}"
+            />
+            <input
+              type="radio"
+              name="PROFILE_BADGE_ALIGN"
+              class="btn join-item flex-1"
+              aria-label="Right"
+              value="right"
+              ?checked="${state.badgeAlign === "right"}"
+              @change="${() => onFormUpdate({ badgeAlign: "right" })}"
+            />
+          </div>
+        </div>
       </div>
 
       <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
         <div
-          class="text-xs font-semibold uppercase tracking-wider opacity-50 mb-3"
+          class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
         >
           Order & visibility
         </div>
@@ -553,7 +863,7 @@ function renderPanelContent(
             const isHidden = knownHidden.has(title.toLowerCase());
             return html`
               <div
-                class="btn btn-sm border shadow-sm transition-all select-none gap-2 font-bold normal-case px-3 cursor-grab active:cursor-grabbing ${isHidden
+                class="btn border shadow-sm transition-all select-none gap-2 font-bold normal-case px-3 cursor-grab active:cursor-grabbing ${isHidden
                   ? "opacity-30 line-through saturate-50 scale-95"
                   : ""}"
                 data-ft-badge-idx="${idx}"
@@ -588,11 +898,12 @@ function renderPanelContent(
     </div>
   `;
 
-  const panels: Record<ProfileTab, unknown> = {
+  const panels: Record<ProfileTab, () => unknown> = {
     avatar: avatarPanel,
     banner: bannerPanel,
     background: backgroundPanel,
     badges: badgesPanel,
+    username: usernamePanel,
   };
 
   return html`
@@ -600,6 +911,11 @@ function renderPanelContent(
       :host {
         display: block;
       }
+      ${BADGE_KEYFRAMES}
+      ${usernameBadgeStylesheet(
+        "#ft-username-badge-preview",
+        usernameBadgePreviewBadge(state),
+      )}
     </style>
     <div
       data-theme="${currentTheme}"
@@ -609,11 +925,11 @@ function renderPanelContent(
         <button
           type="button"
           id="profile-reset-btn"
-          class="btn btn-outline btn-error btn-sm"
+          class="btn btn-outline btn-error"
         >
           Reset
         </button>
-        <button class="btn btn-circle btn-ghost btn-sm" id="profile-close-btn">
+        <button class="btn btn-circle btn-ghost" id="profile-close-btn">
           ${unsafeHTML(X_SVG.replace("<svg", '<svg width="22" height="22"'))}
         </button>
       </div>
@@ -667,7 +983,7 @@ function renderPanelContent(
               style="min-height: 260px;"
               class="flex flex-col"
             >
-              ${panels[activeTab]}
+              ${panels[activeTab]()}
             </div>
 
             <button
@@ -789,6 +1105,19 @@ export const createSettingsModal = async (
     badgeBg: await getConfig("PROFILE_BADGE_BG"),
     badgeOrder: await getConfig("PROFILE_BADGE_ORDER"),
     badgeWrap: await getConfig("PROFILE_BADGE_WRAP"),
+    badgeAlign: await getConfig("PROFILE_BADGE_ALIGN"),
+    usernameBadgeBg: await getConfig("PROFILE_USERNAME_BADGE_BG"),
+    usernameBadgeText: await getConfig("PROFILE_USERNAME_BADGE_TEXT"),
+    usernameBadgeBorder: await getConfig("PROFILE_USERNAME_BADGE_BORDER"),
+    usernameBadgeBorderWidth: await getConfig(
+      "PROFILE_USERNAME_BADGE_BORDER_WIDTH",
+    ),
+    usernameBadgeShape: await getConfig("PROFILE_USERNAME_BADGE_SHAPE"),
+    usernameBadgeTitleNewline: await getConfig(
+      "PROFILE_USERNAME_BADGE_TITLE_NEWLINE",
+    ),
+    usernameBadgeAnimation: await getConfig("PROFILE_USERNAME_BADGE_ANIMATION"),
+    usernameBadgePadding: await getConfig("PROFILE_USERNAME_BADGE_PADDING"),
   };
 
   const state: FormState = { ...saved, uploading: "" };
@@ -834,6 +1163,15 @@ export const createSettingsModal = async (
       "PROFILE_BADGE_BG",
       "PROFILE_BADGE_ORDER",
       "PROFILE_BADGE_WRAP",
+      "PROFILE_BADGE_ALIGN",
+      "PROFILE_USERNAME_BADGE_BG",
+      "PROFILE_USERNAME_BADGE_TEXT",
+      "PROFILE_USERNAME_BADGE_BORDER",
+      "PROFILE_USERNAME_BADGE_BORDER_WIDTH",
+      "PROFILE_USERNAME_BADGE_SHAPE",
+      "PROFILE_USERNAME_BADGE_TITLE_NEWLINE",
+      "PROFILE_USERNAME_BADGE_ANIMATION",
+      "PROFILE_USERNAME_BADGE_PADDING",
     ]);
     close();
     location.reload();
@@ -878,7 +1216,7 @@ export const createSettingsModal = async (
           </div>
           <p class="opacity-70 text-sm">${message}</p>
           <button
-            class="btn btn-primary btn-sm"
+            class="btn btn-primary"
             @click="${() => {
               dlg.close();
               dlg.remove();
@@ -1042,6 +1380,33 @@ export const createSettingsModal = async (
 
         batchData["PROFILE_BADGE_ORDER"] = state.badgeOrder;
         batchData["PROFILE_BADGE_WRAP"] = state.badgeWrap;
+        batchData["PROFILE_BADGE_ALIGN"] = state.badgeAlign;
+
+        if (!state.usernameBadgeBg) {
+          keysToRemove.push("PROFILE_USERNAME_BADGE_BG");
+        } else {
+          batchData["PROFILE_USERNAME_BADGE_BG"] = state.usernameBadgeBg;
+        }
+        if (!state.usernameBadgeText) {
+          keysToRemove.push("PROFILE_USERNAME_BADGE_TEXT");
+        } else {
+          batchData["PROFILE_USERNAME_BADGE_TEXT"] = state.usernameBadgeText;
+        }
+        if (!state.usernameBadgeBorder) {
+          keysToRemove.push("PROFILE_USERNAME_BADGE_BORDER");
+        } else {
+          batchData["PROFILE_USERNAME_BADGE_BORDER"] =
+            state.usernameBadgeBorder;
+        }
+        batchData["PROFILE_USERNAME_BADGE_BORDER_WIDTH"] =
+          state.usernameBadgeBorderWidth;
+        batchData["PROFILE_USERNAME_BADGE_SHAPE"] = state.usernameBadgeShape;
+        batchData["PROFILE_USERNAME_BADGE_TITLE_NEWLINE"] =
+          state.usernameBadgeTitleNewline;
+        batchData["PROFILE_USERNAME_BADGE_ANIMATION"] =
+          state.usernameBadgeAnimation;
+        batchData["PROFILE_USERNAME_BADGE_PADDING"] =
+          state.usernameBadgePadding;
 
         if (Object.keys(batchData).length > 0)
           await chrome.storage.local.set(batchData as Record<string, unknown>);
@@ -1074,6 +1439,16 @@ export const createSettingsModal = async (
           avatarPosY: state.avatarPosY,
           avatarScale: state.avatarScale,
           badgeBg: state.badgeBg || "",
+          usernameBadge: {
+            bg: state.usernameBadgeBg,
+            text: state.usernameBadgeText,
+            border: state.usernameBadgeBorder,
+            borderWidth: state.usernameBadgeBorderWidth,
+            shape: state.usernameBadgeShape,
+            titleNewline: state.usernameBadgeTitleNewline,
+            animation: state.usernameBadgeAnimation,
+            padding: state.usernameBadgePadding,
+          },
         };
 
         try {
@@ -1100,10 +1475,21 @@ function liveApplyBannerBg(state: FormState) {
     avatarBg: state.avatarBg,
     decoration: state.decoration,
     badgeBg: state.badgeBg,
+    usernameBadge: {
+      bg: state.usernameBadgeBg,
+      text: state.usernameBadgeText,
+      border: state.usernameBadgeBorder,
+      borderWidth: state.usernameBadgeBorderWidth,
+      shape: state.usernameBadgeShape,
+      titleNewline: state.usernameBadgeTitleNewline,
+      animation: state.usernameBadgeAnimation,
+      padding: state.usernameBadgePadding,
+    },
   });
   applyBadgeLayout(document, {
     order: state.badgeOrder,
     wrap: state.badgeWrap,
+    align: state.badgeAlign,
   });
 }
 

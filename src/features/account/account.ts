@@ -301,6 +301,16 @@ export async function syncMyVisuals(visuals: {
   avatarPosY?: number;
   avatarScale?: number;
   badgeBg?: string;
+  usernameBadge?: {
+    bg?: string;
+    text?: string;
+    border?: string;
+    borderWidth?: number;
+    shape?: string;
+    titleNewline?: boolean;
+    animation?: string;
+    padding?: number;
+  } | null;
 }): Promise<void> {
   const login = await getCloudLogin();
   const token = await getConfig("CLOUD_TOKEN");
@@ -331,6 +341,18 @@ export async function syncMyVisuals(visuals: {
             PROFILE_AVATAR_POSITION_Y: visuals.avatarPosY ?? 50,
             PROFILE_AVATAR_SCALE: visuals.avatarScale ?? 100,
             PROFILE_BADGE_BG: visuals.badgeBg || "",
+            PROFILE_USERNAME_BADGE_BG: visuals.usernameBadge?.bg || "",
+            PROFILE_USERNAME_BADGE_TEXT: visuals.usernameBadge?.text || "",
+            PROFILE_USERNAME_BADGE_BORDER: visuals.usernameBadge?.border || "",
+            PROFILE_USERNAME_BADGE_BORDER_WIDTH:
+              visuals.usernameBadge?.borderWidth ?? 1,
+            PROFILE_USERNAME_BADGE_SHAPE:
+              visuals.usernameBadge?.shape || "rounded",
+            PROFILE_USERNAME_BADGE_TITLE_NEWLINE:
+              visuals.usernameBadge?.titleNewline === true,
+            PROFILE_USERNAME_BADGE_ANIMATION:
+              visuals.usernameBadge?.animation || "none",
+            PROFILE_USERNAME_BADGE_PADDING: visuals.usernameBadge?.padding ?? 4,
             PROFILE_IMAGE_HISTORY: await getConfig("PROFILE_IMAGE_HISTORY"),
             PROFILE_BANNER_HISTORY: await getConfig("PROFILE_BANNER_HISTORY"),
             PROFILE_BACKGROUND_HISTORY: await getConfig(
@@ -428,6 +450,7 @@ export async function fetchUserVisuals(
       avatarPosY: Number(data.avatarPosY ?? 50),
       avatarScale: Number(data.avatarScale ?? 100),
       badgeBg: String(data.badgeBg || ""),
+      usernameBadge: (data.usernameBadge as Record<string, unknown>) || null,
       theme: (data.theme as { profileColor?: string }) || null,
       look: (data.look as { preset?: string; theme?: string }) || null,
       logtime: (data.logtime as Record<string, unknown>) || null,

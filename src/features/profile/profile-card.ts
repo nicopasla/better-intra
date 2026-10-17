@@ -585,15 +585,80 @@ function injectProfileCardStyles() {
 
     /* --- User Name --- */
     .ft-profile-card h2.text-2xl {
+      text-align: center !important;
       text-shadow: 0 1px 5px rgba(0,0,0,0.5);
     }
 
-    /* Level & Progress Bar Section */
+    /* Name + username badge: center the block in the space between the
+       avatar and the end of the card. */
+    .ft-profile-card div:has(> h2.text-2xl) {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      gap: 0.75rem !important;
+      overflow: visible !important;
+    }
+    @media (min-width: 1024px) {
+      .ft-profile-card div:has(> h2.text-2xl) {
+        flex: 1 1 auto !important;
+      }
+    }
+
+    /* Profile card: header + role badges sit centered with EQUAL space above
+       and below the content, and the level/cursus bar stays at the bottom.
+       The top gap comes from the header's margin-top:auto and the bottom gap
+       from the level bar's margin-top:auto - flexbox splits the free space
+       equally between them, so both gaps are always identical. Anchoring the
+       bottom on the level bar (always present) keeps profiles without any role
+       badges consistent with those that have some. */
+    .ft-profile-card {
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    .ft-profile-card div:has(> .px-8.flex.flex-row) {
+      display: contents !important;
+    }
+    .ft-profile-card > div:has(div:has(> h2.text-2xl)) {
+      padding-top: 0 !important;
+      margin-top: auto !important;
+    }
+    /* Collapse the empty badge row that stays inside the header column when a
+       profile has no role badges, so it does not offset the centered content. */
+    .ft-profile-card div:has(> h2.text-2xl) > div.py-2:empty {
+      display: none !important;
+    }
     .ft-profile-card .px-8.flex.flex-row {
       align-items: center !important;
+      padding: 0.5rem 1rem !important;
+      gap: 0.75rem !important;
+      margin-top: auto !important;
+      border: 0 !important;
+      border-top: 2px solid var(--user-color, hsl(var(--legacy-main))) !important;
+      border-radius: 0 !important;
+    }
+    /* With "hide leading zero", the level number's box carries a leading
+       figure-space and a translateX, so its glyph ends up further from the left
+       edge than the progress bar is from the right. Reduce the left padding to
+       compensate (the number's own centering is untouched). */
+    .ft-profile-card .px-8.flex.flex-row:has(h1.text-4xl[style*="transform"]) {
+      padding-left: 0.5rem !important;
+    }
+
+    /* Role badges relocated above the level/cursus bar: they keep wrapping,
+       but the box shows one line plus half of the next (as a scroll hint) and
+       scrolls vertically, so it never pushes the level bar down. */
+    .ft-profile-card [data-ft-badges-row] {
       padding-left: 1rem !important;
       padding-right: 1rem !important;
-      gap: 0.75rem !important;
+      margin-bottom: 0.25rem !important;
+      flex-wrap: wrap !important;
+      align-content: flex-start !important;
+      justify-content: center !important;
+      max-height: 3.3rem !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
     }
 
     /* Level Number (e.g., "01") */

@@ -4,3 +4,5 @@ export const BACKGROUND_SELECTOR =
   ".w-full.xl\\:h-72.bg-center.bg-cover.bg-ft-black";
 export const TITLE_BADGE_SELECTOR =
   '[class*="text-primary-foreground"][class*="inline-flex"]';
+export const NAME_BADGE_SELECTOR =
+  ".flex.flex-col.justify-center.gap-4 > p.text-sm, h2.text-2xl + p.text-sm";

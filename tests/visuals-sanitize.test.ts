@@ -131,6 +131,16 @@ describe("sanitizeVisualUrls", () => {
       avatarPosY: 60,
       avatarScale: 120,
       badgeBg: "#abcdef",
+      usernameBadge: {
+        bg: "#00bcba",
+        text: "#ffffff",
+        border: "#112233",
+        borderWidth: 2,
+        shape: "rounded",
+        titleNewline: true,
+        animation: "pulse",
+        padding: 6,
+      },
       theme: { profileColor: "#00bcba" },
       look: { preset: "dracula", theme: "dark" },
       logtime: {
@@ -161,5 +171,87 @@ describe("sanitizeVisualUrls", () => {
       decoration: "solid",
     });
     expect(sanitizeVisualUrls(once)).toEqual(once);
+  });
+
+  describe("usernameBadge", () => {
+    it("returns null when no badge is provided", () => {
+      expect(sanitizeVisualUrls(base).usernameBadge).toBeNull();
+    });
+
+    it("keeps valid colors, width and shape", () => {
+      const out = sanitizeVisualUrls({
+        ...base,
+        usernameBadge: {
+          bg: "#112233",
+          text: "#ffffff",
+          border: "rgb(1, 2, 3)",
+          borderWidth: 3,
+          shape: "pill",
+          titleNewline: true,
+          animation: "glow",
+          padding: 7,
+        },
+      }).usernameBadge;
+      expect(out).toEqual({
+        bg: "#112233",
+        text: "#ffffff",
+        border: "rgb(1, 2, 3)",
+        borderWidth: 3,
+        shape: "pill",
+        titleNewline: true,
+        animation: "glow",
+        padding: 7,
+      });
+    });
+
+    it("falls back to none for unknown animations", () => {
+      const out = sanitizeVisualUrls({
+        ...base,
+        usernameBadge: { animation: "explode" },
+      }).usernameBadge;
+      expect(out?.animation).toBe("none");
+    });
+
+    it("accepts the extended animation set", () => {
+      for (const animation of [
+        "float",
+        "gradient",
+        "conic",
+        "typewriter",
+      ] as const) {
+        const out = sanitizeVisualUrls({
+          ...base,
+          usernameBadge: { animation },
+        }).usernameBadge;
+        expect(out?.animation).toBe(animation);
+      }
+    });
+
+    it("drops declaration-smuggling colours", () => {
+      const out = sanitizeVisualUrls({
+        ...base,
+        usernameBadge: {
+          bg: "red; } * { display:none } .a {",
+          text: "url(https://evil/x)",
+        },
+      }).usernameBadge;
+      expect(out?.bg).toBe("");
+      expect(out?.text).toBe("");
+    });
+
+    it("falls back for unknown shapes and clamps border width", () => {
+      const big = sanitizeVisualUrls({
+        ...base,
+        usernameBadge: { shape: "wat", borderWidth: 99 },
+      }).usernameBadge;
+      expect(big?.shape).toBe("rounded");
+      expect(big?.borderWidth).toBe(8);
+
+      const neg = sanitizeVisualUrls({
+        ...base,
+        usernameBadge: { borderWidth: -5 },
+      }).usernameBadge;
+      expect(neg?.borderWidth).toBe(0);
+    });
   });
 });

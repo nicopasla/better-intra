@@ -21,7 +21,11 @@ import { initProjectBadges } from "./project-badges.ts";
 import { initProjectsSort } from "./projects-sort.ts";
 import { initRouletteStats } from "./roulette-stats.ts";
 import { initEvaluations } from "./evaluations.ts";
-import { initBadges, applyTitleBadgeWrap } from "./badges.ts";
+import {
+  initBadges,
+  applyTitleBadgeWrap,
+  initBadgeRelocation,
+} from "./badges.ts";
 import { initTranscript } from "./transcript.ts";
 import { initPace } from "./pace.ts";
 import { initBlackholeMode } from "./blackhole.ts";
@@ -90,6 +94,7 @@ export async function initProfile() {
           initMilestones(),
           initBadges(),
           applyTitleBadgeWrap(),
+          initBadgeRelocation(),
           initTranscript(),
           initPace(),
         ]);

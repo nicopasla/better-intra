@@ -11,6 +11,27 @@ import type { VisualUrls } from "./visuals.ts";
 const BANNER_MODES = new Set(["fill", "fit", "stretch", "center", "tile"]);
 const DECORATIONS = new Set(["none", "solid"]);
 const AVATAR_BG_KEYWORDS = new Set(["transparent"]);
+const BADGE_SHAPES = new Set(["square", "rounded", "pill"]);
+const BADGE_ANIMATIONS = new Set([
+  "none",
+  "glow",
+  "pulse",
+  "rainbow",
+  "shimmer",
+  "float",
+  "wobble",
+  "bounce",
+  "heartbeat",
+  "shake",
+  "flash",
+  "rotate",
+  "gradient",
+  "ping",
+  "ants",
+  "conic",
+  "typewriter",
+  "marquee",
+]);
 
 /**
  * Absolute http(s) URL, normalised by the URL parser (which percent-encodes
@@ -113,6 +134,29 @@ export function sanitizeVisualUrls(urls: VisualUrls): VisualUrls {
         }
       : null;
 
+  const ub =
+    urls.usernameBadge && typeof urls.usernameBadge === "object"
+      ? urls.usernameBadge
+      : null;
+  const usernameBadge = ub
+    ? {
+        bg: sanitizeCssColor(ub.bg),
+        text: sanitizeCssColor(ub.text),
+        border: sanitizeCssColor(ub.border),
+        borderWidth: clampNumber(ub.borderWidth, 0, 8, 1),
+        shape:
+          typeof ub.shape === "string" && BADGE_SHAPES.has(ub.shape)
+            ? ub.shape
+            : "rounded",
+        titleNewline: ub.titleNewline === true,
+        animation:
+          typeof ub.animation === "string" && BADGE_ANIMATIONS.has(ub.animation)
+            ? ub.animation
+            : "none",
+        padding: clampNumber(ub.padding, 0, 8, 4),
+      }
+    : null;
+
   return {
     avatar: sanitizeCssUrl(urls.avatar),
     banner: sanitizeCssUrl(urls.banner),
@@ -131,6 +175,7 @@ export function sanitizeVisualUrls(urls: VisualUrls): VisualUrls {
     avatarPosY: clampNumber(urls.avatarPosY, 0, 100, 50),
     avatarScale: clampNumber(urls.avatarScale, 10, 500, 100),
     badgeBg: sanitizeCssColor(urls.badgeBg),
+    usernameBadge,
     theme,
     look,
     logtime,

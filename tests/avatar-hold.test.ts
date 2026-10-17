@@ -16,30 +16,36 @@ describe("avatar hold", () => {
   });
 
   it("installs a class-scoped rule, not an unconditional one", async () => {
-    const { injectAvatarPendingRule, AVATAR_PENDING_CLASS } = await loadVisuals();
+    const { injectAvatarPendingRule, AVATAR_PENDING_CLASS } =
+      await loadVisuals();
     injectAvatarPendingRule();
 
-    const rule = document.getElementById("ft-avatar-pending-style")?.textContent;
+    const rule = document.getElementById(
+      "ft-avatar-pending-style",
+    )?.textContent;
     expect(rule).toContain(`html.${AVATAR_PENDING_CLASS}`);
     expect(rule).toContain("opacity: 0 !important");
   });
 
   it("toggles the class on <html>", async () => {
-    const { holdAvatar, releaseAvatar, AVATAR_PENDING_CLASS } = await loadVisuals();
+    const { holdAvatar, releaseAvatar, AVATAR_PENDING_CLASS } =
+      await loadVisuals();
 
     holdAvatar();
-    expect(document.documentElement.classList.contains(AVATAR_PENDING_CLASS)).toBe(
-      true,
-    );
+    expect(
+      document.documentElement.classList.contains(AVATAR_PENDING_CLASS),
+    ).toBe(true);
 
     releaseAvatar();
-    expect(document.documentElement.classList.contains(AVATAR_PENDING_CLASS)).toBe(
-      false,
-    );
+    expect(
+      document.documentElement.classList.contains(AVATAR_PENDING_CLASS),
+    ).toBe(false);
   });
 
   it("needs a re-apply while a mounted avatar has no inline opacity", async () => {
-    const { needsReapply } = await loadVisuals();
+    const { needsReapply, usernameBadgeStylesheet } = await loadVisuals();
+    const { NAME_BADGE_SELECTOR } =
+      await import("../src/features/profile/selectors.ts");
     document.body.innerHTML = `<div class="rounded-full w-52 h-52"></div>`;
 
     const urls = {
@@ -50,6 +56,16 @@ describe("avatar hold", () => {
       backgroundMode: "",
     };
     expect(needsReapply(urls)).toBe(true);
+
+    // The username badge is always applied, so its stylesheet must be present
+    // for needsReapply() to consider everything applied.
+    const badgeStyle = document.createElement("style");
+    badgeStyle.id = "ft-name-badge-style";
+    badgeStyle.textContent = usernameBadgeStylesheet(
+      NAME_BADGE_SELECTOR,
+      urls.usernameBadge,
+    );
+    document.head.appendChild(badgeStyle);
 
     const avatar = document.querySelector<HTMLElement>(".rounded-full.w-52");
     avatar!.style.setProperty("opacity", "1", "important");

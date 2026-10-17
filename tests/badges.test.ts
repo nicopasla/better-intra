@@ -3,6 +3,7 @@ import {
   wrapTitleBadges,
   getTitleBadges,
   applyBadgeLayout,
+  relocateBadges,
 } from "../src/features/profile/badges";
 import { badgeColorCss } from "../src/features/profile/visuals";
 import { TITLE_BADGE_SELECTOR } from "../src/features/profile/selectors";
@@ -124,7 +125,11 @@ describe("applyBadgeLayout", () => {
 
   it("hides badges prefixed with '-'", () => {
     setup(["ALPHA", "BETA", "GAMMA"]);
-    applyBadgeLayout(document, { order: ["-BETA"], wrap: true });
+    applyBadgeLayout(document, {
+      order: ["-BETA"],
+      wrap: true,
+      align: "center",
+    });
 
     const badges = getTitleBadges(document);
     const beta = badges.find((b) => b.title === "BETA")!;
@@ -135,16 +140,93 @@ describe("applyBadgeLayout", () => {
 
   it("sets wrap to nowrap when wrap is false", () => {
     setup(["ALPHA"]);
-    applyBadgeLayout(document, { order: [], wrap: false });
+    applyBadgeLayout(document, { order: [], wrap: false, align: "center" });
     const row = document.querySelector<HTMLElement>(".overflow-x-auto")!;
     expect(row.style.getPropertyValue("flex-wrap")).toBe("nowrap");
   });
 
   it("reorders badges to match the configured order", () => {
     setup(["ALPHA", "BETA", "GAMMA"]);
-    applyBadgeLayout(document, { order: ["GAMMA", "ALPHA"], wrap: true });
+    applyBadgeLayout(document, {
+      order: ["GAMMA", "ALPHA"],
+      wrap: true,
+      align: "center",
+    });
 
     const titles = getTitleBadges(document).map((b) => b.title);
     expect(titles).toEqual(["GAMMA", "ALPHA", "BETA"]);
+  });
+
+  it("aligns the badge row via justify-content", () => {
+    setup(["ALPHA"]);
+    const row = document.querySelector<HTMLElement>(".overflow-x-auto")!;
+
+    applyBadgeLayout(document, { order: [], wrap: true, align: "left" });
+    expect(row.style.getPropertyValue("justify-content")).toBe("left");
+    expect(row.style.getPropertyPriority("justify-content")).toBe("important");
+
+    applyBadgeLayout(document, { order: [], wrap: true, align: "right" });
+    expect(row.style.getPropertyValue("justify-content")).toBe("right");
+  });
+});
+
+describe("relocateBadges", () => {
+  const header = (titles: string[]) => `
+    <div class="flex flex-col justify-center gap-4">
+      <h2 class="text-2xl font-bold">Ada Lovelace</h2>
+      <p class="text-sm">alovelace</p>
+      <div class="py-2 flex gap-2 w-full overflow-x-auto">
+        ${titles.map((t) => badge(t)).join("")}
+      </div>
+    </div>`;
+
+  const levelBar = `
+    <div class="px-8 flex flex-row gap-2 items-end">
+      <h1 class="text-4xl">7</h1>
+      <div role="progressbar"></div>
+    </div>`;
+
+  const setup = (titles: string[], withLevelBar = true) => {
+    document.body.innerHTML = `<div class="ft-profile-card">${header(titles)}${withLevelBar ? levelBar : ""}</div>`;
+  };
+
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("moves the badge row directly above the level/cursus bar", () => {
+    setup(["TUTOR", "PHOENIX"]);
+    relocateBadges();
+
+    const bar = document.querySelector<HTMLElement>(".px-8.flex.flex-row")!;
+    const row = document.querySelector<HTMLElement>("[data-ft-badges-row]")!;
+    expect(row.nextElementSibling).toBe(bar);
+    expect(bar.previousElementSibling).toBe(row);
+  });
+
+  it("is idempotent", () => {
+    setup(["TUTOR", "PHOENIX"]);
+    relocateBadges();
+    const first = document.querySelector<HTMLElement>("[data-ft-badges-row]")!;
+    relocateBadges();
+    const second = document.querySelector<HTMLElement>("[data-ft-badges-row]")!;
+    expect(second).toBe(first);
+    expect(second.nextElementSibling).toBe(
+      document.querySelector<HTMLElement>(".px-8.flex.flex-row"),
+    );
+  });
+
+  it("does nothing when there are no badges", () => {
+    setup([]);
+    relocateBadges();
+    expect(document.querySelector("[data-ft-badges-row]")).toBeNull();
+  });
+
+  it("does nothing when there is no level bar", () => {
+    setup(["TUTOR"], false);
+    relocateBadges();
+    const row = document.querySelector<HTMLElement>(".overflow-x-auto")!;
+    expect(row.hasAttribute("data-ft-badges-row")).toBe(false);
+    expect(row.nextElementSibling).toBeNull();
   });
 });

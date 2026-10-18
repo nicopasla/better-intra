@@ -338,7 +338,7 @@ export function renderDiscordPanel() {
                                     >
                                     <input
                                       type="time"
-                                      class="input input-bordered w-32"
+                                      class="input w-32"
                                       .value="${qStart}"
                                       @change="${(e: Event) => {
                                         chrome.storage.local.set({
@@ -355,7 +355,7 @@ export function renderDiscordPanel() {
                                     >
                                     <input
                                       type="time"
-                                      class="input input-bordered w-32"
+                                      class="input w-32"
                                       .value="${qEnd}"
                                       @change="${(e: Event) => {
                                         chrome.storage.local.set({

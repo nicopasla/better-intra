@@ -148,7 +148,7 @@ function renderUrlField(
   return html`
     <div class="form-control w-full">
       <label class="label py-1">
-        <span class="label-text opacity-80">${label}</span>
+        <span class="opacity-80">${label}</span>
       </label>
       <div class="flex gap-2 items-stretch">
         <label
@@ -288,7 +288,7 @@ function renderPanelContent(
               <input
                 type="color"
                 id="PROFILE_AVATAR_BG_COLOR"
-                class="input input-bordered p-1 h-10 w-16"
+                class="input p-1 h-10 w-16"
                 .value="${isTransparent ? "#00bcba" : state.avatarBg}"
                 @input="${(e: Event) =>
                   onFormUpdate({
@@ -379,11 +379,11 @@ function renderPanelContent(
       ${state.bannerColor
         ? html`<div class="form-control w-full">
             <label class="label py-1">
-              <span class="label-text opacity-80">Color</span>
+              <span class="opacity-80">Color</span>
             </label>
             <input
               type="color"
-              class="input input-bordered w-full h-12 p-1"
+              class="input w-full h-12 p-1"
               .value="${state.bannerColor}"
               @input="${(e: Event) =>
                 onFormUpdate({
@@ -443,11 +443,11 @@ function renderPanelContent(
       ${state.backgroundColor
         ? html`<div class="form-control w-full">
             <label class="label py-1">
-              <span class="label-text opacity-80">Color</span>
+              <span class="opacity-80">Color</span>
             </label>
             <input
               type="color"
-              class="input input-bordered w-full h-12 p-1"
+              class="input w-full h-12 p-1"
               .value="${state.backgroundColor}"
               @input="${(e: Event) =>
                 onFormUpdate({
@@ -544,7 +544,7 @@ function renderPanelContent(
               <span class="text-sm opacity-70 pb-1">Background</span>
               <input
                 type="color"
-                class="input input-bordered w-full h-12 p-1"
+                class="input w-full h-12 p-1"
                 .value="${state.usernameBadgeBg || "#00babc"}"
                 @input="${(e: Event) =>
                   onFormUpdate({
@@ -556,7 +556,7 @@ function renderPanelContent(
               <span class="text-sm opacity-70 pb-1">Text</span>
               <input
                 type="color"
-                class="input input-bordered w-full h-12 p-1"
+                class="input w-full h-12 p-1"
                 .value="${state.usernameBadgeText || "#ffffff"}"
                 @input="${(e: Event) =>
                   onFormUpdate({
@@ -568,7 +568,7 @@ function renderPanelContent(
               <span class="text-sm opacity-70 pb-1">Border</span>
               <input
                 type="color"
-                class="input input-bordered w-full h-12 p-1"
+                class="input w-full h-12 p-1"
                 .value="${state.usernameBadgeBorder || "#00babc"}"
                 @input="${(e: Event) =>
                   onFormUpdate({
@@ -604,7 +604,7 @@ function renderPanelContent(
             <label class="form-control">
               <span class="text-sm opacity-70 pb-1">Animation</span>
               <select
-                class="select select-bordered w-full"
+                class="select w-full"
                 @change="${(e: Event) =>
                   onFormUpdate({
                     usernameBadgeAnimation: (e.target as HTMLSelectElement)
@@ -661,7 +661,7 @@ function renderPanelContent(
                 min="0"
                 max="8"
                 step="1"
-                class="input input-bordered w-full"
+                class="input w-full"
                 .value="${String(state.usernameBadgeBorderWidth)}"
                 @input="${(e: Event) =>
                   onFormUpdate({
@@ -678,7 +678,7 @@ function renderPanelContent(
                 min="0"
                 max="8"
                 step="1"
-                class="input input-bordered w-full"
+                class="input w-full"
                 .value="${String(state.usernameBadgePadding)}"
                 @input="${(e: Event) =>
                   onFormUpdate({
@@ -765,7 +765,7 @@ function renderPanelContent(
             <div class="flex gap-2 items-center">
               <input
                 type="color"
-                class="input input-bordered w-full h-12 p-1"
+                class="input w-full h-12 p-1"
                 .value="${state.badgeBg || "#00babc"}"
                 @input="${(e: Event) =>
                   onFormUpdate({
@@ -790,7 +790,7 @@ function renderPanelContent(
             <label
               class="flex items-center justify-between cursor-pointer gap-2"
             >
-              <span class="label-text opacity-80"
+              <span class="opacity-80"
                 >Wrap onto multiple lines</span
               >
               <input

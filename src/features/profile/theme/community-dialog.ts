@@ -196,7 +196,7 @@ export function openCommunityThemesDialog(): void {
         <div class="px-5 py-2 border-b border-base-300 flex items-center gap-2">
           <input
             type="search"
-            class="input input-sm input-bordered flex-1 min-w-0"
+            class="input input-sm flex-1 min-w-0"
             placeholder="Search themes or authors…"
             .value="${search}"
             @input="${(e: Event) => {

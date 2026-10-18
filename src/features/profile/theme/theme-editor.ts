@@ -138,7 +138,7 @@ export async function openThemeEditor(themeId: string): Promise<void> {
           <div class="flex items-center gap-2 min-w-0 flex-1">
             <input
               type="text"
-              class="input input-sm input-bordered w-40"
+              class="input input-sm w-40"
               maxlength="40"
               placeholder="Theme name"
               .value="${name}"

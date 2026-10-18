@@ -238,7 +238,7 @@ function renderPopover() {
     render(
       html`
         <div data-theme="${daisyTheme}">
-          <div class="card card-compact ft-popover bg-base-100">
+          <div class="card card-sm ft-popover bg-base-100">
             <div class="card-body p-3">
               <div class="mb-1 flex flex-wrap items-center gap-1">
                 ${TRACKER_MODES.filter((m) => m.startsWith(_badgeType!)).map(
@@ -273,7 +273,7 @@ function renderPopover() {
                     ${progress
                       ? html`
                           <div
-                            class="card card-compact"
+                            class="card card-sm"
                             style="background:${progress.daysDone >= t.days
                               ? "rgba(16,185,129,0.15)"
                               : "rgba(239,68,68,0.15)"}"
@@ -286,7 +286,7 @@ function renderPopover() {
                             </div>
                           </div>
                           <div
-                            class="card card-compact"
+                            class="card card-sm"
                             style="background:${progress.hoursDone >= t.hours
                               ? "rgba(16,185,129,0.15)"
                               : "rgba(239,68,68,0.15)"}"

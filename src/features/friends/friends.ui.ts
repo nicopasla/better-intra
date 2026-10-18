@@ -281,7 +281,7 @@ function renderFriendRow(
 
     <!-- Stats column -->
     <div
-      class="list-col shrink-0 flex flex-col justify-center items-end gap-2"
+      class="shrink-0 flex flex-col justify-center items-end gap-2"
       data-ft-stats-col
     >
       <div class="flex items-center gap-1.5" data-tip="Wallet">
@@ -308,7 +308,7 @@ function renderFriendRow(
 
     ${deleteMode
       ? html`<label
-          class="list-col shrink-0 self-center flex items-center cursor-pointer"
+          class="shrink-0 self-center flex items-center cursor-pointer"
           data-ft-delete-col
           @click="${(e: Event) => e.stopPropagation()}"
         >
@@ -1129,7 +1129,7 @@ function renderWidget(state: WidgetState) {
                         ${state.addOpen
                           ? html`<input
                               type="text"
-                              class="input input-bordered input-primary input-sm"
+                              class="input input-primary input-sm"
                               placeholder="Login..."
                               .value="${state.addInput}"
                               @input="${(e: Event) =>

@@ -33,15 +33,14 @@
 }
 
 @plugin "daisyui" {
+  /* Each id must exist in the DOM: shadow host ids from src/, plus
+     `#popup-root`, which vite.popup.config.ts writes into popup.html. */
   root:
-    "#hub-shadow-wrapper", "#events-shadow-wrapper", "#profile-shadow-wrapper",
-    "#profile-badges-shadow",
-    "#shortcuts-shadow-wrapper", "#friends-shadow-wrapper",
-    "#ft-friend-btn-shadow", "#logtime-shadow-wrapper", "#popup-root",
+    "#hub-shadow-wrapper", "#events-shadow-wrapper", "#profile-badges-shadow",
+    "#shortcuts-shadow-wrapper", "#logtime-shadow-wrapper", "#popup-root",
     "#project-badges-shadow", "#cluster-map-dialog", "#profile-modal-host",
-    "#better-intra-sort-host", "#ft-tracker-card", "#ft-transcript-dialog",
-    "#ft-star-total-host", "#ft-subject-update-host", "#welcome-shadow-wrapper",
-    "#ft-project-page-host";
+    "#better-intra-sort-host", "#ft-transcript-dialog", "#ft-star-total-host",
+    "#ft-subject-update-host", "#welcome-shadow-wrapper", "#ft-project-page-host";
   themes: "light", "dark";
   include:
     [ "button",
@@ -69,7 +68,10 @@
     "join",
     "dropdown",
     "menu",
-    "alert"];
+    "alert",
+    "checkbox",
+    "link",
+    "validator"];
 }
 
 #hub-shadow-wrapper {

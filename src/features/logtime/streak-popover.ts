@@ -26,7 +26,7 @@ function tile(
   sub?: string,
   tone = "bg-base-200/60",
 ): TemplateResult {
-  return html`<div class="card card-compact ${tone}">
+  return html`<div class="card card-sm ${tone}">
     <div class="card-body p-2 items-center text-center gap-0.5">
       <span
         class="text-[0.65rem] uppercase tracking-wide opacity-60 leading-none"
@@ -84,7 +84,7 @@ export async function showStreakPopover(
   render(
     html`
       <div data-theme="${daisyTheme}">
-        <div class="card card-compact ft-streak-popover bg-base-100">
+        <div class="card card-sm ft-streak-popover bg-base-100">
           <div class="card-body p-3 gap-2">
             <div class="flex items-center gap-1.5 font-bold text-sm">
               <span class="text-base leading-none">🔥</span>

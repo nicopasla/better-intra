@@ -800,9 +800,7 @@ function renderPanelContent(
             <label
               class="flex items-center justify-between cursor-pointer gap-2"
             >
-              <span class="opacity-80"
-                >Wrap onto multiple lines</span
-              >
+              <span class="opacity-80">Wrap onto multiple lines</span>
               <input
                 type="checkbox"
                 class="toggle toggle-lg shrink-0"

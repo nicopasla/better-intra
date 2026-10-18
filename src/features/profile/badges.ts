@@ -75,10 +75,77 @@ export function getTitleBadges(
   return list;
 }
 
+/** Marks a badge row that fits on one line, so the stylesheet can drop the
+ *  scroll-hint reservation and keep it close to the separator below. */
+const SINGLE_LINE_ATTR = "data-ft-badges-single";
+
+/**
+ * True when every visible badge sits on the same line. Compares the badges'
+ * top offsets rather than their heights, so it holds whatever size they are.
+ */
+function isSingleLine(row: HTMLElement): boolean {
+  let minTop = Infinity;
+  let maxTop = -Infinity;
+  let minHeight = Infinity;
+  for (const child of Array.from(row.children) as HTMLElement[]) {
+    const { top, height } = child.getBoundingClientRect();
+    if (!height) continue;
+    minTop = Math.min(minTop, top);
+    maxTop = Math.max(maxTop, top);
+    minHeight = Math.min(minHeight, height);
+  }
+  if (!Number.isFinite(minTop) || !Number.isFinite(minHeight)) return false;
+  return maxTop - minTop < minHeight * 0.5;
+}
+
+function syncBadgesDensity(row: HTMLElement): void {
+  const single = isSingleLine(row);
+  if (single !== row.hasAttribute(SINGLE_LINE_ATTR)) {
+    row.toggleAttribute(SINGLE_LINE_ATTR, single);
+  }
+}
+
+let measuredRow: HTMLElement | null = null;
+let measuredRowChildren = -1;
+let observedRow: HTMLElement | null = null;
+let lastRowWidth = -1;
+let rowResizeObserver: ResizeObserver | null = null;
+
+/** Badges rewrap when the row's width changes, so re-measure then. The width
+ *  guard stops our own height change from re-triggering the observer. */
+function observeBadgesWidth(row: HTMLElement): void {
+  if (typeof ResizeObserver === "undefined" || row === observedRow) return;
+  rowResizeObserver ??= new ResizeObserver((entries) => {
+    const target = entries[entries.length - 1]?.target as
+      | HTMLElement
+      | undefined;
+    if (!target) return;
+    const width = Math.round(target.getBoundingClientRect().width);
+    if (Math.abs(width - lastRowWidth) < 2) return;
+    lastRowWidth = width;
+    syncBadgesDensity(target);
+  });
+  rowResizeObserver.disconnect();
+  rowResizeObserver.observe(row);
+  observedRow = row;
+  lastRowWidth = Math.round(row.getBoundingClientRect().width);
+}
+
+/** Re-measures only when the row or its badge count changed, so the mutation
+ *  pass does not force a layout on every unrelated page change. */
+function trackBadgesRow(row: HTMLElement): void {
+  observeBadgesWidth(row);
+  if (row === measuredRow && row.children.length === measuredRowChildren)
+    return;
+  measuredRow = row;
+  measuredRowChildren = row.children.length;
+  syncBadgesDensity(row);
+}
+
 /**
  * Moves the native role-badge row so it sits directly above the level/cursus
- * bar. Idempotent: the early return keeps it from churning the DOM (and
- * re-triggering the observer) once the row is already in place.
+ * bar. Idempotent: the insert is skipped once the row is already in place, so
+ * it does not churn the DOM (and re-trigger the observer).
  */
 export function relocateBadges(root: ParentNode = document): void {
   const badges = getTitleBadges(root);
@@ -95,8 +162,11 @@ export function relocateBadges(root: ParentNode = document): void {
 
   row.setAttribute("data-ft-badges-row", "true");
 
-  if (row.nextElementSibling === levelBar) return;
-  levelBar.parentElement.insertBefore(row, levelBar);
+  if (row.nextElementSibling !== levelBar) {
+    levelBar.parentElement.insertBefore(row, levelBar);
+  }
+
+  trackBadgesRow(row);
 }
 
 let relocationObserver: MutationObserver | null = null;

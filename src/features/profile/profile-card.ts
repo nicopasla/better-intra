@@ -661,6 +661,28 @@ function injectProfileCardStyles() {
       overflow-x: hidden !important;
     }
 
+    /* A single line needs no room for the scroll hint, and it should sit
+       centered in the space between the avatar and the separator. The row's
+       own auto margins do that, as long as the level bar stops claiming the
+       free space above it. Also release the box so it hugs the line: the cap
+       left the badges pinned to the top of a taller box. Multi-line rows keep
+       the cap and the scroll hint. */
+    .ft-profile-card [data-ft-badges-row][data-ft-badges-single] {
+      max-height: none !important;
+      height: auto !important;
+      flex-grow: 0 !important;
+      flex-basis: auto !important;
+      overflow: visible !important;
+      align-content: center !important;
+      margin-top: auto !important;
+      margin-bottom: auto !important;
+    }
+    .ft-profile-card
+      [data-ft-badges-row][data-ft-badges-single]
+      ~ .px-8.flex.flex-row {
+      margin-top: 0 !important;
+    }
+
     /* Level Number (e.g., "01") */
     .ft-profile-card h1.text-4xl {
       font-size: 2.5rem !important;

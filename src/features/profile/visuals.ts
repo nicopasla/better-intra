@@ -502,8 +502,16 @@ export const usernameBadgeStylesheet = (
 ): string => {
   const element = usernameBadgeCss(badge);
   const after = usernameBadgeAfterCss(badge);
+  const colors = badgeColors(badge);
   let css = `${selector} { ${element} }\n`;
   if (after) css += `${selector}::after { ${after} }\n`;
+
+  // The custom title is a BI-injected span, so it inherits the badge colour by
+  // default. Something in the page's own stylesheet wins over inheritance there,
+  // which left the title a different colour from the username above it, so set
+  // it explicitly to the badge text colour. Descendant, to also cover the
+  // marquee wrapper.
+  css += `${selector} [${TITLE_LINE_ATTR}] { color: ${colors.text} !important; }\n`;
 
   // Marquee needs a real wrapper to translate (text-indent breaks on the
   // two-line column layout); the preview always ships the wrapper with

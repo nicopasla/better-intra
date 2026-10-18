@@ -294,6 +294,7 @@ function badgeColors(badge: VisualUrls["usernameBadge"]): BadgeColors {
 
 interface BadgeAnimationCss {
   element: string[];
+  before: string[];
   after: string[];
 }
 
@@ -302,6 +303,7 @@ function badgeAnimationCss(
   c: BadgeColors,
 ): BadgeAnimationCss {
   const element: string[] = [];
+  const before: string[] = [];
   const after: string[] = [];
 
   const ringMask = [
@@ -356,7 +358,57 @@ function badgeAnimationCss(
     case "heartbeat":
       element.push(
         "transform-origin: center !important",
+        `--ft-badge-heartbeat: ${c.border}`,
         "animation: ft-badge-heartbeat 1.4s ease-in-out infinite !important",
+      );
+      break;
+    case "neon":
+      element.push(
+        `--ft-badge-neon-1: ${c.border}`,
+        `--ft-badge-neon-2: ${c.text}`,
+        "animation: ft-badge-neon 1.5s ease-in-out infinite alternate !important",
+      );
+      break;
+    case "elastic":
+      element.push(
+        "transform-origin: center !important",
+        "animation: ft-badge-elastic 1.6s ease-in-out infinite !important",
+      );
+      break;
+    case "softblur":
+      element.push(
+        "transform-origin: center !important",
+        `--ft-badge-softblur-1: ${c.border}`,
+        `--ft-badge-softblur-2: ${c.text}`,
+        "text-shadow: 0 0 0 currentColor, " +
+          "0 0 18px color-mix(in srgb, var(--ft-badge-softblur-1) 45%, transparent), " +
+          "0 0 34px color-mix(in srgb, var(--ft-badge-softblur-2) 35%, transparent) !important",
+        "animation: ft-badge-softblur 3.2s ease-in-out infinite !important",
+      );
+      break;
+    case "echo":
+      // Ghost copies are painted from attr(data-text), which the apply path
+      // mirrors onto the badge (applyBadgeEchoText).
+      element.push(
+        "position: relative !important",
+        `--ft-badge-echo-1: ${c.border}`,
+        `--ft-badge-echo-2: ${c.text}`,
+      );
+      before.push(
+        "content: attr(data-text)",
+        "position: absolute",
+        "inset: 0",
+        "color: var(--ft-badge-echo-1)",
+        "pointer-events: none",
+        "animation: ft-badge-echo 2s ease-out infinite",
+      );
+      after.push(
+        "content: attr(data-text)",
+        "position: absolute",
+        "inset: 0",
+        "color: var(--ft-badge-echo-2)",
+        "pointer-events: none",
+        "animation: ft-badge-echo 2s ease-out 1s infinite",
       );
       break;
     case "shake":
@@ -445,6 +497,7 @@ function badgeAnimationCss(
       "heartbeat",
       "shake",
       "rotate",
+      "elastic",
     ].includes(badge?.animation || "")
   ) {
     element.push(
@@ -456,9 +509,11 @@ function badgeAnimationCss(
     element.push("will-change: opacity");
   } else if (badge?.animation === "rainbow") {
     element.push("will-change: filter");
+  } else if (badge?.animation === "softblur") {
+    element.push("will-change: filter, opacity");
   }
 
-  return { element, after };
+  return { element, before, after };
 }
 
 export const usernameBadgeCss = (
@@ -495,16 +550,25 @@ export const usernameBadgeAfterCss = (
   return after.length ? after.join("; ") + ";" : "";
 };
 
-/** Full stylesheet for a badge under `selector` (element + optional ::after). */
+export const usernameBadgeBeforeCss = (
+  badge?: VisualUrls["usernameBadge"],
+): string => {
+  const before = badgeAnimationCss(badge, badgeColors(badge)).before;
+  return before.length ? before.join("; ") + ";" : "";
+};
+
+/** Full stylesheet for a badge under `selector` (element + optional pseudos). */
 export const usernameBadgeStylesheet = (
   selector: string,
   badge?: VisualUrls["usernameBadge"],
 ): string => {
   const element = usernameBadgeCss(badge);
   const after = usernameBadgeAfterCss(badge);
+  const before = usernameBadgeBeforeCss(badge);
   const colors = badgeColors(badge);
   let css = `${selector} { ${element} }\n`;
   if (after) css += `${selector}::after { ${after} }\n`;
+  if (before) css += `${selector}::before { ${before} }\n`;
 
   // The custom title is a BI-injected span, so it inherits the badge colour by
   // default. Something in the page's own stylesheet wins over inheritance there,
@@ -526,7 +590,8 @@ export const usernameBadgeStylesheet = (
       "animation: ft-badge-marquee 6s linear infinite; }\n";
   }
 
-  css += `@media (prefers-reduced-motion: reduce) {\n${selector}, ${selector}::after, ${selector} > [${MARQUEE_ATTR}] { animation: none !important; }\n}`;
+  css += `@media (prefers-reduced-motion: reduce) {\n${selector}, ${selector}::before, ${selector}::after, ${selector} > [${MARQUEE_ATTR}] { animation: none !important; }\n}`;
+
   return css;
 };
 
@@ -565,11 +630,51 @@ export const BADGE_KEYFRAMES = `
   50% { transform: translateY(-5px); }
 }
 @keyframes ft-badge-heartbeat {
-  0%, 100% { transform: scale(1); }
-  15% { transform: scale(1.12); }
-  30% { transform: scale(1); }
-  45% { transform: scale(1.08); }
-  60% { transform: scale(1); }
+  0%, 100% { transform: scale(1); text-shadow: 0 0 0 transparent; }
+  14% {
+    transform: scale(1.14);
+    text-shadow: 0 0 18px color-mix(in srgb, var(--ft-badge-heartbeat, currentColor) 65%, transparent);
+  }
+  28% { transform: scale(1); }
+  42% {
+    transform: scale(1.18);
+    text-shadow: 0 0 26px color-mix(in srgb, var(--ft-badge-heartbeat, currentColor) 80%, transparent);
+  }
+  70% { transform: scale(1); text-shadow: 0 0 0 transparent; }
+}
+@keyframes ft-badge-neon {
+  0% {
+    text-shadow:
+      0 0 5px var(--ft-badge-neon-1, currentColor),
+      0 0 10px var(--ft-badge-neon-1, currentColor),
+      0 0 20px var(--ft-badge-neon-1, currentColor),
+      0 0 40px var(--ft-badge-neon-1, currentColor),
+      0 0 80px var(--ft-badge-neon-1, currentColor);
+  }
+  100% {
+    text-shadow:
+      0 0 10px var(--ft-badge-neon-2, currentColor),
+      0 0 20px var(--ft-badge-neon-2, currentColor),
+      0 0 40px var(--ft-badge-neon-2, currentColor),
+      0 0 80px var(--ft-badge-neon-2, currentColor),
+      0 0 160px var(--ft-badge-neon-2, currentColor);
+  }
+}
+@keyframes ft-badge-elastic {
+  0%, 100% { transform: scale(1, 1); }
+  28% { transform: scale(1.28, 0.72); }
+  44% { transform: scale(0.78, 1.24); }
+  60% { transform: scale(1.12, 0.9); }
+  74% { transform: scale(0.96, 1.05); }
+  86% { transform: scale(1.02, 0.98); }
+}
+@keyframes ft-badge-softblur {
+  0%, 100% { filter: blur(0); opacity: 1; transform: scale(1); }
+  50% { filter: blur(2.4px); opacity: 0.72; transform: scale(1.045); }
+}
+@keyframes ft-badge-echo {
+  0% { opacity: 0.8; transform: scale(1); filter: blur(0); }
+  100% { opacity: 0; transform: scale(1.9); filter: blur(3px); }
 }
 @keyframes ft-badge-shake {
   0%, 100% { transform: translateX(0); }
@@ -618,6 +723,7 @@ export function ensureBadgeKeyframes(): void {
 }
 
 const TITLE_LINE_ATTR = "data-ft-title-line";
+const ECHO_TEXT_ATTR = "data-text";
 const ORIG_TEXT_ATTR = "data-ft-orig-text";
 
 const SEPARATORS = "\\s,;·•\\-–—:|/";
@@ -723,6 +829,25 @@ export function applyUsernameMarquee(enabled: boolean): void {
   inner.setAttribute(MARQUEE_ATTR, "true");
   while (el.firstChild) inner.appendChild(el.firstChild);
   el.appendChild(inner);
+}
+
+/**
+ * The echo effect paints ghost copies from attr(data-text), which CSS cannot
+ * derive from element text, so mirror the badge's first line onto the element
+ * and drop the attribute for every other animation. Run after the title split
+ * and the marquee wrapper, so the first line is final.
+ */
+export function applyBadgeEchoText(animation: string | undefined): void {
+  const el = document.querySelector<HTMLElement>(NAME_BADGE_SELECTOR);
+  if (!el) return;
+  if (animation !== "echo") {
+    el.removeAttribute(ECHO_TEXT_ATTR);
+    return;
+  }
+  const first = el.firstChild;
+  const text =
+    first?.nodeType === Node.TEXT_NODE ? first.textContent : el.textContent;
+  el.setAttribute(ECHO_TEXT_ATTR, (text ?? "").trim());
 }
 
 export const needsReapply = (urls: VisualUrls) => {
@@ -1021,6 +1146,7 @@ export const applyImgs = (rawUrls: VisualUrls | null) => {
   );
   applyUsernameTitleLine(usernameBadge.titleNewline !== false);
   applyUsernameMarquee(usernameBadge.animation === "marquee");
+  applyBadgeEchoText(usernameBadge.animation);
 
   if (urls.logtime) {
     const logtime = urls.logtime;

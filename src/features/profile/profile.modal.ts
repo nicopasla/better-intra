@@ -74,6 +74,12 @@ interface FormState {
     | "ants"
     | "conic"
     | "typewriter"
+    | "marquee"
+    | "neon"
+    | "echo"
+    | "softblur"
+    | "elastic"
+    | "typewriter"
     | "marquee";
   usernameBadgePadding: number;
   uploading: string;
@@ -631,6 +637,10 @@ function renderPanelContent(
                     ["conic", "Conic border"],
                     ["typewriter", "Typewriter"],
                     ["marquee", "Marquee"],
+                    ["neon", "Neon"],
+                    ["echo", "Echo"],
+                    ["softblur", "Soft blur"],
+                    ["elastic", "Elastic"],
                   ] as const
                 ).map(
                   ([value, label]) => html`
@@ -735,7 +745,7 @@ function renderPanelContent(
             Preview
           </div>
           <div class="py-1 flex items-center justify-center">
-            <span id="ft-username-badge-preview">
+            <span id="ft-username-badge-preview" data-text="username">
               <span data-ft-marquee-inner>
                 ${state.usernameBadgeTitleNewline
                   ? html`username,<span style="display:block"

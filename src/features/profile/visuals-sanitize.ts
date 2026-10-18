@@ -31,6 +31,10 @@ const BADGE_ANIMATIONS = new Set([
   "conic",
   "typewriter",
   "marquee",
+  "neon",
+  "echo",
+  "softblur",
+  "elastic",
 ]);
 
 /**

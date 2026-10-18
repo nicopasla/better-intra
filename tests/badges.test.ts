@@ -5,8 +5,15 @@ import {
   applyBadgeLayout,
   relocateBadges,
 } from "../src/features/profile/badges";
-import { badgeColorCss } from "../src/features/profile/visuals";
-import { TITLE_BADGE_SELECTOR } from "../src/features/profile/selectors";
+import {
+  badgeColorCss,
+  usernameBadgeStylesheet,
+} from "../src/features/profile/visuals";
+import { sanitizeVisualUrls } from "../src/features/profile/visuals-sanitize";
+import {
+  NAME_BADGE_SELECTOR,
+  TITLE_BADGE_SELECTOR,
+} from "../src/features/profile/selectors";
 
 function badge(title: string): string {
   return `<div class="inline-flex items-center text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-primary hover:bg-primary/80 border-transparent text-primary-foreground flex-shrink-0 mx-1 px-3.5 py-1.5 rounded border shadow-base">${title}</div>`;
@@ -61,6 +68,90 @@ describe("wrapTitleBadges", () => {
         expect(row.style.getPropertyValue("flex-wrap")).toBe("");
       }
     }
+  });
+});
+
+describe("badge animations", () => {
+  const stylesheet = (animation: string) =>
+    usernameBadgeStylesheet(NAME_BADGE_SELECTOR, {
+      animation,
+      bg: "#123456",
+      border: "#abcdef",
+      text: "#fedcba",
+    });
+
+  it("neon glows with the badge accents", () => {
+    const css = stylesheet("neon");
+    expect(css).toContain("--ft-badge-neon-1: #abcdef");
+    expect(css).toContain("--ft-badge-neon-2: #fedcba");
+    expect(css).toContain(
+      "animation: ft-badge-neon 1.5s ease-in-out infinite alternate !important",
+    );
+  });
+
+  it("heartbeat keeps the lub-dub and glows with the badge border", () => {
+    const css = stylesheet("heartbeat");
+    expect(css).toContain("--ft-badge-heartbeat: #abcdef");
+    expect(css).toContain(
+      "animation: ft-badge-heartbeat 1.4s ease-in-out infinite !important",
+    );
+  });
+
+  it("echo paints both ghosts from attr(data-text)", () => {
+    const css = stylesheet("echo");
+    expect(css).toContain("::before {");
+    expect(css).toContain("::after {");
+    expect(css).toContain("content: attr(data-text)");
+    expect(css).toContain("--ft-badge-echo-1: #abcdef");
+    expect(css).toContain("--ft-badge-echo-2: #fedcba");
+    expect(css).toContain("ft-badge-echo 2s ease-out 1s infinite");
+  });
+
+  it("disables the pseudo-element animation under reduced motion", () => {
+    const css = stylesheet("echo");
+    const block = css.slice(css.indexOf("prefers-reduced-motion"));
+    expect(block).toContain("::before");
+    expect(block).toContain("::after");
+  });
+
+  it("adds no pseudo rules for animations that do not use them", () => {
+    const css = stylesheet("glow");
+    expect(css).not.toContain("::before {");
+  });
+
+  it("soft blur glows with the badge accents and breathes", () => {
+    const css = stylesheet("softblur");
+    expect(css).toContain("--ft-badge-softblur-1: #abcdef");
+    expect(css).toContain("--ft-badge-softblur-2: #fedcba");
+    expect(css).toContain("text-shadow: 0 0 0 currentColor");
+    expect(css).toContain(
+      "animation: ft-badge-softblur 3.2s ease-in-out infinite !important",
+    );
+  });
+
+  it("elastic squashes and stretches with the compositor", () => {
+    const css = stylesheet("elastic");
+    expect(css).toContain(
+      "animation: ft-badge-elastic 1.6s ease-in-out infinite !important",
+    );
+    expect(css).toContain("transform-origin: center !important");
+    expect(css).toContain("will-change: transform");
+  });
+
+  it("keeps every new animation through the cloud sanitiser", () => {
+    for (const animation of ["neon", "echo", "softblur", "elastic"]) {
+      const out = sanitizeVisualUrls({
+        usernameBadge: { animation },
+      } as never);
+      expect(out.usernameBadge?.animation).toBe(animation);
+    }
+  });
+
+  it("still drops an unknown animation", () => {
+    const out = sanitizeVisualUrls({
+      usernameBadge: { animation: "not-a-real-effect" },
+    } as never);
+    expect(out.usernameBadge?.animation).toBe("none");
   });
 });
 

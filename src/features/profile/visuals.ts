@@ -592,6 +592,12 @@ export const usernameBadgeStylesheet = (
 
   css += `@media (prefers-reduced-motion: reduce) {\n${selector}, ${selector}::before, ${selector}::after, ${selector} > [${MARQUEE_ATTR}] { animation: none !important; }\n}`;
 
+  // Hovering stops the badge so its text can be selected: transform, filter and
+  // opacity animations otherwise keep the glyphs moving under the cursor and
+  // leave them squashed or hazy. Resetting those three snaps the badge upright
+  // and crisp for as long as the pointer is on it. Touch devices, where hover
+  // is sticky or absent, are left alone.
+  css += `@media (hover: hover) {\n${selector}:hover, ${selector}:hover::before, ${selector}:hover::after, ${selector}:hover > [${MARQUEE_ATTR}] { animation-play-state: paused !important; }\n${selector}:hover { transform: none !important; filter: none !important; opacity: 1 !important; }\n}`;
   return css;
 };
 

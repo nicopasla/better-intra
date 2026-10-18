@@ -138,6 +138,18 @@ describe("badge animations", () => {
     expect(css).toContain("will-change: transform");
   });
 
+  it("pauses and flattens the badge on hover so text can be selected", () => {
+    const css = stylesheet("elastic");
+    const block = css.slice(css.indexOf("(hover: hover)"));
+    expect(block).toContain("animation-play-state: paused !important");
+    expect(block).toContain("::before");
+    expect(block).toContain("::after");
+    expect(block).toContain(`> [data-ft-marquee-inner]`);
+    expect(block).toContain("transform: none !important");
+    expect(block).toContain("filter: none !important");
+    expect(block).toContain("opacity: 1 !important");
+  });
+
   it("keeps every new animation through the cloud sanitiser", () => {
     for (const animation of ["neon", "echo", "softblur", "elastic"]) {
       const out = sanitizeVisualUrls({

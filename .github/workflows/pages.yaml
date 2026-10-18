@@ -1,0 +1,69 @@
+name: Pages
+
+# The site sources are mirrored to the "pages" branch, which is what Pages
+# serves. GitHub's own Jekyll build then rebuilds only when that branch moves,
+# so ordinary commits to main no longer trigger a Pages deployment. The build
+# itself stays GitHub's, so the plugins used here must remain on the Pages
+# allowlist (see _config.yml).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "README.md"
+      - "CHANGELOG.md"
+      - "PRIVACY.md"
+      - "DEVELOPMENT.md"
+      - "_config.yml"
+      - "_layouts/**"
+      - "images/**"
+      - "CNAME"
+      - "LICENSE"
+      - "robots.txt"
+      - "favicon.svg"
+      - "favicon-32x32.png"
+      - "apple-touch-icon.png"
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Allow only one concurrent sync, skipping runs queued between the run
+# in-progress and latest queued, but do NOT cancel an in-progress run.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Publish site sources to the pages branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pages
+          cp -R \
+            _config.yml _layouts \
+            README.md PRIVACY.md DEVELOPMENT.md CHANGELOG.md \
+            CNAME LICENSE robots.txt \
+            favicon.svg favicon-32x32.png apple-touch-icon.png \
+            images \
+            /tmp/pages/
+          cd /tmp/pages
+          # A fresh branch each time: generated history would otherwise grow
+          # with every publish, and an identical tree still produces a new
+          # commit, which is what makes the release trigger rebuild the site.
+          git init -q -b pages
+          git add -A
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -qm "site: publish from ${GITHUB_SHA}"
+          git push -f -q \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            pages

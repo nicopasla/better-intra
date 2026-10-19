@@ -19,6 +19,7 @@ const BADGE_ANIMATIONS = new Set([
   "pulse",
   "rainbow",
   "shimmer",
+  "shimmer-reverse",
   "float",
   "wobble",
   "bounce",

@@ -153,7 +153,13 @@ describe("badge animations", () => {
   });
 
   it("keeps every new animation through the cloud sanitiser", () => {
-    for (const animation of ["neon", "echo", "softblur", "elastic"]) {
+    for (const animation of [
+      "neon",
+      "echo",
+      "softblur",
+      "elastic",
+      "shimmer-reverse",
+    ]) {
       const out = sanitizeVisualUrls({
         usernameBadge: { animation },
       } as never);

@@ -127,6 +127,7 @@ export interface BetterIntraConfig {
     | "pulse"
     | "rainbow"
     | "shimmer"
+    | "shimmer-reverse"
     | "float"
     | "wobble"
     | "bounce"

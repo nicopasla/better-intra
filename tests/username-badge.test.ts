@@ -75,14 +75,27 @@ describe("usernameBadgeCss", () => {
     expect(usernameBadgeCss({ animation: "shimmer" })).toContain(
       "animation: ft-badge-shimmer 2.2s linear infinite !important",
     );
+    expect(usernameBadgeCss({ animation: "shimmer-reverse" })).toContain(
+      "animation: ft-badge-shimmer-reverse 2.2s linear infinite !important",
+    );
     expect(usernameBadgeCss({ animation: "none" })).not.toContain("animation:");
   });
 
   it("applies padding (vertical, then double horizontally)", () => {
     expect(usernameBadgeCss({})).toContain("padding: 4px 8px !important");
-    expect(usernameBadgeCss({ padding: 10 })).toContain(
-      "padding: 10px 20px !important",
+    expect(usernameBadgeCss({ padding: 6 })).toContain(
+      "padding: 6px 12px !important",
     );
+  });
+
+  it("clamps padding and border width to 0–8", () => {
+    const over = usernameBadgeCss({ padding: 99, borderWidth: 99 });
+    expect(over).toContain("padding: 8px 16px !important");
+    expect(over).toContain("border: 8px solid");
+
+    const under = usernameBadgeCss({ padding: -5, borderWidth: -2 });
+    expect(under).toContain("padding: 0px 0px !important");
+    expect(under).toContain("border: 0px solid");
   });
 
   it("positions the badge independently from the name", () => {
@@ -96,7 +109,7 @@ describe("usernameBadgeCss", () => {
 
     const right = usernameBadgeCss({ align: "right" });
     expect(right).toContain("margin-left: auto !important");
-    expect(right).toContain("margin-right: 0 !important");
+    expect(right).toContain("margin-right: 0.5rem !important");
   });
 
   it("emits a ::after rule only for pseudo-element animations", () => {

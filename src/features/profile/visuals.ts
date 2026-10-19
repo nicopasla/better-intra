@@ -281,6 +281,11 @@ interface BadgeColors {
   pad: number;
 }
 
+const clampBadgeSize = (value: number | undefined, fallback: number): number =>
+  typeof value === "number" && Number.isFinite(value)
+    ? Math.min(8, Math.max(0, value))
+    : fallback;
+
 function badgeColors(badge: VisualUrls["usernameBadge"]): BadgeColors {
   const radius =
     BADGE_RADIUS[badge?.shape || "rounded"] || BADGE_RADIUS.rounded;
@@ -291,7 +296,7 @@ function badgeColors(badge: VisualUrls["usernameBadge"]): BadgeColors {
     bg,
     text,
     border: badge?.border || bg,
-    pad: badge?.padding ?? 4,
+    pad: clampBadgeSize(badge?.padding, 4),
   };
 }
 
@@ -340,6 +345,14 @@ function badgeAnimationCss(
         "background-size: 250% 100% !important",
         "background-repeat: no-repeat !important",
         "animation: ft-badge-shimmer 2.2s linear infinite !important",
+      );
+      break;
+    case "shimmer-reverse":
+      element.push(
+        "background-image: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.5) 50%, transparent 70%) !important",
+        "background-size: 250% 100% !important",
+        "background-repeat: no-repeat !important",
+        "animation: ft-badge-shimmer-reverse 2.2s linear infinite !important",
       );
       break;
     case "float":
@@ -530,7 +543,7 @@ export const usernameBadgeCss = (
     "display: flex !important",
     "flex-shrink: 0 !important",
     `margin-left: ${align === "left" ? "0" : "auto"} !important`,
-    `margin-right: ${align === "right" ? "0" : "auto"} !important`,
+    `margin-right: ${align === "right" ? "0.5rem" : "auto"} !important`,
     newline
       ? "flex-direction: column !important"
       : "align-items: center !important",
@@ -542,7 +555,7 @@ export const usernameBadgeCss = (
     `border-radius: ${c.radius} !important`,
     `background-color: ${c.bg} !important`,
     `color: ${c.text} !important`,
-    `border: ${b.borderWidth ?? 1}px solid ${c.border} !important`,
+    `border: ${clampBadgeSize(b.borderWidth, 1)}px solid ${c.border} !important`,
     ...badgeAnimationCss(b, c).element,
   ];
   return lines.filter(Boolean).join("; ") + ";";
@@ -631,6 +644,10 @@ export const BADGE_KEYFRAMES = `
 @keyframes ft-badge-shimmer {
   0% { background-position: -150% 0; }
   100% { background-position: 250% 0; }
+}
+@keyframes ft-badge-shimmer-reverse {
+  0% { background-position: 250% 0; }
+  100% { background-position: -150% 0; }
 }
 @keyframes ft-badge-float {
   0%, 100% { transform: translateY(0); }
@@ -1184,6 +1201,10 @@ export const applyImgs = (rawUrls: VisualUrls | null) => {
   document.documentElement.style.setProperty(
     "--ft-name-text-align",
     nameAlign,
+  );
+  document.documentElement.style.setProperty(
+    "--ft-name-pad-right",
+    nameAlign === "right" ? "0.5rem" : "0px",
   );
 
   const usernameBadge = urls.usernameBadge ?? {};

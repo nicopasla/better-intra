@@ -65,6 +65,7 @@ interface FormState {
     | "pulse"
     | "rainbow"
     | "shimmer"
+    | "shimmer-reverse"
     | "float"
     | "wobble"
     | "bounce"
@@ -92,6 +93,48 @@ type ProfileTab = "avatar" | "banner" | "background" | "badges" | "username";
 
 let activeTab: ProfileTab = "avatar";
 let badgeSortable: { destroy: () => void } | null = null;
+
+const clampBadgeNumber = (value: string | number): number => {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return 0;
+  return Math.min(8, Math.max(0, num));
+};
+
+function renderNumberStepper(
+  value: number,
+  onChange: (value: number) => void,
+) {
+  return html`
+    <div class="join w-full">
+      <button
+        type="button"
+        class="btn join-item btn-lg px-4 text-xl font-bold"
+        aria-label="Decrease"
+        @click="${() => onChange(clampBadgeNumber(value - 1))}"
+      >
+        −
+      </button>
+      <input
+        type="number"
+        min="0"
+        max="8"
+        step="1"
+        class="input input-lg join-item ft-number-input w-full text-center"
+        .value="${String(value)}"
+        @input="${(e: Event) =>
+          onChange(clampBadgeNumber((e.target as HTMLInputElement).value))}"
+      />
+      <button
+        type="button"
+        class="btn join-item btn-lg px-4 text-xl font-bold"
+        aria-label="Increase"
+        @click="${() => onChange(clampBadgeNumber(value + 1))}"
+      >
+        +
+      </button>
+    </div>
+  `;
+}
 
 function addToHistory(url: string, history: string[]): string[] {
   if (!url) return history;
@@ -630,37 +673,17 @@ function renderPanelContent(
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label class="form-control">
                 <span class="text-sm opacity-70 pb-1">Border width</span>
-                <input
-                  type="number"
-                  min="0"
-                  max="8"
-                  step="1"
-                  class="input w-full"
-                  .value="${String(state.usernameBadgeBorderWidth)}"
-                  @input="${(e: Event) =>
-                    onFormUpdate({
-                      usernameBadgeBorderWidth: Number(
-                        (e.target as HTMLInputElement).value,
-                      ),
-                    })}"
-                />
+                ${renderNumberStepper(
+                  state.usernameBadgeBorderWidth,
+                  (value) =>
+                    onFormUpdate({ usernameBadgeBorderWidth: value }),
+                )}
               </label>
               <label class="form-control">
                 <span class="text-sm opacity-70 pb-1">Padding</span>
-                <input
-                  type="number"
-                  min="0"
-                  max="8"
-                  step="1"
-                  class="input w-full"
-                  .value="${String(state.usernameBadgePadding)}"
-                  @input="${(e: Event) =>
-                    onFormUpdate({
-                      usernameBadgePadding: Number(
-                        (e.target as HTMLInputElement).value,
-                      ),
-                    })}"
-                />
+                ${renderNumberStepper(state.usernameBadgePadding, (value) =>
+                  onFormUpdate({ usernameBadgePadding: value }),
+                )}
               </label>
               <label class="form-control sm:col-span-2">
                 <span class="text-sm opacity-70 pb-1">Corners</span>
@@ -813,7 +836,8 @@ function renderPanelContent(
                       ["glow", "Glow"],
                       ["pulse", "Pulse"],
                       ["rainbow", "Rainbow"],
-                      ["shimmer", "Shimmer"],
+                      ["shimmer", "Shimmer (right to left)"],
+                      ["shimmer-reverse", "Shimmer (left to right)"],
                       ["float", "Float"],
                       ["wobble", "Wobble"],
                       ["bounce", "Bounce"],
@@ -1029,6 +1053,15 @@ function renderPanelContent(
         "#ft-username-badge-preview",
         usernameBadgePreviewBadge(state),
       )}
+      .ft-number-input {
+        appearance: textfield;
+        -moz-appearance: textfield;
+      }
+      .ft-number-input::-webkit-outer-spin-button,
+      .ft-number-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
     </style>
     <div
       data-theme="${currentTheme}"

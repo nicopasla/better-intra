@@ -588,6 +588,7 @@ function injectProfileCardStyles() {
       align-self: stretch !important;
       flex-shrink: 0 !important;
       width: 100% !important;
+      padding-right: var(--ft-name-pad-right, 0) !important;
       text-align: var(--ft-name-text-align, left) !important;
       text-shadow: 0 1px 5px rgba(0,0,0,0.5);
     }

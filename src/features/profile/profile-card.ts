@@ -585,7 +585,10 @@ function injectProfileCardStyles() {
 
     /* --- User Name --- */
     .ft-profile-card h2.text-2xl {
-      text-align: center !important;
+      align-self: stretch !important;
+      flex-shrink: 0 !important;
+      width: 100% !important;
+      text-align: var(--ft-name-text-align, left) !important;
       text-shadow: 0 1px 5px rgba(0,0,0,0.5);
     }
 
@@ -650,7 +653,7 @@ function injectProfileCardStyles() {
        but the box shows one line plus half of the next (as a scroll hint) and
        scrolls vertically, so it never pushes the level bar down. */
     .ft-profile-card [data-ft-badges-row] {
-      padding-left: 1rem !important;
+      padding-left: var(--ft-badges-indent, 1rem) !important;
       padding-right: 1rem !important;
       margin-bottom: 0.25rem !important;
       flex-wrap: wrap !important;

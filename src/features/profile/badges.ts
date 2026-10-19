@@ -1,6 +1,6 @@
 import { getConfig } from "../../config.ts";
 import { loadCampusData } from "../campus/campus.ts";
-import { TITLE_BADGE_SELECTOR } from "./selectors.ts";
+import { NAME_BADGE_SELECTOR, TITLE_BADGE_SELECTOR } from "./selectors.ts";
 
 interface CampusBadgeData {
   badgeBaseUrl: string;
@@ -124,6 +124,7 @@ function observeBadgesWidth(row: HTMLElement): void {
     if (Math.abs(width - lastRowWidth) < 2) return;
     lastRowWidth = width;
     syncBadgesDensity(target);
+    applyBadgeIndent(target);
   });
   rowResizeObserver.disconnect();
   rowResizeObserver.observe(row);
@@ -167,6 +168,58 @@ export function relocateBadges(root: ParentNode = document): void {
   }
 
   trackBadgesRow(row);
+  applyBadgeIndent(row);
+}
+
+const BADGE_INDENT_VAR = "--ft-badges-indent";
+const DESKTOP_QUERY = "(min-width: 1024px)";
+let badgeAfterAvatar = false;
+
+/** Distance from the row's left edge to the info column, clamped so the
+ *  badges never touch the avatar. */
+export function badgeIndentPx(infoLeft: number, rowLeft: number): number {
+  return Math.max(16, Math.round(infoLeft - rowLeft));
+}
+
+/**
+ * Starts the badge row at the avatar's right edge (the info column's left
+ * edge) while keeping it on its own line. Stacked/mobile layouts keep the
+ * normal card-edge padding.
+ */
+export function applyBadgeIndent(
+  row: HTMLElement,
+  afterAvatar = badgeAfterAvatar,
+): void {
+  const desktop =
+    typeof window === "undefined" ||
+    typeof window.matchMedia !== "function" ||
+    window.matchMedia(DESKTOP_QUERY).matches;
+  if (!afterAvatar || !desktop) {
+    row.style.removeProperty(BADGE_INDENT_VAR);
+    return;
+  }
+
+  const info = document.querySelector<HTMLElement>(
+    NAME_BADGE_SELECTOR,
+  )?.parentElement;
+  if (!info) {
+    row.style.removeProperty(BADGE_INDENT_VAR);
+    return;
+  }
+
+  const rowRect = row.getBoundingClientRect();
+  const infoRect = info.getBoundingClientRect();
+  // No measurable offset: stacked layout, or the info column already starts
+  // at the row's left edge.
+  if (!rowRect.width || infoRect.left <= rowRect.left + 1) {
+    row.style.removeProperty(BADGE_INDENT_VAR);
+    return;
+  }
+
+  row.style.setProperty(
+    BADGE_INDENT_VAR,
+    `${badgeIndentPx(infoRect.left, rowRect.left)}px`,
+  );
 }
 
 let relocationObserver: MutationObserver | null = null;
@@ -194,12 +247,23 @@ export function initBadgeRelocation(): void {
     childList: true,
     subtree: true,
   });
+  window.addEventListener(
+    "resize",
+    () => {
+      const row = document.querySelector<HTMLElement>(
+        "[data-ft-badges-row]",
+      );
+      if (row) applyBadgeIndent(row);
+    },
+    { passive: true },
+  );
 }
 
 export interface BadgeLayoutOpts {
   order: string[];
   wrap: boolean;
   align: "left" | "center" | "right";
+  afterAvatar?: boolean;
 }
 
 export function applyBadgeLayout(
@@ -211,6 +275,9 @@ export function applyBadgeLayout(
 
   const container = badges[0].el.parentElement;
   if (!container) return;
+
+  badgeAfterAvatar = opts.afterAvatar === true;
+  applyBadgeIndent(container);
 
   const hiddenSet = new Set(
     opts.order
@@ -294,13 +361,15 @@ export function applyTitleBadgeWrap() {
     const order = (await getConfig("PROFILE_BADGE_ORDER")) as string[];
     const wrap = await getConfig("PROFILE_BADGE_WRAP");
     const align = await getConfig("PROFILE_BADGE_ALIGN");
-    const key = `${JSON.stringify(order || [])}|${wrap}|${align}`;
+    const afterAvatar = await getConfig("PROFILE_BADGE_AFTER_AVATAR");
+    const key = `${JSON.stringify(order || [])}|${wrap}|${align}|${afterAvatar}`;
     if (key === lastAppliedKey) return;
     lastAppliedKey = key;
     applyBadgeLayout(document, {
       order: order || [],
       wrap,
       align,
+      afterAvatar,
     });
   })();
 }
@@ -312,7 +381,8 @@ chrome.storage.onChanged?.addListener((changes, area) => {
   if (
     changes.PROFILE_BADGE_ORDER ||
     changes.PROFILE_BADGE_WRAP ||
-    changes.PROFILE_BADGE_ALIGN
+    changes.PROFILE_BADGE_ALIGN ||
+    changes.PROFILE_BADGE_AFTER_AVATAR
   ) {
     refreshBadgeLayout();
   }

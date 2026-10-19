@@ -131,6 +131,7 @@ describe("sanitizeVisualUrls", () => {
       avatarPosY: 60,
       avatarScale: 120,
       badgeBg: "#abcdef",
+      nameAlign: "right",
       usernameBadge: {
         bg: "#00bcba",
         text: "#ffffff",
@@ -140,6 +141,7 @@ describe("sanitizeVisualUrls", () => {
         titleNewline: true,
         animation: "pulse",
         padding: 6,
+        align: "left",
       },
       theme: { profileColor: "#00bcba" },
       look: { preset: "dracula", theme: "dark" },
@@ -178,7 +180,7 @@ describe("sanitizeVisualUrls", () => {
       expect(sanitizeVisualUrls(base).usernameBadge).toBeNull();
     });
 
-    it("keeps valid colors, width and shape", () => {
+    it("keeps valid colors, width, shape and alignment", () => {
       const out = sanitizeVisualUrls({
         ...base,
         usernameBadge: {
@@ -190,6 +192,7 @@ describe("sanitizeVisualUrls", () => {
           titleNewline: true,
           animation: "glow",
           padding: 7,
+          align: "left",
         },
       }).usernameBadge;
       expect(out).toEqual({
@@ -201,7 +204,30 @@ describe("sanitizeVisualUrls", () => {
         titleNewline: true,
         animation: "glow",
         padding: 7,
+        align: "left",
       });
+    });
+
+    it("falls back to left for unknown alignments", () => {
+      const badge = sanitizeVisualUrls({
+        ...base,
+        nameAlign: "upside-down",
+        usernameBadge: { align: "wat" },
+      });
+      expect(badge.nameAlign).toBe("left");
+      expect(badge.usernameBadge?.align).toBe("left");
+    });
+
+    it("keeps the valid name and username alignments", () => {
+      for (const align of ["left", "center", "right"] as const) {
+        const out = sanitizeVisualUrls({
+          ...base,
+          nameAlign: align,
+          usernameBadge: { align },
+        });
+        expect(out.nameAlign).toBe(align);
+        expect(out.usernameBadge?.align).toBe(align);
+      }
     });
 
     it("falls back to none for unknown animations", () => {

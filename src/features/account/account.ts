@@ -301,6 +301,7 @@ export async function syncMyVisuals(visuals: {
   avatarPosY?: number;
   avatarScale?: number;
   badgeBg?: string;
+  nameAlign?: string;
   usernameBadge?: {
     bg?: string;
     text?: string;
@@ -310,6 +311,7 @@ export async function syncMyVisuals(visuals: {
     titleNewline?: boolean;
     animation?: string;
     padding?: number;
+    align?: string;
   } | null;
 }): Promise<void> {
   const login = await getCloudLogin();
@@ -341,6 +343,9 @@ export async function syncMyVisuals(visuals: {
             PROFILE_AVATAR_POSITION_Y: visuals.avatarPosY ?? 50,
             PROFILE_AVATAR_SCALE: visuals.avatarScale ?? 100,
             PROFILE_BADGE_BG: visuals.badgeBg || "",
+            PROFILE_NAME_ALIGN: visuals.nameAlign || "center",
+            PROFILE_USERNAME_BADGE_ALIGN:
+              visuals.usernameBadge?.align || "center",
             PROFILE_USERNAME_BADGE_BG: visuals.usernameBadge?.bg || "",
             PROFILE_USERNAME_BADGE_TEXT: visuals.usernameBadge?.text || "",
             PROFILE_USERNAME_BADGE_BORDER: visuals.usernameBadge?.border || "",
@@ -450,6 +455,7 @@ export async function fetchUserVisuals(
       avatarPosY: Number(data.avatarPosY ?? 50),
       avatarScale: Number(data.avatarScale ?? 100),
       badgeBg: String(data.badgeBg || ""),
+      nameAlign: String(data.nameAlign || "center"),
       usernameBadge: (data.usernameBadge as Record<string, unknown>) || null,
       theme: (data.theme as { profileColor?: string }) || null,
       look: (data.look as { preset?: string; theme?: string }) || null,

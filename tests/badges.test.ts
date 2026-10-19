@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   wrapTitleBadges,
   getTitleBadges,
   applyBadgeLayout,
+  applyBadgeIndent,
+  badgeIndentPx,
   relocateBadges,
 } from "../src/features/profile/badges";
 import {
@@ -331,5 +333,52 @@ describe("relocateBadges", () => {
     const row = document.querySelector<HTMLElement>(".overflow-x-auto")!;
     expect(row.hasAttribute("data-ft-badges-row")).toBe(false);
     expect(row.nextElementSibling).toBeNull();
+  });
+});
+
+describe("badge row start", () => {
+  const rect = (left: number, width: number): DOMRect =>
+    ({ left, width, right: left + width }) as DOMRect;
+
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <div class="ft-profile-card">
+        <div class="flex flex-col justify-center gap-4">
+          <h2 class="text-2xl font-bold">Ada Lovelace</h2>
+          <p class="text-sm">alovelace</p>
+        </div>
+        <div class="py-2 flex gap-2 w-full overflow-x-auto" data-ft-badges-row>
+          ${badge("TUTOR")}
+        </div>
+      </div>`;
+  });
+
+  it("clamps the indent so the badges never touch the avatar", () => {
+    expect(badgeIndentPx(300, 20)).toBe(280);
+    expect(badgeIndentPx(20, 20)).toBe(16);
+    expect(badgeIndentPx(10, 20)).toBe(16);
+  });
+
+  it("removes the indent when the option is off", () => {
+    const row = document.querySelector<HTMLElement>("[data-ft-badges-row]")!;
+    row.style.setProperty("--ft-badges-indent", "240px");
+
+    applyBadgeIndent(row, false);
+    expect(row.style.getPropertyValue("--ft-badges-indent")).toBe("");
+  });
+
+  it("starts the row at the info column on desktop", () => {
+    vi.stubGlobal("matchMedia", () => ({ matches: true }));
+
+    const row = document.querySelector<HTMLElement>("[data-ft-badges-row]")!;
+    const info =
+      document.querySelector<HTMLElement>(NAME_BADGE_SELECTOR)!.parentElement!;
+    row.getBoundingClientRect = () => rect(20, 800);
+    info.getBoundingClientRect = () => rect(300, 600);
+
+    applyBadgeIndent(row, true);
+    expect(row.style.getPropertyValue("--ft-badges-indent")).toBe("280px");
+
+    vi.unstubAllGlobals();
   });
 });

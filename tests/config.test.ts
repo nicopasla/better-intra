@@ -90,6 +90,9 @@ describe("CLOUD_SYNC_KEYS", () => {
     expect(CLOUD_SYNC_KEYS).toContain("PROFILE_CARD_ORDER");
     expect(CLOUD_SYNC_KEYS).toContain("PROFILE_BADGE_ORDER");
     expect(CLOUD_SYNC_KEYS).toContain("PROFILE_BADGE_WRAP");
+    expect(CLOUD_SYNC_KEYS).toContain("PROFILE_BADGE_AFTER_AVATAR");
+    expect(CLOUD_SYNC_KEYS).toContain("PROFILE_NAME_ALIGN");
+    expect(CLOUD_SYNC_KEYS).toContain("PROFILE_USERNAME_BADGE_ALIGN");
   });
 
   it("includes the font scale setting", () => {

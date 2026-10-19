@@ -50,6 +50,9 @@ interface FormState {
   badgeOrder: string[];
   badgeWrap: boolean;
   badgeAlign: "left" | "center" | "right";
+  badgeAfterAvatar: boolean;
+  nameAlign: "left" | "center" | "right";
+  usernameBadgeAlign: "left" | "center" | "right";
   usernameBadgeBg: string;
   usernameBadgeText: string;
   usernameBadgeBorder: string;
@@ -227,6 +230,7 @@ function usernameBadgePreviewBadge(
     titleNewline: state.usernameBadgeTitleNewline,
     animation: state.usernameBadgeAnimation,
     padding: state.usernameBadgePadding,
+    align: state.usernameBadgeAlign,
   };
 }
 
@@ -536,6 +540,27 @@ function renderPanelContent(
 
   const usernamePanel = () => html`
     <div class="flex flex-col gap-3">
+      <div class="flex justify-end">
+        <button
+          type="button"
+          class="btn btn-outline btn-error btn-sm"
+          @click="${() =>
+            onFormUpdate({
+              usernameBadgeBg: "",
+              usernameBadgeText: "",
+              usernameBadgeBorder: "",
+              usernameBadgeBorderWidth: 1,
+              usernameBadgeShape: "rounded",
+              usernameBadgeTitleNewline: true,
+              usernameBadgeAnimation: "none",
+              usernameBadgePadding: 4,
+              usernameBadgeAlign: "left",
+              nameAlign: "left",
+            })}"
+        >
+          Reset defaults
+        </button>
+      </div>
       <div
         class="grid grid-cols-1 lg:grid-cols-[1fr_18rem] gap-3 items-stretch"
       >
@@ -607,6 +632,75 @@ function renderPanelContent(
                   })}"
               />
             </label>
+            <div class="flex flex-col gap-3">
+              <label class="form-control">
+                <span class="text-sm opacity-70 pb-1">Name alignment</span>
+                <div class="join w-full">
+                  <input
+                    type="radio"
+                    name="PROFILE_NAME_ALIGN"
+                    class="btn join-item flex-1"
+                    aria-label="Left"
+                    value="left"
+                    ?checked="${state.nameAlign === "left"}"
+                    @change="${() => onFormUpdate({ nameAlign: "left" })}"
+                  />
+                  <input
+                    type="radio"
+                    name="PROFILE_NAME_ALIGN"
+                    class="btn join-item flex-1"
+                    aria-label="Center"
+                    value="center"
+                    ?checked="${state.nameAlign === "center"}"
+                    @change="${() => onFormUpdate({ nameAlign: "center" })}"
+                  />
+                  <input
+                    type="radio"
+                    name="PROFILE_NAME_ALIGN"
+                    class="btn join-item flex-1"
+                    aria-label="Right"
+                    value="right"
+                    ?checked="${state.nameAlign === "right"}"
+                    @change="${() => onFormUpdate({ nameAlign: "right" })}"
+                  />
+                </div>
+              </label>
+              <label class="form-control">
+                <span class="text-sm opacity-70 pb-1">Username alignment</span>
+                <div class="join w-full">
+                  <input
+                    type="radio"
+                    name="PROFILE_USERNAME_BADGE_ALIGN"
+                    class="btn join-item flex-1"
+                    aria-label="Left"
+                    value="left"
+                    ?checked="${state.usernameBadgeAlign === "left"}"
+                    @change="${() =>
+                      onFormUpdate({ usernameBadgeAlign: "left" })}"
+                  />
+                  <input
+                    type="radio"
+                    name="PROFILE_USERNAME_BADGE_ALIGN"
+                    class="btn join-item flex-1"
+                    aria-label="Center"
+                    value="center"
+                    ?checked="${state.usernameBadgeAlign === "center"}"
+                    @change="${() =>
+                      onFormUpdate({ usernameBadgeAlign: "center" })}"
+                  />
+                  <input
+                    type="radio"
+                    name="PROFILE_USERNAME_BADGE_ALIGN"
+                    class="btn join-item flex-1"
+                    aria-label="Right"
+                    value="right"
+                    ?checked="${state.usernameBadgeAlign === "right"}"
+                    @change="${() =>
+                      onFormUpdate({ usernameBadgeAlign: "right" })}"
+                  />
+                </div>
+              </label>
+            </div>
             <label class="form-control">
               <span class="text-sm opacity-70 pb-1">Animation</span>
               <select
@@ -851,6 +945,20 @@ function renderPanelContent(
               @change="${() => onFormUpdate({ badgeAlign: "right" })}"
             />
           </div>
+          <label
+            class="flex items-center justify-between gap-2 cursor-pointer mt-3"
+          >
+            <span class="text-xs opacity-70">Start after avatar</span>
+            <input
+              type="checkbox"
+              class="toggle toggle-sm shrink-0"
+              .checked="${state.badgeAfterAvatar}"
+              @change="${(e: Event) =>
+                onFormUpdate({
+                  badgeAfterAvatar: (e.target as HTMLInputElement).checked,
+                })}"
+            />
+          </label>
         </div>
       </div>
 
@@ -1114,6 +1222,9 @@ export const createSettingsModal = async (
     badgeOrder: await getConfig("PROFILE_BADGE_ORDER"),
     badgeWrap: await getConfig("PROFILE_BADGE_WRAP"),
     badgeAlign: await getConfig("PROFILE_BADGE_ALIGN"),
+    badgeAfterAvatar: await getConfig("PROFILE_BADGE_AFTER_AVATAR"),
+    nameAlign: await getConfig("PROFILE_NAME_ALIGN"),
+    usernameBadgeAlign: await getConfig("PROFILE_USERNAME_BADGE_ALIGN"),
     usernameBadgeBg: await getConfig("PROFILE_USERNAME_BADGE_BG"),
     usernameBadgeText: await getConfig("PROFILE_USERNAME_BADGE_TEXT"),
     usernameBadgeBorder: await getConfig("PROFILE_USERNAME_BADGE_BORDER"),
@@ -1172,6 +1283,9 @@ export const createSettingsModal = async (
       "PROFILE_BADGE_ORDER",
       "PROFILE_BADGE_WRAP",
       "PROFILE_BADGE_ALIGN",
+      "PROFILE_BADGE_AFTER_AVATAR",
+      "PROFILE_NAME_ALIGN",
+      "PROFILE_USERNAME_BADGE_ALIGN",
       "PROFILE_USERNAME_BADGE_BG",
       "PROFILE_USERNAME_BADGE_TEXT",
       "PROFILE_USERNAME_BADGE_BORDER",
@@ -1389,6 +1503,9 @@ export const createSettingsModal = async (
         batchData["PROFILE_BADGE_ORDER"] = state.badgeOrder;
         batchData["PROFILE_BADGE_WRAP"] = state.badgeWrap;
         batchData["PROFILE_BADGE_ALIGN"] = state.badgeAlign;
+        batchData["PROFILE_BADGE_AFTER_AVATAR"] = state.badgeAfterAvatar;
+        batchData["PROFILE_NAME_ALIGN"] = state.nameAlign;
+        batchData["PROFILE_USERNAME_BADGE_ALIGN"] = state.usernameBadgeAlign;
 
         if (!state.usernameBadgeBg) {
           keysToRemove.push("PROFILE_USERNAME_BADGE_BG");
@@ -1447,6 +1564,7 @@ export const createSettingsModal = async (
           avatarPosY: state.avatarPosY,
           avatarScale: state.avatarScale,
           badgeBg: state.badgeBg || "",
+          nameAlign: state.nameAlign,
           usernameBadge: {
             bg: state.usernameBadgeBg,
             text: state.usernameBadgeText,
@@ -1456,6 +1574,7 @@ export const createSettingsModal = async (
             titleNewline: state.usernameBadgeTitleNewline,
             animation: state.usernameBadgeAnimation,
             padding: state.usernameBadgePadding,
+            align: state.usernameBadgeAlign,
           },
         };
 
@@ -1483,6 +1602,7 @@ function liveApplyBannerBg(state: FormState) {
     avatarBg: state.avatarBg,
     decoration: state.decoration,
     badgeBg: state.badgeBg,
+    nameAlign: state.nameAlign,
     usernameBadge: {
       bg: state.usernameBadgeBg,
       text: state.usernameBadgeText,
@@ -1492,12 +1612,14 @@ function liveApplyBannerBg(state: FormState) {
       titleNewline: state.usernameBadgeTitleNewline,
       animation: state.usernameBadgeAnimation,
       padding: state.usernameBadgePadding,
+      align: state.usernameBadgeAlign,
     },
   });
   applyBadgeLayout(document, {
     order: state.badgeOrder,
     wrap: state.badgeWrap,
     align: state.badgeAlign,
+    afterAvatar: state.badgeAfterAvatar,
   });
 }
 

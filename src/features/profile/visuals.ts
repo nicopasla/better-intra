@@ -25,6 +25,7 @@ export interface VisualUrls {
   avatarPosY?: number;
   avatarScale?: number;
   badgeBg?: string;
+  nameAlign?: string;
   usernameBadge?: {
     bg?: string;
     text?: string;
@@ -34,6 +35,7 @@ export interface VisualUrls {
     titleNewline?: boolean;
     animation?: string;
     padding?: number;
+    align?: string;
   } | null;
   theme?: { profileColor?: string } | null;
   look?: { preset?: string; theme?: string } | null;
@@ -137,6 +139,7 @@ const getVisualKey = (urls: VisualUrls) =>
     avatarPosY: urls.avatarPosY ?? 50,
     avatarScale: urls.avatarScale ?? 100,
     badgeBg: urls.badgeBg || "",
+    nameAlign: urls.nameAlign || "left",
     usernameBadge: urls.usernameBadge || null,
     theme: urls.theme || null,
     look: urls.look || null,
@@ -522,10 +525,12 @@ export const usernameBadgeCss = (
   const c = badgeColors(badge);
   const b = badge ?? {};
   const newline = b.titleNewline !== false;
+  const align = b.align === "center" || b.align === "right" ? b.align : "left";
   const lines = [
     "display: flex !important",
-    "margin-left: auto !important",
-    "margin-right: auto !important",
+    "flex-shrink: 0 !important",
+    `margin-left: ${align === "left" ? "0" : "auto"} !important`,
+    `margin-right: ${align === "right" ? "0" : "auto"} !important`,
     newline
       ? "flex-direction: column !important"
       : "align-items: center !important",
@@ -1171,6 +1176,16 @@ export const applyImgs = (rawUrls: VisualUrls | null) => {
     badgeColorCss(urls.badgeBg),
   );
 
+  // Name alignment is independent from the username badge's own alignment.
+  const nameAlign =
+    urls.nameAlign === "center" || urls.nameAlign === "right"
+      ? urls.nameAlign
+      : "left";
+  document.documentElement.style.setProperty(
+    "--ft-name-text-align",
+    nameAlign,
+  );
+
   const usernameBadge = urls.usernameBadge ?? {};
   setStylesheet(
     "ft-name-badge-style",
@@ -1355,6 +1370,8 @@ const runUpdateVisuals = async () => {
         "PROFILE_AVATAR_POSITION_Y",
         "PROFILE_AVATAR_SCALE",
         "PROFILE_BADGE_BG",
+        "PROFILE_NAME_ALIGN",
+        "PROFILE_USERNAME_BADGE_ALIGN",
         "PROFILE_USERNAME_BADGE_BG",
         "PROFILE_USERNAME_BADGE_TEXT",
         "PROFILE_USERNAME_BADGE_BORDER",
@@ -1378,6 +1395,7 @@ const runUpdateVisuals = async () => {
         avatarPosY: c.PROFILE_AVATAR_POSITION_Y,
         avatarScale: c.PROFILE_AVATAR_SCALE,
         badgeBg: c.PROFILE_BADGE_BG,
+        nameAlign: c.PROFILE_NAME_ALIGN,
         usernameBadge: {
           bg: c.PROFILE_USERNAME_BADGE_BG,
           text: c.PROFILE_USERNAME_BADGE_TEXT,
@@ -1387,6 +1405,7 @@ const runUpdateVisuals = async () => {
           titleNewline: c.PROFILE_USERNAME_BADGE_TITLE_NEWLINE,
           animation: c.PROFILE_USERNAME_BADGE_ANIMATION,
           padding: c.PROFILE_USERNAME_BADGE_PADDING,
+          align: c.PROFILE_USERNAME_BADGE_ALIGN,
         },
       };
       // sanitise at ingestion so that needsReapply()/getVisualKey() compare

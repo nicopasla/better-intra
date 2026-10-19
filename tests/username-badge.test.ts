@@ -85,6 +85,20 @@ describe("usernameBadgeCss", () => {
     );
   });
 
+  it("positions the badge independently from the name", () => {
+    const left = usernameBadgeCss({ align: "left" });
+    expect(left).toContain("margin-left: 0 !important");
+    expect(left).toContain("margin-right: auto !important");
+
+    const center = usernameBadgeCss({ align: "center" });
+    expect(center).toContain("margin-left: auto !important");
+    expect(center).toContain("margin-right: auto !important");
+
+    const right = usernameBadgeCss({ align: "right" });
+    expect(right).toContain("margin-left: auto !important");
+    expect(right).toContain("margin-right: 0 !important");
+  });
+
   it("emits a ::after rule only for pseudo-element animations", () => {
     const ring = usernameBadgeStylesheet("#badge", { animation: "ping" });
     expect(ring).toContain('content: ""');

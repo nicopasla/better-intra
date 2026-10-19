@@ -12,6 +12,7 @@ const BANNER_MODES = new Set(["fill", "fit", "stretch", "center", "tile"]);
 const DECORATIONS = new Set(["none", "solid"]);
 const AVATAR_BG_KEYWORDS = new Set(["transparent"]);
 const BADGE_SHAPES = new Set(["square", "rounded", "pill"]);
+const BADGE_ALIGNS = new Set(["left", "center", "right"]);
 const BADGE_ANIMATIONS = new Set([
   "none",
   "glow",
@@ -158,6 +159,10 @@ export function sanitizeVisualUrls(urls: VisualUrls): VisualUrls {
             ? ub.animation
             : "none",
         padding: clampNumber(ub.padding, 0, 8, 4),
+        align:
+          typeof ub.align === "string" && BADGE_ALIGNS.has(ub.align)
+            ? ub.align
+            : "left",
       }
     : null;
 
@@ -179,6 +184,10 @@ export function sanitizeVisualUrls(urls: VisualUrls): VisualUrls {
     avatarPosY: clampNumber(urls.avatarPosY, 0, 100, 50),
     avatarScale: clampNumber(urls.avatarScale, 10, 500, 100),
     badgeBg: sanitizeCssColor(urls.badgeBg),
+    nameAlign:
+      typeof urls.nameAlign === "string" && BADGE_ALIGNS.has(urls.nameAlign)
+        ? urls.nameAlign
+        : "left",
     usernameBadge,
     theme,
     look,

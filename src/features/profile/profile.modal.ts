@@ -562,292 +562,289 @@ function renderPanelContent(
         </button>
       </div>
       <div
-        class="grid grid-cols-1 lg:grid-cols-[1fr_18rem] gap-3 items-stretch"
+        class="rounded-box border border-base-300 bg-base-100/40 p-3 flex flex-col items-center"
       >
-        <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
-          <div
-            class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
-          >
-            Colors
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <label class="form-control">
-              <span class="text-sm opacity-70 pb-1">Background</span>
-              <input
-                type="color"
-                class="input w-full h-12 p-1"
-                .value="${state.usernameBadgeBg || "#00babc"}"
-                @input="${(e: Event) =>
-                  onFormUpdate({
-                    usernameBadgeBg: (e.target as HTMLInputElement).value,
-                  })}"
-              />
-            </label>
-            <label class="form-control">
-              <span class="text-sm opacity-70 pb-1">Text</span>
-              <input
-                type="color"
-                class="input w-full h-12 p-1"
-                .value="${state.usernameBadgeText || "#ffffff"}"
-                @input="${(e: Event) =>
-                  onFormUpdate({
-                    usernameBadgeText: (e.target as HTMLInputElement).value,
-                  })}"
-              />
-            </label>
-            <label class="form-control">
-              <span class="text-sm opacity-70 pb-1">Border</span>
-              <input
-                type="color"
-                class="input w-full h-12 p-1"
-                .value="${state.usernameBadgeBorder || "#00babc"}"
-                @input="${(e: Event) =>
-                  onFormUpdate({
-                    usernameBadgeBorder: (e.target as HTMLInputElement).value,
-                  })}"
-              />
-            </label>
-          </div>
+        <div class="py-1 flex items-center justify-center">
+          <span id="ft-username-badge-preview" data-text="username">
+            <span data-ft-marquee-inner>
+              ${state.usernameBadgeTitleNewline
+                ? html`username,<span style="display:block">Custom title</span>`
+                : "username, Custom title"}
+            </span>
+          </span>
         </div>
-
-        <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
-          <div
-            class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
-          >
-            Layout &amp; motion
-          </div>
-          <div class="flex flex-col gap-3">
-            <label
-              class="form-control flex-row items-center justify-between gap-2"
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_18rem] gap-3 items-start">
+        <div class="flex flex-col gap-3">
+          <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
+            <div
+              class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
             >
-              <span class="text-sm opacity-70">Title on new line</span>
-              <input
-                type="checkbox"
-                class="toggle toggle-lg shrink-0"
-                .checked="${state.usernameBadgeTitleNewline}"
-                @change="${(e: Event) =>
-                  onFormUpdate({
-                    usernameBadgeTitleNewline: (e.target as HTMLInputElement)
-                      .checked,
-                  })}"
-              />
-            </label>
-            <div class="flex flex-col gap-3">
+              Colors
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <label class="form-control">
-                <span class="text-sm opacity-70 pb-1">Name alignment</span>
-                <div class="join w-full">
-                  <input
-                    type="radio"
-                    name="PROFILE_NAME_ALIGN"
-                    class="btn join-item flex-1"
-                    aria-label="Left"
-                    value="left"
-                    ?checked="${state.nameAlign === "left"}"
-                    @change="${() => onFormUpdate({ nameAlign: "left" })}"
-                  />
-                  <input
-                    type="radio"
-                    name="PROFILE_NAME_ALIGN"
-                    class="btn join-item flex-1"
-                    aria-label="Center"
-                    value="center"
-                    ?checked="${state.nameAlign === "center"}"
-                    @change="${() => onFormUpdate({ nameAlign: "center" })}"
-                  />
-                  <input
-                    type="radio"
-                    name="PROFILE_NAME_ALIGN"
-                    class="btn join-item flex-1"
-                    aria-label="Right"
-                    value="right"
-                    ?checked="${state.nameAlign === "right"}"
-                    @change="${() => onFormUpdate({ nameAlign: "right" })}"
-                  />
-                </div>
+                <span class="text-sm opacity-70 pb-1">Background</span>
+                <input
+                  type="color"
+                  class="input w-full h-12 p-1"
+                  .value="${state.usernameBadgeBg || "#00babc"}"
+                  @input="${(e: Event) =>
+                    onFormUpdate({
+                      usernameBadgeBg: (e.target as HTMLInputElement).value,
+                    })}"
+                />
               </label>
               <label class="form-control">
-                <span class="text-sm opacity-70 pb-1">Username alignment</span>
+                <span class="text-sm opacity-70 pb-1">Text</span>
+                <input
+                  type="color"
+                  class="input w-full h-12 p-1"
+                  .value="${state.usernameBadgeText || "#ffffff"}"
+                  @input="${(e: Event) =>
+                    onFormUpdate({
+                      usernameBadgeText: (e.target as HTMLInputElement).value,
+                    })}"
+                />
+              </label>
+              <label class="form-control">
+                <span class="text-sm opacity-70 pb-1">Border</span>
+                <input
+                  type="color"
+                  class="input w-full h-12 p-1"
+                  .value="${state.usernameBadgeBorder || "#00babc"}"
+                  @input="${(e: Event) =>
+                    onFormUpdate({
+                      usernameBadgeBorder: (e.target as HTMLInputElement).value,
+                    })}"
+                />
+              </label>
+            </div>
+          </div>
+          <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
+            <div
+              class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
+            >
+              Shape &amp; size
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="form-control">
+                <span class="text-sm opacity-70 pb-1">Border width</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="8"
+                  step="1"
+                  class="input w-full"
+                  .value="${String(state.usernameBadgeBorderWidth)}"
+                  @input="${(e: Event) =>
+                    onFormUpdate({
+                      usernameBadgeBorderWidth: Number(
+                        (e.target as HTMLInputElement).value,
+                      ),
+                    })}"
+                />
+              </label>
+              <label class="form-control">
+                <span class="text-sm opacity-70 pb-1">Padding</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="8"
+                  step="1"
+                  class="input w-full"
+                  .value="${String(state.usernameBadgePadding)}"
+                  @input="${(e: Event) =>
+                    onFormUpdate({
+                      usernameBadgePadding: Number(
+                        (e.target as HTMLInputElement).value,
+                      ),
+                    })}"
+                />
+              </label>
+              <label class="form-control sm:col-span-2">
+                <span class="text-sm opacity-70 pb-1">Corners</span>
                 <div class="join w-full">
                   <input
                     type="radio"
-                    name="PROFILE_USERNAME_BADGE_ALIGN"
+                    name="PROFILE_USERNAME_BADGE_SHAPE"
                     class="btn join-item flex-1"
-                    aria-label="Left"
-                    value="left"
-                    ?checked="${state.usernameBadgeAlign === "left"}"
+                    aria-label="Square"
+                    value="square"
+                    ?checked="${state.usernameBadgeShape === "square"}"
                     @change="${() =>
-                      onFormUpdate({ usernameBadgeAlign: "left" })}"
+                      onFormUpdate({ usernameBadgeShape: "square" })}"
                   />
                   <input
                     type="radio"
-                    name="PROFILE_USERNAME_BADGE_ALIGN"
+                    name="PROFILE_USERNAME_BADGE_SHAPE"
                     class="btn join-item flex-1"
-                    aria-label="Center"
-                    value="center"
-                    ?checked="${state.usernameBadgeAlign === "center"}"
+                    aria-label="Rounded"
+                    value="rounded"
+                    ?checked="${state.usernameBadgeShape === "rounded"}"
                     @change="${() =>
-                      onFormUpdate({ usernameBadgeAlign: "center" })}"
+                      onFormUpdate({ usernameBadgeShape: "rounded" })}"
                   />
                   <input
                     type="radio"
-                    name="PROFILE_USERNAME_BADGE_ALIGN"
+                    name="PROFILE_USERNAME_BADGE_SHAPE"
                     class="btn join-item flex-1"
-                    aria-label="Right"
-                    value="right"
-                    ?checked="${state.usernameBadgeAlign === "right"}"
+                    aria-label="Pill"
+                    value="pill"
+                    ?checked="${state.usernameBadgeShape === "pill"}"
                     @change="${() =>
-                      onFormUpdate({ usernameBadgeAlign: "right" })}"
+                      onFormUpdate({ usernameBadgeShape: "pill" })}"
                   />
                 </div>
               </label>
             </div>
-            <label class="form-control">
-              <span class="text-sm opacity-70 pb-1">Animation</span>
-              <select
-                class="select w-full"
-                @change="${(e: Event) =>
-                  onFormUpdate({
-                    usernameBadgeAnimation: (e.target as HTMLSelectElement)
-                      .value as FormState["usernameBadgeAnimation"],
-                  })}"
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3 self-stretch">
+          <div
+            class="rounded-box border border-base-300 bg-base-200/50 p-3 flex-1"
+          >
+            <div
+              class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
+            >
+              Layout &amp; motion
+            </div>
+            <div class="flex flex-col gap-3">
+              <label
+                class="form-control flex-row items-center justify-between gap-2"
               >
-                ${(
-                  [
-                    ["none", "None"],
-                    ["glow", "Glow"],
-                    ["pulse", "Pulse"],
-                    ["rainbow", "Rainbow"],
-                    ["shimmer", "Shimmer"],
-                    ["float", "Float"],
-                    ["wobble", "Wobble"],
-                    ["bounce", "Bounce"],
-                    ["heartbeat", "Heartbeat"],
-                    ["shake", "Shake"],
-                    ["flash", "Flash"],
-                    ["rotate", "Rotate"],
-                    ["gradient", "Gradient"],
-                    ["ping", "Ping"],
-                    ["ants", "Marching ants"],
-                    ["conic", "Conic border"],
-                    ["typewriter", "Typewriter"],
-                    ["marquee", "Marquee"],
-                    ["neon", "Neon"],
-                    ["echo", "Echo"],
-                    ["softblur", "Soft blur"],
-                    ["elastic", "Elastic"],
-                  ] as const
-                ).map(
-                  ([value, label]) => html`
-                    <option
-                      value="${value}"
-                      ?selected="${state.usernameBadgeAnimation === value}"
-                    >
-                      ${label}
-                    </option>
-                  `,
-                )}
-              </select>
-            </label>
-          </div>
-        </div>
-
-        <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
-          <div
-            class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
-          >
-            Shape &amp; size
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label class="form-control">
-              <span class="text-sm opacity-70 pb-1">Border width</span>
-              <input
-                type="number"
-                min="0"
-                max="8"
-                step="1"
-                class="input w-full"
-                .value="${String(state.usernameBadgeBorderWidth)}"
-                @input="${(e: Event) =>
-                  onFormUpdate({
-                    usernameBadgeBorderWidth: Number(
-                      (e.target as HTMLInputElement).value,
-                    ),
-                  })}"
-              />
-            </label>
-            <label class="form-control">
-              <span class="text-sm opacity-70 pb-1">Padding</span>
-              <input
-                type="number"
-                min="0"
-                max="8"
-                step="1"
-                class="input w-full"
-                .value="${String(state.usernameBadgePadding)}"
-                @input="${(e: Event) =>
-                  onFormUpdate({
-                    usernameBadgePadding: Number(
-                      (e.target as HTMLInputElement).value,
-                    ),
-                  })}"
-              />
-            </label>
-            <label class="form-control sm:col-span-2">
-              <span class="text-sm opacity-70 pb-1">Corners</span>
-              <div class="join w-full">
+                <span class="text-sm opacity-70">Title on new line</span>
                 <input
-                  type="radio"
-                  name="PROFILE_USERNAME_BADGE_SHAPE"
-                  class="btn join-item flex-1"
-                  aria-label="Square"
-                  value="square"
-                  ?checked="${state.usernameBadgeShape === "square"}"
-                  @change="${() =>
-                    onFormUpdate({ usernameBadgeShape: "square" })}"
+                  type="checkbox"
+                  class="toggle toggle-lg shrink-0"
+                  .checked="${state.usernameBadgeTitleNewline}"
+                  @change="${(e: Event) =>
+                    onFormUpdate({
+                      usernameBadgeTitleNewline: (e.target as HTMLInputElement)
+                        .checked,
+                    })}"
                 />
-                <input
-                  type="radio"
-                  name="PROFILE_USERNAME_BADGE_SHAPE"
-                  class="btn join-item flex-1"
-                  aria-label="Rounded"
-                  value="rounded"
-                  ?checked="${state.usernameBadgeShape === "rounded"}"
-                  @change="${() =>
-                    onFormUpdate({ usernameBadgeShape: "rounded" })}"
-                />
-                <input
-                  type="radio"
-                  name="PROFILE_USERNAME_BADGE_SHAPE"
-                  class="btn join-item flex-1"
-                  aria-label="Pill"
-                  value="pill"
-                  ?checked="${state.usernameBadgeShape === "pill"}"
-                  @change="${() =>
-                    onFormUpdate({ usernameBadgeShape: "pill" })}"
-                />
+              </label>
+              <div class="flex flex-col gap-3">
+                <label class="form-control">
+                  <span class="text-sm opacity-70 pb-1">Name alignment</span>
+                  <div class="join w-full">
+                    <input
+                      type="radio"
+                      name="PROFILE_NAME_ALIGN"
+                      class="btn join-item flex-1"
+                      aria-label="Left"
+                      value="left"
+                      ?checked="${state.nameAlign === "left"}"
+                      @change="${() => onFormUpdate({ nameAlign: "left" })}"
+                    />
+                    <input
+                      type="radio"
+                      name="PROFILE_NAME_ALIGN"
+                      class="btn join-item flex-1"
+                      aria-label="Center"
+                      value="center"
+                      ?checked="${state.nameAlign === "center"}"
+                      @change="${() => onFormUpdate({ nameAlign: "center" })}"
+                    />
+                    <input
+                      type="radio"
+                      name="PROFILE_NAME_ALIGN"
+                      class="btn join-item flex-1"
+                      aria-label="Right"
+                      value="right"
+                      ?checked="${state.nameAlign === "right"}"
+                      @change="${() => onFormUpdate({ nameAlign: "right" })}"
+                    />
+                  </div>
+                </label>
+                <label class="form-control">
+                  <span class="text-sm opacity-70 pb-1"
+                    >Username alignment</span
+                  >
+                  <div class="join w-full">
+                    <input
+                      type="radio"
+                      name="PROFILE_USERNAME_BADGE_ALIGN"
+                      class="btn join-item flex-1"
+                      aria-label="Left"
+                      value="left"
+                      ?checked="${state.usernameBadgeAlign === "left"}"
+                      @change="${() =>
+                        onFormUpdate({ usernameBadgeAlign: "left" })}"
+                    />
+                    <input
+                      type="radio"
+                      name="PROFILE_USERNAME_BADGE_ALIGN"
+                      class="btn join-item flex-1"
+                      aria-label="Center"
+                      value="center"
+                      ?checked="${state.usernameBadgeAlign === "center"}"
+                      @change="${() =>
+                        onFormUpdate({ usernameBadgeAlign: "center" })}"
+                    />
+                    <input
+                      type="radio"
+                      name="PROFILE_USERNAME_BADGE_ALIGN"
+                      class="btn join-item flex-1"
+                      aria-label="Right"
+                      value="right"
+                      ?checked="${state.usernameBadgeAlign === "right"}"
+                      @change="${() =>
+                        onFormUpdate({ usernameBadgeAlign: "right" })}"
+                    />
+                  </div>
+                </label>
               </div>
-            </label>
-          </div>
-        </div>
-
-        <div
-          class="rounded-box border border-base-300 bg-base-100/40 p-3 flex flex-col items-center gap-3"
-        >
-          <div
-            class="text-sm font-semibold uppercase tracking-wider opacity-50"
-          >
-            Preview
-          </div>
-          <div class="py-1 flex items-center justify-center">
-            <span id="ft-username-badge-preview" data-text="username">
-              <span data-ft-marquee-inner>
-                ${state.usernameBadgeTitleNewline
-                  ? html`username,<span style="display:block"
-                        >Custom title</span
-                      >`
-                  : "username, Custom title"}
-              </span>
-            </span>
+              <label class="form-control">
+                <span class="text-sm opacity-70 pb-1">Animation</span>
+                <select
+                  class="select w-full"
+                  @change="${(e: Event) =>
+                    onFormUpdate({
+                      usernameBadgeAnimation: (e.target as HTMLSelectElement)
+                        .value as FormState["usernameBadgeAnimation"],
+                    })}"
+                >
+                  ${(
+                    [
+                      ["none", "None"],
+                      ["glow", "Glow"],
+                      ["pulse", "Pulse"],
+                      ["rainbow", "Rainbow"],
+                      ["shimmer", "Shimmer"],
+                      ["float", "Float"],
+                      ["wobble", "Wobble"],
+                      ["bounce", "Bounce"],
+                      ["heartbeat", "Heartbeat"],
+                      ["shake", "Shake"],
+                      ["flash", "Flash"],
+                      ["rotate", "Rotate"],
+                      ["gradient", "Gradient"],
+                      ["ping", "Ping"],
+                      ["ants", "Marching ants"],
+                      ["conic", "Conic border"],
+                      ["typewriter", "Typewriter"],
+                      ["marquee", "Marquee"],
+                      ["neon", "Neon"],
+                      ["echo", "Echo"],
+                      ["softblur", "Soft blur"],
+                      ["elastic", "Elastic"],
+                    ] as const
+                  ).map(
+                    ([value, label]) => html`
+                      <option
+                        value="${value}"
+                        ?selected="${state.usernameBadgeAnimation === value}"
+                      >
+                        ${label}
+                      </option>
+                    `,
+                  )}
+                </select>
+              </label>
+            </div>
           </div>
         </div>
       </div>

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [1.11.6] - 2026-10-19
+
+### Features 🎉
+
+- feat(profile): add name and username alignment and badge row start options ([dbc958b](https://github.com/nicopasla/better-intra/commit/dbc958b))
+
+### Bug fixes 🐛
+
+- fix(profile): preserve username badge dropdown when splitting the title ([32a7f40](https://github.com/nicopasla/better-intra/commit/32a7f40))
+
 ## [1.11.5] - 2026-10-19
 
 ### Features 🎉
@@ -1451,7 +1461,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.5...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.6...HEAD
+[1.11.6]: https://github.com/nicopasla/better-intra/compare/v1.11.5...v1.11.6
 [1.11.5]: https://github.com/nicopasla/better-intra/compare/v1.11.4...v1.11.5
 [1.11.4]: https://github.com/nicopasla/better-intra/compare/v1.11.3...v1.11.4
 [1.11.3]: https://github.com/nicopasla/better-intra/compare/v1.11.2...v1.11.3

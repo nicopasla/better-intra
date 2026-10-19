@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "version": "1.11.6",
+      "date": "2026-10-19",
+      "highlights": [
+        "Align your profile name and username badge independently, and start role badges to the right of the avatar.",
+        "Fixed the username/title dropdown arrow disappearing from custom badges."
+      ]
+    },
+    {
       "version": "1.11.5",
       "date": "2026-10-19",
       "highlights": [

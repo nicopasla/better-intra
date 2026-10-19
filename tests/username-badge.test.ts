@@ -142,6 +142,52 @@ describe("applyUsernameTitleLine", () => {
     expect(el.textContent).toBe("ghopper");
   });
 
+  const comboboxHeader = (text: string) => `
+    <div class="flex flex-col justify-center gap-4">
+      <h2 class="text-2xl font-bold">Grace Hopper</h2>
+      <p class="text-sm"><button type="button" role="combobox"><span>${text}</span><svg></svg></button></p>
+    </div>`;
+
+  it("splits the title inside the dropdown trigger without removing it", () => {
+    document.body.innerHTML = comboboxHeader("ghopper, Compiler Wizard");
+    applyUsernameTitleLine(true);
+
+    const el = document.querySelector<HTMLElement>(NAME_BADGE_SELECTOR)!;
+    const button = el.querySelector<HTMLElement>('button[role="combobox"]');
+    expect(button).not.toBeNull();
+    expect(button!.querySelector("svg")).not.toBeNull();
+
+    const label = button!.querySelector("span")!;
+    expect(label.firstChild?.textContent).toBe("ghopper");
+    expect(
+      label.querySelector<HTMLElement>("[data-ft-title-line]")?.textContent,
+    ).toBe("Compiler Wizard");
+  });
+
+  it("restores the trigger text and keeps its chevron", () => {
+    document.body.innerHTML = comboboxHeader("ghopper, Compiler Wizard");
+    applyUsernameTitleLine(true);
+    applyUsernameTitleLine(false);
+
+    const el = document.querySelector<HTMLElement>(NAME_BADGE_SELECTOR)!;
+    expect(el.querySelector('button[role="combobox"]')).not.toBeNull();
+    expect(el.querySelector("svg")).not.toBeNull();
+    expect(el.textContent).toBe("ghopper, Compiler Wizard");
+  });
+
+  it("leaves a trigger without a label span untouched", () => {
+    document.body.innerHTML = `
+      <div class="flex flex-col justify-center gap-4">
+        <h2 class="text-2xl font-bold">Grace Hopper</h2>
+        <p class="text-sm"><button type="button" role="combobox"><svg></svg></button></p>
+      </div>`;
+    applyUsernameTitleLine(true);
+
+    const el = document.querySelector<HTMLElement>(NAME_BADGE_SELECTOR)!;
+    expect(el.querySelector('button[role="combobox"]')).not.toBeNull();
+    expect(el.querySelector("svg")).not.toBeNull();
+  });
+
   describe("with a page login", () => {
     afterEach(() => window.history.replaceState({}, "", "/"));
 

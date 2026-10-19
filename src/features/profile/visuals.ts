@@ -577,6 +577,10 @@ export const usernameBadgeStylesheet = (
   // marquee wrapper.
   css += `${selector} [${TITLE_LINE_ATTR}] { color: ${colors.text} !important; }\n`;
 
+  // The badge caps its width, so a long username/title must wrap instead of
+  // squeezing the dropdown chevron out of the trigger.
+  css += `${selector} [role="combobox"] > svg { flex-shrink: 0 !important; }\n`;
+
   // Marquee needs a real wrapper to translate (text-indent breaks on the
   // two-line column layout); the preview always ships the wrapper with
   // display:contents so layout is unchanged unless marquee is active.
@@ -780,6 +784,18 @@ function splitUsernameTitle(
 }
 
 /**
+ * The element whose text carries the username / title line. Intra's badge now
+ * wraps a dropdown trigger, so the text lives in the trigger's label span:
+ * replacing the badge's own children would delete the trigger and its chevron.
+ * Older profiles render the text directly in the badge, so fall back to it.
+ */
+function badgeTextHost(el: HTMLElement): HTMLElement | null {
+  const trigger = el.querySelector<HTMLElement>('[role="combobox"]');
+  if (!trigger) return el;
+  return trigger.querySelector<HTMLElement>("span");
+}
+
+/**
  * Puts the custom title on its own row inside the badge (username and title on
  * separate rows, in their original order). The original text is cached so it
  * can be restored when the option is off.
@@ -790,27 +806,36 @@ export function applyUsernameTitleLine(newline: boolean): void {
   const split = el.querySelector<HTMLElement>(`[${TITLE_LINE_ATTR}]`);
 
   if (!newline) {
-    if (!split) return;
-    const original = el.getAttribute(ORIG_TEXT_ATTR);
-    el.replaceChildren(
-      document.createTextNode(original ?? el.textContent ?? ""),
-    );
-    el.removeAttribute(ORIG_TEXT_ATTR);
+    // The cached text sits on the text host: the label span on current Intra,
+    // the badge itself on older markup. Restore it in place so the dropdown
+    // trigger and its chevron survive.
+    const hosts: HTMLElement[] = el.hasAttribute(ORIG_TEXT_ATTR) ? [el] : [];
+    hosts.push(...el.querySelectorAll<HTMLElement>(`[${ORIG_TEXT_ATTR}]`));
+    if (!hosts.length) return;
+    for (const host of hosts) {
+      const original = host.getAttribute(ORIG_TEXT_ATTR);
+      host.replaceChildren(
+        document.createTextNode(original ?? host.textContent ?? ""),
+      );
+      host.removeAttribute(ORIG_TEXT_ATTR);
+    }
     return;
   }
 
   if (split) return;
-  const text = el.textContent ?? "";
+  const host = badgeTextHost(el);
+  if (!host) return;
+  const text = host.textContent ?? "";
   const parts = splitUsernameTitle(text);
   if (!parts) return;
 
-  el.setAttribute(ORIG_TEXT_ATTR, text);
-  el.replaceChildren(document.createTextNode(parts.first));
+  host.setAttribute(ORIG_TEXT_ATTR, text);
+  host.replaceChildren(document.createTextNode(parts.first));
   const span = document.createElement("span");
   span.setAttribute(TITLE_LINE_ATTR, "true");
   span.style.display = "block";
   span.textContent = parts.second;
-  el.appendChild(span);
+  host.appendChild(span);
 }
 
 /**
@@ -850,9 +875,10 @@ export function applyBadgeEchoText(animation: string | undefined): void {
     el.removeAttribute(ECHO_TEXT_ATTR);
     return;
   }
-  const first = el.firstChild;
+  const host = badgeTextHost(el) ?? el;
+  const first = host.firstChild;
   const text =
-    first?.nodeType === Node.TEXT_NODE ? first.textContent : el.textContent;
+    first?.nodeType === Node.TEXT_NODE ? first.textContent : host.textContent;
   el.setAttribute(ECHO_TEXT_ATTR, (text ?? "").trim());
 }
 

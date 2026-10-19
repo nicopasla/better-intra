@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## [1.11.5] - 2026-10-19
+
+### Features 🎉
+
+- feat(profile): add customizable username badge and role badge alignment ([7b68b5d](https://github.com/nicopasla/better-intra/commit/7b68b5d))
+- feat(profile): add neon, echo, soft blur and elastic badge animations ([44d9ea9](https://github.com/nicopasla/better-intra/commit/44d9ea9))
+- feat(profile): pause badge animations on hover for text selection ([6dd1221](https://github.com/nicopasla/better-intra/commit/6dd1221))
+- feat(site): add favicon and header logo ([ce949c9](https://github.com/nicopasla/better-intra/commit/ce949c9))
+- feat(site): add a Mobile app tab linking to the PWA ([4620684](https://github.com/nicopasla/better-intra/commit/4620684))
+
+### Bug fixes 🐛
+
+- fix(profile): center single-line badges and color the title line ([86bd86a](https://github.com/nicopasla/better-intra/commit/86bd86a))
+- fix(profile): show username badge title on a new line by default ([b6e8d75](https://github.com/nicopasla/better-intra/commit/b6e8d75))
+- fix(profile): remove unnecessary line breaks in label for multi-line wrapping ([bd66571](https://github.com/nicopasla/better-intra/commit/bd66571))
+- fix(styles): register checkbox, link and validator components ([2fbaeb6](https://github.com/nicopasla/better-intra/commit/2fbaeb6))
+
+### Maintenance 🧹
+
+- ci(pages): publish the site from a pages branch ([3c8b793](https://github.com/nicopasla/better-intra/commit/3c8b793))
+- chore(skills): update daisyui skill to 5.7.x ([4fe05e3](https://github.com/nicopasla/better-intra/commit/4fe05e3))
+- chore(skills): vendor cloudflare agent skills ([725655a](https://github.com/nicopasla/better-intra/commit/725655a))
+- chore(sun-gaming): remove sun-gaming subproject ([7135b62](https://github.com/nicopasla/better-intra/commit/7135b62))
+
+### Other Changes 🔄
+
+- docs(agents): sync worker docs with D1 and external cron ([d0ba8cd](https://github.com/nicopasla/better-intra/commit/d0ba8cd))
+
 ## [1.11.4] - 2026-10-17
 
 ### Features 🎉
@@ -1423,7 +1451,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.4...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.5...HEAD
+[1.11.5]: https://github.com/nicopasla/better-intra/compare/v1.11.4...v1.11.5
 [1.11.4]: https://github.com/nicopasla/better-intra/compare/v1.11.3...v1.11.4
 [1.11.3]: https://github.com/nicopasla/better-intra/compare/v1.11.2...v1.11.3
 [1.11.2]: https://github.com/nicopasla/better-intra/compare/v1.11.1...v1.11.2

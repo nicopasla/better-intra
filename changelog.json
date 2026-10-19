@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "version": "1.11.5",
+      "date": "2026-10-19",
+      "highlights": [
+        "Your username badge is now fully customisable, with your choice of colours, shape, border and animation."
+      ]
+    },
+    {
       "version": "1.11.4",
       "date": "2026-10-17",
       "highlights": [

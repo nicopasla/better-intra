@@ -98,6 +98,23 @@ describe("usernameBadgeCss", () => {
     expect(under).toContain("border: 0px solid");
   });
 
+  it("pauses the badge while the title dropdown is open", () => {
+    const css = usernameBadgeStylesheet(NAME_BADGE_SELECTOR, {
+      animation: "float",
+    });
+    expect(css).toContain(':has([role="combobox"][aria-expanded="true"])');
+    expect(css).toContain("animation-play-state: paused !important");
+    expect(css).toContain(
+      ':has([role="combobox"][aria-expanded="true"])::before',
+    );
+    expect(css).toContain(
+      ':has([role="combobox"][aria-expanded="true"])::after',
+    );
+    expect(css).toContain(
+      ':has([role="combobox"][aria-expanded="true"]) > [data-ft-marquee-inner]',
+    );
+  });
+
   it("positions the badge independently from the name", () => {
     const left = usernameBadgeCss({ align: "left" });
     expect(left).toContain("margin-left: 0 !important");

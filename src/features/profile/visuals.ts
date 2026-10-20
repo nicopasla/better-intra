@@ -614,6 +614,21 @@ export const usernameBadgeStylesheet = (
 
   css += `@media (prefers-reduced-motion: reduce) {\n${selector}, ${selector}::before, ${selector}::after, ${selector} > [${MARQUEE_ATTR}] { animation: none !important; }\n}`;
 
+  // While the username/title dropdown is open, freeze the badge (and anything
+  // anchored to it) instead of carrying the open menu along with the motion.
+  const openSelectors = selector
+    .split(",")
+    .map((s) => `${s.trim()}:has([role="combobox"][aria-expanded="true"])`);
+  const openTargets = openSelectors
+    .flatMap((s) => [
+      s,
+      `${s}::before`,
+      `${s}::after`,
+      `${s} > [${MARQUEE_ATTR}]`,
+    ])
+    .join(", ");
+  css += `${openTargets} { animation-play-state: paused !important; }\n`;
+
   // Hovering stops the badge so its text can be selected: transform, filter and
   // opacity animations otherwise keep the glyphs moving under the cursor and
   // leave them squashed or hazy. Resetting those three snaps the badge upright
@@ -1198,10 +1213,7 @@ export const applyImgs = (rawUrls: VisualUrls | null) => {
     urls.nameAlign === "center" || urls.nameAlign === "right"
       ? urls.nameAlign
       : "left";
-  document.documentElement.style.setProperty(
-    "--ft-name-text-align",
-    nameAlign,
-  );
+  document.documentElement.style.setProperty("--ft-name-text-align", nameAlign);
   document.documentElement.style.setProperty(
     "--ft-name-pad-right",
     nameAlign === "right" ? "0.5rem" : "0px",

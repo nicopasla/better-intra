@@ -100,10 +100,7 @@ const clampBadgeNumber = (value: string | number): number => {
   return Math.min(8, Math.max(0, num));
 };
 
-function renderNumberStepper(
-  value: number,
-  onChange: (value: number) => void,
-) {
+function renderNumberStepper(value: number, onChange: (value: number) => void) {
   return html`
     <div class="join w-full">
       <button
@@ -583,27 +580,6 @@ function renderPanelContent(
 
   const usernamePanel = () => html`
     <div class="flex flex-col gap-3">
-      <div class="flex justify-end">
-        <button
-          type="button"
-          class="btn btn-outline btn-error btn-sm"
-          @click="${() =>
-            onFormUpdate({
-              usernameBadgeBg: "",
-              usernameBadgeText: "",
-              usernameBadgeBorder: "",
-              usernameBadgeBorderWidth: 1,
-              usernameBadgeShape: "rounded",
-              usernameBadgeTitleNewline: true,
-              usernameBadgeAnimation: "none",
-              usernameBadgePadding: 4,
-              usernameBadgeAlign: "left",
-              nameAlign: "left",
-            })}"
-        >
-          Reset defaults
-        </button>
-      </div>
       <div
         class="rounded-box border border-base-300 bg-base-100/40 p-3 flex flex-col items-center"
       >
@@ -620,10 +596,24 @@ function renderPanelContent(
       <div class="grid grid-cols-1 lg:grid-cols-[1fr_18rem] gap-3 items-start">
         <div class="flex flex-col gap-3">
           <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
-            <div
-              class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
-            >
-              Colors
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="text-sm font-semibold uppercase tracking-wider opacity-50"
+              >
+                Colors
+              </div>
+              <button
+                type="button"
+                class="btn btn-outline btn-error btn-xs"
+                @click="${() =>
+                  onFormUpdate({
+                    usernameBadgeBg: "",
+                    usernameBadgeText: "",
+                    usernameBadgeBorder: "",
+                  })}"
+              >
+                Reset
+              </button>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <label class="form-control">
@@ -665,18 +655,30 @@ function renderPanelContent(
             </div>
           </div>
           <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
-            <div
-              class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
-            >
-              Shape &amp; size
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="text-sm font-semibold uppercase tracking-wider opacity-50"
+              >
+                Shape &amp; size
+              </div>
+              <button
+                type="button"
+                class="btn btn-outline btn-error btn-xs"
+                @click="${() =>
+                  onFormUpdate({
+                    usernameBadgeBorderWidth: 1,
+                    usernameBadgePadding: 4,
+                    usernameBadgeShape: "rounded",
+                  })}"
+              >
+                Reset
+              </button>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label class="form-control">
                 <span class="text-sm opacity-70 pb-1">Border width</span>
-                ${renderNumberStepper(
-                  state.usernameBadgeBorderWidth,
-                  (value) =>
-                    onFormUpdate({ usernameBadgeBorderWidth: value }),
+                ${renderNumberStepper(state.usernameBadgeBorderWidth, (value) =>
+                  onFormUpdate({ usernameBadgeBorderWidth: value }),
                 )}
               </label>
               <label class="form-control">
@@ -728,10 +730,25 @@ function renderPanelContent(
           <div
             class="rounded-box border border-base-300 bg-base-200/50 p-3 flex-1"
           >
-            <div
-              class="text-sm font-semibold uppercase tracking-wider opacity-50 mb-3"
-            >
-              Layout &amp; motion
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="text-sm font-semibold uppercase tracking-wider opacity-50"
+              >
+                Layout &amp; motion
+              </div>
+              <button
+                type="button"
+                class="btn btn-outline btn-error btn-xs"
+                @click="${() =>
+                  onFormUpdate({
+                    usernameBadgeTitleNewline: true,
+                    usernameBadgeAnimation: "none",
+                    usernameBadgeAlign: "left",
+                    nameAlign: "left",
+                  })}"
+              >
+                Reset
+              </button>
             </div>
             <div class="flex flex-col gap-3">
               <label
@@ -1049,11 +1066,11 @@ function renderPanelContent(
         display: block;
       }
       ${BADGE_KEYFRAMES}
-      ${usernameBadgeStylesheet(
-        "#ft-username-badge-preview",
-        usernameBadgePreviewBadge(state),
-      )}
-      .ft-number-input {
+        ${usernameBadgeStylesheet(
+          "#ft-username-badge-preview",
+          usernameBadgePreviewBadge(state),
+        )}
+        .ft-number-input {
         appearance: textfield;
         -moz-appearance: textfield;
       }

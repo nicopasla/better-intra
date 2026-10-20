@@ -46,7 +46,6 @@ export interface CalendarEvent {
 
 export type EventsByDate = Record<string, CalendarEvent[]>;
 
-
 const historyCache = new Map<string, Record<string, number>>();
 const fetchPromiseMap = new Map<string, Promise<void>>();
 
@@ -147,6 +146,7 @@ const getConfigs = async () => {
     "LOGTIME_MAX_EARNINGS",
     "LOGTIME_CALENDAR_VIEW",
     "LOGTIME_SHOW_STREAK",
+    "GENERAL_FONT_SCALE",
   ] as const);
   return {
     goal_hours: c.LOGTIME_GOAL_HOURS,
@@ -165,6 +165,7 @@ const getConfigs = async () => {
     max_earnings: c.LOGTIME_MAX_EARNINGS,
     calendar_view: c.LOGTIME_CALENDAR_VIEW,
     show_streak: c.LOGTIME_SHOW_STREAK,
+    font_scale: c.GENERAL_FONT_SCALE,
   };
 };
 
@@ -231,6 +232,100 @@ export function measureHeaderOverflow(root: ShadowRoot): boolean {
   const needed = titleWidth + tacosWidth + joinWidth + activeWidth + gaps;
   return needed - header.clientWidth > HEADER_OVERFLOW_TOLERANCE;
 }
+
+/**
+ * Swap an overflowing long month name for its short form ("September" →
+ * "Sep"). Ellipsis in the stylesheet remains the last-resort fallback.
+ */
+function monthNameOverflows(el: HTMLElement, full: string): boolean {
+  if (el.scrollWidth > el.clientWidth + 1) return true;
+
+  // scrollWidth misses the overflow in some engines once text-overflow
+  // ellipsis is in play, so measure the laid-out text range itself.
+  if (typeof document.createRange === "function") {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    if (
+      typeof range.getBoundingClientRect === "function" &&
+      range.getBoundingClientRect().width > el.clientWidth + 1
+    ) {
+      return true;
+    }
+  }
+
+  // Last check: measure the full string with the element's computed font.
+  const ctx = document.createElement("canvas").getContext("2d");
+  if (!ctx) return false;
+  const style = getComputedStyle(el);
+  ctx.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+  return ctx.measureText(full).width > el.clientWidth + 1;
+}
+
+function fitMonthName(el: HTMLElement): void {
+  const full = el.dataset.monthFull;
+  const short = el.dataset.monthShort;
+  if (!full || !short) return;
+  if (el.dataset.monthForceShort === "true") {
+    if (el.textContent !== short) el.textContent = short;
+    return;
+  }
+  if (el.textContent !== full) el.textContent = full;
+  if (monthNameOverflows(el, full)) el.textContent = short;
+}
+
+export function fitMonthNames(root: ParentNode): void {
+  root
+    .querySelectorAll<HTMLElement>(".lt-month-name")
+    .forEach((el) => fitMonthName(el));
+}
+
+let monthFitResize: (() => void) | null = null;
+let monthHeaderObserver: ResizeObserver | null = null;
+
+function wireMonthNameFitting(root: ParentNode): void {
+  fitMonthNames(root);
+  requestAnimationFrame(() => fitMonthNames(root));
+  void document.fonts?.ready.then(() => fitMonthNames(root));
+
+  // Cards can be measured before they are laid out (e.g. older months added
+  // while the slider is off-screen). Re-fit as soon as each header gets a
+  // real size; observing the header avoids a loop when the name text swaps.
+  monthHeaderObserver?.disconnect();
+  monthHeaderObserver = null;
+  if (typeof ResizeObserver !== "undefined") {
+    monthHeaderObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const name = entry.target.querySelector<HTMLElement>(".lt-month-name");
+        if (name) fitMonthName(name);
+      }
+    });
+    root
+      .querySelectorAll<HTMLElement>(".lt-month-header")
+      .forEach((header) => monthHeaderObserver!.observe(header));
+  }
+
+  if (monthFitResize) return;
+  monthFitResize = () => {
+    const shadow = document.getElementById(
+      "logtime-shadow-wrapper",
+    )?.shadowRoot;
+    if (shadow) fitMonthNames(shadow);
+  };
+  window.addEventListener("resize", monthFitResize, { passive: true });
+}
+
+chrome.storage.onChanged?.addListener((changes, area) => {
+  if (area !== "local" || !changes.GENERAL_FONT_SCALE) return;
+  const root = document.getElementById("logtime-shadow-wrapper")?.shadowRoot;
+  if (!root) return;
+  const scale = Number(changes.GENERAL_FONT_SCALE.newValue);
+  if (CONFIG) CONFIG.font_scale = scale;
+  const forceShort = Number.isFinite(scale) && scale > 100;
+  root.querySelectorAll<HTMLElement>(".lt-month-name").forEach((el) => {
+    el.dataset.monthForceShort = forceShort ? "true" : "false";
+  });
+  requestAnimationFrame(() => fitMonthNames(root));
+});
 
 function wireHeaderOverflow(shadowHost: HTMLElement) {
   if (headerResizeObserver) {
@@ -300,6 +395,9 @@ function makeLoadOlderHandler(
     if (newSw) {
       requestAnimationFrame(() => {
         newSw.scrollLeft = Math.max(0, savedScroll + shift);
+        // The prepended cards are laid out at their final position now; make
+        // sure their month labels are fitted without waiting for another pass.
+        if (root) fitMonthNames(root);
       });
     }
   };
@@ -513,6 +611,7 @@ function renderLogtime(
     shadowHost.shadowRoot!,
   );
   adoptShadowStyles(shadowHost.shadowRoot!);
+  wireMonthNameFitting(shadowHost.shadowRoot!);
   wireHeaderOverflow(shadowHost);
 
   const scrollWrapper = shadowHost.shadowRoot!.querySelector(

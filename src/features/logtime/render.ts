@@ -198,9 +198,14 @@ export function renderMonthCard(
       : lastDayDate;
   const avg = total / divisor;
 
-  const monthName = new Intl.DateTimeFormat("en-US", { month: "long" }).format(
-    new Date(year, mon - 1),
-  );
+  const monthDate = new Date(year, mon - 1);
+  const monthName = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+  }).format(monthDate);
+  const monthShort = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+  }).format(monthDate);
+  const forceShort = (config.font_scale ?? 100) > 100;
   const goalSecs = config.goal_hours * 3600;
   const goalPercent = Math.round((total / goalSecs) * 100);
   const isGoalMet = goalPercent >= 100;
@@ -221,10 +226,16 @@ export function renderMonthCard(
     style="${!isCurrent ? `opacity: ${PAST_MONTHS_OPACITY};` : ""}"
     data-month="${ym}"
   >
-    <div class="flex justify-between items-center mb-3">
-      <span class="text-xl font-bold text-base-content">${monthName}</span>
+    <div class="lt-month-header flex justify-between items-center mb-3">
       <span
-        class="badge badge-lg font-bold font-mono transition-all duration-200 ${isGoalMet
+        class="lt-month-name text-xl font-bold text-base-content"
+        data-month-full="${monthName}"
+        data-month-short="${monthShort}"
+        data-month-force-short="${forceShort ? "true" : "false"}"
+        >${forceShort ? monthShort : monthName}</span
+      >
+      <span
+        class="lt-month-badge badge badge-lg font-bold font-mono transition-all duration-200 ${isGoalMet
           ? "badge-rainbow"
           : "badge-outline badge-success"}"
       >

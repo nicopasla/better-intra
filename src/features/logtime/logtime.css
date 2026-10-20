@@ -47,6 +47,28 @@
   flex-direction: column;
 }
 
+/* Month name and badge share a fixed-width card. Keep the header from
+   overflowing when the global font scale grows: the name falls back to its
+   short form when it no longer fits, and ellipsizes only as a last resort. */
+.month-card .lt-month-header {
+  min-width: 0;
+  gap: 0.4rem;
+}
+
+.month-card .lt-month-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.month-card .lt-month-badge {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: min(1.125rem, 20px) !important;
+}
+
 .month-card.current-month {
   border: 3px solid var(--calendar-color) !important;
   box-shadow: 0 0 15px var(--calendar-color) 33 !important;

@@ -57,6 +57,8 @@ let skipScroll = false;
 let carouselYm: string | null = null;
 let viewOverflow = false;
 let headerResizeObserver: ResizeObserver | null = null;
+/** Events from the last full render, reused by view/settings re-renders. */
+let lastEventsByDate: EventsByDate | undefined;
 
 function extractLoginFromPath(): string | null {
   const m = location.pathname.match(/^\/users\/([^/]+)/);
@@ -410,6 +412,8 @@ function renderLogtime(
   if (!stats || !CONFIG) return;
   closeStreakPopover();
   lastStats = stats;
+  if (eventsByDate !== undefined) lastEventsByDate = eventsByDate;
+  const events = eventsByDate ?? lastEventsByDate;
   // Let other modules (tracker badge) react to the *current* stats: a plain
   // 42_LOGTIME_DATA listener would run before this assignment and read the
   // previous value.
@@ -430,7 +434,7 @@ function renderLogtime(
   const monthKeys = Object.keys(byMonth).sort();
 
   const loadOlder = loadMoreLogin
-    ? makeLoadOlderHandler(loadMoreLogin, loadMoreBefore, stats, eventsByDate)
+    ? makeLoadOlderHandler(loadMoreLogin, loadMoreBefore, stats, events)
     : null;
 
   const monthCards: ReturnType<
@@ -450,7 +454,7 @@ function renderLogtime(
     const goTo = (ym: string) => {
       carouselYm = ym;
       skipScroll = true;
-      renderLogtime(stats, eventsByDate);
+      renderLogtime(stats, events);
     };
 
     monthCards.push(
@@ -460,7 +464,7 @@ function renderLogtime(
           byMonth[carouselYm],
           index === monthKeys.length - 1,
           CONFIG,
-          eventsByDate,
+          events,
         ),
         {
           canPrev: index > 0 || (!!loadOlder && !loadMoreLoading),
@@ -546,7 +550,7 @@ function renderLogtime(
     }
 
     monthCards.push(
-      renderMonthCard(lastYm, byMonth[lastYm], true, CONFIG, eventsByDate),
+      renderMonthCard(lastYm, byMonth[lastYm], true, CONFIG, events),
     );
   } else {
     let prevYear = "";
@@ -562,7 +566,7 @@ function renderLogtime(
           byMonth[ym],
           ym === monthKeys[monthKeys.length - 1],
           CONFIG,
-          eventsByDate,
+          events,
         ),
       );
     }
@@ -741,10 +745,14 @@ function installFetchHook() {
       const stats = hasHistory
         ? mergeHistoryWithHook(detail, targetLogin)
         : detail;
+      // Events are only fetched for the authenticated profile; never leak the
+      // previous profile's event markers onto another user's calendar.
+      lastEventsByDate = undefined;
       renderLogtime(stats);
       return;
     }
 
+    lastEventsByDate = undefined;
     renderLogtime(detail);
   });
 }

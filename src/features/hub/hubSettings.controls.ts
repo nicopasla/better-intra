@@ -96,7 +96,14 @@ function renderFeatureCard(params: {
     >
       <div class="flex items-center justify-between gap-2">
         <div class="flex flex-col gap-1">
-          <h3 class="font-bold text-base">${opt.label}</h3>
+          <h3 class="font-bold text-base flex flex-wrap items-center gap-2">
+            <span>${opt.label}</span>
+            ${opt.experimental
+              ? html`<span class="badge badge-warning badge-sm"
+                  >Experimental</span
+                >`
+              : ""}
+          </h3>
           ${opt.desc ? html`<p class="text-xs opacity-70">${opt.desc}</p>` : ""}
         </div>
         <input

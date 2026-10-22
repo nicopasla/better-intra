@@ -136,6 +136,7 @@ export type FeatureCardOption = {
   dependsOn?: ConfigKey;
   requiresCloud?: boolean;
   big?: boolean;
+  experimental?: boolean;
   subToggle?: {
     label: string;
     value: string;
@@ -702,6 +703,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
           value: "PROJECT_PAGE_REDESIGN",
           color: "info",
           big: true,
+          experimental: true,
           desc: "Replaces the 42 project page with a cleaner Better Intra layout and compact stats.",
         },
       ],

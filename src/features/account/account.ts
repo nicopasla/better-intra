@@ -474,8 +474,6 @@ export async function fetchUserVisuals(
 export interface CloudSettingsSnapshot {
   settings: Record<string, unknown>;
   revision: string | null;
-  discordId?: string;
-  discordUsername?: string;
 }
 
 export async function fetchCloudSettings(): Promise<CloudSettingsSnapshot | null> {
@@ -493,14 +491,10 @@ export async function fetchCloudSettings(): Promise<CloudSettingsSnapshot | null
     const data = (await response.json()) as {
       settings?: Record<string, unknown>;
       revision?: string | null;
-      discordId?: string;
-      discordUsername?: string;
     };
     return {
       settings: data.settings || {},
       revision: data.revision ?? null,
-      discordId: data.discordId,
-      discordUsername: data.discordUsername,
     };
   } catch (error) {
     console.error("[fetchCloudSettings] error:", error);
@@ -514,8 +508,6 @@ export async function fetchMySettings(): Promise<Partial<BetterIntraConfig> | nu
 
   try {
     const settings = { ...data.settings };
-    if (data.discordId) settings.DISCORD_ID = data.discordId;
-    if (data.discordUsername) settings.DISCORD_USERNAME = data.discordUsername;
     await chrome.storage.local.set({
       CLOUD_REVISION: data.revision,
       CLOUD_SYNC_CONFLICT: false,

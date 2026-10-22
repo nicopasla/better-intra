@@ -177,29 +177,6 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
     return;
   }
 
-  const discordId =
-    oauthParams.get("discord_id") ?? hashParams.get("discord_id");
-  const discordUsername =
-    oauthParams.get("discord_username") ?? hashParams.get("discord_username");
-  if (discordId) {
-    if (!(await peekAuthFlow("discord"))) {
-      console.warn(
-        "Better Intra: ignoring unexpected Discord callback (no link in progress).",
-      );
-      history.replaceState(null, "", window.location.pathname);
-      return;
-    }
-    await chrome.storage.local.set({
-      DISCORD_ID: discordId,
-      DISCORD_ENABLED: true,
-      DISCORD_USERNAME: discordUsername || "",
-    });
-    await clearAuthFlow("discord");
-    history.replaceState(null, "", window.location.pathname);
-    window.close();
-    return;
-  }
-
   const waitForIntra = async () => {
     const target =
       document.getElementById("root") ||

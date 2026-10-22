@@ -1,6 +1,6 @@
 # Better Intra
 
-UI and UX improvements for 42 Intra v3: logtime calendar, cluster map tools, custom profiles, shortcuts, friends widget, a students directory, evaluation notifications (Discord & mobile), and more.
+UI and UX improvements for 42 Intra v3: logtime calendar, cluster map tools, custom profiles, shortcuts, friends widget, a students directory, evaluation notifications, and more.
 
 
 ## ⚡ Quick Start
@@ -161,11 +161,10 @@ Subscribe to your 42 events in any calendar app with a private ICS subscription 
 
 ### 🔔 Notifications ☁️
 
-Get evaluation reminders when your evaluations change state — via Discord DM or the mobile app.
+Get evaluation reminders when your evaluations change state — delivered by the mobile app.
 
-* **Discord DMs** — receive alerts in your DMs via the Better Intra bot when an evaluation is booked or when correcteds are revealed. Connect your Discord account from the Notifications hub tab — auto-joins **Le Bassin** server to enable direct messages.
-* **Mobile push** — install the [mobile app (PWA)](https://mobile.betterintra.com) to get the same evaluation notifications on your phone, plus your dashboard, friends, and students. Scan the QR code in the Notifications tab to install it.
-* **Quiet hours** — pause Discord notifications during specified hours (e.g. 22:00 to 08:00) so you're not disturbed at night.
+* **Mobile push** — install the [mobile app (PWA)](https://mobile.betterintra.com) to get evaluation notifications on your phone, plus your dashboard, friends, and students. Scan the QR code in the Notifications tab to install it.
+* **Discord DMs are deprecated** — the Discord panel is kept for reference, but evaluation DMs are no longer sent.
 * Configure from the **Notifications** tab in the Settings Hub.
 
 ---
@@ -175,7 +174,7 @@ Get evaluation reminders when your evaluations change state — via Discord DM o
 An installable mobile web app at [mobile.betterintra.com](https://mobile.betterintra.com).
 
 * **Install to your home screen** — from Safari use Share → Add to Home Screen; from Chrome use the menu → Install app.
-* **Evaluation push notifications** — the same booked/revealed alerts as Discord, delivered to your phone.
+* **Evaluation push notifications** — booked and reveal alerts, delivered to your phone.
 * **Dashboard, profile, friends, and students** — a mobile-friendly view of your 42 data, including the Belgium students directory.
 * **Easy install** — the extension's Settings Hub → **Notifications** tab shows a QR code and link to install it.
 
@@ -278,10 +277,9 @@ This is a personal project. It modifies the appearance of 42 Intra and adds UI i
 * GitHub Actions (CI/CD for automated builds, versioning, and changelogs)
 * Gemini and Copilot Student (Documentation & Optimization)
 * Cloudflare Workers, KV & D1 (Serverless backend for cloud sync, eval tracking & notifications)
-* [`better-intra-worker/`](./better-intra-worker/) — separate Cloudflare Worker handling cloud sync, evaluation state tracking, project map, and Discord bot
+* [`better-intra-worker/`](./better-intra-worker/) — separate Cloudflare Worker handling cloud sync, evaluation state tracking, project map, and push notifications
 * [`better-intra-pwa/`](./better-intra-pwa/) — installable mobile web app (PWA) at [mobile.betterintra.com](https://mobile.betterintra.com)
 * 42 API (OAuth2) (Secure user identification and authentication)
-* Discord API (Bot for evaluation notifications)
 * [OpenCode](https://opencode.ai) + DeepSeek V4 Pro (AI coding agent)
 * [Font Awesome](https://fontawesome.com/icons) & [Lucide](https://lucide.dev/) (SVG icons)
 * Fonts from [Google Fonts](https://fonts.google.com/) (Noto Sans, Inter, Roboto, Open Sans, Source Sans 3, Work Sans, Manrope, Atkinson Hyperlegible Next, Ubuntu)

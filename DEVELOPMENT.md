@@ -42,7 +42,7 @@ cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && cross-env TARGET=fire
 ## Project structure
 
 - `src/main.ts` — content script entrypoint. Feature init via `featureInitializers` map.
-- `src/background.ts` — background service worker for Discord sync and tab reloading.
+- `src/background.ts` — background service worker for tab reloading.
 - `src/popup/popup.ts` — popup entrypoint (account/cloud sync UI).
 - `src/features/` — self-contained features: `logtime/`, `clusters/`, `profile/` (visuals, marks, freeze, milestones, layout, events, theme), `shortcuts/`, `account/`, `friends/`, `hub/`, `campus/`.
 - `src/config.ts` — single source of truth for all `chrome.storage` keys; typed `BetterIntraConfig` interface + defaults.
@@ -78,12 +78,13 @@ npm run deploy    # wrangler deploy
 ### Secrets
 
 ```bash
-npx wrangler secret put DISCORD_BOT_TOKEN
+npx wrangler secret put VAPID_PRIVATE_KEY
+npx wrangler secret put CRON_SECRET
 ```
 
 ### Evaluations architecture
 
-Worker cron (`*/10 * * * *`) fetches 42 API `/v2/me/scale_teams` for each user, detects state changes (`null → booked → revealed`), and sends Discord DMs. Evaluation states are stored in Cloudflare D1 (`eval_states` table).
+Worker cron (`*/10 * * * *`) fetches 42 API `/v2/me/scale_teams` for each user, detects state changes (`null → booked → revealed`), and sends Web Push notifications. Evaluation states are stored in Cloudflare D1 (`eval_states` table).
 
 ## Testing
 

@@ -1,6 +1,6 @@
 # Privacy Policy for Better Intra
 
-*Last updated: July 2026*
+*Last updated: October 2026*
 
 ## Data Collection
 
@@ -22,10 +22,9 @@ If you enable cloud sync, the following data is transmitted to the extension's C
 - Your **extension settings** — so they can be synced across devices. With Manual push (the default) settings are only uploaded when you click Push; with Auto push, enabled in the Account tab or the welcome screen, they are also uploaded on Save & Reload and merged at startup.
 - Your **friend logins** — to fetch their online status and location
 - Your **custom profile visuals** (avatar, banner, background URLs) — so other Better Intra users can see them when viewing your profile
-- Your **Discord User ID** (if enabled) — for sending evaluation notifications via DM
 - Your **outstanding project flags** — so the extension can show a star on projects that were marked "Outstanding" during evaluation
 
-All your cloud data is keyed under a hash of your login and is only accessible to you. The worker retains **invocation logs** for debugging purposes (request timestamps, endpoints, HTTP status codes, item counts, and state transitions). When relevant, identifiers are truncated to their first 6 characters to prevent full exposure. Discord API error status codes may also appear in logs. These logs are not used for tracking or analytics.
+All your cloud data is keyed under a hash of your login and is only accessible to you. The worker retains **invocation logs** for debugging purposes (request timestamps, endpoints, HTTP status codes, item counts, and state transitions). When relevant, identifiers are truncated to their first 6 characters to prevent full exposure. These logs are not used for tracking or analytics.
 
 The worker also caches **friend user IDs** in KV and **online status** in D1 to reduce calls to the 42 API. This cache is temporary and only contains 42 user IDs and online location data.
 
@@ -35,12 +34,12 @@ When you authenticate via 42 OAuth, a temporary session token is stored locally 
 
 ### Evaluations Background Service
 
-The Cloudflare Worker runs a cron job every 10 minutes to check for evaluation state changes (slot bookings, reveals, 15‑minute reminders) on behalf of enabled users. The worker fetches evaluation data from the 42 API and detects state changes. Discord DMs are sent directly by the worker — the browser extension does not poll for evaluations. Evaluation states and pending notifications are stored in Cloudflare D1.
+The Cloudflare Worker runs a cron job every 10 minutes to check for evaluation state changes (slot bookings, reveals, 15‑minute reminders) on behalf of enabled users. The worker fetches evaluation data from the 42 API and detects state changes. Web Push notifications are sent directly by the worker — the browser extension does not poll for evaluations. Evaluation states are stored in Cloudflare D1.
 
 ### Third-Party Access
 
 - **42 API** (`api.intra.42.fr`): The Cloudflare Worker calls the 42 API on your behalf to fetch friend data, evaluation states, and verify your identity. This is done with your OAuth token and is limited to what's needed for the extension's features.
-- **Discord** (optional): If you enable Discord notifications, the worker sends evaluation alerts to your Discord DMs via the Discord Bot API. The bot token is securely stored as a Cloudflare Worker secret.
+- **Push services** (Apple/Google/Mozilla): If you enable notifications, the worker sends encrypted push messages to your browser's push endpoint. The endpoint and encryption keys are stored with your settings.
 - **No analytics, tracking, or advertising services** are used.
 - **No data is sold or transferred** to any third party.
 

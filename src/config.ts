@@ -170,13 +170,6 @@ export interface BetterIntraConfig {
     | "pegasus-diamond"
     | "pegasus-vibranium";
 
-  DISCORD_ENABLED: boolean;
-  DISCORD_ID: string;
-  DISCORD_USERNAME: string;
-  DISCORD_QUIET_ENABLED: boolean;
-  DISCORD_QUIET_START: string;
-  DISCORD_QUIET_END: string;
-
   // Calendar Sync
   CALENDAR_SYNC_TOKEN: string;
   CALENDAR_EVENTS_HASH: string;
@@ -315,13 +308,6 @@ export const CONFIG_DEFAULT: BetterIntraConfig = {
   FRIENDS_DATA_CACHE: null,
   TRACKER_MODE: "off",
 
-  DISCORD_ENABLED: false,
-  DISCORD_ID: "",
-  DISCORD_USERNAME: "",
-  DISCORD_QUIET_ENABLED: false,
-  DISCORD_QUIET_START: "22:00",
-  DISCORD_QUIET_END: "08:00",
-
   CALENDAR_SYNC_TOKEN: "",
   CALENDAR_EVENTS_HASH: "",
   ADVANCED_OPEN_LINKS_NEW_TAB: true,
@@ -420,12 +406,6 @@ export const CLOUD_SYNC_KEYS: ConfigKey[] = [
   "FRIENDS_ONLINE_ONLY",
   "SHOW_FRIENDS_WIDGET",
   "SHOW_CUSTOM_AVATARS_IN_FRIENDS",
-  "DISCORD_ENABLED",
-  "DISCORD_ID",
-  "DISCORD_USERNAME",
-  "DISCORD_QUIET_ENABLED",
-  "DISCORD_QUIET_START",
-  "DISCORD_QUIET_END",
   "CALENDAR_SYNC_TOKEN",
   "CALENDAR_EVENTS_HASH",
   "ADVANCED_OPEN_LINKS_NEW_TAB",

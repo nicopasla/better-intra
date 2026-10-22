@@ -66,7 +66,7 @@ export const FEATURE_DEFS = [
     id: "notifications",
     name: "Notifications",
     icon: BELL_SVG,
-    desc: "Get evaluation reminders via Discord DM or the mobile app.",
+    desc: "Get evaluation reminders in the mobile app.",
   },
   {
     id: "calendar",
@@ -629,7 +629,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
     {
       feature: "notifications",
       label: "Notifications",
-      desc: "Discord and mobile push notifications.",
+      desc: "Push notifications via the mobile app.",
       kind: "notifications-panel",
       fullWidth: true,
     },

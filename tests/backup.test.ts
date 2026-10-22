@@ -43,7 +43,7 @@ describe("sanitizeBackup", () => {
     expect(out).not.toHaveProperty("CLOUD_TOKEN");
     expect(out).not.toHaveProperty("CLOUD_LOGIN");
     expect(out).not.toHaveProperty("PENDING_SETTINGS_RESTORE");
-    expect(out.DISCORD_ID).toBe("123");
+    expect(out).not.toHaveProperty("DISCORD_ID");
   });
 
   it("drops values whose type does not match the default", () => {
@@ -101,11 +101,11 @@ describe("cloud sync state", () => {
   });
 
   it("keeps regular settings alongside sync state", () => {
-    expect(
-      exportableSettings({ ...SYNC_STATE, LOGTIME_EMOJI: "🍕" }),
-    ).toEqual({ LOGTIME_EMOJI: "🍕" });
-    expect(
-      sanitizeBackup({ ...SYNC_STATE, LOGTIME_EMOJI: "🍕" }),
-    ).toEqual({ LOGTIME_EMOJI: "🍕" });
+    expect(exportableSettings({ ...SYNC_STATE, LOGTIME_EMOJI: "🍕" })).toEqual({
+      LOGTIME_EMOJI: "🍕",
+    });
+    expect(sanitizeBackup({ ...SYNC_STATE, LOGTIME_EMOJI: "🍕" })).toEqual({
+      LOGTIME_EMOJI: "🍕",
+    });
   });
 });

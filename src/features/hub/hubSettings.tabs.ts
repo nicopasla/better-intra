@@ -84,7 +84,7 @@ function buildPanelBody(
           class="flex flex-col items-center justify-center gap-4 py-16 px-6 text-center"
         >
           <span
-            class="size-14 opacity-40 flex items-center justify-center [&_path]:fill-current"
+            class="size-14 opacity-40 flex items-center justify-center [&_polygon]:fill-current"
             >${unsafeHTML(FORTY_TWO_SVG)}</span
           >
           <p class="opacity-50 max-w-72 text-sm">
@@ -102,7 +102,7 @@ function buildPanelBody(
           >
             <span class="font-bold tracking-wide">Connect with</span>
             <span
-              class="size-8 flex items-center justify-center [&_path]:fill-current"
+              class="size-8 flex items-center justify-center [&_polygon]:fill-current"
             >
               ${unsafeHTML(FORTY_TWO_SVG)}
             </span>

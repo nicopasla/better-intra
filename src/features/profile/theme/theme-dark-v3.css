@@ -58,6 +58,20 @@ html.dark .fixed.top-0.flex.flex-col.items-center.w-20.z-50>* {
   background-color: hsl(var(--bi-sidebar, var(--card))) !important;
 }
 
+/* Native unseen-notifications counter: its grey background plus the dark
+   theme's foreground text override makes the number disappear. */
+html.dark .user-action-count {
+  background-color: hsl(var(--foreground)) !important;
+  color: hsl(var(--background)) !important;
+  font-weight: 600;
+}
+
+/* The broad `html.dark span` rule below would otherwise repaint the counter's
+   inner span with the light foreground, making it invisible again. */
+html.dark .user-action-count span {
+  color: hsl(var(--background)) !important;
+}
+
 html.dark [class*="sidebar"] a,
 html.dark [class*="nav-left"] a {
   color: hsl(var(--foreground)) !important;

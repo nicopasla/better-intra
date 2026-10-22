@@ -436,7 +436,7 @@ function renderThemeAccentControl(
                       swatch(
                         o.value!,
                         o.value === selected,
-                        "#ffffff",
+                        "var(--color-base-content)",
                         () => void selectTheme(o.value!),
                       ),
                     )}
@@ -444,7 +444,7 @@ function renderThemeAccentControl(
                       mineSwatch(
                         c,
                         c.id === selected,
-                        "#ffffff",
+                        "var(--color-base-content)",
                         () => void selectTheme(c.id),
                       ),
                     )}

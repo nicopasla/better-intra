@@ -13,6 +13,25 @@ html:not(.dark) .bg-\[\#CE58CE\] {
   background-color: hsl(var(--bi-sidebar, var(--muted))) !important;
 }
 
+/* Intra's sidebar logo is an inline white SVG; keep it contrasting when the
+   logo header is recoloured for a light theme. */
+html:not(.dark) a.bg-\[\#4E5566\] svg path {
+  fill: hsl(var(--foreground)) !important;
+}
+
+/* Native unseen-notifications counter: grey background + white text (or the
+   dark theme's foreground override) is unreadable, so use the page's
+   foreground/background pair. */
+html:not(.dark) .user-action-count {
+  background-color: hsl(var(--foreground)) !important;
+  color: hsl(var(--background)) !important;
+  font-weight: 600;
+}
+
+html:not(.dark) .user-action-count span {
+  color: hsl(var(--background)) !important;
+}
+
 /* ============================================================================
    SIDEBAR & NAVIGATION
    ============================================================================ */

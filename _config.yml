@@ -1,0 +1,17 @@
+plugins:
+  - jekyll-relative-links
+  - jekyll-readme-index
+  - jekyll-optional-front-matter
+  - jekyll-titles-from-headings
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-default-layout
+  - jekyll-github-metadata
+relative_links:
+  enabled: true
+  collections: true
+titles_from_headings:
+  enabled: true
+  strip_title: false
+readme_index:
+  remove_originals: true

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1128 1075" width="100%" height="100%" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g transform="translate(24,6.5)" fill="#00babc">
+    <g transform="matrix(1,0,0,0.984524,0,13.625)">
+      <path d="M1036,105L919,105L730,220L730,387L927,387L927,410L730,528L730,945L1036,945L1036,723L842,723L842,701L1036,581L1036,105Z" style="fill-rule:nonzero;"/>
+    </g>
+    <path d="M44,118L44,945L541,945L541,632L172,837L172,190L464,190L584,118L44,118Z" style="fill-rule:nonzero;"/>
+    <g transform="matrix(1,0,0,1.006083,0,-5.748175)">
+      <path d="M625,123L198,379L198,592L566,592L566,945L625,945L625,510L313,510L625,320L625,123Z" style="fill-rule:nonzero;"/>
+    </g>
+    <g transform="matrix(1,0,0,1,-8,8)">
+      <path d="M738,495L874,413L738,413L738,495Z" style="fill-rule:nonzero;"/>
+    </g>
+    <g transform="matrix(1,0,0,1,6,4)">
+      <path d="M1030,615L895,697L1030,697L1030,615Z" style="fill-rule:nonzero;"/>
+    </g>
+  </g>
+</svg>

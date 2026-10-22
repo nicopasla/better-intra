@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "version": "1.11.7",
+      "date": "2026-10-22",
+      "highlights": [
+        "Evaluation notifications are now delivered by the mobile app only; the old Discord DM panel is marked as deprecated.",
+        "Fixed evaluation notification times so they match the Upcoming card and your local timezone.",
+        "Improved contrast across themes: the selected theme border, the sidebar 42 logo and the unseen-notifications counter are now readable in light and dark themes.",
+        "Logtime events no longer disappear when switching between the normal, compact, heatmap and carousel views.",
+        "The Project page add-on is now labelled Experimental."
+      ]
+    },
+    {
       "version": "1.11.6",
       "date": "2026-10-19",
       "highlights": [

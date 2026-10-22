@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## [1.11.7] - 2026-10-22
+
+### Features 🎉
+
+- feat(hub): mark Project page add-on as experimental ([b2fbd10](https://github.com/nicopasla/better-intra/commit/b2fbd10))
+- feat(notifications): deprecate Discord and remove quiet hours ([7559070](https://github.com/nicopasla/better-intra/commit/7559070))
+- feat(profile): add per-card resets to username badge settings ([bbedb78](https://github.com/nicopasla/better-intra/commit/bbedb78))
+- feat(profile): add reverse shimmer and polish username badge controls ([ce5f029](https://github.com/nicopasla/better-intra/commit/ce5f029))
+
+### Bug fixes 🐛
+
+- fix(logtime): keep events across view changes (#16) ([cfd0af8](https://github.com/nicopasla/better-intra/commit/cfd0af8))
+- fix(hub): improve theme contrast (#15) ([ae12b3b](https://github.com/nicopasla/better-intra/commit/ae12b3b))
+- fix(profile): pause username badge animation while title menu is open ([bab39ab](https://github.com/nicopasla/better-intra/commit/bab39ab))
+- fix(logtime): keep month names from overflowing at large font scales ([1d6f6a4](https://github.com/nicopasla/better-intra/commit/1d6f6a4))
+- fix(profile): align username badge settings cards ([7f57317](https://github.com/nicopasla/better-intra/commit/7f57317))
+
+### Maintenance 🧹
+
+- chore(worker): update eval notification timestamps ([2b070ec](https://github.com/nicopasla/better-intra/commit/2b070ec))
+
 ## [1.11.6] - 2026-10-19
 
 ### Features 🎉
@@ -1461,7 +1482,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.6...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.7...HEAD
+[1.11.7]: https://github.com/nicopasla/better-intra/compare/v1.11.6...v1.11.7
 [1.11.6]: https://github.com/nicopasla/better-intra/compare/v1.11.5...v1.11.6
 [1.11.5]: https://github.com/nicopasla/better-intra/compare/v1.11.4...v1.11.5
 [1.11.4]: https://github.com/nicopasla/better-intra/compare/v1.11.3...v1.11.4

@@ -440,7 +440,7 @@ function badgeAnimationCss(
     case "rotate":
       element.push(
         "transform-origin: center !important",
-        "animation: ft-badge-rotate 3s linear infinite !important",
+        "animation: ft-badge-rotate 3s linear 1 !important",
       );
       break;
     case "gradient":

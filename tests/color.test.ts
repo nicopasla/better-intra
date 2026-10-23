@@ -5,6 +5,9 @@ import {
   perceptualLuminance,
   toHex,
   toRgba,
+  ensureContrast,
+  contrastRatio,
+  MIN_BADGE_CONTRAST,
 } from "../src/utils/color";
 
 describe("toRgba", () => {
@@ -57,5 +60,38 @@ describe("mixToward", () => {
 
   it("leaves the colour in place at amount 0", () => {
     expect(mixToward("#123456", "#ffffff", 0)).toBe("#123456");
+  });
+});
+
+describe("ensureContrast", () => {
+  it("returns an already-readable colour unchanged", () => {
+    expect(ensureContrast("#ffffff", "#000000")).toBe("#ffffff");
+    expect(ensureContrast("#000000", "#ffffff")).toBe("#000000");
+  });
+
+  it("lifts black text off a black background", () => {
+    const out = ensureContrast("#000000", "#000000");
+    expect(contrastRatio(out, "#000000")).toBeGreaterThanOrEqual(
+      MIN_BADGE_CONTRAST,
+    );
+  });
+
+  it("keeps the hue when only a nudge is needed", () => {
+    const out = ensureContrast("#222222", "#000000");
+    expect(out).not.toBe("#222222");
+    expect(contrastRatio(out, "#000000")).toBeGreaterThanOrEqual(
+      MIN_BADGE_CONTRAST,
+    );
+  });
+
+  it("handles non-hex colours and mid-tone backgrounds", () => {
+    const out = ensureContrast("rgb(0, 0, 0)", "#00babc");
+    expect(contrastRatio(out, "#00babc")).toBeGreaterThanOrEqual(
+      MIN_BADGE_CONTRAST,
+    );
+  });
+
+  it("leaves unparsable colours untouched", () => {
+    expect(ensureContrast("not-a-colour", "#000000")).toBe("not-a-colour");
   });
 });

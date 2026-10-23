@@ -26,7 +26,7 @@ export function toHex(color: string): string {
   return parsed.isValid() ? parsed.toHex() : color;
 }
 
-export function contrastText(color: string): string {
+export function contrastText(color: string): "#000000" | "#ffffff" {
   return perceptualLuminance(color) >= 128 ? "#000000" : "#ffffff";
 }
 
@@ -58,6 +58,28 @@ export function contrastRatio(a: string, b: string): number {
   const lb = relativeLuminance(b);
   const [hi, lo] = la > lb ? [la, lb] : [lb, la];
   return (hi + 0.05) / (lo + 0.05);
+}
+
+/** WCAG AA contrast for badge text, enforced for every pair (including the
+ *  brand teal default, which only reaches 2.4:1 with white). */
+export const MIN_BADGE_CONTRAST = 4.5;
+
+/** Nudges `color` toward black/white until it reaches `min` contrast on
+ *  `background`, keeping as much of the original hue as possible. */
+export function ensureContrast(
+  color: string,
+  background: string,
+  min: number = MIN_BADGE_CONTRAST,
+): string {
+  if (!colord(color).isValid() || !colord(background).isValid()) return color;
+  if (contrastRatio(color, background) >= min) return color;
+
+  const target = contrastText(background);
+  for (let step = 1; step <= 10; step++) {
+    const candidate = mixToward(color, target, step / 10);
+    if (contrastRatio(candidate, background) >= min) return candidate;
+  }
+  return target;
 }
 
 export { perceptualLuminance };

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { NAME_BADGE_SELECTOR } from "../src/features/profile/selectors";
+import { ensureContrast } from "../src/utils/color";
 import {
   usernameBadgeCss,
   usernameBadgeStylesheet,
@@ -40,9 +41,11 @@ describe("usernameBadgeCss", () => {
   it("renders the default pill when no config is provided", () => {
     const css = usernameBadgeCss(undefined);
     expect(css).toContain("display: flex !important");
-    expect(css).toContain("background-color: #00babc !important");
-    expect(css).toContain("color: #ffffff !important");
-    expect(css).toContain("border: 1px solid #00babc !important");
+    expect(css).toContain("background-color: #4352ff !important");
+    expect(css).toContain(
+      `color: ${ensureContrast("#ffffff", "#4352ff")} !important`,
+    );
+    expect(css).toContain("border: 1px solid #4352ff !important");
     expect(css).toContain("border-radius: 0.5rem !important");
   });
 
@@ -135,6 +138,13 @@ describe("usernameBadgeCss", () => {
     expect(diagonal).toContain("100% { background-position: -150% -150%; }");
   });
 
+  it("keeps the text readable on the chosen background", () => {
+    const css = usernameBadgeCss({ bg: "#000000", text: "#000000" });
+    const expected = ensureContrast("#000000", "#000000");
+    expect(css).toContain(`color: ${expected} !important`);
+    expect(css).not.toMatch(/(?:^|;\s*)color:\s*#000000\s*!important/i);
+  });
+
   it("applies padding (vertical, then double horizontally)", () => {
     expect(usernameBadgeCss({})).toContain("padding: 4px 8px !important");
     expect(usernameBadgeCss({ padding: 6 })).toContain(
@@ -195,7 +205,7 @@ describe("usernameBadgeCss", () => {
 
   it("renders the default badge when none is provided", () => {
     expect(usernameBadgeStylesheet("#badge", undefined)).toContain(
-      "background-color: #00babc !important",
+      "background-color: #4352ff !important",
     );
   });
 });

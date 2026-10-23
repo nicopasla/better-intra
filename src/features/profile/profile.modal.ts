@@ -21,6 +21,7 @@ import {
   refreshBadgeLayout,
 } from "./badges.ts";
 import { getEffectiveTheme } from "./theme/theme-manager.ts";
+import { contrastRatio, ensureContrast } from "../../utils/color.ts";
 import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
 import { createSortable, moveItem } from "../../utils/sortable.ts";
 import LINK_SVG from "../../assets/svg/link.svg?raw";
@@ -622,7 +623,7 @@ function renderPanelContent(
                 <input
                   type="color"
                   class="input w-full h-12 p-1"
-                  .value="${state.usernameBadgeBg || "#00babc"}"
+                  .value="${state.usernameBadgeBg || "#4352ff"}"
                   @input="${(e: Event) =>
                     onFormUpdate({
                       usernameBadgeBg: (e.target as HTMLInputElement).value,
@@ -646,7 +647,7 @@ function renderPanelContent(
                 <input
                   type="color"
                   class="input w-full h-12 p-1"
-                  .value="${state.usernameBadgeBorder || "#00babc"}"
+                  .value="${state.usernameBadgeBorder || "#4352ff"}"
                   @input="${(e: Event) =>
                     onFormUpdate({
                       usernameBadgeBorder: (e.target as HTMLInputElement).value,
@@ -654,6 +655,23 @@ function renderPanelContent(
                 />
               </label>
             </div>
+            ${(() => {
+              const bg = state.usernameBadgeBg || "#4352ff";
+              const text = state.usernameBadgeText || "#ffffff";
+              const ratio = contrastRatio(text, bg);
+              const adjusted = ensureContrast(text, bg);
+              const tone =
+                ratio >= 4.5
+                  ? "text-success"
+                  : ratio >= 3
+                    ? "text-warning"
+                    : "text-error";
+              return html`<p class="text-xs ${tone} pt-1">
+                Text contrast: ${ratio.toFixed(1)}:1${adjusted === text
+                  ? ""
+                  : ` — renders as ${adjusted}`}
+              </p>`;
+            })()}
           </div>
           <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
             <div class="flex items-center justify-between mb-3">
@@ -1568,7 +1586,12 @@ export const createSettingsModal = async (
         if (!state.usernameBadgeText) {
           keysToRemove.push("PROFILE_USERNAME_BADGE_TEXT");
         } else {
-          batchData["PROFILE_USERNAME_BADGE_TEXT"] = state.usernameBadgeText;
+          // Never persist an unreadable pair: the badge clamps at render time,
+          // but the stored/synced config should already be legible.
+          batchData["PROFILE_USERNAME_BADGE_TEXT"] = ensureContrast(
+            state.usernameBadgeText,
+            state.usernameBadgeBg || "#4352ff",
+          );
         }
         if (!state.usernameBadgeBorder) {
           keysToRemove.push("PROFILE_USERNAME_BADGE_BORDER");

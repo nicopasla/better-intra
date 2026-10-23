@@ -1,4 +1,5 @@
 import { getConfig, getConfigMany } from "../../config.ts";
+import { contrastText, ensureContrast } from "../../utils/color.ts";
 import { ensureDocumentStyle } from "../../utils/style.ts";
 import { getLoginFromPage } from "../../utils/profile-login.ts";
 import { applyProfileLook, clearProfileLook } from "./theme/theme-manager.ts";
@@ -262,7 +263,7 @@ const hasBackground = (el: HTMLElement | null, url?: string) => {
 
 export const badgeColorCss = (badgeBg?: string): string => {
   if (!badgeBg) return "";
-  return `background-color: ${badgeBg} !important; border-color: ${badgeBg} !important;`;
+  return `background-color: ${badgeBg} !important; border-color: ${badgeBg} !important; color: ${contrastText(badgeBg)} !important;`;
 };
 
 const BADGE_RADIUS: Record<string, string> = {
@@ -300,8 +301,8 @@ const clampBadgeSize = (value: number | undefined, fallback: number): number =>
 function badgeColors(badge: VisualUrls["usernameBadge"]): BadgeColors {
   const radius =
     BADGE_RADIUS[badge?.shape || "rounded"] || BADGE_RADIUS.rounded;
-  const bg = badge?.bg || "#00babc";
-  const text = badge?.text || "#ffffff";
+  const bg = badge?.bg || "#4352ff";
+  const text = ensureContrast(badge?.text || "#ffffff", bg);
   return {
     radius,
     bg,
@@ -656,8 +657,8 @@ export const BADGE_PROPERTIES = `
 
 export const BADGE_KEYFRAMES = `
 @keyframes ft-badge-glow {
-  0%, 100% { box-shadow: 0 0 3px 0 var(--ft-badge-glow, #00babc); }
-  50% { box-shadow: 0 0 16px 4px var(--ft-badge-glow, #00babc); }
+  0%, 100% { box-shadow: 0 0 3px 0 var(--ft-badge-glow, #4352ff); }
+  50% { box-shadow: 0 0 16px 4px var(--ft-badge-glow, #4352ff); }
 }
 @keyframes ft-badge-pulse {
   0%, 100% { transform: scale(1); }

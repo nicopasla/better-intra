@@ -184,11 +184,15 @@ describe("badgeColorCss", () => {
     expect(badgeColorCss(undefined)).toBe("");
   });
 
-  it("sets background and border-color, not text color", () => {
-    const css = badgeColorCss("#613583");
-    expect(css).toContain("background-color: #613583 !important");
-    expect(css).toContain("border-color: #613583 !important");
-    expect(css).not.toContain(" color:");
+  it("sets a readable text colour with the background and border", () => {
+    const dark = badgeColorCss("#613583");
+    expect(dark).toContain("background-color: #613583 !important");
+    expect(dark).toContain("border-color: #613583 !important");
+    expect(dark).toContain("color: #ffffff !important");
+
+    const light = badgeColorCss("#ffffff");
+    expect(light).toContain("background-color: #ffffff !important");
+    expect(light).toContain("color: #000000 !important");
   });
 });
 

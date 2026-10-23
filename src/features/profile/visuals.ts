@@ -273,6 +273,17 @@ const BADGE_RADIUS: Record<string, string> = {
 
 const MARQUEE_ATTR = "data-ft-marquee-inner";
 
+/** Gradient angle and tile size for each shimmer direction. `background-size`
+ *  must exceed the badge on the sweep axis, otherwise the highlight never fully
+ *  crosses it. */
+const SHIMMER_STYLES: Record<string, { angle: string; size: string }> = {
+  shimmer: { angle: "110deg", size: "250% 100%" },
+  "shimmer-reverse": { angle: "110deg", size: "250% 100%" },
+  "shimmer-down": { angle: "180deg", size: "100% 250%" },
+  "shimmer-up": { angle: "180deg", size: "100% 250%" },
+  "shimmer-diagonal": { angle: "135deg", size: "250% 250%" },
+};
+
 interface BadgeColors {
   radius: string;
   bg: string;
@@ -323,7 +334,9 @@ function badgeAnimationCss(
     "pointer-events: none",
   ];
 
-  switch (badge?.animation) {
+  const animation = badge?.animation ?? "none";
+
+  switch (animation) {
     case "glow":
       element.push(
         `--ft-badge-glow: ${c.border}`,
@@ -340,21 +353,19 @@ function badgeAnimationCss(
       element.push("animation: ft-badge-rainbow 4s linear infinite !important");
       break;
     case "shimmer":
-      element.push(
-        "background-image: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.5) 50%, transparent 70%) !important",
-        "background-size: 250% 100% !important",
-        "background-repeat: no-repeat !important",
-        "animation: ft-badge-shimmer 2.2s linear infinite !important",
-      );
-      break;
     case "shimmer-reverse":
+    case "shimmer-down":
+    case "shimmer-up":
+    case "shimmer-diagonal": {
+      const shimmer = SHIMMER_STYLES[animation];
       element.push(
-        "background-image: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.5) 50%, transparent 70%) !important",
-        "background-size: 250% 100% !important",
+        `background-image: linear-gradient(${shimmer.angle}, transparent 30%, rgba(255,255,255,0.5) 50%, transparent 70%) !important`,
+        `background-size: ${shimmer.size} !important`,
         "background-repeat: no-repeat !important",
-        "animation: ft-badge-shimmer-reverse 2.2s linear infinite !important",
+        `animation: ft-badge-${animation} 2.2s linear infinite !important`,
       );
       break;
+    }
     case "float":
       element.push(
         "animation: ft-badge-float 3s ease-in-out infinite !important",
@@ -663,6 +674,18 @@ export const BADGE_KEYFRAMES = `
 @keyframes ft-badge-shimmer-reverse {
   0% { background-position: 250% 0; }
   100% { background-position: -150% 0; }
+}
+@keyframes ft-badge-shimmer-down {
+  0% { background-position: 0 250%; }
+  100% { background-position: 0 -150%; }
+}
+@keyframes ft-badge-shimmer-up {
+  0% { background-position: 0 -150%; }
+  100% { background-position: 0 250%; }
+}
+@keyframes ft-badge-shimmer-diagonal {
+  0% { background-position: 250% 250%; }
+  100% { background-position: -150% -150%; }
 }
 @keyframes ft-badge-float {
   0%, 100% { transform: translateY(0); }

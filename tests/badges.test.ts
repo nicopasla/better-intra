@@ -159,6 +159,9 @@ describe("badge animations", () => {
       "softblur",
       "elastic",
       "shimmer-reverse",
+      "shimmer-down",
+      "shimmer-up",
+      "shimmer-diagonal",
     ]) {
       const out = sanitizeVisualUrls({
         usernameBadge: { animation },

@@ -66,6 +66,9 @@ interface FormState {
     | "rainbow"
     | "shimmer"
     | "shimmer-reverse"
+    | "shimmer-down"
+    | "shimmer-up"
+    | "shimmer-diagonal"
     | "float"
     | "wobble"
     | "bounce"
@@ -82,9 +85,7 @@ interface FormState {
     | "neon"
     | "echo"
     | "softblur"
-    | "elastic"
-    | "typewriter"
-    | "marquee";
+    | "elastic";
   usernameBadgePadding: number;
   uploading: string;
 }
@@ -869,8 +870,11 @@ function renderPanelContent(
                       ["rainbow", "Rainbow"],
                       ["rotate", "Rotate"],
                       ["shake", "Shake"],
+                      ["shimmer-up", "Shimmer (bottom to top)"],
+                      ["shimmer-diagonal", "Shimmer (diagonal)"],
                       ["shimmer-reverse", "Shimmer (left to right)"],
                       ["shimmer", "Shimmer (right to left)"],
+                      ["shimmer-down", "Shimmer (top to bottom)"],
                       ["softblur", "Soft blur"],
                       ["typewriter", "Typewriter"],
                       ["wobble", "Wobble"],

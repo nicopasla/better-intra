@@ -128,6 +128,9 @@ export interface BetterIntraConfig {
     | "rainbow"
     | "shimmer"
     | "shimmer-reverse"
+    | "shimmer-down"
+    | "shimmer-up"
+    | "shimmer-diagonal"
     | "float"
     | "wobble"
     | "bounce"
@@ -140,7 +143,11 @@ export interface BetterIntraConfig {
     | "ants"
     | "conic"
     | "typewriter"
-    | "marquee";
+    | "marquee"
+    | "neon"
+    | "echo"
+    | "softblur"
+    | "elastic";
   PROFILE_USERNAME_BADGE_PADDING: number;
   PROFILE_IMAGE_HISTORY: string[];
   PROFILE_BANNER_HISTORY: string[];

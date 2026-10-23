@@ -5,6 +5,7 @@ import {
   usernameBadgeStylesheet,
   applyUsernameTitleLine,
   applyUsernameMarquee,
+  BADGE_KEYFRAMES,
 } from "../src/features/profile/visuals";
 
 beforeEach(() => {
@@ -79,6 +80,59 @@ describe("usernameBadgeCss", () => {
       "animation: ft-badge-shimmer-reverse 2.2s linear infinite !important",
     );
     expect(usernameBadgeCss({ animation: "none" })).not.toContain("animation:");
+  });
+
+  it("sweeps the shimmer vertically and diagonally", () => {
+    const down = usernameBadgeCss({ animation: "shimmer-down" });
+    expect(down).toContain("linear-gradient(180deg, transparent 30%");
+    expect(down).toContain("background-size: 100% 250% !important");
+    expect(down).toContain(
+      "animation: ft-badge-shimmer-down 2.2s linear infinite !important",
+    );
+
+    const up = usernameBadgeCss({ animation: "shimmer-up" });
+    expect(up).toContain("linear-gradient(180deg, transparent 30%");
+    expect(up).toContain("background-size: 100% 250% !important");
+    expect(up).toContain(
+      "animation: ft-badge-shimmer-up 2.2s linear infinite !important",
+    );
+
+    const diagonal = usernameBadgeCss({ animation: "shimmer-diagonal" });
+    expect(diagonal).toContain("linear-gradient(135deg, transparent 30%");
+    expect(diagonal).toContain("background-size: 250% 250% !important");
+    expect(diagonal).toContain(
+      "animation: ft-badge-shimmer-diagonal 2.2s linear infinite !important",
+    );
+  });
+
+  it("sweeps each shimmer in the direction its label says", () => {
+    // With background-size > 100%, a *smaller* background-position percentage
+    // puts the stripe further right/down, so the start value is the destination
+    // the label names.
+    const block = (name: string) =>
+      BADGE_KEYFRAMES.match(
+        new RegExp(`@keyframes ${name} \\{[^}]*\\}[^}]*\\}`),
+      )?.[0] ?? "";
+
+    const horizontal = block("ft-badge-shimmer");
+    expect(horizontal).toContain("0% { background-position: -150% 0; }");
+    expect(horizontal).toContain("100% { background-position: 250% 0; }");
+
+    const leftToRight = block("ft-badge-shimmer-reverse");
+    expect(leftToRight).toContain("0% { background-position: 250% 0; }");
+    expect(leftToRight).toContain("100% { background-position: -150% 0; }");
+
+    const topToBottom = block("ft-badge-shimmer-down");
+    expect(topToBottom).toContain("0% { background-position: 0 250%; }");
+    expect(topToBottom).toContain("100% { background-position: 0 -150%; }");
+
+    const bottomToTop = block("ft-badge-shimmer-up");
+    expect(bottomToTop).toContain("0% { background-position: 0 -150%; }");
+    expect(bottomToTop).toContain("100% { background-position: 0 250%; }");
+
+    const diagonal = block("ft-badge-shimmer-diagonal");
+    expect(diagonal).toContain("0% { background-position: 250% 250%; }");
+    expect(diagonal).toContain("100% { background-position: -150% -150%; }");
   });
 
   it("applies padding (vertical, then double horizontally)", () => {

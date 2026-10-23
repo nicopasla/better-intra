@@ -1,8 +1,6 @@
-const INTRAPY_BASE = "https://intrapy.intra.42.fr";
+export const INTRAPY_BASE = "https://intrapy.intra.42.fr";
 
-export function waitForIntrapyToken(
-  timeout = 4000,
-): Promise<string | null> {
+export function waitForIntrapyToken(timeout = 4000): Promise<string | null> {
   return new Promise((resolve) => {
     let resolved = false;
     let timer: ReturnType<typeof setTimeout>;
@@ -57,9 +55,10 @@ export async function isPisciner(login: string): Promise<boolean> {
     const token = await waitForIntrapyToken();
     if (!token) return false;
 
-    const data = await intrapyFetch<
-      Array<{ grade?: string; slug?: string }>
-    >(`/api/v1/users/${login}/cursus`, token);
+    const data = await intrapyFetch<Array<{ grade?: string; slug?: string }>>(
+      `/api/v1/users/${login}/cursus`,
+      token,
+    );
     if (!Array.isArray(data)) return false;
 
     const hasPiscine = data.some((c) => c.grade === "Pisciner");

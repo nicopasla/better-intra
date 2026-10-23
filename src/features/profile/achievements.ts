@@ -5,7 +5,11 @@ import { waitFor } from "../../utils/wait-for.ts";
 import { getCloudLogin } from "../account/account.ts";
 import { getLoginFromPage } from "../../utils/profile-login.ts";
 import { formatAbsoluteDate, parseIntraDate } from "../../utils/dates.ts";
-import { intrapyFetch, waitForIntrapyToken } from "../../utils/intrapy.ts";
+import {
+  INTRAPY_BASE,
+  intrapyFetch,
+  waitForIntrapyToken,
+} from "../../utils/intrapy.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
 import CHECK_CIRCLE_SVG from "../../assets/svg/check-circle.svg?raw";
 
@@ -16,9 +20,94 @@ interface Achievement {
   svg: string;
 }
 
+/** An achievement icon is either inline SVG markup (fetched inlined) or a URL
+ *  the browser can load itself. */
+export type AchievementIcon =
+  | { kind: "inline"; markup: string }
+  | { kind: "url"; url: string };
+
 const INJECTED_ID = "ft-achievements-injected";
 let achievementsInitialized = false;
 let lastInjectedLogin: string | null = null;
+
+/** The intrapy API returns `svg` either as markup or as a URL, sometimes
+ *  relative to the intrapy host. Resolve it to a source we can render. */
+export function resolveAchievementIconSource(
+  value: string | null | undefined,
+): AchievementIcon | null {
+  const source = (value ?? "").trim();
+  if (!source) return null;
+  if (source.startsWith("<")) return { kind: "inline", markup: source };
+
+  const hasScheme = /^[a-z][a-z0-9+.-]*:/i.test(source);
+  const url = hasScheme
+    ? source
+    : source.startsWith("//")
+      ? `https:${source}`
+      : `${INTRAPY_BASE}${source.startsWith("/") ? "" : "/"}${source}`;
+  return { kind: "url", url };
+}
+
+/** Sizes an SVG for the 45×45 icon box without touching its children: the old
+ *  blanket `width|height` attribute strip also hit `<rect>`/`<image>`/`<mask>`
+ *  nodes and left shape-based icons blank. */
+export function normalizeAchievementSvg(markup: string): string {
+  const source = markup.trim();
+  if (!source.startsWith("<")) return markup;
+  try {
+    const doc = new DOMParser().parseFromString(source, "image/svg+xml");
+    const root = doc.documentElement;
+    if (!root || root.nodeName.toLowerCase() !== "svg") return markup;
+
+    const dimension = (name: string): number => {
+      const raw = (root.getAttribute(name) ?? "").trim();
+      const match = /^(\d+(?:\.\d+)?)(?:px)?$/i.exec(raw);
+      return match ? Number.parseFloat(match[1]) : 0;
+    };
+    const width = dimension("width");
+    const height = dimension("height");
+    if (!root.getAttribute("viewBox") && width > 0 && height > 0) {
+      root.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    }
+    root.setAttribute("width", "100%");
+    root.setAttribute("height", "100%");
+    return new XMLSerializer().serializeToString(root);
+  } catch {
+    return markup;
+  }
+}
+
+/** Bearer-protected intrapy assets are fetched and inlined; anything else is
+ *  left to the browser as an `<img>`, which bypasses CORS and carries the intra
+ *  session cookie (a bare cross-origin `fetch` carries neither). */
+async function loadIcon(
+  value: string,
+  token: string,
+): Promise<AchievementIcon | null> {
+  const resolved = resolveAchievementIconSource(value);
+  if (!resolved) return null;
+  if (resolved.kind === "inline") {
+    return { kind: "inline", markup: normalizeAchievementSvg(resolved.markup) };
+  }
+  if (!resolved.url.startsWith(INTRAPY_BASE)) return resolved;
+
+  try {
+    const res = await fetch(resolved.url, {
+      headers: { Authorization: token },
+      credentials: "include",
+    });
+    if (res.ok) {
+      const text = await res.text();
+      if (text.trim().startsWith("<")) {
+        return { kind: "inline", markup: normalizeAchievementSvg(text) };
+      }
+    }
+    console.warn("[achievements] icon fetch failed", resolved.url, res.status);
+  } catch (e) {
+    console.warn("[achievements] icon fetch error", resolved.url, e);
+  }
+  return resolved;
+}
 
 async function fetchAchievements(
   login: string,
@@ -50,9 +139,29 @@ function findCard(): HTMLElement | null {
   return null;
 }
 
+function renderIcon(icon: AchievementIcon | undefined) {
+  if (!icon) {
+    return html`<div
+      class="w-8 h-8 bg-zinc-200 rounded-sm animate-pulse"
+    ></div>`;
+  }
+  if (icon.kind === "inline") {
+    return html`<div style="width:45px;height:45px">
+      ${unsafeHTML(icon.markup)}
+    </div>`;
+  }
+  return html`<img
+    src="${icon.url}"
+    alt=""
+    width="45"
+    height="45"
+    style="width:45px;height:45px;object-fit:contain"
+  />`;
+}
+
 function renderList(
   achievements: Achievement[],
-  svgCache: Map<string, string>,
+  icons: Map<string, AchievementIcon>,
 ) {
   return html`<div
     class="grid gap-4 mt-4"
@@ -88,22 +197,14 @@ function renderList(
             </div>
           </div>
           <div class="bg-zinc-100 w-20 grid place-items-center shrink-0">
-            ${svgCache.has(a.svg)
-              ? html`<div style="width:45px;height:45px">
-                  ${unsafeHTML(
-                    svgCache.get(a.svg)!.replace(/(width|height)="[^"]*"/g, ""),
-                  )}
-                </div>`
-              : html`<div
-                  class="w-8 h-8 bg-zinc-200 rounded-sm animate-pulse"
-                ></div>`}
+            ${renderIcon(icons.get(a.svg))}
           </div>
         </div>`,
     )}
   </div>`;
 }
 
-function inject(achievements: Achievement[]) {
+function inject(achievements: Achievement[], token: string) {
   const existing = document.getElementById(INJECTED_ID);
   const card = findCard();
   if (!card) {
@@ -127,34 +228,33 @@ function inject(achievements: Achievement[]) {
   container.id = INJECTED_ID;
   container.style.cssText = `font-family: ${INTRA_FONT};`;
 
-  const svgCache = new Map<string, string>();
+  const icons = new Map<string, AchievementIcon>();
   const load = (a: Achievement) => {
-    const curried = () => render(renderList(achievements, svgCache), container);
-    if (svgCache.has(a.svg)) {
+    const curried = () => render(renderList(achievements, icons), container);
+    if (icons.has(a.svg)) {
       curried();
       return;
     }
-    fetch(a.svg)
-      .then((r) => (r.ok ? r.text() : null))
-      .then((t) => {
-        if (t) svgCache.set(a.svg, t);
+    loadIcon(a.svg, token)
+      .then((icon) => {
+        if (icon) icons.set(a.svg, icon);
         curried();
       })
-      .catch(() => {});
+      .catch(() => curried());
   };
   for (const a of achievements) load(a);
-  render(renderList(achievements, svgCache), container);
+  render(renderList(achievements, icons), container);
   area.appendChild(container);
 }
 
-async function tryInject(achievements: Achievement[]) {
+async function tryInject(achievements: Achievement[], token: string) {
   const sorted = [...achievements].sort(
     (a, b) =>
       parseIntraDate(b.achieved_at).getTime() -
       parseIntraDate(a.achieved_at).getTime(),
   );
   await waitFor(() => findCard() !== null, 1000).then((ok) => {
-    if (ok) inject(sorted);
+    if (ok) inject(sorted, token);
   });
 }
 
@@ -179,5 +279,5 @@ export async function initAchievements() {
   const achievements = await fetchAchievements(login, token);
   if (achievements.length === 0) return;
 
-  await tryInject(achievements);
+  await tryInject(achievements, token);
 }

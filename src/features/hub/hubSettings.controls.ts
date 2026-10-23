@@ -480,14 +480,14 @@ function renderThemeAccentControl(
                     : "opacity:0.4; filter:grayscale(1);"}"
                 >
                   ${sunChip(
-                    "sunset",
-                    sunTimes.sunset,
-                    isSchedule && isDarkNow(),
-                  )}
-                  ${sunChip(
                     "sunrise",
                     sunTimes.sunrise,
                     isSchedule && !isDarkNow(),
+                  )}
+                  ${sunChip(
+                    "sunset",
+                    sunTimes.sunset,
+                    isSchedule && isDarkNow(),
                   )}
                 </span>`
               : ""}

@@ -105,7 +105,7 @@ function renderNumberStepper(value: number, onChange: (value: number) => void) {
     <div class="join w-full">
       <button
         type="button"
-        class="btn join-item btn-lg px-4 text-xl font-bold"
+        class="btn join-item px-3 font-bold"
         aria-label="Decrease"
         @click="${() => onChange(clampBadgeNumber(value - 1))}"
       >
@@ -116,14 +116,14 @@ function renderNumberStepper(value: number, onChange: (value: number) => void) {
         min="0"
         max="8"
         step="1"
-        class="input input-lg join-item ft-number-input w-full text-center"
+        class="input join-item ft-number-input flex-1 min-w-0 text-center"
         .value="${String(value)}"
         @input="${(e: Event) =>
           onChange(clampBadgeNumber((e.target as HTMLInputElement).value))}"
       />
       <button
         type="button"
-        class="btn join-item btn-lg px-4 text-xl font-bold"
+        class="btn join-item px-3 font-bold"
         aria-label="Increase"
         @click="${() => onChange(clampBadgeNumber(value + 1))}"
       >
@@ -674,20 +674,22 @@ function renderPanelContent(
                 Reset
               </button>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label class="form-control">
-                <span class="text-sm opacity-70 pb-1">Border width</span>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex flex-col">
+                <span class="text-sm opacity-70 pb-1 text-center"
+                  >Border width</span
+                >
                 ${renderNumberStepper(state.usernameBadgeBorderWidth, (value) =>
                   onFormUpdate({ usernameBadgeBorderWidth: value }),
                 )}
               </label>
-              <label class="form-control">
-                <span class="text-sm opacity-70 pb-1">Padding</span>
+              <label class="flex flex-col">
+                <span class="text-sm opacity-70 pb-1 text-center">Padding</span>
                 ${renderNumberStepper(state.usernameBadgePadding, (value) =>
                   onFormUpdate({ usernameBadgePadding: value }),
                 )}
               </label>
-              <label class="form-control sm:col-span-2">
+              <label class="form-control col-span-2">
                 <span class="text-sm opacity-70 pb-1">Corners</span>
                 <div class="join w-full">
                   <input
@@ -1017,7 +1019,7 @@ function renderPanelContent(
             const isHidden = knownHidden.has(title.toLowerCase());
             return html`
               <div
-                class="btn border shadow-sm transition-all select-none gap-2 font-bold normal-case px-3 cursor-grab active:cursor-grabbing ${isHidden
+                class="btn border shadow-sm transition-all select-none gap-2 font-bold normal-case px-3 cursor-grab active:cursor-grabbing [&_svg]:fill-current ${isHidden
                   ? "opacity-30 line-through saturate-50 scale-95"
                   : ""}"
                 data-ft-badge-idx="${idx}"
@@ -1029,7 +1031,7 @@ function renderPanelContent(
                 >
                 <button
                   type="button"
-                  class="p-1 -ml-1 rounded hover:bg-black/10 transition-colors cursor-pointer flex items-center justify-center text-white"
+                  class="p-1 -ml-1 rounded hover:bg-black/10 transition-colors cursor-pointer flex items-center justify-center"
                   @click="${() => setBadgeHidden(title, !isHidden)}"
                   data-tip="${isHidden ? "Show badge" : "Hide badge"}"
                 >

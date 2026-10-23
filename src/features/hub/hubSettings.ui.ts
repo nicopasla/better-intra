@@ -215,14 +215,18 @@ async function createModal(
         font-family: ${INTRA_FONT} !important;
       }
       .tab-content {
+        display: block !important;
         height: auto !important;
         overflow: visible !important;
+      }
+      .tab-content[hidden] {
+        display: none !important;
       }
       .tabs {
         align-content: flex-start !important;
       }
       .tab-content:has([data-account-panel]) {
-        height: calc(100% - var(--tab-height, 3rem)) !important;
+        height: 100% !important;
         overflow: hidden !important;
       }
       [data-feature-panel="account"],
@@ -309,13 +313,7 @@ async function createModal(
           </div>`
         : ""}
 
-      <div
-        role="tablist"
-        class="tabs tabs-lg tabs-border flex-1 overflow-y-auto min-h-0"
-        style="min-height:0;"
-      >
-        ${tabsContent}
-      </div>
+      <div class="flex flex-col flex-1 min-h-0">${tabsContent}</div>
       <div
         id="hub-search-empty"
         class="hidden flex-1 items-center justify-center p-10 text-center text-base-content/50"

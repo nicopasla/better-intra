@@ -105,8 +105,8 @@ export function setupSearch(
           : "";
       }
     }
-    const tabsHost = shadow.querySelector<HTMLElement>('[role="tablist"].tabs');
-    tabsHost?.classList.toggle("hidden", noResults);
+    const tabsBar = shadow.querySelector<HTMLElement>("[data-hub-tabs-bar]");
+    tabsBar?.classList.toggle("hidden", noResults);
 
     shadow
       .querySelectorAll<HTMLButtonElement>("[data-hub-tab-jump]")
@@ -122,11 +122,6 @@ export function setupSearch(
             !!label?.classList.contains("hidden") || noResults,
           );
       });
-    const compactHost = shadow.querySelector<HTMLElement>(
-      "[data-hub-tabs-compact-host]",
-    );
-    compactHost?.classList.toggle("hidden", noResults);
-
     if (searching && firstMatch) {
       const current = shadow.querySelector<HTMLInputElement>(
         'input[name="hub_tabs"]:checked',

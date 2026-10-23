@@ -48,83 +48,93 @@ function buildPanelBody(
     hiddenDeps,
   );
 
-  return html`
-    ${!isAlwaysEnabled
-      ? html`
-          <div
-            class="sticky top-0 z-20 flex items-center justify-between bg-base-200 px-6 py-4 border-b border-base-300 shadow-sm"
-          >
-            <div class="flex flex-col">
-              <h2 class="text-lg font-bold leading-tight">${f.name}</h2>
-              <p class="text-xs opacity-70">${f.desc}</p>
-            </div>
-            <div class="flex items-center gap-3">
-              <button
-                class="btn btn-sm btn-outline btn-error flex items-center gap-2"
-                data-reset-feature="${f.id}"
-              >
-                <span class="size-3.5 flex items-center justify-center"
-                  >${unsafeHTML(RESET_SVG)}</span
-                >
-                Reset
-              </button>
-              <input
-                type="checkbox"
-                class="toggle toggle-xl toggle-primary hub-feature-toggle"
-                data-id="${f.id}"
-                ?checked="${enabled && !cloudDisabled}"
-                ?disabled="${cloudDisabled}"
-              />
-            </div>
-          </div>
-        `
-      : ""}
-    ${cloudDisabled
-      ? html`<div
-          class="flex flex-col items-center justify-center gap-4 py-16 px-6 text-center"
+  const header = !isAlwaysEnabled
+    ? html`
+        <div
+          class="flex items-center justify-between bg-base-200 px-6 py-4 border-b border-base-300 shadow-sm"
         >
-          <span
-            class="size-14 opacity-40 flex items-center justify-center [&_polygon]:fill-current"
-            >${unsafeHTML(FORTY_TWO_SVG)}</span
-          >
-          <p class="opacity-50 max-w-72 text-sm">
-            Connect your 42 account to unlock this feature.
-          </p>
-          <button
-            type="button"
-            class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
-            @click="${async () => {
-              loginWith42(async () => {
-                await clearAuthFailed();
-                window.location.reload();
-              });
-            }}"
-          >
-            <span class="font-bold tracking-wide">Connect with</span>
-            <span
-              class="size-8 flex items-center justify-center [&_polygon]:fill-current"
+          <div class="flex flex-col">
+            <h2 class="text-lg font-bold leading-tight">${f.name}</h2>
+            <p class="text-xs opacity-70">${f.desc}</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button
+              class="btn btn-sm btn-outline btn-error flex items-center gap-2"
+              data-reset-feature="${f.id}"
             >
-              ${unsafeHTML(FORTY_TWO_SVG)}
-            </span>
-          </button>
-        </div>`
-      : "subTabs" in f && f.subTabs
-        ? renderSubTabs(
-            f,
-            enabled,
-            !!cloudDisabled,
-            disabledDeps,
-            hiddenDeps,
-            gridColsClass,
-          )
-        : html`<div
-            class="${f.id === "about"
-              ? "p-6 w-full"
-              : `grid grid-cols-1 ${gridColsClass} gap-4 p-6`}"
+              <span class="size-3.5 flex items-center justify-center"
+                >${unsafeHTML(RESET_SVG)}</span
+              >
+              Reset
+            </button>
+            <input
+              type="checkbox"
+              class="toggle toggle-xl toggle-primary hub-feature-toggle"
+              data-id="${f.id}"
+              ?checked="${enabled && !cloudDisabled}"
+              ?disabled="${cloudDisabled}"
+            />
+          </div>
+        </div>
+      `
+    : "";
+
+  const stickyHeader = header
+    ? html`<div class="sticky top-0 z-20">${header}</div>`
+    : "";
+
+  if (cloudDisabled) {
+    return html`${stickyHeader}
+      <div
+        class="flex flex-col items-center justify-center gap-4 py-16 px-6 text-center"
+      >
+        <span
+          class="size-14 opacity-40 flex items-center justify-center [&_polygon]:fill-current"
+          >${unsafeHTML(FORTY_TWO_SVG)}</span
+        >
+        <p class="opacity-50 max-w-72 text-sm">
+          Connect your 42 account to unlock this feature.
+        </p>
+        <button
+          type="button"
+          class="btn bg-[#00babc] text-white border-none hover:bg-[#1fd2d4] h-12 text-base flex items-center justify-center gap-3 transition-colors duration-200"
+          @click="${async () => {
+            loginWith42(async () => {
+              await clearAuthFailed();
+              window.location.reload();
+            });
+          }}"
+        >
+          <span class="font-bold tracking-wide">Connect with</span>
+          <span
+            class="size-8 flex items-center justify-center [&_polygon]:fill-current"
           >
-            ${settings}
-          </div>`}
-  `;
+            ${unsafeHTML(FORTY_TWO_SVG)}
+          </span>
+        </button>
+      </div>`;
+  }
+
+  if ("subTabs" in f && f.subTabs) {
+    return renderSubTabs(
+      f,
+      enabled,
+      !!cloudDisabled,
+      disabledDeps,
+      hiddenDeps,
+      gridColsClass,
+      header,
+    );
+  }
+
+  return html`${stickyHeader}
+    <div
+      class="${f.id === "about"
+        ? "p-6 w-full"
+        : `grid grid-cols-1 ${gridColsClass} gap-4 p-6`}"
+    >
+      ${settings}
+    </div>`;
 }
 
 function renderSubTabs(
@@ -136,6 +146,7 @@ function renderSubTabs(
   disabledDeps: Set<string>,
   hiddenDeps: Set<string>,
   gridColsClass: string,
+  header: unknown,
 ) {
   const subTabs = f.subTabs ?? [];
   const content = (subTabId: string) => {
@@ -198,27 +209,32 @@ function renderSubTabs(
   };
 
   return html`<div class="flex flex-col h-full" data-sub-tabs-group="${f.id}">
-    <div
-      role="tablist"
-      class="sub-tabs tabs tabs-lg tabs-border flex-none flex items-center gap-1 border-b border-base-300 bg-base-200 px-6 overflow-x-auto"
-    >
-      ${subTabs.map(
-        (s, i) =>
-          html`<label class="tab flex items-center gap-2 whitespace-nowrap">
-            <input
-              type="radio"
-              name="hub_subtabs_${f.id}"
-              ?checked="${i === 0}"
-              data-sub-tab="${s.id}"
-            />
-            ${s.icon
-              ? html`<span class="size-4 flex items-center justify-center"
-                  >${unsafeHTML(s.icon)}</span
-                >`
-              : ""}
-            ${s.name}
-          </label>`,
-      )}
+    <div class="sticky top-0 z-20">
+      ${header}
+      <div
+        role="tablist"
+        class="sub-tabs tabs tabs-lg tabs-border flex-none flex flex-nowrap items-center gap-1 bg-base-100 px-2 overflow-x-auto"
+      >
+        ${subTabs.map(
+          (s, i) =>
+            html`<label
+              class="tab flex items-center gap-2 whitespace-nowrap shrink-0"
+            >
+              <input
+                type="radio"
+                name="hub_subtabs_${f.id}"
+                ?checked="${i === 0}"
+                data-sub-tab="${s.id}"
+              />
+              ${s.icon
+                ? html`<span class="size-4 flex items-center justify-center"
+                    >${unsafeHTML(s.icon)}</span
+                  >`
+                : ""}
+              ${s.name}
+            </label>`,
+        )}
+      </div>
     </div>
     <div class="flex-1 min-h-0 overflow-hidden">
       ${subTabs.map(
@@ -245,7 +261,10 @@ function renderTabsContent(
     (f) => !("hideFromTopLevel" in f && f.hideFromTopLevel),
   );
 
-  const panels = visibleDefs.map((f, idx) => {
+  const tabLabels: unknown[] = [];
+  const tabPanels: unknown[] = [];
+
+  visibleDefs.forEach((f, idx) => {
     const isAlwaysEnabled = isAlwaysEnabledFeature(f);
     const enabled = active.includes(f.id) || isAlwaysEnabled;
     const cloudDisabled =
@@ -256,6 +275,7 @@ function renderTabsContent(
       "cols" in f && f.cols != null
         ? (GRID_COLS_CLASSES[f.cols] ?? "md:grid-cols-3")
         : "md:grid-cols-3";
+    const isInitial = initialTab ? f.id === initialTab : idx === 0;
 
     panelBuilders.set(f.id, () =>
       buildPanelBody(
@@ -269,19 +289,28 @@ function renderTabsContent(
       ),
     );
 
-    return html`<label class="tab flex items-center gap-2">
+    tabLabels.push(
+      html`<label class="tab flex items-center gap-2 shrink-0">
         <input
           type="radio"
           name="hub_tabs"
-          ?checked="${initialTab ? f.id === initialTab : idx === 0}"
+          ?checked="${isInitial}"
           data-hub-tab="${f.id}"
         />
         <span class="size-4 flex items-center justify-center">
           ${unsafeHTML(f.icon)}
         </span>
         ${f.name}
-      </label>
-      <div role="tabpanel" class="tab-content bg-base-100 border-base-300 p-0">
+      </label>`,
+    );
+
+    tabPanels.push(
+      html`<div
+        role="tabpanel"
+        class="tab-content bg-base-100 p-0"
+        data-hub-panel="${f.id}"
+        ?hidden="${!isInitial}"
+      >
         <div
           class="flex flex-col ${enabled || isAlwaysEnabled
             ? cloudDisabled
@@ -292,7 +321,8 @@ function renderTabsContent(
         >
           <div data-lazy-panel="${f.id}"></div>
         </div>
-      </div>`;
+      </div>`,
+    );
   });
 
   const activeDef =
@@ -336,13 +366,23 @@ function renderTabsContent(
     </ul>
   </details>`;
 
-  return html`<div
-      data-hub-tabs-compact-host
-      class="w-full flex-none bg-base-100 border-b border-base-300 p-3 hidden"
-    >
-      ${compact}
+  return html`<div data-hub-tabs-bar class="flex-none w-full bg-base-100">
+      <div
+        role="tablist"
+        class="tabs tabs-lg tabs-border flex flex-nowrap items-center gap-1 px-2 overflow-x-auto"
+      >
+        ${tabLabels}
+      </div>
+      <div
+        data-hub-tabs-compact-host
+        class="w-full flex-none bg-base-100 border-b border-base-300 p-3 hidden"
+      >
+        ${compact}
+      </div>
     </div>
-    ${panels}`;
+    <div class="hub-tabs-scroll flex-1 min-h-0 overflow-y-auto">
+      ${tabPanels}
+    </div>`;
 }
 
 function svgFromString(svg: string): Node | null {
@@ -370,6 +410,10 @@ function syncHubTabsActive(shadow: ShadowRoot, id: string | undefined): void {
 
   shadow.querySelectorAll<HTMLElement>("[data-hub-tab-jump]").forEach((btn) => {
     btn.classList.toggle("menu-active", btn.dataset.hubTabJump === id);
+  });
+  shadow.querySelectorAll<HTMLElement>("[data-hub-panel]").forEach((panel) => {
+    if (panel.dataset.hubPanel === id) panel.removeAttribute("hidden");
+    else panel.setAttribute("hidden", "");
   });
   shadow.querySelectorAll<HTMLElement>(".tab").forEach((tab) => {
     const radio = tab.querySelector<HTMLInputElement>("input[data-hub-tab]");

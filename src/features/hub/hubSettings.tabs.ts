@@ -213,7 +213,7 @@ function renderSubTabs(
       ${header}
       <div
         role="tablist"
-        class="sub-tabs tabs tabs-lg tabs-border flex-none flex flex-nowrap items-center gap-1 bg-base-100 px-2 overflow-x-auto"
+        class="sub-tabs tabs tabs-lg tabs-border flex-none flex flex-nowrap items-center bg-base-100 px-1"
       >
         ${subTabs.map(
           (s, i) =>
@@ -369,7 +369,7 @@ function renderTabsContent(
   return html`<div data-hub-tabs-bar class="flex-none w-full bg-base-100">
       <div
         role="tablist"
-        class="tabs tabs-lg tabs-border flex flex-nowrap items-center gap-1 px-2 overflow-x-auto"
+        class="tabs tabs-lg tabs-border flex flex-nowrap items-center px-1"
       >
         ${tabLabels}
       </div>

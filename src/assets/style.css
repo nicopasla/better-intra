@@ -145,6 +145,11 @@
   display: none !important;
 }
 
+.hub-tabs-bar .tabs>.tab,
+.sub-tabs>.tab {
+  --tab-p: 0.5rem;
+}
+
 .hub-tabs-summary svg,
 .hub-tabs-summary svg path,
 .hub-tabs-menu svg,

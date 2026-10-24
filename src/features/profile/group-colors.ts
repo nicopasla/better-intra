@@ -1,5 +1,6 @@
 import { getConfig } from "../../config.ts";
 import { getLoginFromPage } from "../../utils/profile-login.ts";
+import { syncToCloud } from "../account/account.ts";
 
 const GROUPS_EVENT = "42_GROUPS_DATA";
 const GROUPS_REQUEST = "42_GROUPS_REQUEST";
@@ -11,6 +12,9 @@ interface GroupsDetail {
 }
 
 let started = false;
+/** Ensures the stored colours get pushed once per page load, even when they
+ *  were captured (and saved locally) before the sync code existed. */
+let syncedThisPage = false;
 
 /**
  * profile-v3's API returns the user's groups with their 42 colours, unlike the
@@ -42,7 +46,9 @@ async function storeGroups(
 
   // Only keep colours from the signed-in user's own payload, so browsing other
   // profiles doesn't leak their groups into these settings.
-  if (!payloadLogin || !expectedLogin || payloadLogin !== expectedLogin) return;
+  if (!payloadLogin || !expectedLogin || payloadLogin !== expectedLogin) {
+    return;
+  }
 
   const stored = (await getConfig("PROFILE_GROUP_COLORS")) ?? {};
   const next: Record<string, string> = { ...stored };
@@ -58,6 +64,12 @@ async function storeGroups(
     }
   }
 
-  if (!changed) return;
-  await chrome.storage.local.set({ PROFILE_GROUP_COLORS: next });
+  if (changed) {
+    await chrome.storage.local.set({ PROFILE_GROUP_COLORS: next });
+  }
+  if (!changed && syncedThisPage) return;
+  syncedThisPage = true;
+
+  // Push the new colours (and the rest of the settings) so the PWA gets them.
+  await syncToCloud();
 }

@@ -136,23 +136,27 @@
       }
     }
 
-    // profile-v3's own API carries the user's groups with their 42 colours
+    // intrapy/profile-v3's API carries the user's groups with their 42 colours
     // (the public API v2 does not), so capture them for the PWA.
     if (
+      url.indexOf(".intra.42.fr") !== -1 &&
       url.indexOf("/api/") !== -1 &&
-      url.indexOf(location.host) !== -1 &&
       response.ok
     ) {
       response
         .clone()
         .json()
         .then(function (data) {
-          var groups =
-            data && Array.isArray(data.groups)
-              ? data.groups
-              : data && data.user && Array.isArray(data.user.groups)
-                ? data.user.groups
-                : null;
+          var findGroups = function (node, depth) {
+            if (!node || typeof node !== "object" || depth > 4) return null;
+            if (Array.isArray(node.groups)) return node.groups;
+            for (var key in node) {
+              var found = findGroups(node[key], depth + 1);
+              if (found) return found;
+            }
+            return null;
+          };
+          var groups = findGroups(data, 0);
           if (!groups) return;
           var colored = groups
             .filter(function (g) {
@@ -166,13 +170,13 @@
             .map(function (g) {
               return { name: g.name.trim(), color: g.color.trim() };
             });
-          if (!colored.length) return;
           var login =
             (data && typeof data.login === "string" && data.login) ||
             (data.user &&
               typeof data.user.login === "string" &&
               data.user.login) ||
             null;
+          if (!colored.length) return;
           dispatchGroups({ login: login, groups: colored });
         })
         .catch(function () {});

@@ -21,6 +21,7 @@ export interface VisualUrls {
   backgroundMode: string;
   backgroundColor?: string;
   avatarBg?: string;
+  avatarShape?: string;
   decoration?: string;
   avatarPosX?: number;
   avatarPosY?: number;
@@ -135,6 +136,7 @@ const getVisualKey = (urls: VisualUrls) =>
     backgroundMode: urls.backgroundMode || "",
     backgroundColor: urls.backgroundColor || "",
     avatarBg: urls.avatarBg || "transparent",
+    avatarShape: urls.avatarShape || "round",
     decoration: urls.decoration || "none",
     avatarPosX: urls.avatarPosX ?? 50,
     avatarPosY: urls.avatarPosY ?? 50,
@@ -969,6 +971,11 @@ export const needsReapply = (urls: VisualUrls) => {
     const expectedPos = `${urls.avatarPosX ?? 50}% ${urls.avatarPosY ?? 50}%`;
     const expectedSize = `${urls.avatarScale ?? 100}%`;
     if (pos !== expectedPos || size !== expectedSize) return true;
+    const expectedSquare =
+      urls.avatarShape === "square" && !showingOriginalAvatar;
+    if (avatar.classList.contains("ft-avatar-square") !== expectedSquare) {
+      return true;
+    }
   }
   if (urls?.banner && !hasBackground(banner, urls.banner)) return true;
   if (urls?.bannerColor && banner) {
@@ -1049,6 +1056,12 @@ export const injectCustomStyles = () => {
       opacity: 0;
       transition: opacity 0.2s;
       pointer-events: none;
+    }
+    ${AVATAR_SELECTOR}.ft-avatar-square {
+      border-radius: 0 !important;
+    }
+    ${AVATAR_SELECTOR}.ft-avatar-square[data-modal-listener]::after {
+      border-radius: 0;
     }
     ${AVATAR_SELECTOR}[data-modal-listener]:hover::after {
       opacity: 1;
@@ -1183,6 +1196,12 @@ export const applyImgs = (rawUrls: VisualUrls | null) => {
     avatar.classList.remove("ft-deco-solid");
     const deco = urls.decoration;
     if (deco && deco !== "none") avatar.classList.add(`ft-deco-${deco}`);
+    avatar.classList.toggle(
+      "ft-avatar-square",
+      urls.avatarShape === "square" &&
+        Boolean(urls.avatar) &&
+        !showingOriginalAvatar,
+    );
   }
 
   if (urls.banner) {
@@ -1303,10 +1322,15 @@ const attachToggleListener = (avatarEl: HTMLElement) => {
         currentAvatar.classList.remove("ft-deco-solid");
         const d = visualCache.decoration;
         if (d && d !== "none") currentAvatar.classList.add(`ft-deco-${d}`);
+        currentAvatar.classList.toggle(
+          "ft-avatar-square",
+          visualCache.avatarShape === "square",
+        );
       }
     } else {
       showingOriginalAvatar = true;
       currentAvatar.classList.remove("ft-deco-solid");
+      currentAvatar.classList.remove("ft-avatar-square");
       if (originalAvatarUrl) {
         currentAvatar.style.setProperty(
           "background-image",
@@ -1422,6 +1446,7 @@ const runUpdateVisuals = async () => {
         "PROFILE_BACKGROUND_MODE",
         "PROFILE_BACKGROUND_COLOR",
         "PROFILE_AVATAR_BG",
+        "PROFILE_AVATAR_SHAPE",
         "PROFILE_DECORATION",
         "PROFILE_AVATAR_POSITION_X",
         "PROFILE_AVATAR_POSITION_Y",
@@ -1447,6 +1472,7 @@ const runUpdateVisuals = async () => {
         backgroundMode: c.PROFILE_BACKGROUND_MODE || "fill",
         backgroundColor: c.PROFILE_BACKGROUND_COLOR,
         avatarBg: c.PROFILE_AVATAR_BG,
+        avatarShape: c.PROFILE_AVATAR_SHAPE,
         decoration: c.PROFILE_DECORATION,
         avatarPosX: c.PROFILE_AVATAR_POSITION_X,
         avatarPosY: c.PROFILE_AVATAR_POSITION_Y,

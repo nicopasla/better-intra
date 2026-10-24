@@ -9,6 +9,7 @@ export interface FriendData {
   avatar: string | null;
   customAvatar: string | null;
   avatarBg?: string;
+  avatarShape?: "round" | "square";
   avatarPosX?: number;
   avatarPosY?: number;
   avatarScale?: number;

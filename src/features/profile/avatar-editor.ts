@@ -6,6 +6,7 @@ export interface AvatarEditorState {
   posY: number;
   scale: number;
   bgColor: string;
+  shape: "round" | "square";
   decoration: string;
 }
 
@@ -24,7 +25,10 @@ export function renderAvatarEditor(
   return html`
     <div
       id="ft-avatar-preview"
-      style="width:${PREVIEW_SIZE}px;height:${PREVIEW_SIZE}px;border-radius:9999px;background-image:${state.url
+      style="width:${PREVIEW_SIZE}px;height:${PREVIEW_SIZE}px;border-radius:${state.shape ===
+      "square"
+        ? "0"
+        : "9999px"};background-image:${state.url
         ? `url("${state.url}")`
         : "none"};background-size:${state.scale}%;background-position:${state.posX}% ${state.posY}%;background-color:${state.bgColor};background-repeat:no-repeat;${decoBoxShadow}cursor:grab;flex-shrink:0;user-select:none;"
       @mousedown="${onPreviewMouseDown(onUpdate)}"

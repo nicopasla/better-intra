@@ -43,6 +43,7 @@ interface FormState {
   backgroundMode: string;
   backgroundColor: string;
   avatarBg: string;
+  avatarShape: "round" | "square";
   decoration: string;
   avatarPosX: number;
   avatarPosY: number;
@@ -350,6 +351,27 @@ function renderPanelContent(
             </div>
           </div>
           <div class="pt-2">
+            <span class="text-sm opacity-70">Shape</span>
+            <div class="join w-full mt-1">
+              <button
+                class="btn join-item flex-1 ${state.avatarShape === "round"
+                  ? "btn-active"
+                  : ""}"
+                @click="${() => onFormUpdate({ avatarShape: "round" })}"
+              >
+                Round
+              </button>
+              <button
+                class="btn join-item flex-1 ${state.avatarShape === "square"
+                  ? "btn-active"
+                  : ""}"
+                @click="${() => onFormUpdate({ avatarShape: "square" })}"
+              >
+                Square
+              </button>
+            </div>
+          </div>
+          <div class="pt-2">
             <span class="text-sm opacity-70">Border</span>
             <div class="join w-full mt-1">
               <input
@@ -383,6 +405,7 @@ function renderPanelContent(
                   posY: state.avatarPosY,
                   scale: state.avatarScale,
                   bgColor: state.avatarBg,
+                  shape: state.avatarShape,
                   decoration: state.decoration,
                 },
                 (changes) => {
@@ -397,7 +420,10 @@ function renderPanelContent(
                 },
               )
             : html`<div
-                class="w-52 h-52 rounded-full bg-base-300 flex items-center justify-center"
+                class="w-52 h-52 bg-base-300 flex items-center justify-center"
+                style="border-radius:${state.avatarShape === "square"
+                  ? "0"
+                  : "9999px"}"
               >
                 <span class="text-xs opacity-50">No avatar URL set</span>
               </div>`}
@@ -1285,6 +1311,7 @@ export const createSettingsModal = async (
     backgroundMode: (await getConfig("PROFILE_BACKGROUND_MODE")) || "fill",
     backgroundColor: await getConfig("PROFILE_BACKGROUND_COLOR"),
     avatarBg: await getConfig("PROFILE_AVATAR_BG"),
+    avatarShape: (await getConfig("PROFILE_AVATAR_SHAPE")) || "round",
     decoration: await getConfig("PROFILE_DECORATION"),
     avatarPosX: await getConfig("PROFILE_AVATAR_POSITION_X"),
     avatarPosY: await getConfig("PROFILE_AVATAR_POSITION_Y"),
@@ -1560,6 +1587,7 @@ export const createSettingsModal = async (
         }
 
         batchData["PROFILE_AVATAR_BG"] = state.avatarBg;
+        batchData["PROFILE_AVATAR_SHAPE"] = state.avatarShape;
         batchData["PROFILE_DECORATION"] = state.decoration;
         batchData["PROFILE_AVATAR_POSITION_X"] = state.avatarPosX;
         batchData["PROFILE_AVATAR_POSITION_Y"] = state.avatarPosY;
@@ -1635,6 +1663,7 @@ export const createSettingsModal = async (
           backgroundMode: state.backgroundMode || "fill",
           backgroundColor: state.backgroundColor || "",
           avatarBg: state.avatarBg,
+          avatarShape: state.avatarShape,
           decoration: state.decoration,
           avatarPosX: state.avatarPosX,
           avatarPosY: state.avatarPosY,

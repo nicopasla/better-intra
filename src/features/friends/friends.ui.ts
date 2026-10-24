@@ -117,7 +117,9 @@ function renderFriendRow(
               ${showCustom
                 ? html`<div
                     class="w-14 h-14 rounded-full cursor-pointer ${medalClass}"
-                    style="background-image:url(${currentSrc});background-size:${friend.avatarScale ??
+                    style="border-radius:${friend.avatarShape === "square"
+                      ? "0"
+                      : "9999px"};background-image:url(${currentSrc});background-size:${friend.avatarScale ??
                     100}%;background-position:${friend.avatarPosX ??
                     50}% ${friend.avatarPosY ??
                     50}%;background-color:${friend.avatarBg ||

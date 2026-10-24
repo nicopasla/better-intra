@@ -11,6 +11,7 @@ import type { VisualUrls } from "./visuals.ts";
 const BANNER_MODES = new Set(["fill", "fit", "stretch", "center", "tile"]);
 const DECORATIONS = new Set(["none", "solid"]);
 const AVATAR_BG_KEYWORDS = new Set(["transparent"]);
+const AVATAR_SHAPES = new Set(["round", "square"]);
 const BADGE_SHAPES = new Set(["square", "rounded", "pill"]);
 const BADGE_ALIGNS = new Set(["left", "center", "right"]);
 const BADGE_ANIMATIONS = new Set([
@@ -180,6 +181,11 @@ export function sanitizeVisualUrls(urls: VisualUrls): VisualUrls {
     backgroundColor: sanitizeCssColor(urls.backgroundColor),
     avatarBg:
       sanitizeCssColor(urls.avatarBg, AVATAR_BG_KEYWORDS) || "transparent",
+    avatarShape:
+      typeof urls.avatarShape === "string" &&
+      AVATAR_SHAPES.has(urls.avatarShape)
+        ? urls.avatarShape
+        : "round",
     decoration:
       typeof urls.decoration === "string" && DECORATIONS.has(urls.decoration)
         ? urls.decoration

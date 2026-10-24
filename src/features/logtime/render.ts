@@ -8,6 +8,7 @@ import {
   INTRA_FONT,
 } from "./constants";
 import { fmtHours, hexToRgba, safeLabelsColor } from "./utils";
+import { goalProgress } from "./goal";
 import { LogtimeStreak, streakLines } from "./streak";
 import { showStreakPopover, scheduleHideStreakPopover } from "./streak-popover";
 import { LogtimeConfig, CalendarEvent, EventsByDate } from "./logtime";
@@ -207,8 +208,9 @@ export function renderMonthCard(
   }).format(monthDate);
   const forceShort = (config.font_scale ?? 100) > 100;
   const goalSecs = config.goal_hours * 3600;
-  const goalPercent = Math.round((total / goalSecs) * 100);
-  const isGoalMet = goalPercent >= 100;
+  const goal = goalProgress(total, config.goal_hours);
+  const goalPercent = goal.percent;
+  const isGoalMet = goal.met;
   const isPast = !isCurrent;
   const fillClass = isGoalMet ? "liquid-fill-full" : "liquid-fill";
 

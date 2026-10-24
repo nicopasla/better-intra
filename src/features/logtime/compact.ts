@@ -1,6 +1,7 @@
 import { html } from "lit-html";
 import { AVG_ONLY_ACTIVE_DAYS, PAST_MONTHS_OPACITY } from "./constants";
 import { fmtHours } from "./utils";
+import { goalProgress } from "./goal";
 import { LogtimeConfig } from "./logtime";
 
 export type MonthEntry = { ym: string; data: Record<string, number> };
@@ -44,8 +45,9 @@ function renderCompactMonthCard(
   }).format(monthDate);
   const forceShort = (config.font_scale ?? 100) > 100;
   const goalSecs = config.goal_hours * 3600;
-  const goalPercent = Math.round((total / goalSecs) * 100);
-  const isGoalMet = goalPercent >= 100;
+  const goal = goalProgress(total, config.goal_hours);
+  const goalPercent = goal.percent;
+  const isGoalMet = goal.met;
   const fillClass = isGoalMet ? "liquid-fill-full" : "liquid-fill";
 
   const monthEarnings = (total / 3600) * config.rate;

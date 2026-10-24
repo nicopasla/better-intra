@@ -563,7 +563,7 @@ export function renderStudentsDialogTemplate(
         </div>
         ${pool || date ? html`<div class="row-line">${pool}${date}</div>` : ""}
         ${level || evalBadge || wallet
-          ? html`<div class="row-line">${level}${evalBadge}${wallet}</div>`
+          ? html`<div class="row-line">${level}${wallet}${evalBadge}</div>`
           : ""}
       </div>
     `;
@@ -577,7 +577,7 @@ export function renderStudentsDialogTemplate(
       ${renderAvatar(r)} ${renderInfo(r)}
       <div class="row-meta">
         ${renderPoolBadge(r)}${renderDateBadge(r)}${renderLevelBadge(r)}
-        ${renderEvalBadge(r)}${renderWalletBadge(r)}
+        ${renderWalletBadge(r)}${renderEvalBadge(r)}
       </div>
     </div>
   `;
@@ -753,26 +753,23 @@ export function renderStudentsDialogTemplate(
       }
       .pool-badge {
         color: var(--color-info-content);
-        background: color-mix(in oklch, var(--color-info) 60%, transparent);
+        background: var(--color-info);
       }
       .date-badge {
-        background: color-mix(in oklch, var(--color-accent) 40%, transparent);
+        color: var(--color-accent-content);
+        background: var(--color-accent);
       }
       .level-badge {
         color: var(--color-primary-content);
-        background: color-mix(in oklch, var(--color-primary) 45%, transparent);
+        background: var(--color-primary);
       }
       .wallet-badge {
         color: var(--color-secondary-content);
-        background: color-mix(
-          in oklch,
-          var(--color-secondary) 45%,
-          transparent
-        );
+        background: var(--color-secondary);
       }
       .eval-badge {
         color: var(--color-warning-content);
-        background: color-mix(in oklch, var(--color-warning) 50%, transparent);
+        background: var(--color-warning);
       }
       .pool-badge svg,
       .date-badge svg,

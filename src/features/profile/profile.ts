@@ -29,6 +29,7 @@ import {
 import { initTranscript } from "./transcript.ts";
 import { initPace } from "./pace.ts";
 import { initBlackholeMode } from "./blackhole.ts";
+import { initGroupColors } from "./group-colors.ts";
 import { ensureCampusData } from "../campus/campus.ts";
 
 const waitForBody = () =>
@@ -55,6 +56,7 @@ export async function initProfile() {
 
   void initCampusFlag();
   void ensureCampusData();
+  initGroupColors();
 
   let isUpdating = false;
   let needsRerun = false;

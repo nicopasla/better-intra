@@ -39,6 +39,19 @@
     if (lastLogtimeStats) dispatchLogtime(lastLogtimeStats);
   });
 
+  // Keep the last groups payload so the extension can ask for it when its
+  // listener was attached after the page already fetched the profile.
+  var lastGroups = null;
+  var dispatchGroups = function (payload) {
+    lastGroups = payload;
+    document.dispatchEvent(
+      new CustomEvent("42_GROUPS_DATA", { detail: payload }),
+    );
+  };
+  document.addEventListener("42_GROUPS_REQUEST", function () {
+    if (lastGroups) dispatchGroups(lastGroups);
+  });
+
   var dispatchToken = function (token) {
     document.dispatchEvent(
       new CustomEvent("42_INTRAPY_TOKEN", { detail: token }),
@@ -121,6 +134,48 @@
         } catch (e) {}
         dispatchToken(auth);
       }
+    }
+
+    // profile-v3's own API carries the user's groups with their 42 colours
+    // (the public API v2 does not), so capture them for the PWA.
+    if (
+      url.indexOf("/api/") !== -1 &&
+      url.indexOf(location.host) !== -1 &&
+      response.ok
+    ) {
+      response
+        .clone()
+        .json()
+        .then(function (data) {
+          var groups =
+            data && Array.isArray(data.groups)
+              ? data.groups
+              : data && data.user && Array.isArray(data.user.groups)
+                ? data.user.groups
+                : null;
+          if (!groups) return;
+          var colored = groups
+            .filter(function (g) {
+              return (
+                g &&
+                typeof g.name === "string" &&
+                typeof g.color === "string" &&
+                /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(g.color.trim())
+              );
+            })
+            .map(function (g) {
+              return { name: g.name.trim(), color: g.color.trim() };
+            });
+          if (!colored.length) return;
+          var login =
+            (data && typeof data.login === "string" && data.login) ||
+            (data.user &&
+              typeof data.user.login === "string" &&
+              data.user.login) ||
+            null;
+          dispatchGroups({ login: login, groups: colored });
+        })
+        .catch(function () {});
     }
 
     return response;

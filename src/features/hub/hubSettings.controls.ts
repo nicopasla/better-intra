@@ -53,6 +53,7 @@ import {
 } from "../profile/theme/custom-theme.ts";
 import { showConfirmDialog } from "../../utils/confirm-dialog.ts";
 import { fetchCampusList } from "../clusters/clusters.data.ts";
+import { clearClusterMapCaches } from "../clusters/map-dialog/cache.ts";
 import { clearCampusConfigCache, loadCampusData } from "../campus/campus.ts";
 import {
   dynamicCampusOptions,
@@ -1404,6 +1405,7 @@ function renderSettingControl(def: HubSettingDef, enabled: boolean) {
                 void (async () => {
                   const campusId = (await getConfig("CLUSTERS_CAMPUS")) || "";
                   await clearCampusConfigCache(campusId);
+                  if (campusId) await clearClusterMapCaches(campusId);
                   await fetchCampusList(true);
                   if (campusId) await loadCampusData(campusId, true);
                   location.reload();

@@ -192,6 +192,7 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
     defaultZoomLevel: 1.0,
     showMarkers: showMarkersVal,
     hasMarkers,
+    markersAvailable: hasMarkers,
     seatPosCache: new Map(),
     svgViewBoxes: new Map(),
     parsedDocs: new Map(),

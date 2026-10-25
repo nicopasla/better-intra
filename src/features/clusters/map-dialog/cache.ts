@@ -12,6 +12,8 @@ export interface CachedCluster {
   seats: [string, SeatPos][];
   viewBox: { w: number; h: number };
   cachedAt: number;
+  /** Map URL the entry came from: a different source invalidates it. */
+  source?: string;
 }
 
 interface SvgsCacheEntry {
@@ -22,6 +24,7 @@ interface SvgsCacheEntry {
 export async function getCachedCluster(
   campusId: string,
   clusterId: string,
+  source?: string,
 ): Promise<CachedCluster | null> {
   const key = `${SVG_CACHE_PREFIX}${campusId}_${clusterId}`;
   const result = (await chrome.storage.local.get(key)) as Record<
@@ -33,6 +36,9 @@ export async function getCachedCluster(
   try {
     const parsed = JSON.parse(raw) as CachedCluster;
     if (Date.now() - parsed.cachedAt > CACHE_TTL) return null;
+    // A map that now comes from another URL (shared assets instead of 42's
+    // map) must not be served from an older cache entry.
+    if (source && parsed.source !== source) return null;
     return parsed;
   } catch {
     return null;
@@ -53,6 +59,20 @@ export async function setCachedCluster(
     await chrome.storage.local.remove(
       `${LEGACY_SVG_CACHE_PREFIX}${campusId}_${clusterId}`,
     );
+  } catch {}
+}
+
+/** Drops the cached map SVGs (and the scraped map URLs) for a campus. */
+export async function clearClusterMapCaches(campusId: string): Promise<void> {
+  try {
+    const all = await chrome.storage.local.get(null);
+    const keys = Object.keys(all).filter(
+      (k) =>
+        k.startsWith(`${SVG_CACHE_PREFIX}${campusId}_`) ||
+        k.startsWith(`${LEGACY_SVG_CACHE_PREFIX}${campusId}_`) ||
+        k === `${SVG_URLS_CACHE_PREFIX}${campusId}`,
+    );
+    if (keys.length) await chrome.storage.local.remove(keys);
   } catch {}
 }
 

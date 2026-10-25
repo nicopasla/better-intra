@@ -54,6 +54,8 @@ export interface DialogState {
   defaultZoomLevel: number;
   showMarkers: boolean;
   hasMarkers: boolean;
+  /** Markers are useful for the map on screen (it has no chairs of its own). */
+  markersAvailable: boolean;
 
   seatPosCache: Map<string, Map<string, SeatPos>>;
   svgViewBoxes: Map<string, { w: number; h: number }>;

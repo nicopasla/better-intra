@@ -103,6 +103,17 @@ export function renderTemplate(state: DialogState): TemplateResult {
         height: auto;
         display: block;
         margin: 0 auto;
+        /* The maps ship light defaults; theme their furniture so it stays
+           visible in dark mode (pillars, zones, chairs, walls…). */
+        --zone-fill: color-mix(in oklab, var(--color-base-content) 10%, var(--color-base-100));
+        --zone-stroke: color-mix(in oklab, var(--color-base-content) 25%, var(--color-base-100));
+        --chair-fill: color-mix(in oklab, var(--color-base-content) 22%, var(--color-base-100));
+        --seat-stroke: color-mix(in oklab, var(--color-base-content) 45%, var(--color-base-100));
+        --pillar-fill: color-mix(in oklab, var(--color-base-content) 55%, var(--color-base-100));
+        --wall-fill: color-mix(in oklab, var(--color-base-content) 75%, var(--color-base-100));
+        --slot-fill: color-mix(in oklab, var(--color-accent) 16%, var(--color-base-100));
+        --slot-stroke: color-mix(in oklab, var(--color-base-content) 25%, var(--color-base-100));
+        --seat-dead: var(--color-error);
       }
       .seat-link {
         position: absolute;
@@ -124,7 +135,7 @@ export function renderTemplate(state: DialogState): TemplateResult {
       }
       .posts rect:not(.custom-screen),
       .posts polygon:not(.custom-screen),
-      rect:not(.custom-screen) {
+      rect[id]:not(.custom-screen) {
         fill: var(--color-base-200) !important;
       }
       #map-area svg text,
@@ -359,7 +370,7 @@ export function renderTemplate(state: DialogState): TemplateResult {
                   class="btn btn-sm gap-2 ${showMarkers
                     ? "btn-accent"
                     : "btn-ghost"}"
-                  style="display:${state.hasMarkers ? "" : "none"};${showMarkers
+                  style="display:${state.markersAvailable ? "" : "none"};${showMarkers
                     ? "border-color: var(--color-accent)"
                     : ""}"
                   id="markers-btn"
@@ -428,7 +439,7 @@ export function renderTemplate(state: DialogState): TemplateResult {
                     class="btn btn-sm w-full mt-2 justify-between ${showMarkers
                       ? "btn-accent"
                       : "btn-ghost"}"
-                    style="display:${state.hasMarkers
+                    style="display:${state.markersAvailable
                       ? ""
                       : "none"};${showMarkers
                       ? "border-color: var(--color-accent)"

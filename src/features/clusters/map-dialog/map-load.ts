@@ -15,6 +15,14 @@ import { clearSeatGlow } from "./glow";
 import { rebuildHeader, updateCampusTime, updateDefaultSelect } from "./header";
 import { getCampusFlag } from "../../profile/campus-flags.ts";
 
+function syncMarkersButton(state: DialogState) {
+  state.shadow
+    .querySelectorAll<HTMLElement>('[id="markers-btn"]')
+    .forEach((el) => {
+      el.style.display = state.markersAvailable ? "" : "none";
+    });
+}
+
 export async function buildClusters(
   campusId: string,
 ): Promise<{ clusters: ClusterInfo[]; hasMarkers: boolean }> {
@@ -58,7 +66,7 @@ export async function ensureClusterData(
     if (state.seatPosCache.has(key) && state.svgViewBoxes.has(key)) {
       return "cached";
     }
-    let cached = await getCachedCluster(campusId, c.id);
+    let cached = await getCachedCluster(campusId, c.id, c.svg);
     let svgText = cached?.svg;
     if (!svgText) {
       // Maps listed in the campus file are served by our own worker (already
@@ -85,6 +93,7 @@ export async function ensureClusterData(
         svg: svgText,
         seats: [...seatMap],
         viewBox: state.svgViewBoxes.get(key)!,
+        source: c.svg,
         cachedAt: 0,
       }).catch(() => {});
     }
@@ -215,8 +224,16 @@ export async function loadCluster(
     if (zp) zp.textContent = "100%";
     mapArea.scrollTop = 0;
     mapArea.scrollLeft = 0;
-    applyMarkers(mapArea, state.showMarkers);
-    applyExitSigns(state);
+    // Shared maps carry their own chairs and signs, so the overlays (and the
+    // Markers button) are only useful for maps that don't.
+    const ownChairs = Boolean(svgDoc.querySelector('[class~="chair"]'));
+    const ownSigns = Boolean(
+      svgDoc.querySelector('[class~="sign"], [class~="exit"]'),
+    );
+    state.markersAvailable = state.hasMarkers && !ownChairs;
+    if (state.markersAvailable) applyMarkers(mapArea, state.showMarkers);
+    if (!ownSigns) applyExitSigns(state);
+    syncMarkersButton(state);
 
     await new Promise<void>((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
@@ -289,11 +306,10 @@ export async function loadCampus(
   const { clusters, hasMarkers } = await buildClusters(campusId);
   if (stale()) return;
   state.clusters = clusters;
-  if (hasMarkers !== state.hasMarkers) {
-    state.hasMarkers = hasMarkers;
-    const mBtn = shadow.getElementById("markers-btn");
-    if (mBtn) mBtn.style.display = hasMarkers ? "" : "none";
-  }
+  state.hasMarkers = hasMarkers;
+  // Refined per map in loadCluster(): maps with their own chairs need no overlay.
+  state.markersAvailable = hasMarkers;
+  syncMarkersButton(state);
   if (!state.clusters.some((c) => c.svg)) {
     const mapArea = shadow.getElementById("map-area");
     if (mapArea) {

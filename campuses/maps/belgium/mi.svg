@@ -1,0 +1,298 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="14 -1 621 615">
+
+  <style>
+    .zone{fill:var(--zone-fill,#d5d5d5);stroke:var(--zone-stroke,#a5a8ab);stroke-width:1}
+    .wall{fill:var(--wall-fill,#46525e)}
+    .slot{fill:var(--slot-fill,#00babc2e);stroke:var(--slot-stroke,#c3ccd5);stroke-width:1}
+    .door{fill:var(--door-fill,#c98a2b)}
+    .window{fill:var(--window-fill,#cfe9f7);stroke:var(--window-stroke,#5aa1c8);stroke-width:1}
+    .pillar{fill:var(--pillar-fill,#7a8794)}
+    .exit rect{fill:var(--exit-fill,#2e9e5b)}
+    .chair rect{fill:var(--chair-fill,#cfd8e0);stroke:var(--seat-stroke,#7b8896);stroke-width:1}
+    .zone-text{fill:var(--zone-text,#4b5866);font-family:sans-serif;font-weight:600;text-anchor:middle;pointer-events:none}
+    .exit text{fill:#fff;font-family:sans-serif;font-weight:700;pointer-events:none}
+    .sign path{fill:var(--exit-fill,#2e9e5b)}
+    .sign text{fill:var(--zone-text,#4b5866);font-family:sans-serif;font-weight:700;text-anchor:middle;pointer-events:none}
+    .cross{fill:none;stroke:var(--seat-dead,#d9453f);stroke-linecap:round;pointer-events:none}
+  </style>
+  <g class="zones">
+    <rect class="zone" data-labels="[{&quot;text&quot;:&quot;R7&quot;,&quot;y&quot;:12,&quot;size&quot;:20},{&quot;text&quot;:&quot;R6&quot;,&quot;y&quot;:50,&quot;size&quot;:20},{&quot;text&quot;:&quot;R5&quot;,&quot;y&quot;:86,&quot;size&quot;:20}]" x="308" y="140" width="26" height="168"/>
+    <rect class="zone" data-labels="[{&quot;text&quot;:&quot;R4&quot;,&quot;y&quot;:8,&quot;size&quot;:20},{&quot;text&quot;:&quot;R3&quot;,&quot;y&quot;:36,&quot;size&quot;:20},{&quot;text&quot;:&quot;R2&quot;,&quot;y&quot;:64,&quot;size&quot;:20},{&quot;text&quot;:&quot;R1&quot;,&quot;y&quot;:90,&quot;size&quot;:20}]" x="308" y="350" width="26" height="228"/>
+    <g class="sign"><g><g transform="translate(504 308) scale(0.046875)"><path d="M566.6 342.6C579.1 330.1 579.1 309.8 566.6 297.3L406.6 137.3C394.1 124.8 373.8 124.8 361.3 137.3C348.8 149.8 348.8 170.1 361.3 182.6L466.7 288L96 288C78.3 288 64 302.3 64 320C64 337.7 78.3 352 96 352L466.7 352L361.3 457.4C348.8 469.9 348.8 490.2 361.3 502.7C373.8 515.2 394.1 515.2 406.6 502.7L566.6 342.7z"/></g></g><text x="519" y="353.38" font-size="15">EXIT</text></g>
+    <g class="sign"><g transform="rotate(270 583 134)"><g transform="translate(568 119) scale(0.046875)"><path d="M566.6 342.6C579.1 330.1 579.1 309.8 566.6 297.3L406.6 137.3C394.1 124.8 373.8 124.8 361.3 137.3C348.8 149.8 348.8 170.1 361.3 182.6L466.7 288L96 288C78.3 288 64 302.3 64 320C64 337.7 78.3 352 96 352L466.7 352L361.3 457.4C348.8 469.9 348.8 490.2 361.3 502.7C373.8 515.2 394.1 515.2 406.6 502.7L566.6 342.7z"/></g></g><text x="583" y="164.38" font-size="15">BELFIUS</text><text x="583" y="184.63" font-size="15">ROOM</text></g>
+    <g class="sign"><g transform="rotate(90 583 554)"><g transform="translate(568 539) scale(0.046875)"><path d="M566.6 342.6C579.1 330.1 579.1 309.8 566.6 297.3L406.6 137.3C394.1 124.8 373.8 124.8 361.3 137.3C348.8 149.8 348.8 170.1 361.3 182.6L466.7 288L96 288C78.3 288 64 302.3 64 320C64 337.7 78.3 352 96 352L466.7 352L361.3 457.4C348.8 469.9 348.8 490.2 361.3 502.7C373.8 515.2 394.1 515.2 406.6 502.7L566.6 342.7z"/></g></g><text x="583" y="584.38" font-size="15">CHILL</text><text x="583" y="604.63" font-size="15">ZONE</text></g>
+    <rect class="pillar" x="502" y="201" width="30" height="30"/>
+    <rect class="pillar" x="184" y="166" width="30" height="30" transform="rotate(295 199 181)"/>
+  </g>
+
+  <g class="chairs-under">
+    <g class="chair" data-seat="mi-r4-p4" data-side="top" data-off="-14.4" transform="rotate(180 356 350.4)"><rect x="344" y="338.4" width="24" height="18.72" rx="3"/><rect x="346.4" y="358.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r3-p5" data-side="top" data-off="-14.4" transform="rotate(180 356 412.4)"><rect x="344" y="400.4" width="24" height="18.72" rx="3"/><rect x="346.4" y="420.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r2-p5" data-side="top" data-off="-14.4" transform="rotate(180 356 476.4)"><rect x="344" y="464.4" width="24" height="18.72" rx="3"/><rect x="346.4" y="484.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r1-p4" data-side="top" data-off="-14.4" transform="rotate(180 356 538.4)"><rect x="344" y="526.4" width="24" height="18.72" rx="3"/><rect x="346.4" y="546.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r1-p6" data-side="top" data-off="-14.4" transform="rotate(180 440 538.4)"><rect x="428" y="526.4" width="24" height="18.72" rx="3"/><rect x="430.4" y="546.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r2-p7" data-side="top" data-off="-14.4" transform="rotate(180 440 476.4)"><rect x="428" y="464.4" width="24" height="18.72" rx="3"/><rect x="430.4" y="484.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r3-p7" data-side="top" data-off="-14.4" transform="rotate(180 440 412.4)"><rect x="428" y="400.4" width="24" height="18.72" rx="3"/><rect x="430.4" y="420.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r4-p6" data-side="top" data-off="-14.4" transform="rotate(180 440 350.4)"><rect x="428" y="338.4" width="24" height="18.72" rx="3"/><rect x="430.4" y="358.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c6-p1" data-side="left" data-off="-14.4" transform="rotate(90 497.4 432)"><rect x="485.4" y="420" width="24" height="18.72" rx="3"/><rect x="487.8" y="440.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c6-p4" data-side="left" data-off="-14.4" transform="rotate(90 497.4 558)"><rect x="485.4" y="546" width="24" height="18.72" rx="3"/><rect x="487.8" y="566.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c6-p3" data-side="left" data-off="-14.4" transform="rotate(90 497.4 516)"><rect x="485.4" y="504" width="24" height="18.72" rx="3"/><rect x="487.8" y="524.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c6-p2" data-side="left" data-off="-14.4" transform="rotate(90 497.4 474)"><rect x="485.4" y="462" width="24" height="18.72" rx="3"/><rect x="487.8" y="482.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c5-p1" data-side="left" data-off="-14.4" transform="rotate(90 497.4 258)"><rect x="485.4" y="246" width="24" height="18.72" rx="3"/><rect x="487.8" y="266.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c4-p5" data-side="left" data-off="-14.4" transform="rotate(90 497.4 174)"><rect x="485.4" y="162" width="24" height="18.72" rx="3"/><rect x="487.8" y="182.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c4-p4" data-side="left" data-off="-14.4" transform="rotate(90 497.4 132)"><rect x="485.4" y="120" width="24" height="18.72" rx="3"/><rect x="487.8" y="140.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r8-p2" data-side="left" data-off="-14.4" transform="rotate(90 266.4 222)"><rect x="254.4" y="210" width="24" height="18.72" rx="3"/><rect x="256.8" y="230.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r8-p3" data-side="left" data-off="-14.4" transform="rotate(90 266.4 180)"><rect x="254.4" y="168" width="24" height="18.72" rx="3"/><rect x="256.8" y="188.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r8-p1" data-side="left" data-off="-14.4" transform="rotate(90 266.4 264)"><rect x="254.4" y="252" width="24" height="18.72" rx="3"/><rect x="256.8" y="272.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c3-p3" data-side="bottom" data-off="-14.4" transform="rotate(295 270.76 77.28)"><rect x="258.76" y="65.28" width="24" height="18.72" rx="3"/><rect x="261.16" y="85.44" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c3-p2" data-side="bottom" data-off="-14.4" transform="rotate(295 252.21 114.96)"><rect x="240.21" y="102.96" width="24" height="18.72" rx="3"/><rect x="242.61" y="123.12" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c3-p1" data-side="bottom" data-off="-14.4" transform="rotate(295 233.66 152.64)"><rect x="221.66" y="140.64" width="24" height="18.72" rx="3"/><rect x="224.06" y="160.8" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c2-p8" data-side="bottom" data-off="-14.4" transform="rotate(295 199.26 225.15)"><rect x="187.26" y="213.15" width="24" height="18.72" rx="3"/><rect x="189.66" y="233.31" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c2-p7" data-side="bottom" data-off="-14.4" transform="rotate(295 181.51 263.22)"><rect x="169.51" y="251.22" width="24" height="18.72" rx="3"/><rect x="171.91" y="271.38" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c2-p6" data-side="bottom" data-off="-14.4" transform="rotate(295 163.76 301.28)"><rect x="151.76" y="289.28" width="24" height="18.72" rx="3"/><rect x="154.16" y="309.44" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c2-p5" data-side="bottom" data-off="-14.4" transform="rotate(295 146.01 339.35)"><rect x="134.01" y="327.35" width="24" height="18.72" rx="3"/><rect x="136.41" y="347.51" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c2-p4" data-side="bottom" data-off="-14.4" transform="rotate(295 128.27 377.41)"><rect x="116.27" y="365.41" width="24" height="18.72" rx="3"/><rect x="118.67" y="385.57" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c2-p3" data-side="bottom" data-off="-14.4" transform="rotate(295 110.52 415.48)"><rect x="98.52" y="403.48" width="24" height="18.72" rx="3"/><rect x="100.92" y="423.64" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c2-p2" data-side="bottom" data-off="-14.4" transform="rotate(295 92.77 453.54)"><rect x="80.77" y="441.54" width="24" height="18.72" rx="3"/><rect x="83.17" y="461.7" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c2-p1" data-side="bottom" data-off="-14.4" transform="rotate(295 75.02 491.61)"><rect x="63.02" y="479.61" width="24" height="18.72" rx="3"/><rect x="65.42" y="499.77" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c4-p1" data-side="bottom" data-off="-14.4" transform="rotate(20.81 398.04 73.32)"><rect x="386.04" y="61.32" width="24" height="18.72" rx="3"/><rect x="388.44" y="81.48" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c4-p2" data-side="bottom" data-off="-14.4" transform="rotate(20.81 437.3 88.24)"><rect x="425.3" y="76.24" width="24" height="18.72" rx="3"/><rect x="427.7" y="96.4" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c4-p3" data-side="bottom" data-off="-14.4" transform="rotate(20.81 476.56 103.16)"><rect x="464.56" y="91.16" width="24" height="18.72" rx="3"/><rect x="466.96" y="111.32" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r1-p5" data-side="bottom" data-off="-14.4"><rect x="386" y="565.6" width="24" height="18.72" rx="3"/><rect x="388.4" y="585.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r2-p6" data-side="bottom" data-off="-14.4"><rect x="386" y="503.6" width="24" height="18.72" rx="3"/><rect x="388.4" y="523.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r3-p6" data-side="bottom" data-off="-14.4"><rect x="386" y="439.6" width="24" height="18.72" rx="3"/><rect x="388.4" y="459.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r4-p5" data-side="bottom" data-off="-14.4"><rect x="386" y="377.6" width="24" height="18.72" rx="3"/><rect x="388.4" y="397.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c1-p2" data-side="top" data-off="-14.4" transform="rotate(205 84.28 520.24)"><rect x="72.28" y="508.24" width="24" height="18.72" rx="3"/><rect x="74.68" y="528.4" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-c1-p1" data-side="top" data-off="-14.4" transform="rotate(205 122.34 537.98)"><rect x="110.34" y="525.98" width="24" height="18.72" rx="3"/><rect x="112.74" y="546.14" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r1-p3" data-side="bottom" data-off="-14.4"><rect x="274" y="565.6" width="24" height="18.72" rx="3"/><rect x="276.4" y="585.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r1-p1" data-side="bottom" data-off="-14.4"><rect x="190" y="565.6" width="24" height="18.72" rx="3"/><rect x="192.4" y="585.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r2-p4" data-side="bottom" data-off="-14.4"><rect x="274" y="503.6" width="24" height="18.72" rx="3"/><rect x="276.4" y="523.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r2-p2" data-side="bottom" data-off="-14.4"><rect x="190" y="503.6" width="24" height="18.72" rx="3"/><rect x="192.4" y="523.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r3-p2" data-side="bottom" data-off="-14.4"><rect x="190" y="439.6" width="24" height="18.72" rx="3"/><rect x="192.4" y="459.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r3-p4" data-side="bottom" data-off="-14.4"><rect x="274" y="439.6" width="24" height="18.72" rx="3"/><rect x="276.4" y="459.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r4-p3" data-side="bottom" data-off="-14.4"><rect x="274" y="377.6" width="24" height="18.72" rx="3"/><rect x="276.4" y="397.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r4-p1" data-side="bottom" data-off="-14.4"><rect x="190" y="377.6" width="24" height="18.72" rx="3"/><rect x="192.4" y="397.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r1-p2" data-side="top" data-off="-14.4" transform="rotate(180 244 538.4)"><rect x="232" y="526.4" width="24" height="18.72" rx="3"/><rect x="234.4" y="546.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r2-p3" data-side="top" data-off="-14.4" transform="rotate(180 244 476.4)"><rect x="232" y="464.4" width="24" height="18.72" rx="3"/><rect x="234.4" y="484.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r2-p1" data-side="top" data-off="-14.4" transform="rotate(180 160 476.4)"><rect x="148" y="464.4" width="24" height="18.72" rx="3"/><rect x="150.4" y="484.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r3-p1" data-side="top" data-off="-14.4" transform="rotate(180 160 412.4)"><rect x="148" y="400.4" width="24" height="18.72" rx="3"/><rect x="150.4" y="420.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r3-p3" data-side="top" data-off="-14.4" transform="rotate(180 244 412.4)"><rect x="232" y="400.4" width="24" height="18.72" rx="3"/><rect x="234.4" y="420.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r4-p2" data-side="top" data-off="-14.4" transform="rotate(180 244 350.4)"><rect x="232" y="338.4" width="24" height="18.72" rx="3"/><rect x="234.4" y="358.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r5-p1" data-side="bottom" data-off="-14.4"><rect x="344" y="293.6" width="24" height="18.72" rx="3"/><rect x="346.4" y="313.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r6-p1" data-side="bottom" data-off="-14.4"><rect x="344" y="229.6" width="24" height="18.72" rx="3"/><rect x="346.4" y="249.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r7-p1" data-side="bottom" data-off="-14.4"><rect x="344" y="167.6" width="24" height="18.72" rx="3"/><rect x="346.4" y="187.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r7-p3" data-side="bottom" data-off="-14.4"><rect x="428" y="167.6" width="24" height="18.72" rx="3"/><rect x="430.4" y="187.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r6-p3" data-side="bottom" data-off="-14.4"><rect x="428" y="229.6" width="24" height="18.72" rx="3"/><rect x="430.4" y="249.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r5-p3" data-side="bottom" data-off="-14.4"><rect x="428" y="293.6" width="24" height="18.72" rx="3"/><rect x="430.4" y="313.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r7-p2" data-side="top" data-off="-14.4" transform="rotate(180 398 140.4)"><rect x="386" y="128.4" width="24" height="18.72" rx="3"/><rect x="388.4" y="148.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r6-p2" data-side="top" data-off="-14.4" transform="rotate(180 398 202.4)"><rect x="386" y="190.4" width="24" height="18.72" rx="3"/><rect x="388.4" y="210.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="mi-r5-p2" data-side="top" data-off="-14.4" transform="rotate(180 398 266.4)"><rect x="386" y="254.4" width="24" height="18.72" rx="3"/><rect x="388.4" y="274.56" width="19.2" height="3.84" rx="1.5"/></g>
+  </g>
+
+  <g class="c4">
+   <g class="c4 posts">
+    <rect id="mi-c4-p4" height="40" width="40" y="112" x="497" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-c4-p5" height="40" width="40" y="154" x="497" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-c4-p1" height="40" width="40" y="35" x="385" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(20.81 405 55)"/>
+    <rect id="mi-c4-p2" height="40" width="40" y="49.92" x="424.26" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(20.81 444.26 69.92)"/>
+    <rect id="mi-c4-p3" height="40" width="40" y="64.84" x="463.52" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(20.81 483.52 84.84)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c4-p4" height="40" width="40" y="112" x="497" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c4-p5" height="40" width="40" y="154" x="497" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c4-p1" height="40" width="40" y="35" x="385" xlink:href="" transform="rotate(20.81 405 55)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c4-p2" height="40" width="40" y="49.92" x="424.26" xlink:href="" transform="rotate(20.81 444.26 69.92)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c4-p3" height="40" width="40" y="64.84" x="463.52" xlink:href="" transform="rotate(20.81 483.52 84.84)"/>
+   </g>
+  </g>
+
+  <g class="c5">
+   <g class="c5 posts">
+    <rect id="mi-c5-p1" height="40" width="40" y="238" x="497" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c5-p1" height="40" width="40" y="238" x="497" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r7">
+   <g class="r7 posts">
+    <rect id="mi-r7-p1" height="40" width="40" y="140" x="336" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r7-p2" height="40" width="40" y="140" x="378" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r7-p3" height="40" width="40" y="140" x="420" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r7-p1" height="40" width="40" y="140" x="336" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r7-p2" height="40" width="40" y="140" x="378" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r7-p3" height="40" width="40" y="140" x="420" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r6">
+   <g class="r6 posts">
+    <rect id="mi-r6-p1" height="40" width="40" y="202" x="336" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r6-p2" height="40" width="40" y="202" x="378" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r6-p3" height="40" width="40" y="202" x="420" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r6-p1" height="40" width="40" y="202" x="336" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r6-p2" height="40" width="40" y="202" x="378" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r6-p3" height="40" width="40" y="202" x="420" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r5">
+   <g class="r5 posts">
+    <rect id="mi-r5-p1" height="40" width="40" y="266" x="336" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r5-p2" height="40" width="40" y="266" x="378" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r5-p3" height="40" width="40" y="266" x="420" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r5-p1" height="40" width="40" y="266" x="336" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r5-p2" height="40" width="40" y="266" x="378" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r5-p3" height="40" width="40" y="266" x="420" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r4">
+   <g class="r4 posts">
+    <rect id="mi-r4-p4" height="40" width="40" y="350" x="336" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r4-p5" height="40" width="40" y="350" x="378" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r4-p6" height="40" width="40" y="350" x="420" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r4-p1" height="40" width="40" y="350" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r4-p2" height="40" width="40" y="350" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r4-p3" height="40" width="40" y="350" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r4-p4" height="40" width="40" y="350" x="336" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r4-p5" height="40" width="40" y="350" x="378" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r4-p6" height="40" width="40" y="350" x="420" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r4-p1" height="40" width="40" y="350" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r4-p2" height="40" width="40" y="350" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r4-p3" height="40" width="40" y="350" x="266" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r3">
+   <g class="r3 posts">
+    <rect id="mi-r3-p5" height="40" width="40" y="412" x="336" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r3-p6" height="40" width="40" y="412" x="378" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r3-p7" height="40" width="40" y="412" x="420" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r3-p4" height="40" width="40" y="412" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r3-p3" height="40" width="40" y="412" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r3-p2" height="40" width="40" y="412" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r3-p1" height="40" width="40" y="412" x="140" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r3-p5" height="40" width="40" y="412" x="336" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r3-p6" height="40" width="40" y="412" x="378" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r3-p7" height="40" width="40" y="412" x="420" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r3-p4" height="40" width="40" y="412" x="266" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r3-p3" height="40" width="40" y="412" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r3-p2" height="40" width="40" y="412" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r3-p1" height="40" width="40" y="412" x="140" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="c6">
+   <g class="c6 posts">
+    <rect id="mi-c6-p1" height="40" width="40" y="412" x="497" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-c6-p2" height="40" width="40" y="454" x="497" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-c6-p3" height="40" width="40" y="496" x="497" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-c6-p4" height="40" width="40" y="538" x="497" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c6-p1" height="40" width="40" y="412" x="497" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c6-p2" height="40" width="40" y="454" x="497" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c6-p3" height="40" width="40" y="496" x="497" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c6-p4" height="40" width="40" y="538" x="497" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r1">
+   <g class="r1 posts">
+    <rect id="mi-r1-p6" height="40" width="40" y="538" x="420" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r1-p5" height="40" width="40" y="538" x="378" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r1-p4" height="40" width="40" y="538" x="336" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r1-p3" height="40" width="40" y="538" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r1-p2" height="40" width="40" y="538" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r1-p1" height="40" width="40" y="538" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r1-p6" height="40" width="40" y="538" x="420" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r1-p5" height="40" width="40" y="538" x="378" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r1-p4" height="40" width="40" y="538" x="336" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r1-p3" height="40" width="40" y="538" x="266" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r1-p2" height="40" width="40" y="538" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r1-p1" height="40" width="40" y="538" x="182" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r2">
+   <g class="r2 posts">
+    <rect id="mi-r2-p5" height="40" width="40" y="476" x="336" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r2-p6" height="40" width="40" y="476" x="378" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r2-p7" height="40" width="40" y="476" x="420" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r2-p1" height="40" width="40" y="476" x="140" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r2-p2" height="40" width="40" y="476" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r2-p3" height="40" width="40" y="476" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r2-p4" height="40" width="40" y="476" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r2-p5" height="40" width="40" y="476" x="336" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r2-p6" height="40" width="40" y="476" x="378" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r2-p7" height="40" width="40" y="476" x="420" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r2-p1" height="40" width="40" y="476" x="140" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r2-p2" height="40" width="40" y="476" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r2-p3" height="40" width="40" y="476" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r2-p4" height="40" width="40" y="476" x="266" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r8">
+   <g class="r8 posts">
+    <rect id="mi-r8-p1" height="40" width="40" y="244" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r8-p2" height="40" width="40" y="202" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r8-p3" height="40" width="40" y="160" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r8-p1" height="40" width="40" y="244" x="266" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r8-p2" height="40" width="40" y="202" x="266" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-r8-p3" height="40" width="40" y="160" x="266" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="c3">
+   <g class="c3 posts">
+    <rect id="mi-c3-p3" height="40" width="40" y="49" x="233" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 253 69)"/>
+    <rect id="mi-c3-p2" height="40" width="40" y="86.68" x="214.45" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 234.45 106.68)"/>
+    <rect id="mi-c3-p1" height="40" width="40" y="124.36" x="195.9" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 215.9 144.36)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c3-p3" height="40" width="40" y="49" x="233" xlink:href="" transform="rotate(295 253 69)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c3-p2" height="40" width="40" y="86.68" x="214.45" xlink:href="" transform="rotate(295 234.45 106.68)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c3-p1" height="40" width="40" y="124.36" x="195.9" xlink:href="" transform="rotate(295 215.9 144.36)"/>
+   </g>
+  </g>
+
+  <g class="c2">
+   <g class="c2 posts">
+    <rect id="mi-c2-p4" height="40" width="40" y="349.13" x="90.51" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 110.51 369.13)"/>
+    <rect id="mi-c2-p5" height="40" width="40" y="311.07" x="108.25" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 128.25 331.07)"/>
+    <rect id="mi-c2-p6" height="40" width="40" y="273" x="126" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 146 293)"/>
+    <rect id="mi-c2-p7" height="40" width="40" y="234.94" x="143.75" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 163.75 254.94)"/>
+    <rect id="mi-c2-p8" height="40" width="40" y="196.87" x="161.5" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 181.5 216.87)"/>
+    <rect id="mi-c2-p3" height="40" width="40" y="387.2" x="72.76" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 92.76 407.2)"/>
+    <rect id="mi-c2-p2" height="40" width="40" y="425.26" x="55.01" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 75.01 445.26)"/>
+    <rect id="mi-c2-p1" height="40" width="40" y="463.33" x="37.26" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 57.26 483.33)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p4" height="40" width="40" y="349.13" x="90.51" xlink:href="" transform="rotate(295 110.51 369.13)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p5" height="40" width="40" y="311.07" x="108.25" xlink:href="" transform="rotate(295 128.25 331.07)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p6" height="40" width="40" y="273" x="126" xlink:href="" transform="rotate(295 146 293)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p7" height="40" width="40" y="234.94" x="143.75" xlink:href="" transform="rotate(295 163.75 254.94)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p8" height="40" width="40" y="196.87" x="161.5" xlink:href="" transform="rotate(295 181.5 216.87)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p3" height="40" width="40" y="387.2" x="72.76" xlink:href="" transform="rotate(295 92.76 407.2)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p2" height="40" width="40" y="425.26" x="55.01" xlink:href="" transform="rotate(295 75.01 445.26)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p1" height="40" width="40" y="463.33" x="37.26" xlink:href="" transform="rotate(295 57.26 483.33)"/>
+   </g>
+  </g>
+
+  <g class="c1">
+   <g class="c1 posts">
+    <rect id="mi-c1-p2" height="40" width="40" y="518" x="56" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(25 76 538)"/>
+    <rect id="mi-c1-p1" height="40" width="40" y="535.74" x="94.06" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(25 114.06 555.74)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c1-p2" height="40" width="40" y="518" x="56" xlink:href="" transform="rotate(25 76 538)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c1-p1" height="40" width="40" y="535.74" x="94.06" xlink:href="" transform="rotate(25 114.06 555.74)"/>
+   </g>
+  </g>
+
+  <g class="zone-texts">
+    <text class="zone-text" x="321" y="167.16" font-size="20" text-anchor="middle">R7</text><text class="zone-text" x="321" y="231" font-size="20" text-anchor="middle">R6</text><text class="zone-text" x="321" y="291.48" font-size="20" text-anchor="middle">R5</text>
+    <text class="zone-text" x="321" y="375.24" font-size="20" text-anchor="middle">R4</text><text class="zone-text" x="321" y="439.08" font-size="20" text-anchor="middle">R3</text><text class="zone-text" x="321" y="502.92" font-size="20" text-anchor="middle">R2</text><text class="zone-text" x="321" y="562.2" font-size="20" text-anchor="middle">R1</text>
+  </g>
+
+  <g class="text">
+    <text fill="#ccc" x="546" y="266" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">C5</text>
+    <text fill="#ccc" x="546" y="504" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">C6</text>
+    <text fill="#ccc" x="224" y="231" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">R8</text>
+    <text fill="#ccc" x="63" y="588" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">C1</text>
+    <text fill="#ccc" x="70" y="329" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">C2</text>
+    <text fill="#ccc" x="189" y="98" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">C3</text>
+    <text fill="#ccc" x="448" y="35" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">C4</text>
+  </g>
+</svg>

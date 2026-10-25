@@ -71,6 +71,9 @@ campuses/
 - `clusters[]` — list of clusters on this campus
   - `id` — cluster ID from the 42 API
   - `name` — short lowercase name (used for seat matching)
+  - `svg` *(optional)* — map file URL, e.g.
+    `https://api.betterintra.com/gh/campuses/maps/{name-slug}/{name}.svg`.
+    When omitted, the map published on `meta.intra.42.fr` is used.
 
 - `definitions` — map of cluster name → seating layout
   - `rows[]` — range-based seating

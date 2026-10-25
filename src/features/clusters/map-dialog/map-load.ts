@@ -18,7 +18,7 @@ import { getCampusFlag } from "../../profile/campus-flags.ts";
 export async function buildClusters(
   campusId: string,
 ): Promise<{ clusters: ClusterInfo[]; hasMarkers: boolean }> {
-  let repoClusters: { id: string; name: string }[] = [];
+  let repoClusters: { id: string; name: string; svg?: string }[] = [];
   let hasMarkers = false;
   try {
     const data = await getClusterData(campusId);
@@ -27,10 +27,15 @@ export async function buildClusters(
   } catch {
     repoClusters = [];
   }
-  const svgs = await scrapeCampusSVGUrls(campusId);
+  // Maps listed in the campus file are shared assets (campuses/maps/…); only
+  // scrape meta.intra.42.fr for clusters that don't point at one.
+  const svgs =
+    repoClusters.length > 0 && repoClusters.every((c) => c.svg)
+      ? {}
+      : await scrapeCampusSVGUrls(campusId);
   const list: ClusterInfo[] = [];
   for (const c of repoClusters) {
-    const svg = svgs[c.id];
+    const svg = c.svg || svgs[c.id];
     if (svg) list.push({ id: c.id, name: c.name || "", svg });
   }
   for (const [id, svg] of Object.entries(svgs)) {
@@ -56,7 +61,11 @@ export async function ensureClusterData(
     let cached = await getCachedCluster(campusId, c.id);
     let svgText = cached?.svg;
     if (!svgText) {
-      const url = `${WORKER_URL}/api/v1/cluster/svg?url=${encodeURIComponent(c.svg)}`;
+      // Maps listed in the campus file are served by our own worker (already
+      // CORS-enabled), so only 42's URLs go through the proxy.
+      const url = c.svg.startsWith(WORKER_URL)
+        ? c.svg
+        : `${WORKER_URL}/api/v1/cluster/svg?url=${encodeURIComponent(c.svg)}`;
       const res = await fetch(url, { signal });
       if (!res.ok) return null;
       svgText = await res.text();

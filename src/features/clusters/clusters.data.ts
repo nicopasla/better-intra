@@ -94,7 +94,7 @@ const buildScreens = (
 export let SCREENS: Record<string, ScreenDirection> = {};
 
 export async function getClusterData(campusId: string): Promise<{
-  clusters: { id: string; name: string }[];
+  clusters: { id: string; name: string; svg?: string }[];
   screens: Record<string, ScreenDirection>;
 }> {
   const data = await loadCampusData(campusId);

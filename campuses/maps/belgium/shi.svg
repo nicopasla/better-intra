@@ -1,0 +1,386 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="47 20 488 806">
+
+  <style>
+    .zone{fill:var(--zone-fill,#d5d5d5);stroke:var(--zone-stroke,#a5a8ab);stroke-width:1}
+    .wall{fill:var(--wall-fill,#46525e)}
+    .slot{fill:var(--slot-fill,#00babc2e);stroke:var(--slot-stroke,#c3ccd5);stroke-width:1}
+    .door{fill:var(--door-fill,#c98a2b)}
+    .window{fill:var(--window-fill,#cfe9f7);stroke:var(--window-stroke,#5aa1c8);stroke-width:1}
+    .pillar{fill:var(--pillar-fill,#7a8794)}
+    .exit rect{fill:var(--exit-fill,#2e9e5b)}
+    .chair rect{fill:var(--chair-fill,#cfd8e0);stroke:var(--seat-stroke,#7b8896);stroke-width:1}
+    .zone-text{fill:var(--zone-text,#4b5866);font-family:sans-serif;font-weight:600;text-anchor:middle;pointer-events:none}
+    .exit text{fill:#fff;font-family:sans-serif;font-weight:700;pointer-events:none}
+    .sign path{fill:var(--exit-fill,#2e9e5b)}
+    .sign text{fill:var(--zone-text,#4b5866);font-family:sans-serif;font-weight:700;text-anchor:middle;pointer-events:none}
+    .cross{fill:none;stroke:var(--seat-dead,#d9453f);stroke-linecap:round;pointer-events:none}
+  </style>
+  <g class="zones">
+    <rect class="pillar" x="271" y="124" width="30" height="30"/>
+    <rect class="pillar" x="273" y="315" width="28" height="28"/>
+    <rect class="pillar" x="273" y="504" width="28" height="28"/>
+    <rect class="pillar" x="273" y="693" width="28" height="28"/>
+    <g class="sign"><g transform="rotate(180 121 499)"><g transform="translate(106 484) scale(0.046875)"><path d="M566.6 342.6C579.1 330.1 579.1 309.8 566.6 297.3L406.6 137.3C394.1 124.8 373.8 124.8 361.3 137.3C348.8 149.8 348.8 170.1 361.3 182.6L466.7 288L96 288C78.3 288 64 302.3 64 320C64 337.7 78.3 352 96 352L466.7 352L361.3 457.4C348.8 469.9 348.8 490.2 361.3 502.7C373.8 515.2 394.1 515.2 406.6 502.7L566.6 342.7z"/></g></g><text x="121" y="529.38" font-size="15">CHILL</text><text x="121" y="549.63" font-size="15">ZONE</text></g>
+    <g class="sign"><g transform="rotate(180 121 93)"><g transform="translate(106 78) scale(0.046875)"><path d="M566.6 342.6C579.1 330.1 579.1 309.8 566.6 297.3L406.6 137.3C394.1 124.8 373.8 124.8 361.3 137.3C348.8 149.8 348.8 170.1 361.3 182.6L466.7 288L96 288C78.3 288 64 302.3 64 320C64 337.7 78.3 352 96 352L466.7 352L361.3 457.4C348.8 469.9 348.8 490.2 361.3 502.7C373.8 515.2 394.1 515.2 406.6 502.7L566.6 342.7z"/></g></g><text x="121" y="123.38" font-size="15">CHILL</text><text x="121" y="143.63" font-size="15">ZONE</text></g>
+    <rect class="zone" x="224" y="36" width="40" height="40"/>
+    <rect class="zone" x="308" y="36" width="40" height="40"/>
+    <rect class="zone" x="392" y="36" width="40" height="40"/>
+  </g>
+
+  <g class="chairs-under">
+    <g class="chair" data-seat="shi-r12-p1" data-side="bottom" data-off="-14.4"><rect x="190" y="63.6" width="24" height="18.72" rx="3"/><rect x="192.4" y="83.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r12-p2" data-side="bottom" data-off="-14.4"><rect x="274" y="63.6" width="24" height="18.72" rx="3"/><rect x="276.4" y="83.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r12-p3" data-side="bottom" data-off="-14.4"><rect x="358" y="63.6" width="24" height="18.72" rx="3"/><rect x="360.4" y="83.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r12-p4" data-side="bottom" data-off="-14.4"><rect x="442" y="63.6" width="24" height="18.72" rx="3"/><rect x="444.4" y="83.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r11-p6" data-side="top" data-off="-14.4" transform="rotate(180 454 119.4)"><rect x="442" y="107.4" width="24" height="18.72" rx="3"/><rect x="444.4" y="127.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r11-p4" data-side="top" data-off="-14.4" transform="rotate(180 370 119.4)"><rect x="358" y="107.4" width="24" height="18.72" rx="3"/><rect x="360.4" y="127.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r11-p1" data-side="top" data-off="-14.4" transform="rotate(180 202 119.4)"><rect x="190" y="107.4" width="24" height="18.72" rx="3"/><rect x="192.4" y="127.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r10-p1" data-side="top" data-off="-14.4" transform="rotate(180 202 182.4)"><rect x="190" y="170.4" width="24" height="18.72" rx="3"/><rect x="192.4" y="190.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r9-p1" data-side="top" data-off="-14.4" transform="rotate(180 202 245.4)"><rect x="190" y="233.4" width="24" height="18.72" rx="3"/><rect x="192.4" y="253.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r8-p1" data-side="top" data-off="-14.4" transform="rotate(180 202 308.4)"><rect x="190" y="296.4" width="24" height="18.72" rx="3"/><rect x="192.4" y="316.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r7-p1" data-side="top" data-off="-14.4" transform="rotate(180 202 371.4)"><rect x="190" y="359.4" width="24" height="18.72" rx="3"/><rect x="192.4" y="379.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r6-p1" data-side="top" data-off="-14.4" transform="rotate(180 202 434.4)"><rect x="190" y="422.4" width="24" height="18.72" rx="3"/><rect x="192.4" y="442.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r5-p1" data-side="top" data-off="-14.4" transform="rotate(180 202 497.4)"><rect x="190" y="485.4" width="24" height="18.72" rx="3"/><rect x="192.4" y="505.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r4-p1" data-side="top" data-off="-14.4" transform="rotate(180 202 560.4)"><rect x="190" y="548.4" width="24" height="18.72" rx="3"/><rect x="192.4" y="568.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-c2-p1" data-side="right" data-off="-14.4" transform="rotate(270 137.6 454)"><rect x="125.6" y="442" width="24" height="18.72" rx="3"/><rect x="128" y="462.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-c2-p2" data-side="right" data-off="-14.4" transform="rotate(270 137.6 412)"><rect x="125.6" y="400" width="24" height="18.72" rx="3"/><rect x="128" y="420.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-c2-p3" data-side="right" data-off="-14.4" transform="rotate(270 137.6 370)"><rect x="125.6" y="358" width="24" height="18.72" rx="3"/><rect x="128" y="378.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-c2-p4" data-side="right" data-off="-14.4" transform="rotate(270 137.6 328)"><rect x="125.6" y="316" width="24" height="18.72" rx="3"/><rect x="128" y="336.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-c2-p5" data-side="right" data-off="-14.4" transform="rotate(270 137.6 286)"><rect x="125.6" y="274" width="24" height="18.72" rx="3"/><rect x="128" y="294.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-c2-p6" data-side="right" data-off="-14.4" transform="rotate(270 137.6 244)"><rect x="125.6" y="232" width="24" height="18.72" rx="3"/><rect x="128" y="252.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-c1-p6" data-side="right" data-off="-14.4" transform="rotate(270 137.6 580)"><rect x="125.6" y="568" width="24" height="18.72" rx="3"/><rect x="128" y="588.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-c1-p5" data-side="right" data-off="-14.4" transform="rotate(270 137.6 622)"><rect x="125.6" y="610" width="24" height="18.72" rx="3"/><rect x="128" y="630.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-c1-p4" data-side="right" data-off="-14.4" transform="rotate(270 137.6 664)"><rect x="125.6" y="652" width="24" height="18.72" rx="3"/><rect x="128" y="672.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-c1-p3" data-side="right" data-off="-14.4" transform="rotate(270 137.6 706)"><rect x="125.6" y="694" width="24" height="18.72" rx="3"/><rect x="128" y="714.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-c1-p2" data-side="right" data-off="-14.4" transform="rotate(270 137.6 748)"><rect x="125.6" y="736" width="24" height="18.72" rx="3"/><rect x="128" y="756.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-c1-p1" data-side="right" data-off="-14.4" transform="rotate(270 137.6 790)"><rect x="125.6" y="778" width="24" height="18.72" rx="3"/><rect x="128" y="798.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r2-p1" data-side="top" data-off="-14.4" transform="rotate(180 202 686.4)"><rect x="190" y="674.4" width="24" height="18.72" rx="3"/><rect x="192.4" y="694.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r11-p2" data-side="bottom" data-off="-14.4"><rect x="232" y="146.6" width="24" height="18.72" rx="3"/><rect x="234.4" y="166.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r3-p1" data-side="top" data-off="-14.4" transform="rotate(180 202 623.4)"><rect x="190" y="611.4" width="24" height="18.72" rx="3"/><rect x="192.4" y="631.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r1-p1" data-side="top" data-off="-14.4" transform="rotate(180 202 749.4)"><rect x="190" y="737.4" width="24" height="18.72" rx="3"/><rect x="192.4" y="757.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r1-p3" data-side="top" data-off="-14.4" transform="rotate(180 286 749.4)"><rect x="274" y="737.4" width="24" height="18.72" rx="3"/><rect x="276.4" y="757.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r1-p5" data-side="top" data-off="-14.4" transform="rotate(180 370 749.4)"><rect x="358" y="737.4" width="24" height="18.72" rx="3"/><rect x="360.4" y="757.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r1-p7" data-side="top" data-off="-14.4" transform="rotate(180 454 749.4)"><rect x="442" y="737.4" width="24" height="18.72" rx="3"/><rect x="444.4" y="757.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r2-p6" data-side="top" data-off="-14.4" transform="rotate(180 454 686.4)"><rect x="442" y="674.4" width="24" height="18.72" rx="3"/><rect x="444.4" y="694.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r2-p4" data-side="top" data-off="-14.4" transform="rotate(180 370 686.4)"><rect x="358" y="674.4" width="24" height="18.72" rx="3"/><rect x="360.4" y="694.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r3-p5" data-side="top" data-off="-14" transform="rotate(180 370 623)"><rect x="358" y="611" width="24" height="18.72" rx="3"/><rect x="360.4" y="631.16" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r3-p7" data-side="top" data-off="-14.4" transform="rotate(180 454 623.4)"><rect x="442" y="611.4" width="24" height="18.72" rx="3"/><rect x="444.4" y="631.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r3-p3" data-side="top" data-off="-14.4" transform="rotate(180 286 623.4)"><rect x="274" y="611.4" width="24" height="18.72" rx="3"/><rect x="276.4" y="631.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r4-p3" data-side="top" data-off="-14.4" transform="rotate(180 286 560.4)"><rect x="274" y="548.4" width="24" height="18.72" rx="3"/><rect x="276.4" y="568.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r4-p7" data-side="top" data-off="-14.4" transform="rotate(180 454 560.4)"><rect x="442" y="548.4" width="24" height="18.72" rx="3"/><rect x="444.4" y="568.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r5-p4" data-side="top" data-off="-14.4" transform="rotate(180 370 497.4)"><rect x="358" y="485.4" width="24" height="18.72" rx="3"/><rect x="360.4" y="505.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r10-p2" data-side="bottom" data-off="-14.4"><rect x="232" y="209.6" width="24" height="18.72" rx="3"/><rect x="234.4" y="229.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r9-p2" data-side="bottom" data-off="-14.4"><rect x="232" y="272.6" width="24" height="18.72" rx="3"/><rect x="234.4" y="292.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r8-p2" data-side="bottom" data-off="-14.4"><rect x="232" y="335.6" width="24" height="18.72" rx="3"/><rect x="234.4" y="355.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r7-p2" data-side="bottom" data-off="-14.4"><rect x="232" y="398.6" width="24" height="18.72" rx="3"/><rect x="234.4" y="418.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r6-p2" data-side="bottom" data-off="-14.4"><rect x="232" y="461.6" width="24" height="18.72" rx="3"/><rect x="234.4" y="481.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r11-p3" data-side="bottom" data-off="-14.4"><rect x="316" y="146.6" width="24" height="18.72" rx="3"/><rect x="318.4" y="166.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r10-p4" data-side="bottom" data-off="-14.4"><rect x="316" y="209.6" width="24" height="18.72" rx="3"/><rect x="318.4" y="229.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r9-p4" data-side="bottom" data-off="-14.4"><rect x="316" y="272.6" width="24" height="18.72" rx="3"/><rect x="318.4" y="292.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r8-p3" data-side="bottom" data-off="-14.4"><rect x="316" y="335.6" width="24" height="18.72" rx="3"/><rect x="318.4" y="355.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r7-p4" data-side="bottom" data-off="-14.4"><rect x="316" y="398.6" width="24" height="18.72" rx="3"/><rect x="318.4" y="418.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r6-p4" data-side="bottom" data-off="-14.4"><rect x="316" y="461.6" width="24" height="18.72" rx="3"/><rect x="318.4" y="481.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r6-p6" data-side="bottom" data-off="-14.4"><rect x="400" y="461.6" width="24" height="18.72" rx="3"/><rect x="402.4" y="481.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r8-p5" data-side="bottom" data-off="-14.4"><rect x="400" y="335.6" width="24" height="18.72" rx="3"/><rect x="402.4" y="355.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r10-p6" data-side="bottom" data-off="-14.4"><rect x="400" y="209.6" width="24" height="18.72" rx="3"/><rect x="402.4" y="229.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r9-p6" data-side="bottom" data-off="-14.4"><rect x="400" y="272.6" width="24" height="18.72" rx="3"/><rect x="402.4" y="292.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r7-p6" data-side="bottom" data-off="-14.4"><rect x="400" y="398.6" width="24" height="18.72" rx="3"/><rect x="402.4" y="418.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r11-p5" data-side="bottom" data-off="-14.4"><rect x="400" y="146.6" width="24" height="18.72" rx="3"/><rect x="402.4" y="166.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r5-p2" data-side="bottom" data-off="-14.4"><rect x="232" y="524.6" width="24" height="18.72" rx="3"/><rect x="234.4" y="544.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r4-p2" data-side="bottom" data-off="-14.4"><rect x="232" y="587.6" width="24" height="18.72" rx="3"/><rect x="234.4" y="607.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r3-p2" data-side="bottom" data-off="-14.4"><rect x="232" y="650.6" width="24" height="18.72" rx="3"/><rect x="234.4" y="670.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r2-p2" data-side="bottom" data-off="-14.4"><rect x="232" y="713.6" width="24" height="18.72" rx="3"/><rect x="234.4" y="733.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r1-p2" data-side="bottom" data-off="-14.4"><rect x="232" y="776.6" width="24" height="18.72" rx="3"/><rect x="234.4" y="796.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r5-p3" data-side="bottom" data-off="-14.4"><rect x="316" y="524.6" width="24" height="18.72" rx="3"/><rect x="318.4" y="544.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r4-p4" data-side="bottom" data-off="-14.4"><rect x="316" y="587.6" width="24" height="18.72" rx="3"/><rect x="318.4" y="607.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r3-p4" data-side="bottom" data-off="-14.4"><rect x="316" y="650.6" width="24" height="18.72" rx="3"/><rect x="318.4" y="670.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r2-p3" data-side="bottom" data-off="-14.4"><rect x="316" y="713.6" width="24" height="18.72" rx="3"/><rect x="318.4" y="733.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r1-p4" data-side="bottom" data-off="-14.4"><rect x="316" y="776.6" width="24" height="18.72" rx="3"/><rect x="318.4" y="796.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r1-p6" data-side="bottom" data-off="-14.4"><rect x="400" y="776.6" width="24" height="18.72" rx="3"/><rect x="402.4" y="796.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r2-p5" data-side="bottom" data-off="-14.4"><rect x="400" y="713.6" width="24" height="18.72" rx="3"/><rect x="402.4" y="733.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r3-p6" data-side="bottom" data-off="-14.4"><rect x="400" y="650.6" width="24" height="18.72" rx="3"/><rect x="402.4" y="670.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r4-p6" data-side="bottom" data-off="-14.4"><rect x="400" y="587.6" width="24" height="18.72" rx="3"/><rect x="402.4" y="607.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r6-p3" data-side="top" data-off="-14.4" transform="rotate(180 286 434.4)"><rect x="274" y="422.4" width="24" height="18.72" rx="3"/><rect x="276.4" y="442.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r7-p3" data-side="top" data-off="-14.4" transform="rotate(180 286 371.4)"><rect x="274" y="359.4" width="24" height="18.72" rx="3"/><rect x="276.4" y="379.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r7-p5" data-side="top" data-off="-14.4" transform="rotate(180 370 371.4)"><rect x="358" y="359.4" width="24" height="18.72" rx="3"/><rect x="360.4" y="379.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r7-p7" data-side="top" data-off="-14.4" transform="rotate(180 454 371.4)"><rect x="442" y="359.4" width="24" height="18.72" rx="3"/><rect x="444.4" y="379.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r8-p6" data-side="top" data-off="-14.4" transform="rotate(180 454 308.4)"><rect x="442" y="296.4" width="24" height="18.72" rx="3"/><rect x="444.4" y="316.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r8-p4" data-side="top" data-off="-14.4" transform="rotate(180 370 308.4)"><rect x="358" y="296.4" width="24" height="18.72" rx="3"/><rect x="360.4" y="316.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r6-p7" data-side="top" data-off="-14.4" transform="rotate(180 454 434.4)"><rect x="442" y="422.4" width="24" height="18.72" rx="3"/><rect x="444.4" y="442.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r6-p5" data-side="top" data-off="-14.4" transform="rotate(180 370 434.4)"><rect x="358" y="422.4" width="24" height="18.72" rx="3"/><rect x="360.4" y="442.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r4-p5" data-side="top" data-off="-14.4" transform="rotate(180 370 560.4)"><rect x="358" y="548.4" width="24" height="18.72" rx="3"/><rect x="360.4" y="568.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r9-p3" data-side="top" data-off="-14.4" transform="rotate(180 286 245.4)"><rect x="274" y="233.4" width="24" height="18.72" rx="3"/><rect x="276.4" y="253.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r10-p3" data-side="top" data-off="-14.4" transform="rotate(180 286 182.4)"><rect x="274" y="170.4" width="24" height="18.72" rx="3"/><rect x="276.4" y="190.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r10-p5" data-side="top" data-off="-14.4" transform="rotate(180 370 182.4)"><rect x="358" y="170.4" width="24" height="18.72" rx="3"/><rect x="360.4" y="190.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r9-p5" data-side="top" data-off="-14.4" transform="rotate(180 370 245.4)"><rect x="358" y="233.4" width="24" height="18.72" rx="3"/><rect x="360.4" y="253.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r10-p7" data-side="top" data-off="-14.4" transform="rotate(180 454 182.4)"><rect x="442" y="170.4" width="24" height="18.72" rx="3"/><rect x="444.4" y="190.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r9-p7" data-side="top" data-off="-14.4" transform="rotate(180 454 245.4)"><rect x="442" y="233.4" width="24" height="18.72" rx="3"/><rect x="444.4" y="253.56" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r5-p5" data-side="bottom" data-off="-14.4"><rect x="400" y="524.6" width="24" height="18.72" rx="3"/><rect x="402.4" y="544.76" width="19.2" height="3.84" rx="1.5"/></g>
+    <g class="chair" data-seat="shi-r5-p6" data-side="top" data-off="-14.4" transform="rotate(180 454 497.4)"><rect x="442" y="485.4" width="24" height="18.72" rx="3"/><rect x="444.4" y="505.56" width="19.2" height="3.84" rx="1.5"/></g>
+  </g>
+
+  <g class="r11">
+   <g class="r11 posts">
+    <rect id="shi-r11-p1" height="40" width="40" y="119" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r11-p2" height="40" width="40" y="119" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r11-p3" height="40" width="40" y="119" x="308" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r11-p4" height="40" width="40" y="119" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r11-p5" height="40" width="40" y="119" x="392" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r11-p6" height="40" width="40" y="119" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r11-p1" height="40" width="40" y="119" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r11-p2" height="40" width="40" y="119" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r11-p3" height="40" width="40" y="119" x="308" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r11-p4" height="40" width="40" y="119" x="350" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r11-p5" height="40" width="40" y="119" x="392" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r11-p6" height="40" width="40" y="119" x="434" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r12">
+   <g class="r12 posts">
+    <rect id="shi-r12-p1" height="40" width="40" y="36" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r12-p2" height="40" width="40" y="36" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r12-p3" height="40" width="40" y="36" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r12-p4" height="40" width="40" y="36" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r12-p1" height="40" width="40" y="36" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r12-p2" height="40" width="40" y="36" x="266" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r12-p3" height="40" width="40" y="36" x="350" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r12-p4" height="40" width="40" y="36" x="434" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r10">
+   <g class="r10 posts">
+    <rect id="shi-r10-p1" height="40" width="40" y="182" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r10-p2" height="40" width="40" y="182" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r10-p3" height="40" width="40" y="182" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r10-p4" height="40" width="40" y="182" x="308" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r10-p5" height="40" width="40" y="182" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r10-p6" height="40" width="40" y="182" x="392" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r10-p7" height="40" width="40" y="182" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r10-p1" height="40" width="40" y="182" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r10-p2" height="40" width="40" y="182" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r10-p3" height="40" width="40" y="182" x="266" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r10-p4" height="40" width="40" y="182" x="308" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r10-p5" height="40" width="40" y="182" x="350" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r10-p6" height="40" width="40" y="182" x="392" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r10-p7" height="40" width="40" y="182" x="434" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r9">
+   <g class="r9 posts">
+    <rect id="shi-r9-p1" height="40" width="40" y="245" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r9-p2" height="40" width="40" y="245" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r9-p3" height="40" width="40" y="245" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r9-p4" height="40" width="40" y="245" x="308" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r9-p6" height="40" width="40" y="245" x="392" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r9-p7" height="40" width="40" y="245" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r9-p5" height="40" width="40" y="245" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r9-p1" height="40" width="40" y="245" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r9-p2" height="40" width="40" y="245" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r9-p3" height="40" width="40" y="245" x="266" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r9-p4" height="40" width="40" y="245" x="308" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r9-p6" height="40" width="40" y="245" x="392" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r9-p7" height="40" width="40" y="245" x="434" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r9-p5" height="40" width="40" y="245" x="350" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r8">
+   <g class="r8 posts">
+    <rect id="shi-r8-p1" height="40" width="40" y="308" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r8-p2" height="40" width="40" y="308" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r8-p3" height="40" width="40" y="308" x="308" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r8-p4" height="40" width="40" y="308" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r8-p5" height="40" width="40" y="308" x="392" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r8-p6" height="40" width="40" y="308" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r8-p1" height="40" width="40" y="308" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r8-p2" height="40" width="40" y="308" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r8-p3" height="40" width="40" y="308" x="308" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r8-p4" height="40" width="40" y="308" x="350" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r8-p5" height="40" width="40" y="308" x="392" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r8-p6" height="40" width="40" y="308" x="434" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r7">
+   <g class="r7 posts">
+    <rect id="shi-r7-p1" height="40" width="40" y="371" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r7-p2" height="40" width="40" y="371" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r7-p3" height="40" width="40" y="371" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r7-p4" height="40" width="40" y="371" x="308" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r7-p5" height="40" width="40" y="371" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r7-p6" height="40" width="40" y="371" x="392" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r7-p7" height="40" width="40" y="371" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r7-p1" height="40" width="40" y="371" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r7-p2" height="40" width="40" y="371" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r7-p3" height="40" width="40" y="371" x="266" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r7-p4" height="40" width="40" y="371" x="308" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r7-p5" height="40" width="40" y="371" x="350" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r7-p6" height="40" width="40" y="371" x="392" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r7-p7" height="40" width="40" y="371" x="434" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r6">
+   <g class="r6 posts">
+    <rect id="shi-r6-p1" height="40" width="40" y="434" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r6-p2" height="40" width="40" y="434" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r6-p3" height="40" width="40" y="434" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r6-p4" height="40" width="40" y="434" x="308" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r6-p5" height="40" width="40" y="434" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r6-p6" height="40" width="40" y="434" x="392" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r6-p7" height="40" width="40" y="434" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r6-p1" height="40" width="40" y="434" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r6-p2" height="40" width="40" y="434" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r6-p3" height="40" width="40" y="434" x="266" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r6-p4" height="40" width="40" y="434" x="308" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r6-p5" height="40" width="40" y="434" x="350" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r6-p6" height="40" width="40" y="434" x="392" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r6-p7" height="40" width="40" y="434" x="434" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r5">
+   <g class="r5 posts">
+    <rect id="shi-r5-p1" height="40" width="40" y="497" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r5-p2" height="40" width="40" y="497" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r5-p3" height="40" width="40" y="497" x="308" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r5-p4" height="40" width="40" y="497" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r5-p5" height="40" width="40" y="497" x="392" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r5-p6" height="40" width="40" y="497" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r5-p1" height="40" width="40" y="497" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r5-p2" height="40" width="40" y="497" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r5-p3" height="40" width="40" y="497" x="308" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r5-p4" height="40" width="40" y="497" x="350" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r5-p5" height="40" width="40" y="497" x="392" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r5-p6" height="40" width="40" y="497" x="434" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r4">
+   <g class="r4 posts">
+    <rect id="shi-r4-p1" height="40" width="40" y="560" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r4-p2" height="40" width="40" y="560" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r4-p3" height="40" width="40" y="560" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r4-p4" height="40" width="40" y="560" x="308" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r4-p5" height="40" width="40" y="560" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r4-p6" height="40" width="40" y="560" x="392" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r4-p7" height="40" width="40" y="560" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r4-p1" height="40" width="40" y="560" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r4-p2" height="40" width="40" y="560" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r4-p3" height="40" width="40" y="560" x="266" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r4-p4" height="40" width="40" y="560" x="308" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r4-p5" height="40" width="40" y="560" x="350" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r4-p6" height="40" width="40" y="560" x="392" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r4-p7" height="40" width="40" y="560" x="434" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r3">
+   <g class="r3 posts">
+    <rect id="shi-r3-p1" height="40" width="40" y="623" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r3-p2" height="40" width="40" y="623" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r3-p3" height="40" width="40" y="623" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r3-p4" height="40" width="40" y="623" x="308" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r3-p5" height="40" width="40" y="623" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r3-p6" height="40" width="40" y="623" x="392" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r3-p7" height="40" width="40" y="623" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r3-p1" height="40" width="40" y="623" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r3-p2" height="40" width="40" y="623" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r3-p3" height="40" width="40" y="623" x="266" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r3-p4" height="40" width="40" y="623" x="308" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r3-p5" height="40" width="40" y="623" x="350" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r3-p6" height="40" width="40" y="623" x="392" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r3-p7" height="40" width="40" y="623" x="434" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r2">
+   <g class="r2 posts">
+    <rect id="shi-r2-p1" height="40" width="40" y="686" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r2-p2" height="40" width="40" y="686" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r2-p3" height="40" width="40" y="686" x="308" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r2-p4" height="40" width="40" y="686" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r2-p5" height="40" width="40" y="686" x="392" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r2-p6" height="40" width="40" y="686" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r2-p1" height="40" width="40" y="686" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r2-p2" height="40" width="40" y="686" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r2-p3" height="40" width="40" y="686" x="308" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r2-p4" height="40" width="40" y="686" x="350" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r2-p5" height="40" width="40" y="686" x="392" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r2-p6" height="40" width="40" y="686" x="434" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="r1">
+   <g class="r1 posts">
+    <rect id="shi-r1-p1" height="40" width="40" y="749" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r1-p2" height="40" width="40" y="749" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r1-p3" height="40" width="40" y="749" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r1-p4" height="40" width="40" y="749" x="308" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r1-p5" height="40" width="40" y="749" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r1-p6" height="40" width="40" y="749" x="392" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-r1-p7" height="40" width="40" y="749" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r1-p1" height="40" width="40" y="749" x="182" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r1-p2" height="40" width="40" y="749" x="224" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r1-p3" height="40" width="40" y="749" x="266" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r1-p4" height="40" width="40" y="749" x="308" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r1-p5" height="40" width="40" y="749" x="350" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r1-p6" height="40" width="40" y="749" x="392" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-r1-p7" height="40" width="40" y="749" x="434" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="c1">
+   <g class="c1 posts">
+    <rect id="shi-c1-p1" height="40" width="40" y="770" x="98" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-c1-p2" height="40" width="40" y="728" x="98" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-c1-p3" height="40" width="40" y="686" x="98" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-c1-p4" height="40" width="40" y="644" x="98" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-c1-p5" height="40" width="40" y="602" x="98" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-c1-p6" height="40" width="40" y="560" x="98" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-c1-p1" height="40" width="40" y="770" x="98" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-c1-p2" height="40" width="40" y="728" x="98" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-c1-p3" height="40" width="40" y="686" x="98" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-c1-p4" height="40" width="40" y="644" x="98" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-c1-p5" height="40" width="40" y="602" x="98" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-c1-p6" height="40" width="40" y="560" x="98" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="c2">
+   <g class="c2 posts">
+    <rect id="shi-c2-p1" height="40" width="40" y="434" x="98" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-c2-p2" height="40" width="40" y="392" x="98" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-c2-p3" height="40" width="40" y="350" x="98" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-c2-p4" height="40" width="40" y="308" x="98" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-c2-p5" height="40" width="40" y="266" x="98" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="shi-c2-p6" height="40" width="40" y="224" x="98" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-c2-p1" height="40" width="40" y="434" x="98" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-c2-p2" height="40" width="40" y="392" x="98" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-c2-p3" height="40" width="40" y="350" x="98" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-c2-p4" height="40" width="40" y="308" x="98" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-c2-p5" height="40" width="40" y="266" x="98" xlink:href=""/>
+    <image preserveAspectRatio="xMidYMid slice" id="shi-c2-p6" height="40" width="40" y="224" x="98" xlink:href=""/>
+   </g>
+  </g>
+
+  <g class="text">
+    <text fill="#ccc" x="483" y="77" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">R12</text>
+    <text fill="#ccc" x="63" y="693" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">C1</text>
+    <text fill="#ccc" x="63" y="357" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">C2</text>
+    <text fill="#ccc" x="483" y="147" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">R11</text>
+    <text fill="#ccc" x="483" y="210" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">R10</text>
+    <text fill="#ccc" x="483" y="273" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">R9</text>
+    <text fill="#ccc" x="483" y="336" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">R8</text>
+    <text fill="#ccc" x="483" y="399" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">R7</text>
+    <text fill="#ccc" x="483" y="462" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">R6</text>
+    <text fill="#ccc" x="483" y="525" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">R5</text>
+    <text fill="#ccc" x="483" y="588" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">R4</text>
+    <text fill="#ccc" x="483" y="651" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">R3</text>
+    <text fill="#ccc" x="483" y="714" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">R2</text>
+    <text fill="#ccc" x="483" y="777" font-size="20" font-family="Source Code Pro, Helvetica, Arial, sans-serif" xml:space="preserve" font-weight="bold">R1</text>
+  </g>
+</svg>

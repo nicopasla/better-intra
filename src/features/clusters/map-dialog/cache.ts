@@ -1,6 +1,8 @@
 import { SeatPos } from "./crop";
 
-const SVG_CACHE_PREFIX = "cluster_svg_";
+const SVG_CACHE_PREFIX = "cluster_svg_v2_";
+/** Old prefix: maps were cached from meta.intra.42.fr before the shared ones. */
+const LEGACY_SVG_CACHE_PREFIX = "cluster_svg_";
 const SVG_URLS_CACHE_PREFIX = "CLUSTER_SVG_URLS_V1_";
 const META_BASE = "https://meta.intra.42.fr/";
 const CACHE_TTL = 7 * 24 * 60 * 60_000;
@@ -22,7 +24,10 @@ export async function getCachedCluster(
   clusterId: string,
 ): Promise<CachedCluster | null> {
   const key = `${SVG_CACHE_PREFIX}${campusId}_${clusterId}`;
-  const result = (await chrome.storage.local.get(key)) as Record<string, string>;
+  const result = (await chrome.storage.local.get(key)) as Record<
+    string,
+    string
+  >;
   const raw = result[key];
   if (!raw) return null;
   try {
@@ -43,6 +48,12 @@ export async function setCachedCluster(
   await chrome.storage.local.set({
     [`${SVG_CACHE_PREFIX}${campusId}_${clusterId}`]: JSON.stringify(data),
   });
+  // Drop the old map cached from meta.intra.42.fr (now a different map).
+  try {
+    await chrome.storage.local.remove(
+      `${LEGACY_SVG_CACHE_PREFIX}${campusId}_${clusterId}`,
+    );
+  } catch {}
 }
 
 export function getSvgSlug(svgUrl: string): string {
@@ -102,7 +113,6 @@ export async function scrapeCampusSVGUrls(
       }
       return data;
     }
-  } catch {
-  }
+  } catch {}
   return {};
 }

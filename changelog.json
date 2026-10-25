@@ -1,6 +1,18 @@
 {
   "entries": [
     {
+      "version": "1.11.8",
+      "date": "2026-10-25",
+      "highlights": [
+        "Profiles can now use a square avatar.",
+        "Your username badge can shimmer vertically or diagonally.",
+        "Achievement icons are shown again on profiles.",
+        "Your group colours now carry over to the mobile app.",
+        "The monthly logtime goal no longer rounds up to 100 %.",
+        "A few UI fixes across profiles and settings."
+      ]
+    },
+    {
       "version": "1.11.7",
       "date": "2026-10-22",
       "highlights": [

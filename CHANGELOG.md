@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+## [1.11.8] - 2026-10-25
+
+### Features 🎉
+
+- feat(clusters): share cluster maps between extension and PWA ([4f56aef](https://github.com/nicopasla/better-intra/commit/4f56aef))
+- feat(profile): sync group colours for the PWA ([8843e10](https://github.com/nicopasla/better-intra/commit/8843e10))
+- feat(profile): sync captured group colours ([6495e41](https://github.com/nicopasla/better-intra/commit/6495e41))
+- feat(profile): add shared avatar shape setting ([b4fbf60](https://github.com/nicopasla/better-intra/commit/b4fbf60))
+- feat(profile): add vertical and diagonal badge shimmers ([7ad5aae](https://github.com/nicopasla/better-intra/commit/7ad5aae))
+
+### Bug fixes 🐛
+
+- fix(clusters): theme map furniture and refresh stale map caches ([2115079](https://github.com/nicopasla/better-intra/commit/2115079))
+- fix(maps): move the SHI R12 label up ([f7dede0](https://github.com/nicopasla/better-intra/commit/f7dede0))
+- fix(students): use solid badges and show wallet before eval ([9498f80](https://github.com/nicopasla/better-intra/commit/9498f80))
+- fix(logtime): stop rounding the monthly goal up to 100% ([567cb50](https://github.com/nicopasla/better-intra/commit/567cb50))
+- fix(profile): keep username badge text readable ([4cb7a76](https://github.com/nicopasla/better-intra/commit/4cb7a76))
+- fix(profile): restore achievement icons ([dee3dd2](https://github.com/nicopasla/better-intra/commit/dee3dd2))
+- fix(profile): stop badge rotation after one lap ([6e846fc](https://github.com/nicopasla/better-intra/commit/6e846fc))
+- fix(hub): rewrite settings descriptions ([61a054e](https://github.com/nicopasla/better-intra/commit/61a054e))
+- fix(hub): show sunrise before sunset in auto theme ([555aedd](https://github.com/nicopasla/better-intra/commit/555aedd))
+- fix(hub): tighten tab spacing, remove tab strip scrollbar and fix sticky tabs ([894df5f](https://github.com/nicopasla/better-intra/commit/894df5f))
+- fix(hub): keep panel borders and badge icon visibility ([4222634](https://github.com/nicopasla/better-intra/commit/4222634))
+
+### Maintenance 🧹
+
+- chore: update submodule references for better-intra-pwa and better-intra-worker ([3a2d010](https://github.com/nicopasla/better-intra/commit/3a2d010))
+- chore(profile): sort username badge animations by name ([97d6e46](https://github.com/nicopasla/better-intra/commit/97d6e46))
+- chore(git): add the cluster map builder to .gitignore ([6ef7ae8](https://github.com/nicopasla/better-intra/commit/6ef7ae8))
+
 ## [1.11.7] - 2026-10-22
 
 ### Features 🎉
@@ -1482,7 +1512,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.7...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.8...HEAD
+[1.11.8]: https://github.com/nicopasla/better-intra/compare/v1.11.7...v1.11.8
 [1.11.7]: https://github.com/nicopasla/better-intra/compare/v1.11.6...v1.11.7
 [1.11.6]: https://github.com/nicopasla/better-intra/compare/v1.11.5...v1.11.6
 [1.11.5]: https://github.com/nicopasla/better-intra/compare/v1.11.4...v1.11.5

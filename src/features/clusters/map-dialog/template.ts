@@ -202,24 +202,26 @@ export function renderTemplate(state: DialogState): TemplateResult {
       @keyframes ft-dialog-pulsate {
         0%,
         100% {
-          box-shadow:
-            0 0 0 2px #ff0055,
-            0 0 5px 2px #ff0055,
-            0 0 10px 4px #ff0055;
+          opacity: 1;
         }
         50% {
-          box-shadow:
-            0 0 0 3px #ff0055,
-            0 0 8px 3px #ff0055,
-            0 0 15px 6px #ff0055;
+          opacity: 0.55;
         }
       }
+      /* Opacity-only pulse: animating box-shadow repaints the map every frame. */
       .ft-dialog-seat-glow {
         animation: ft-dialog-pulsate 1.6s ease-in-out infinite !important;
       }
       .seat-link.ft-dialog-seat-glow {
         overflow: visible !important;
         z-index: 10;
+        box-shadow:
+          0 0 0 2px #ff0055,
+          0 0 8px 2px #ff0055;
+      }
+      /* box-shadow does not paint on SVG shapes: use a static drop shadow. */
+      #map-area svg .ft-dialog-seat-glow {
+        filter: drop-shadow(0 0 6px #ff0055);
       }
       .tabs-scroll {
         flex: 1 1 auto;

@@ -60,3 +60,24 @@ export const applyActivePresence = (
   clusters: ClusterInfo[],
   hasActive: boolean,
 ) => applyPseudoCluster(clusters, "active", "Active", hasActive);
+
+type IdleWindow = Window & {
+  requestIdleCallback?: (
+    cb: () => void,
+    opts?: { timeout: number },
+  ) => number;
+};
+
+/**
+ * Runs background work (parsing/caching other clusters) when the main thread is
+ * free, so opening the dialog stays responsive.
+ */
+export function whenIdle(fn: () => void, timeout = 2000): void {
+  const win = window as IdleWindow;
+  if (typeof win.requestIdleCallback === "function") {
+    win.requestIdleCallback(fn, { timeout });
+    return;
+  }
+  setTimeout(fn, 120);
+}
+

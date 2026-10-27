@@ -11,6 +11,7 @@ import {
   type ActiveSortMode,
 } from "./map-dialog/render.ts";
 import type { DialogState } from "./map-dialog/context.ts";
+import { keyOf } from "./map-dialog/context.ts";
 import {
   buildClusters,
   ensureClusterData,
@@ -26,7 +27,7 @@ import {
 import { flashSeat } from "./map-dialog/glow.ts";
 import { rerender } from "./map-dialog/tabs.ts";
 import { updateCampusTime, updateDefaultSelect } from "./map-dialog/header.ts";
-import { findClusterForSeat } from "./map-dialog/helpers.ts";
+import { findClusterForSeat, whenIdle } from "./map-dialog/helpers.ts";
 import {
   maybeStartClusterDialogTour,
   startClusterDialogTour,
@@ -178,8 +179,11 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
       wired: new WeakSet(),
       overflowing: false,
       resizeObserver: null,
+      measuredWidth: 0,
+      measuredAt: 0,
+      signature: "",
     },
-    timers: { poll: null, clock: null, countdown: null },
+    timers: { poll: null, clock: null, countdown: null, glow: null },
     campusOptions,
     activeCampusId,
     detectedCampus,
@@ -195,6 +199,11 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
     markersAvailable: hasMarkers,
     seatPosCache: new Map(),
     svgViewBoxes: new Map(),
+    seatGeomCache: new Map(),
+    trimmedViewBoxes: new Map(),
+    mapFetchedAt: new Map(),
+    mapVersions: new Map(),
+    overlay: null,
     parsedDocs: new Map(),
     loadId: 0,
     retryCount: 0,
@@ -242,6 +251,7 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
     if (state.timers.poll) clearInterval(state.timers.poll);
     if (state.timers.countdown) clearInterval(state.timers.countdown);
     if (state.timers.clock) clearInterval(state.timers.clock);
+    if (state.timers.glow) clearTimeout(state.timers.glow);
     if (state.tabsState.resizeObserver) {
       state.tabsState.resizeObserver.disconnect();
       state.tabsState.resizeObserver = null;
@@ -502,23 +512,50 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
   } else {
     loadCluster(state, activeCluster, abortController.signal);
   }
+  // Re-checks the open map's SVG (a 304 via the worker's ETag while unchanged)
+  // and redraws it only when the map actually changed.
+  const revalidateActiveMap = async () => {
+    const cluster = state.activeCluster;
+    if (!cluster?.svg || cluster.id === "active") return;
+    const key = keyOf(state.activeCampusId, cluster.id);
+    const version = state.mapVersions.get(key) ?? 0;
+    await ensureClusterData(
+      state,
+      cluster,
+      state.activeCampusId,
+      abortController.signal,
+    );
+    if (abortController.signal.aborted) return;
+    if ((state.mapVersions.get(key) ?? 0) === version) return;
+    await loadCluster(state, cluster, abortController.signal);
+  };
+
   state.timers.poll = setInterval(() => {
     if (document.hidden) return;
     loadOccupancy(state, abortController.signal);
+    void revalidateActiveMap();
   }, 60_000);
   state.timers.clock = setInterval(() => {
     if (document.hidden) return;
     updateCampusTime(state);
   }, 30_000);
-  (async () => {
-    const rest = state.clusters.filter(
-      (c) => c.id !== state.activeCluster.id && c.svg,
-    );
-    for (const c of rest) {
-      await ensureClusterData(state, c, activeCampusId, abortController.signal);
-    }
-    reapplyOccupancy(state);
-  })();
+  whenIdle(() => {
+    void (async () => {
+      const rest = state.clusters.filter(
+        (c) => c.id !== state.activeCluster.id && c.svg,
+      );
+      for (const c of rest) {
+        if (abortController.signal.aborted) return;
+        await ensureClusterData(
+          state,
+          c,
+          activeCampusId,
+          abortController.signal,
+        );
+      }
+      if (!abortController.signal.aborted) reapplyOccupancy(state);
+    })();
+  });
   const mapAreaEl = shadow.getElementById("map-area");
   if (mapAreaEl) {
     let resizeScheduled = false;

@@ -2,7 +2,9 @@ import type { ClusterInfo, DialogState } from "./context";
 import { WORKER_URL, SEAT_TARGET_PX, keyOf, clusterLabel } from "./context";
 import { getClusterData, getCampusExits } from "../clusters.data.ts";
 import {
+  CACHE_REVALIDATE_MS,
   getCachedCluster,
+  isClusterCacheFresh,
   setCachedCluster,
   scrapeCampusSVGUrls,
 } from "./cache";
@@ -10,6 +12,7 @@ import { sanitizeAndParseSeats, getSvgTitle, applyMarkers } from "./seats";
 import { applyExitSigns } from "./exit-markers";
 import { renderActiveList } from "./render";
 import { loadOccupancy, reapplyOccupancy } from "./occupancy";
+import { whenIdle } from "./helpers";
 import { updateActiveSortControls } from "./active-sort";
 import { clearSeatGlow } from "./glow";
 import { rebuildHeader, updateCampusTime, updateDefaultSelect } from "./header";
@@ -52,6 +55,57 @@ export async function buildClusters(
   return { clusters: list, hasMarkers };
 }
 
+function mapSvgUrl(svgUrl: string): string {
+  // Maps listed in the campus file are served by our own worker (already
+  // CORS-enabled), so only 42's URLs go through the proxy.
+  return svgUrl.startsWith(WORKER_URL)
+    ? svgUrl
+    : `${WORKER_URL}/api/v1/cluster/svg?url=${encodeURIComponent(svgUrl)}`;
+}
+
+/** Parses and stores the seat/viewBox data for a map (once per version). */
+function applyMapSvg(
+  state: DialogState,
+  c: ClusterInfo,
+  campusId: string,
+  svgText: string,
+): void {
+  const key = keyOf(campusId, c.id);
+  if (state.svgViewBoxes.has(key)) return;
+  const svgDoc = new DOMParser().parseFromString(svgText, "image/svg+xml");
+  const seatMap = sanitizeAndParseSeats(svgDoc);
+  state.parsedDocs.set(key, svgDoc);
+  const title = getSvgTitle(svgDoc);
+  if (title && !c.name.trim()) c.name = title;
+  const vb = (svgDoc.querySelector("svg")?.getAttribute("viewBox") ?? "")
+    .split(/\s+/)
+    .map(Number);
+  state.svgViewBoxes.set(key, { w: vb[2] || 1200, h: vb[3] || 800 });
+  state.seatPosCache.set(key, seatMap);
+}
+
+/** Drops everything derived from a map whose SVG body changed. */
+function invalidateMapSvg(
+  state: DialogState,
+  c: ClusterInfo,
+  campusId: string,
+): void {
+  const key = keyOf(campusId, c.id);
+  state.parsedDocs.delete(key);
+  state.seatPosCache.delete(key);
+  state.svgViewBoxes.delete(key);
+  state.seatGeomCache.delete(key);
+  state.trimmedViewBoxes.delete(key);
+  if (state.overlay && state.activeCluster.id === c.id) state.overlay = null;
+  state.mapVersions.set(key, (state.mapVersions.get(key) ?? 0) + 1);
+}
+
+/**
+ * Loads a map's SVG, revalidating the stored copy at most every
+ * `CACHE_REVALIDATE_MS`. The worker answers 304 (ETag) when the map is
+ * unchanged, so the 7-day stored copy is never blindly trusted, and still
+ * works offline.
+ */
 export async function ensureClusterData(
   state: DialogState,
   c: ClusterInfo,
@@ -63,41 +117,72 @@ export async function ensureClusterData(
   }
   const key = keyOf(campusId, c.id);
   try {
-    if (state.seatPosCache.has(key) && state.svgViewBoxes.has(key)) {
+    // Hot path (every poll): the map is already parsed and was checked recently.
+    if (
+      state.svgViewBoxes.has(key) &&
+      isClusterCacheFresh(state.mapFetchedAt.get(key) ?? 0)
+    ) {
       return "cached";
     }
-    let cached = await getCachedCluster(campusId, c.id, c.svg);
-    let svgText = cached?.svg;
-    if (!svgText) {
-      // Maps listed in the campus file are served by our own worker (already
-      // CORS-enabled), so only 42's URLs go through the proxy.
-      const url = c.svg.startsWith(WORKER_URL)
-        ? c.svg
-        : `${WORKER_URL}/api/v1/cluster/svg?url=${encodeURIComponent(c.svg)}`;
-      const res = await fetch(url, { signal });
-      if (!res.ok) return null;
-      svgText = await res.text();
+
+    const cached = await getCachedCluster(campusId, c.id, c.svg);
+    const stored = cached?.svg ?? null;
+    const lastFetch = Math.max(
+      state.mapFetchedAt.get(key) ?? 0,
+      cached?.cachedAt ?? 0,
+    );
+    if (state.svgViewBoxes.has(key) && isClusterCacheFresh(lastFetch)) {
+      state.mapFetchedAt.set(key, lastFetch);
+      return stored ?? "cached";
     }
-    if (!state.svgViewBoxes.has(key)) {
-      const svgDoc = new DOMParser().parseFromString(svgText, "image/svg+xml");
-      const seatMap = sanitizeAndParseSeats(svgDoc);
-      state.parsedDocs.set(key, svgDoc);
-      const title = getSvgTitle(svgDoc);
-      if (title && !c.name.trim()) c.name = title;
-      const vb = (svgDoc.querySelector("svg")?.getAttribute("viewBox") ?? "")
-        .split(/\s+/)
-        .map(Number);
-      state.svgViewBoxes.set(key, { w: vb[2] || 1200, h: vb[3] || 800 });
-      state.seatPosCache.set(key, seatMap);
-      setCachedCluster(campusId, c.id, {
-        svg: svgText,
-        seats: [...seatMap],
-        viewBox: state.svgViewBoxes.get(key)!,
-        source: c.svg,
-        cachedAt: 0,
-      }).catch(() => {});
+
+    // Fresh stored copy (first load in this dialog): skip the network entirely.
+    if (stored && cached && isClusterCacheFresh(cached.cachedAt)) {
+      state.mapFetchedAt.set(key, cached.cachedAt);
+      applyMapSvg(state, c, campusId, stored);
+      return stored;
     }
-    return svgText;
+
+    let svgText: string | null = null;
+    try {
+      const res = await fetch(mapSvgUrl(c.svg), {
+        cache: "no-cache",
+        signal,
+      });
+      if (res.ok) svgText = await res.text();
+    } catch {
+      if (signal?.aborted) return null;
+    }
+
+    const next = svgText ?? stored;
+    if (!next) return null;
+
+    const changed = svgText !== null && svgText !== stored;
+    if (changed) invalidateMapSvg(state, c, campusId);
+    applyMapSvg(state, c, campusId, next);
+
+    if (changed) {
+      const seats = state.seatPosCache.get(key);
+      const viewBox = state.svgViewBoxes.get(key);
+      if (seats && viewBox) {
+        setCachedCluster(campusId, c.id, {
+          svg: next,
+          seats: [...seats],
+          viewBox,
+          source: c.svg,
+          cachedAt: 0,
+        }).catch(() => {});
+      }
+    }
+
+    // A 304 (or an offline fallback) only updates the check timestamp; a
+    // failure retries in a minute instead of after the full revalidation delay.
+    state.mapFetchedAt.set(
+      key,
+      svgText === null ? Date.now() - CACHE_REVALIDATE_MS + 60_000 : Date.now(),
+    );
+
+    return next;
   } catch {
     return null;
   }
@@ -107,6 +192,13 @@ export function trimSvgToContent(state: DialogState) {
   const mapArea = state.shadow.getElementById("map-area");
   const svg = mapArea?.querySelector("svg") as SVGSVGElement | null;
   if (!svg) return;
+  const key = keyOf(state.activeCampusId, state.activeCluster.id);
+  // Measuring a big SVG forces a full layout: do it once per cluster.
+  const cached = state.trimmedViewBoxes.get(key);
+  if (cached) {
+    svg.setAttribute("viewBox", cached);
+    return;
+  }
   try {
     const bbox = svg.getBBox();
     if (bbox.width > 0 && bbox.height > 0) {
@@ -115,10 +207,9 @@ export function trimSvgToContent(state: DialogState) {
       const minY = bbox.y - pad;
       const maxX = bbox.x + bbox.width + pad;
       const maxY = bbox.y + bbox.height + pad;
-      svg.setAttribute(
-        "viewBox",
-        `${minX} ${minY} ${maxX - minX} ${maxY - minY}`,
-      );
+      const viewBox = `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
+      svg.setAttribute("viewBox", viewBox);
+      state.trimmedViewBoxes.set(key, viewBox);
     }
   } catch {}
 }
@@ -236,7 +327,7 @@ export async function loadCluster(
     syncMarkersButton(state);
 
     await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      requestAnimationFrame(() => resolve());
     });
 
     trimSvgToContent(state);
@@ -342,14 +433,16 @@ export async function loadCampus(
   if (stale()) return;
   await loadOccupancy(state, signal);
   if (stale()) return;
-  (async () => {
-    const rest = state.clusters.filter(
-      (c) => c.id !== state.activeCluster.id && c.svg,
-    );
-    for (const c of rest) {
-      if (stale()) return;
-      await ensureClusterData(state, c, campusId, signal);
-    }
-    if (!stale()) reapplyOccupancy(state);
-  })();
+  whenIdle(() => {
+    void (async () => {
+      const rest = state.clusters.filter(
+        (c) => c.id !== state.activeCluster.id && c.svg,
+      );
+      for (const c of rest) {
+        if (stale()) return;
+        await ensureClusterData(state, c, campusId, signal);
+      }
+      if (!stale()) reapplyOccupancy(state);
+    })();
+  });
 }

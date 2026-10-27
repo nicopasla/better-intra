@@ -83,11 +83,8 @@ export function applyOccupancy(
   const positions = state.seatPosCache.get(
     keyOf(activeCampusId, activeCluster.id),
   );
-  const viewBox = state.svgViewBoxes.get(
-    keyOf(activeCampusId, activeCluster.id),
-  );
-  if (positions && viewBox) {
-    renderSeatOverlays(shadow, workCopy, positions, viewBox);
+  if (positions && activeCluster.id !== "active") {
+    renderSeatOverlays(state, workCopy);
   }
   if (activeCluster.id === "active") {
     renderActiveList(shadow, state.activeUsers);
@@ -98,10 +95,10 @@ export function applyOccupancy(
   const badge = shadow.getElementById("seat-count-badge");
   if (badge) {
     const total = positions?.size ?? 0;
-    const taken = positions
-      ? [...workCopy.keys()].filter((h) => positions.has(normalizeSeatId(h)))
-          .length
-      : 0;
+    let taken = 0;
+    for (const host of workCopy.keys()) {
+      if (positions?.has(normalizeSeatId(host))) taken++;
+    }
     if (total > 0) {
       const free = total - taken;
       badge.textContent = `${taken} / ${total}`;
@@ -112,12 +109,15 @@ export function applyOccupancy(
   }
   const clusterCounts = new Map<string, { taken: number; total: number }>();
   const campusPrefix = `${activeCampusId}:`;
+  const occupiedSeats = new Set<string>();
+  for (const host of workCopy.keys()) occupiedSeats.add(normalizeSeatId(host));
   for (const [key, seats] of state.seatPosCache) {
     if (!key.startsWith(campusPrefix)) continue;
     const clusterId = key.slice(campusPrefix.length);
-    const taken = [...workCopy.keys()].filter((h) =>
-      seats.has(normalizeSeatId(h)),
-    ).length;
+    let taken = 0;
+    for (const host of occupiedSeats) {
+      if (seats.has(host)) taken++;
+    }
     clusterCounts.set(clusterId, { taken, total: seats.size });
   }
   for (const tab of shadow.querySelectorAll<HTMLElement>("[data-cluster-id]")) {
@@ -127,33 +127,41 @@ export function applyOccupancy(
     const name = cluster
       ? clusterLabel(cluster)
       : tab.dataset.clusterName || id.toUpperCase();
+    const count =
+      id === "active"
+        ? state.activeUsers.length > 0
+          ? String(state.activeUsers.length)
+          : ""
+        : (() => {
+            const c = clusterCounts.get(id);
+            return c && c.total > 0 ? `${c.taken}/${c.total}` : "";
+          })();
+    // Repeated calls (poll, resize frames) must not rebuild the tab labels:
+    // that would relayout the tab bar for nothing.
+    const signature = `${name}|${count}`;
+    if (tab.dataset.state === signature) continue;
+    tab.dataset.state = signature;
     tab.textContent = name;
-    if (id === "active") {
-      if (state.activeUsers.length > 0) {
-        const num = document.createElement("span");
-        num.textContent = `${state.activeUsers.length}`;
-        num.style.cssText =
-          "font-weight:400;opacity:0.55;font-size:11px;margin-left:6px;font-family:var(--font-sans);";
-        tab.appendChild(num);
-      }
-      continue;
-    }
-    const count = clusterCounts.get(id);
-    if (count && count.total > 0) {
-      const num = document.createElement("span");
-      num.textContent = `${count.taken}/${count.total}`;
-      num.style.cssText =
-        "font-weight:400;opacity:0.55;font-size:11px;margin-left:6px;font-family:var(--font-sans);";
-      tab.appendChild(num);
-    }
+    if (!count) continue;
+    const num = document.createElement("span");
+    num.textContent = count;
+    num.style.cssText =
+      "font-weight:400;opacity:0.55;font-size:11px;margin-left:6px;font-family:var(--font-sans);";
+    tab.appendChild(num);
   }
   const clusterSelect = shadow.getElementById(
     "default-cluster-select",
   ) as HTMLSelectElement | null;
   if (clusterSelect) {
-    for (const opt of clusterSelect.querySelectorAll("option")) {
-      const cluster = state.clusters.find((c) => c.id === opt.value);
-      if (cluster) opt.textContent = clusterLabel(cluster);
+    const signature = state.clusters
+      .map((c) => `${c.id}:${clusterLabel(c)}`)
+      .join("|");
+    if (clusterSelect.dataset.state !== signature) {
+      clusterSelect.dataset.state = signature;
+      for (const opt of clusterSelect.querySelectorAll("option")) {
+        const cluster = state.clusters.find((c) => c.id === opt.value);
+        if (cluster) opt.textContent = clusterLabel(cluster);
+      }
     }
   }
   const allCounts = [...clusterCounts.values()];
@@ -162,11 +170,13 @@ export function applyOccupancy(
   const totalsBadge = shadow.getElementById("totals-badge");
   if (totalsBadge) {
     if (activeCluster.id === "active") {
-      totalsBadge.textContent = `${state.activeUsers.length} active`;
+      const text = `${state.activeUsers.length} active`;
+      if (totalsBadge.textContent !== text) totalsBadge.textContent = text;
       totalsBadge.title = "Users currently connected";
       totalsBadge.style.display = state.activeUsers.length > 0 ? "" : "none";
     } else {
-      totalsBadge.textContent = `${sumTaken} / ${sumTotal}`;
+      const text = `${sumTaken} / ${sumTotal}`;
+      if (totalsBadge.textContent !== text) totalsBadge.textContent = text;
       totalsBadge.title = "Total taken / Total seats";
       if (sumTotal > 0 || sumTaken > 0) {
         totalsBadge.style.display = "";
@@ -204,10 +214,10 @@ function updateBadge(state: DialogState) {
 }
 
 function startCountdown(state: DialogState) {
-  if (state.timers.countdown) clearInterval(state.timers.countdown);
   const badge = state.shadow.getElementById("updated-badge");
   if (badge) badge.style.display = "";
   updateBadge(state);
+  if (state.timers.countdown) return;
   state.timers.countdown = setInterval(() => {
     if (document.hidden) return;
     updateBadge(state);

@@ -30,6 +30,23 @@ function clusterCountLabel(
   return `${taken}/${seats.size}`;
 }
 
+/** Skip the (forced-layout) probe unless the tabs or their counts changed. */
+const MEASURE_THROTTLE = 500;
+/** Wait for a resize to settle before re-measuring the tab bar. */
+const RESIZE_DEBOUNCE = 150;
+
+let overflowTimer: ReturnType<typeof setTimeout> | null = null;
+
+function tabsSignature(state: DialogState): string {
+  return (
+    state.clusters
+      .map(
+        (c) => `${c.id}:${clusterLabel(c)}:${clusterCountLabel(state, c.id)}`,
+      )
+      .join("|") + `#${state.activeUsers.length}`
+  );
+}
+
 function measureTabsOverflow(state: DialogState): boolean {
   const host = state.shadow.querySelector<HTMLElement>(".clusters-tabs-host");
   if (!host || host.clientWidth === 0 || state.clusters.length === 0)
@@ -132,21 +149,34 @@ export function wireTabs(state: DialogState) {
     tabsState.resizeObserver = null;
   }
   tabsState.resizeObserver = new ResizeObserver(() => {
-    requestAnimationFrame(() => {
-      const overflowing = measureTabsOverflow(state);
-      if (overflowing === tabsState.overflowing) return;
-      tabsState.overflowing = overflowing;
-      renderTabsRegion(state);
-    });
+    if (overflowTimer) clearTimeout(overflowTimer);
+    overflowTimer = setTimeout(() => {
+      overflowTimer = null;
+      updateTabsOverflow(state, true);
+    }, RESIZE_DEBOUNCE);
   });
   tabsState.resizeObserver.observe(host);
 }
 
-export function updateTabsOverflow(state: DialogState) {
+export function updateTabsOverflow(state: DialogState, force = false) {
+  const { tabsState } = state;
+  if (!force) {
+    if (performance.now() - tabsState.measuredAt < MEASURE_THROTTLE) return;
+    const signature = tabsSignature(state);
+    if (signature === tabsState.signature) return;
+    tabsState.signature = signature;
+  }
   requestAnimationFrame(() => {
+    const host = state.shadow.querySelector<HTMLElement>(
+      ".clusters-tabs-host",
+    );
+    if (!host) return;
+    tabsState.measuredAt = performance.now();
+    tabsState.measuredWidth = host.clientWidth;
+    tabsState.signature = tabsSignature(state);
     const overflowing = measureTabsOverflow(state);
-    if (overflowing === state.tabsState.overflowing) return;
-    state.tabsState.overflowing = overflowing;
+    if (overflowing === tabsState.overflowing) return;
+    tabsState.overflowing = overflowing;
     renderTabsRegion(state);
   });
 }

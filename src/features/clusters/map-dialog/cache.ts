@@ -5,7 +5,14 @@ const SVG_CACHE_PREFIX = "cluster_svg_v2_";
 const LEGACY_SVG_CACHE_PREFIX = "cluster_svg_";
 const SVG_URLS_CACHE_PREFIX = "CLUSTER_SVG_URLS_V1_";
 const META_BASE = "https://meta.intra.42.fr/";
+/** The stored copy is a 7-day offline fallback; it is revalidated long before. */
 const CACHE_TTL = 7 * 24 * 60 * 60_000;
+/** Maps are revalidated at most this often (the worker answers 304 via ETag). */
+export const CACHE_REVALIDATE_MS = 10 * 60_000;
+
+export function isClusterCacheFresh(cachedAt: number): boolean {
+  return Date.now() - cachedAt < CACHE_REVALIDATE_MS;
+}
 
 export interface CachedCluster {
   svg: string;

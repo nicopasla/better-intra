@@ -237,8 +237,12 @@ function scheduleRelocation(): void {
  * Moved-badge persistence. The profile's own observer disconnects a few
  * seconds after load (and its first pass often runs before React has rendered
  * the badges/level bar), which used to delay the move by several seconds. This
- * dedicated observer re-applies it as soon as the nodes appear.
+ * dedicated observer re-applies it as soon as the nodes appear, then stops:
+ * watching the whole body for the lifetime of the page cost a scan on every
+ * unrelated DOM change.
  */
+const RELOCATION_WINDOW_MS = 15_000;
+
 export function initBadgeRelocation(): void {
   relocateBadges();
   if (relocationObserver) return;
@@ -247,6 +251,18 @@ export function initBadgeRelocation(): void {
     childList: true,
     subtree: true,
   });
+  window.setTimeout(() => {
+    relocationObserver?.disconnect();
+    relocationObserver = null;
+  }, RELOCATION_WINDOW_MS);
+  window.addEventListener(
+    "pagehide",
+    () => {
+      relocationObserver?.disconnect();
+      relocationObserver = null;
+    },
+    { once: true },
+  );
   window.addEventListener(
     "resize",
     () => {

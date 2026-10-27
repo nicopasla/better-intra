@@ -40,6 +40,13 @@ function startCountdown(
 
   if (_intervalId !== null) clearInterval(_intervalId);
   _intervalId = setInterval(() => {
+    if (!countdown.el.isConnected) {
+      if (_intervalId !== null) {
+        clearInterval(_intervalId);
+        _intervalId = null;
+      }
+      return;
+    }
     if (document.hidden) return;
     if (parseIntraDate(endIso).getTime() - Date.now() <= 0) {
       if (_intervalId !== null) {

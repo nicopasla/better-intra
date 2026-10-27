@@ -48,6 +48,12 @@ export function positionFloating(
   floating.style.top = "0";
 
   const update = () => {
+    // The anchor can be removed by an intra re-render while the tooltip shows.
+    if (!reference.isConnected || !floating.isConnected) {
+      stopFn?.();
+      floating.remove();
+      return;
+    }
     void computePosition(reference, floating, {
       placement,
       strategy,
@@ -65,11 +71,18 @@ export function positionFloating(
     });
   };
 
-  const stop = autoUpdate(reference, floating, update, {
+  let stopFn: (() => void) | null = null;
+  stopFn = autoUpdate(reference, floating, update, {
     ancestorScroll: true,
     ancestorResize: true,
     elementResize: true,
   });
 
-  return { update, destroy: stop };
+  return {
+    update,
+    destroy: () => {
+      stopFn?.();
+      stopFn = null;
+    },
+  };
 }

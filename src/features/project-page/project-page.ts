@@ -199,13 +199,21 @@ export async function initProjectPage(): Promise<void> {
     });
   });
 
-  // If intra re-renders the native content, keep it hidden.
-  new MutationObserver(() => {
+  // If intra re-renders the native content, keep it hidden. Bounded: an endless
+  // whole-body observer scanned the page on every unrelated DOM change.
+  const keepNativeHidden = new MutationObserver(() => {
     const mainEl = document.querySelector<HTMLElement>(".project-main");
     if (!mainEl) return;
     const visible = Array.from(mainEl.children).some(
       (c) => c.id !== HOST_ID && (c as HTMLElement).style.display !== "none",
     );
     if (visible) hideNative();
-  }).observe(document.body, { childList: true, subtree: true });
+  });
+  keepNativeHidden.observe(document.body, { childList: true, subtree: true });
+  window.setTimeout(() => keepNativeHidden.disconnect(), 25_000);
+  window.addEventListener(
+    "pagehide",
+    () => keepNativeHidden.disconnect(),
+    { once: true },
+  );
 }

@@ -219,6 +219,11 @@ function startCountdown(state: DialogState) {
   updateBadge(state);
   if (state.timers.countdown) return;
   state.timers.countdown = setInterval(() => {
+    if (!state.dialog.isConnected) {
+      if (state.timers.countdown) clearInterval(state.timers.countdown);
+      state.timers.countdown = null;
+      return;
+    }
     if (document.hidden) return;
     updateBadge(state);
   }, 1000);

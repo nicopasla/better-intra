@@ -247,20 +247,36 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
 
   const abortController = new AbortController();
 
+  let resizeObserver: ResizeObserver | null = null;
+  let settingsObserver: ResizeObserver | null = null;
+  let cleanedUp = false;
+
   const cleanup = () => {
+    if (cleanedUp) return;
+    cleanedUp = true;
     if (state.timers.poll) clearInterval(state.timers.poll);
     if (state.timers.countdown) clearInterval(state.timers.countdown);
     if (state.timers.clock) clearInterval(state.timers.clock);
     if (state.timers.glow) clearTimeout(state.timers.glow);
+    state.timers.poll = null;
+    state.timers.countdown = null;
+    state.timers.clock = null;
+    state.timers.glow = null;
     if (state.tabsState.resizeObserver) {
       state.tabsState.resizeObserver.disconnect();
       state.tabsState.resizeObserver = null;
     }
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+      resizeObserver = null;
+    }
+    if (settingsObserver) {
+      settingsObserver.disconnect();
+      settingsObserver = null;
+    }
+    state.overlay = null;
     abortController.abort();
   };
-
-  let resizeObserver: ResizeObserver | null = null;
-  let settingsObserver: ResizeObserver | null = null;
 
   const updateSettingsLayout = () => {
     const inline = dialog.clientWidth >= 1080;
@@ -271,11 +287,26 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
 
   dialog.addEventListener("close", () => {
     cleanup();
-    if (resizeObserver) resizeObserver.disconnect();
-    if (settingsObserver) settingsObserver.disconnect();
     cleanupResize();
     dialog.remove();
   });
+
+  // Safety net: if the dialog is torn down without firing "close" (a body swap
+  // or an extension reload), the poll/clock/countdown must not keep running.
+  window.addEventListener(
+    "pagehide",
+    () => {
+      cleanup();
+    },
+    { once: true },
+  );
+
+  /** Stops the dialog's timers once its DOM is gone. */
+  const stopIfDetached = (): boolean => {
+    if (dialog.isConnected) return false;
+    cleanup();
+    return true;
+  };
 
   dialog.addEventListener("click", (e) => {
     if (e.target === dialog) dialog.close();
@@ -531,11 +562,13 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
   };
 
   state.timers.poll = setInterval(() => {
+    if (stopIfDetached()) return;
     if (document.hidden) return;
     loadOccupancy(state, abortController.signal);
     void revalidateActiveMap();
   }, 60_000);
   state.timers.clock = setInterval(() => {
+    if (stopIfDetached()) return;
     if (document.hidden) return;
     updateCampusTime(state);
   }, 30_000);

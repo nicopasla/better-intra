@@ -110,9 +110,21 @@ export async function loginWith42(
 
   let pollInterval: ReturnType<typeof setInterval> | undefined;
   if (isExtension) {
+    const startedAt = Date.now();
+    const stopPoll = () => {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = undefined;
+    };
     pollInterval = setInterval(async () => {
+      // Give up after a few minutes (blocked/abandoned popup) instead of
+      // polling twice a second for the rest of the session.
+      if (Date.now() - startedAt > 180_000) {
+        stopPoll();
+        window.removeEventListener("message", messageListener);
+        return;
+      }
       if (!popup.closed) return;
-      clearInterval(pollInterval);
+      stopPoll();
       window.removeEventListener("message", messageListener);
       await new Promise((r) => setTimeout(r, 300));
       const savedLogin = await getCloudLogin();
@@ -123,6 +135,14 @@ export async function loginWith42(
         else window.location.reload();
       }
     }, 500);
+    window.addEventListener(
+      "pagehide",
+      () => {
+        stopPoll();
+        window.removeEventListener("message", messageListener);
+      },
+      { once: true },
+    );
   }
 }
 

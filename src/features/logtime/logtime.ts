@@ -181,6 +181,7 @@ let primaryColor = "hsl(199 89% 48%)";
 let primaryContent = "hsl(0 0% 100%)";
 let scrollHandlersCleanup: (() => void) | null = null;
 let heatmapScrollHandler: ((e: Event) => void) | null = null;
+let heatmapScrollFrame: number | null = null;
 
 function isOwnProfile(): boolean {
   return (
@@ -639,26 +640,49 @@ function renderLogtime(
         scrollWrapper.removeEventListener("scroll", heatmapScrollHandler);
         heatmapScrollHandler = null;
       }
+      if (heatmapScrollFrame !== null) {
+        cancelAnimationFrame(heatmapScrollFrame);
+        heatmapScrollFrame = null;
+      }
       const yearLabel = shadowHost.shadowRoot!.getElementById(
         "heatmap-sticky-year",
       );
-      const handleYearScroll = () => {
-        const cols = shadowHost.shadowRoot!.querySelectorAll(".heatmap-column");
-        const scrollLeft = scrollWrapper.scrollLeft;
-        for (const col of cols) {
-          const rect = (col as HTMLElement).getBoundingClientRect();
-          const parentRect = scrollWrapper.getBoundingClientRect();
-          if (rect.right > parentRect.left + 50) {
-            const year = (col as HTMLElement).dataset.year;
-            if (year && yearLabel) yearLabel.textContent = year;
+      // One layout pass per render instead of two rect reads per column on
+      // every scroll event (a year can hold ~365 columns).
+      const root = shadowHost.shadowRoot!;
+      const contentLeft =
+        scrollWrapper.getBoundingClientRect().left - scrollWrapper.scrollLeft;
+      const spans: { year: string; right: number }[] = [];
+      for (const col of root.querySelectorAll<HTMLElement>(".heatmap-column")) {
+        const year = col.dataset.year;
+        if (!year) continue;
+        const rect = col.getBoundingClientRect();
+        spans.push({ year, right: rect.right - contentLeft });
+      }
+
+      const updateYear = () => {
+        heatmapScrollFrame = null;
+        if (!yearLabel) return;
+        const marker = scrollWrapper.scrollLeft + 50;
+        let year = "";
+        for (const span of spans) {
+          if (span.right > marker) {
+            year = span.year;
             break;
           }
         }
+        if (!year && spans.length > 0) year = spans[spans.length - 1].year;
+        if (year && yearLabel.textContent !== year) yearLabel.textContent = year;
+      };
+      const handleYearScroll = () => {
+        if (heatmapScrollFrame !== null) return;
+        heatmapScrollFrame = requestAnimationFrame(updateYear);
       };
       heatmapScrollHandler = handleYearScroll;
       scrollWrapper.addEventListener("scroll", handleYearScroll, {
         passive: true,
       });
+      updateYear();
     }
     if (skipScroll) {
       skipScroll = false;

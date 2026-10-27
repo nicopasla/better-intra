@@ -310,8 +310,14 @@ export async function runTour(options: TourOptions): Promise<void> {
   }
 
   function onFollow() {
-    if (!refreshTarget()) return goTo(index + 1);
-    position();
+    // Scroll/resize can fire many times per frame: coalesce to one reposition.
+    if (follow) return;
+    follow = requestAnimationFrame(() => {
+      follow = 0;
+      if (done) return;
+      if (!refreshTarget()) return goTo(index + 1);
+      position();
+    });
   }
 
   function onKey(e: KeyboardEvent) {
@@ -341,7 +347,8 @@ export async function runTour(options: TourOptions): Promise<void> {
     if (done) return;
     done = true;
     if (index >= 0) steps[index]?.onLeave?.();
-    cancelAnimationFrame(follow);
+    if (follow) cancelAnimationFrame(follow);
+    follow = 0;
     clearInterval(poll);
     window.removeEventListener("scroll", onFollow, true);
     window.removeEventListener("resize", onFollow);
@@ -356,15 +363,13 @@ export async function runTour(options: TourOptions): Promise<void> {
   document.addEventListener("keydown", onKey, true);
   options.signal?.addEventListener("abort", end, { once: true });
 
+  // Repositions are event-driven (scroll/resize above): the tour used to run a
+  // requestAnimationFrame loop for its whole lifetime, which forced a layout and
+  // six style writes every frame while it was open.
   poll = window.setInterval(() => {
     if (!target || !target.isConnected) onFollow();
     else position();
   }, 350);
-
-  follow = requestAnimationFrame(function tick() {
-    position();
-    follow = requestAnimationFrame(tick);
-  });
 
   goTo(0);
   return ended;

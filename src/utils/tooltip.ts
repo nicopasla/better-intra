@@ -250,6 +250,18 @@ export function bindTooltips(
       scheduleHide();
     }
   });
+
+  // Floating-ui keeps its listeners (and the tooltip stays visible) until a
+  // mouseout arrives: hide it as soon as the anchor can move. `scroll` does not
+  // cross shadow boundaries, so this is bound per root.
+  root.addEventListener(
+    "scroll",
+    (e) => {
+      if (tooltipEl && e.composedPath().includes(tooltipEl)) return;
+      hideFloatingTooltip();
+    },
+    { capture: true, passive: true },
+  );
 }
 
 let globalTooltipsBound = false;
@@ -260,4 +272,21 @@ export function initGlobalTooltips(
   if (globalTooltipsBound) return;
   globalTooltipsBound = true;
   bindTooltips(document, provider);
+
+  // `pointerdown` is composed (it crosses shadow roots); `scroll` is handled
+  // per root in bindTooltips(). Hiding here keeps a scrolled/detached anchor
+  // from leaving a ghost tooltip behind.
+  document.addEventListener(
+    "pointerdown",
+    (e) => {
+      // Keep interactive tooltips (links inside `data-tip-html`) clickable.
+      if (tooltipEl && e.composedPath().includes(tooltipEl)) return;
+      hideFloatingTooltip();
+    },
+    { capture: true, passive: true },
+  );
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) hideFloatingTooltip();
+  });
+  window.addEventListener("blur", () => hideFloatingTooltip());
 }

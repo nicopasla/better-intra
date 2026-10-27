@@ -27,9 +27,11 @@ function findSidebarMainGroup(): HTMLDivElement | null {
 const SIDEBAR_STYLE_ID = "ft-sidebar-buttons-style";
 
 /**
- * Sidebar button animations: the gear spins continuously, and the students
- * icon cycles 1 -> 2 -> 3 -> 2 users. Kept idempotent like skeleton.ts and
- * disabled by the extension-wide animation switch / reduced-motion.
+ * Sidebar button animations: the gear spins on hover, and the students icon
+ * cycles 1 -> 2 -> 3 -> 2 users on hover. Nothing animates at rest: an endless
+ * animation in the always-mounted sidebar kept the compositor awake on every
+ * intra page. Kept idempotent like skeleton.ts and disabled by the
+ * extension-wide animation switch / reduced-motion.
  */
 function ensureSidebarButtonStyles(): void {
   ensureDocumentStyle(
@@ -38,22 +40,20 @@ function ensureSidebarButtonStyles(): void {
       #hub-gear-btn svg {
         transform-box: fill-box;
         transform-origin: center;
-        animation: ft-gear-turn 6s linear infinite;
-        will-change: transform;
-        backface-visibility: hidden;
+      }
+      #hub-gear-btn:hover svg {
+        animation: ft-gear-turn 2.4s linear infinite;
       }
       @keyframes ft-gear-turn {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
       }
 
-      #ft-students-btn .ft-user-2 {
-        animation: ft-user-2 4s ease-in-out infinite;
-        will-change: opacity;
+      #ft-students-btn:hover .ft-user-2 {
+        animation: ft-user-2 2.4s ease-in-out infinite;
       }
-      #ft-students-btn .ft-user-3 {
-        animation: ft-user-3 4s ease-in-out infinite;
-        will-change: opacity;
+      #ft-students-btn:hover .ft-user-3 {
+        animation: ft-user-3 2.4s ease-in-out infinite;
       }
       @keyframes ft-user-2 {
         0% { opacity: 0; }
@@ -67,15 +67,15 @@ function ensureSidebarButtonStyles(): void {
         80%, 100% { opacity: 0; }
       }
 
-      html.ft-no-anim #hub-gear-btn svg,
-      html.ft-no-anim #ft-students-btn .ft-user-2,
-      html.ft-no-anim #ft-students-btn .ft-user-3 {
+      html.ft-no-anim #hub-gear-btn:hover svg,
+      html.ft-no-anim #ft-students-btn:hover .ft-user-2,
+      html.ft-no-anim #ft-students-btn:hover .ft-user-3 {
         animation: none;
       }
       @media (prefers-reduced-motion: reduce) {
-        #hub-gear-btn svg,
-        #ft-students-btn .ft-user-2,
-        #ft-students-btn .ft-user-3 {
+        #hub-gear-btn:hover svg,
+        #ft-students-btn:hover .ft-user-2,
+        #ft-students-btn:hover .ft-user-3 {
           animation: none;
         }
       }

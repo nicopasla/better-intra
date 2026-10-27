@@ -285,7 +285,14 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
     rerender(state);
   };
 
+  const onPageHide = () => {
+    cleanup();
+  };
+
   dialog.addEventListener("close", () => {
+    // Drop the page-unload listener too: it closes over the dialog state, so
+    // leaving it registered would keep the whole map tree alive after close.
+    window.removeEventListener("pagehide", onPageHide);
     cleanup();
     cleanupResize();
     dialog.remove();
@@ -293,13 +300,7 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
 
   // Safety net: if the dialog is torn down without firing "close" (a body swap
   // or an extension reload), the poll/clock/countdown must not keep running.
-  window.addEventListener(
-    "pagehide",
-    () => {
-      cleanup();
-    },
-    { once: true },
-  );
+  window.addEventListener("pagehide", onPageHide, { once: true });
 
   /** Stops the dialog's timers once its DOM is gone. */
   const stopIfDetached = (): boolean => {

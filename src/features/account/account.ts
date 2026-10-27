@@ -111,9 +111,14 @@ export async function loginWith42(
   let pollInterval: ReturnType<typeof setInterval> | undefined;
   if (isExtension) {
     const startedAt = Date.now();
+    const onPageHide = () => {
+      stopPoll();
+      window.removeEventListener("message", messageListener);
+    };
     const stopPoll = () => {
       if (pollInterval) clearInterval(pollInterval);
       pollInterval = undefined;
+      window.removeEventListener("pagehide", onPageHide);
     };
     pollInterval = setInterval(async () => {
       // Give up after a few minutes (blocked/abandoned popup) instead of
@@ -135,14 +140,7 @@ export async function loginWith42(
         else window.location.reload();
       }
     }, 500);
-    window.addEventListener(
-      "pagehide",
-      () => {
-        stopPoll();
-        window.removeEventListener("message", messageListener);
-      },
-      { once: true },
-    );
+    window.addEventListener("pagehide", onPageHide, { once: true });
   }
 }
 

@@ -27,7 +27,18 @@ function syncCustomDaisy(root: ShadowRoot): void {
   if (!existing) root.appendChild(style);
 }
 
+/** Drops roots whose host left the DOM, so closed dialogs are collectable. */
+function pruneDetachedRoots(): void {
+  for (const root of knownRoots) {
+    if (!root.host || !root.host.isConnected) knownRoots.delete(root);
+  }
+  for (const root of pendingRoots) {
+    if (!root.host || !root.host.isConnected) pendingRoots.delete(root);
+  }
+}
+
 export function ensureThemeStyle(root: ShadowRoot): void {
+  pruneDetachedRoots();
   knownRoots.add(root);
   syncCustomDaisy(root);
   if (customThemesCss) {
@@ -40,11 +51,8 @@ export function ensureThemeStyle(root: ShadowRoot): void {
 /** Install (or clear) the runtime daisyUI palette (`[data-theme="…"]`) in all known roots. */
 export function setCustomDaisyTheme(css: string | null): void {
   customDaisyCss = css;
+  pruneDetachedRoots();
   for (const root of knownRoots) {
-    if (!root.host || !root.host.isConnected) {
-      knownRoots.delete(root);
-      continue;
-    }
     syncCustomDaisy(root);
   }
 }

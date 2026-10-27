@@ -243,8 +243,23 @@ function scheduleRelocation(): void {
  */
 const RELOCATION_WINDOW_MS = 15_000;
 
+let badgeResizeBound = false;
+
 export function initBadgeRelocation(): void {
   relocateBadges();
+  if (!badgeResizeBound) {
+    badgeResizeBound = true;
+    window.addEventListener(
+      "resize",
+      () => {
+        const row = document.querySelector<HTMLElement>(
+          "[data-ft-badges-row]",
+        );
+        if (row) applyBadgeIndent(row);
+      },
+      { passive: true },
+    );
+  }
   if (relocationObserver) return;
   relocationObserver = new MutationObserver(scheduleRelocation);
   relocationObserver.observe(document.body, {
@@ -262,16 +277,6 @@ export function initBadgeRelocation(): void {
       relocationObserver = null;
     },
     { once: true },
-  );
-  window.addEventListener(
-    "resize",
-    () => {
-      const row = document.querySelector<HTMLElement>(
-        "[data-ft-badges-row]",
-      );
-      if (row) applyBadgeIndent(row);
-    },
-    { passive: true },
   );
 }
 

@@ -622,6 +622,13 @@ function renderLogtime(
   const scrollWrapper = shadowHost.shadowRoot!.querySelector(
     ".log-slider-fixed",
   ) as HTMLElement;
+  // A previous heatmap handler closes over its (now detached) scroll wrapper:
+  // drop it on every view change so that tree can be collected.
+  heatmapScrollHandler = null;
+  if (heatmapScrollFrame !== null) {
+    cancelAnimationFrame(heatmapScrollFrame);
+    heatmapScrollFrame = null;
+  }
   if (scrollWrapper && CONFIG.calendar_view === "carousel") {
     if (scrollHandlersCleanup) {
       scrollHandlersCleanup();
@@ -636,14 +643,6 @@ function renderLogtime(
     scrollHandlersCleanup = setupScrollHandlers(scrollWrapper);
 
     if (CONFIG.calendar_view === "heatmap") {
-      if (heatmapScrollHandler) {
-        scrollWrapper.removeEventListener("scroll", heatmapScrollHandler);
-        heatmapScrollHandler = null;
-      }
-      if (heatmapScrollFrame !== null) {
-        cancelAnimationFrame(heatmapScrollFrame);
-        heatmapScrollFrame = null;
-      }
       const yearLabel = shadowHost.shadowRoot!.getElementById(
         "heatmap-sticky-year",
       );

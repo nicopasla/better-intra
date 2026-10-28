@@ -53,34 +53,31 @@ export function sanitizeBadges(value: unknown): CustomBadge[] {
   return badges;
 }
 
-/** One span per badge, styled like the native pills using the theme colours. */
+/** Native intra badge classes, so custom badges sit in the row identically. */
+const NATIVE_BADGE_CLASS =
+  "inline-flex items-center text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-primary hover:bg-primary/80 border-transparent text-primary-foreground flex-shrink-0 mx-1 px-3.5 py-1.5 rounded border shadow-base";
+
+/** One span per badge, matching the native role badges (colours inline). */
 export function buildCustomBadge(badge: CustomBadge): HTMLSpanElement {
   const el = document.createElement("span");
+  el.className = NATIVE_BADGE_CLASS;
   el.setAttribute(BADGE_ATTR, badge.id);
 
-  const background = badge.color
-    ? badge.color
-    : "var(--color-primary, #00babc)";
-  const foreground = badge.color
-    ? contrastText(badge.color)
-    : "var(--color-primary-content, #ffffff)";
-  el.style.cssText = [
-    "display:inline-flex",
-    "align-items:center",
-    "gap:0.3rem",
-    "flex:0 0 auto",
-    "white-space:nowrap",
-    "padding:0.2rem 0.6rem",
-    "border-radius:0.5rem",
-    "font-size:0.78rem",
-    "font-weight:600",
-    "line-height:1.4",
-    `background-color:${background}`,
-    `color:${foreground}`,
-    `border:1px solid ${badge.color ?? "transparent"}`,
-  ].join(";");
+  if (badge.color) {
+    el.style.backgroundColor = badge.color;
+    el.style.borderColor = badge.color;
+    el.style.color = contrastText(badge.color);
+  }
   if (badge.tooltip) el.title = badge.tooltip;
-  el.textContent = badge.icon ? `${badge.icon} ${badge.label}` : badge.label;
+  el.textContent = badge.label;
+
+  if (badge.icon) {
+    const icon = document.createElement("span");
+    icon.style.cssText =
+      "margin-left:0.25rem;display:inline-flex;align-items:center;";
+    icon.textContent = badge.icon;
+    el.appendChild(icon);
+  }
   return el;
 }
 

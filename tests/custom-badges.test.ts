@@ -46,16 +46,21 @@ describe("buildCustomBadge", () => {
     document.body.innerHTML = "";
   });
 
-  it("renders the icon and label and carries the badge id", () => {
+  it("renders the native badge classes, colours and icon", () => {
     const el = buildCustomBadge(sample);
-    expect(el.textContent).toBe("★ Example");
+    expect(el.tagName).toBe("SPAN");
+    expect(el.className).toContain("inline-flex items-center text-xs");
+    expect(el.className).toContain("mx-1 px-3.5 py-1.5 rounded border");
     expect(el.getAttribute("data-ft-custom-badge")).toBe("example");
     expect(el.title).toBe("Fixture badge");
+    expect(el.textContent).toBe("Example★");
     expect(el.style.backgroundColor).toBe("rgb(51, 102, 204)");
+    expect(el.style.borderColor).toBe("rgb(51, 102, 204)");
     expect(el.style.color).toBe("rgb(255, 255, 255)");
+    expect(el.hasAttribute("href")).toBe(false);
   });
 
-  it("falls back to the theme colours when no colour is set", () => {
+  it("leaves the theme colours on the class when no colour is set", () => {
     const el = buildCustomBadge({
       id: "example",
       label: "Example",
@@ -64,7 +69,8 @@ describe("buildCustomBadge", () => {
       tooltip: null,
     });
     expect(el.textContent).toBe("Example");
-    expect(el.style.backgroundColor).toContain("var(--color-primary");
+    expect(el.style.backgroundColor).toBe("");
+    expect(el.className).toContain("bg-primary");
     expect(el.title).toBe("");
   });
 

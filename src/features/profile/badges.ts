@@ -1,6 +1,7 @@
 import { getConfig } from "../../config.ts";
 import { loadCampusData } from "../campus/campus.ts";
 import { NAME_BADGE_SELECTOR, TITLE_BADGE_SELECTOR } from "./selectors.ts";
+import { injectCustomBadges } from "./custom-badges.ts";
 
 interface CampusBadgeData {
   badgeBaseUrl: string;
@@ -169,6 +170,7 @@ export function relocateBadges(root: ParentNode = document): void {
 
   trackBadgesRow(row);
   applyBadgeIndent(row);
+  void injectCustomBadges();
 }
 
 const BADGE_INDENT_VAR = "--ft-badges-indent";
@@ -199,9 +201,8 @@ export function applyBadgeIndent(
     return;
   }
 
-  const info = document.querySelector<HTMLElement>(
-    NAME_BADGE_SELECTOR,
-  )?.parentElement;
+  const info =
+    document.querySelector<HTMLElement>(NAME_BADGE_SELECTOR)?.parentElement;
   if (!info) {
     row.style.removeProperty(BADGE_INDENT_VAR);
     return;
@@ -230,6 +231,9 @@ function scheduleRelocation(): void {
   relocationRaf = requestAnimationFrame(() => {
     relocationRaf = null;
     relocateBadges();
+    // Also covers profiles with no native badges: the placeholder row is
+    // created once the level bar exists.
+    void injectCustomBadges();
   });
 }
 
@@ -247,14 +251,13 @@ let badgeResizeBound = false;
 
 export function initBadgeRelocation(): void {
   relocateBadges();
+  void injectCustomBadges();
   if (!badgeResizeBound) {
     badgeResizeBound = true;
     window.addEventListener(
       "resize",
       () => {
-        const row = document.querySelector<HTMLElement>(
-          "[data-ft-badges-row]",
-        );
+        const row = document.querySelector<HTMLElement>("[data-ft-badges-row]");
         if (row) applyBadgeIndent(row);
       },
       { passive: true },

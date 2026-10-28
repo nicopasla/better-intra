@@ -141,10 +141,12 @@ Use [Conventional Commits](https://www.conventionalcommits.org/) with a single s
 `type(scope): subject`
 
 - **type** — `feat`, `fix`, `refactor`, `perf`, `style`, `docs`, `test`, `build`, `ci`, `chore`
-- **scope** — `pwa`, `worker`, `ext` (the extension), or `repo` for repo-level files and cross-cutting docs
+- **scope** — the **feature/module** you touched, never the app or submodule name: `profile`, `logtime`, `clusters`, `shortcuts`, `hub`, `friends`, `students`, `calendar`, `notifications`, `theme`, `cron`, `push`, `events`, `sessions`, `settings`, `custom-badges`, … Omit the scope only for repo-wide changes (docs, CI, dependencies).
 - **subject** — imperative mood, lowercase after the colon, no trailing period, keep it short
 
-Examples: `feat(pwa): add calendar button`, `fix(worker): stop duplicate event reminders`, `docs: document the cron architecture`.
+Examples: `feat(shortcuts): pin shortcuts to the important links slide`, `fix(profile): clip header cards to the content column`, `feat(cron): push event reminders`, `docs: document the commit convention`.
+
+Do not use `ext`, `pwa`, `worker` or `repo` as scopes — say which feature changed instead.
 
 Applies to new commits only; existing history is not rewritten.
 

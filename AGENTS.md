@@ -86,8 +86,22 @@ The version is injected at build time as `__APP_VERSION__` (see `better-intra-pw
 Fetch-only Worker (no Durable Objects). Storage:
 
 - **KV `BETTER_INTRA_KV`** — user blobs (session tokens, settings, encrypted 42 token), app token cache, project map, friend IDs cache, cluster SVG cache, calendar tokens, announcement, stats cache.
-- **D1 `better_intra_d1`** — eval tracking (`users.evals_enabled`, `eval_users`, `eval_states`, `eval_corrected`) plus caches (`online_cache`, `profile_stats_cache`, `logtime_history`, `calendar_ics`, `themes`, `campus_locations`, `cluster_occupancy_cache`, `projects`, `subjects`, …). See `schema.sql`.
+- **D1 `better_intra_d1`** — eval tracking (`users.evals_enabled`, `eval_users`, `eval_states`, `eval_corrected`) plus caches (`online_cache`, `profile_stats_cache`, `logtime_history`, `calendar_ics`, `themes`, `campus_locations`, `cluster_occupancy_cache`, `projects`, `subjects`, …) and the hand-curated `custom_badges`. See `schema.sql`.
 - **R2 `better_intra_images`** — uploaded images.
+
+### Custom profile badges
+
+`custom_badges` has one row per badge and lists its owners: `badge` (slug), `label`, `color`, `icon`, `tooltip`, `sort`, `logins` (comma-separated or a JSON array). There is no write API — grant or revoke by hand:
+
+```bash
+npx wrangler d1 execute better-intra-d1 --remote --command \
+  "INSERT INTO custom_badges (badge,label,color,icon,tooltip,sort,logins) VALUES ('example','Example','#3366cc','★','Tooltip',10,'login-one,login-two') ON CONFLICT(badge) DO UPDATE SET logins = excluded.logins"
+
+npx wrangler d1 execute better-intra-d1 --remote --command \
+  "UPDATE custom_badges SET logins = logins || ',login-three' WHERE badge = 'example'"
+```
+
+Read back through `GET /api/v1/private/custom-badges?target=<login>` (KV-cached 60 s) and `customBadges` in `/api/v1/private/profile`. The extension and the PWA render them next to the 42 role badges.
 
 ### Commands
 

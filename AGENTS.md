@@ -120,6 +120,20 @@ The extension makes no 42 API calls for evals.
 - **Release drafter** — on push/PR to `main`; auto-categorizes commits into draft release.
 - **Publish** — triggers on GitHub Release publish; builds Firefox (`.xpi`) and Chrome (`.zip`); signs Firefox via AMO for full releases.
 
+## Commits
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) with a single subject line — no body, no description.
+
+`type(scope): subject`
+
+- **type** — `feat`, `fix`, `refactor`, `perf`, `style`, `docs`, `test`, `build`, `ci`, `chore`
+- **scope** — `pwa`, `worker`, `ext` (the extension), or `repo` for repo-level files and cross-cutting docs
+- **subject** — imperative mood, lowercase after the colon, no trailing period, keep it short
+
+Examples: `feat(pwa): add calendar button`, `fix(worker): stop duplicate event reminders`, `docs: document the cron architecture`.
+
+Applies to new commits only; existing history is not rewritten.
+
 ## DOs and DON'Ts
 
 - **NEVER use `innerHTML`** — lit-html is always available. Use `render(unsafeHTML(...), container)` from `lit-html` and `lit-html/directives/unsafe-html.js` instead.

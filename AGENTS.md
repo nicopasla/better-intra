@@ -79,7 +79,7 @@ The version is injected at build time as `__APP_VERSION__` (see `better-intra-pw
 - Settings stored in `chrome.storage.local` via typed `getConfig()` helper.
 - Cloud sync (optional) talks to `better-intra-worker` Cloudflare Worker via OAuth2 with 42 API.
 - `src/background.ts` is a background service worker (built separately via `vite.background.config.ts`) that reloads intra tabs when cloud credentials change. It does **not** poll for notifications.
-- Web Push notifications are sent by the worker during eval state transitions, driven by an external cron (cron-job.org) — doesn't require the browser to be open.
+- Web Push notifications are sent by the worker during eval state transitions and 15 minutes before subscribed 42 events, driven by an external cron (cron-job.org) — doesn't require the browser to be open.
 
 ## Worker (`better-intra-worker/`)
 
@@ -102,12 +102,16 @@ npx wrangler d1 execute better-intra-d1 --file=schema.sql   # apply schema (firs
 
 Secrets include `CLIENT_SECRET`, `TOKEN_ENCRYPTION_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `CRON_SECRET`, `PROXY_SECRET`, `ANNOUNCEMENT_SECRET`, `PROJECT_REFRESH_SECRET`.
 
-### Evaluations architecture
+### Cron architecture
 
-Cron work does **not** use Cloudflare scheduled triggers — `triggers.crons` is intentionally empty and `scheduled()` is a no-op, because 42 challenges requests made from the scheduled context. Instead an external cron (cron-job.org) POSTs to `/api/v1/public/cron`, guarded by `CRON_SECRET` (`X-Cron-Key`) plus a cron-job.org source-IP allowlist. Jobs:
+42 API work does **not** run from Cloudflare scheduled triggers, because 42 challenges requests made from that context. Instead an external cron (cron-job.org) POSTs to `/api/v1/public/cron`, guarded by `CRON_SECRET` (`X-Cron-Key`) plus a cron-job.org source-IP allowlist. Jobs:
 
 - `main` → `handleMainCron` fetches 42 API `/v2/me/scale_teams`, detects transitions (`null → booked → revealed`), sends Web Push notifications, and persists state in D1 `eval_states` / `eval_corrected`.
 - `tick` → `handleRevealCatchup` + `handleTokenRefreshSweep`.
+
+Event reminders are the exception: `triggers.crons` is `["* * * * *"]` and `scheduled()` runs `handleEventReminders`, because that job only reads D1 (`calendar_ics`) and sends Web Push — no 42 API calls.
+
+`handleEventReminders` pushes "Event in 15 min" for events in the user's `calendar_ics` row (the ICS the extension syncs). Dedupe lives in KV (`EVENT_NOTIFIED_<hash>`, 7-day TTL) so no D1 migration is needed; `EVENT_NOTIFY_SOON` in the settings blob opts out (missing = on).
 
 The extension makes no 42 API calls for evals.
 

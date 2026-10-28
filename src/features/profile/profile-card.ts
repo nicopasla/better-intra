@@ -602,7 +602,13 @@ function injectProfileCardStyles() {
       justify-content: center !important;
       text-align: center !important;
       gap: 0.75rem !important;
-      overflow: visible !important;
+      /* Vertical overflow stays visible (badges/tooltips), but nothing may
+         spill sideways into the sidebar nav when Intra injects extra cards
+         (e.g. the conditional "Speed up" promo) into this header. */
+      overflow-x: clip !important;
+      overflow-y: visible !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
     }
     @media (min-width: 1024px) {
       .ft-profile-card div:has(> h2.text-2xl) {
@@ -620,6 +626,15 @@ function injectProfileCardStyles() {
     .ft-profile-card {
       display: flex !important;
       flex-direction: column !important;
+      /* Never let the card (or a card Intra injects into it) grow past its
+         column and paint over the sidebar nav. */
+      max-width: 100% !important;
+      min-width: 0 !important;
+      overflow-x: clip !important;
+    }
+    .ft-profile-card > * {
+      max-width: 100% !important;
+      min-width: 0 !important;
     }
     .ft-profile-card div:has(> .px-8.flex.flex-row) {
       display: contents !important;

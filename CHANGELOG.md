@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## [1.11.9] - 2026-10-28
+
+- feat(ext): show custom badges on profiles ([ff3b144](https://github.com/nicopasla/better-intra/commit/ff3b144))
+
+### Bug fixes 🐛
+
+- fix(ext): keep profile header cards from covering the sidebar ([0091911](https://github.com/nicopasla/better-intra/commit/0091911))
+- fix(ext): target the important links slide for shortcuts ([237d8b5](https://github.com/nicopasla/better-intra/commit/237d8b5))
+- fix: release closed dialog state and shadow roots ([195914b](https://github.com/nicopasla/better-intra/commit/195914b))
+- fix(maps): improve layout ([e40c964](https://github.com/nicopasla/better-intra/commit/e40c964))
+
+### Other Changes 🔄
+
+- docs: use feature names as commit scopes ([5e4c415](https://github.com/nicopasla/better-intra/commit/5e4c415))
+- style(ext): match the native badge style for custom badges ([4d48b24](https://github.com/nicopasla/better-intra/commit/4d48b24))
+- docs(repo): document custom badges ([f45687e](https://github.com/nicopasla/better-intra/commit/f45687e))
+- docs(repo): adopt conventional commit messages ([7273a60](https://github.com/nicopasla/better-intra/commit/7273a60))
+- docs(repo): document event reminder cron ([8a4421f](https://github.com/nicopasla/better-intra/commit/8a4421f))
+- perf: stop idle CPU work in the extension ([8c7d601](https://github.com/nicopasla/better-intra/commit/8c7d601))
+- perf(clusters): cache seat geometry and revalidate map SVGs ([bd19603](https://github.com/nicopasla/better-intra/commit/bd19603))
+- docs: make the Chrome listing plain text ([d85355d](https://github.com/nicopasla/better-intra/commit/d85355d))
+
 ## [1.11.8] - 2026-10-25
 
 ### Features 🎉
@@ -1512,7 +1534,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.8...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.9...HEAD
+[1.11.9]: https://github.com/nicopasla/better-intra/compare/v1.11.8...v1.11.9
 [1.11.8]: https://github.com/nicopasla/better-intra/compare/v1.11.7...v1.11.8
 [1.11.7]: https://github.com/nicopasla/better-intra/compare/v1.11.6...v1.11.7
 [1.11.6]: https://github.com/nicopasla/better-intra/compare/v1.11.5...v1.11.6

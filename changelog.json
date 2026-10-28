@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "version": "1.11.9",
+      "date": "2026-10-28",
+      "highlights": [
+        "Custom badges now show next to your 42 role badges.",
+        "The extension uses much less CPU when you're idle.",
+        "Cluster maps load faster.",
+        "Fixed the shortcuts widget appearing in the maintenance notice.",
+        "Fixed profile cards covering the sidebar and dialogs not stopping after closing."
+      ]
+    },
+    {
       "version": "1.11.8",
       "date": "2026-10-25",
       "highlights": [

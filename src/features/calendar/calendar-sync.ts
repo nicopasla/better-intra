@@ -19,7 +19,13 @@ function formatIcsDate(iso: string): string {
 }
 
 function computeHash(
-  events: { id: number; begin_at: string; description?: string }[],
+  events: {
+    id: number;
+    begin_at: string;
+    description?: string;
+    nbr_subscribers?: number;
+    max_subscribers?: number | null;
+  }[],
 ): string {
   let h = 0;
   const mix = (s: string) => {
@@ -29,6 +35,10 @@ function computeHash(
     h = ((h << 5) - h + e.id) | 0;
     mix(e.begin_at);
     mix(e.description ?? "");
+    // Subscriber counts change between syncs for the same event, so they must
+    // be part of the hash for the ICS (and its badge) to stay fresh.
+    mix(String(e.nbr_subscribers ?? ""));
+    mix(String(e.max_subscribers ?? ""));
   }
   return String(h);
 }

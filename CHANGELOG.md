@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.11.10] - 2026-10-29
+
+### Bug fixes 🐛
+
+- fix(profile): drop header card overflow clipping ([ce9ffbb](https://github.com/nicopasla/better-intra/commit/ce9ffbb))
+
 ## [1.11.9] - 2026-10-28
 
 - feat(ext): show custom badges on profiles ([ff3b144](https://github.com/nicopasla/better-intra/commit/ff3b144))
@@ -1534,7 +1540,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.9...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.10...HEAD
+[1.11.10]: https://github.com/nicopasla/better-intra/compare/v1.11.9...v1.11.10
 [1.11.9]: https://github.com/nicopasla/better-intra/compare/v1.11.8...v1.11.9
 [1.11.8]: https://github.com/nicopasla/better-intra/compare/v1.11.7...v1.11.8
 [1.11.7]: https://github.com/nicopasla/better-intra/compare/v1.11.6...v1.11.7

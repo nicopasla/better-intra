@@ -3,6 +3,7 @@
   <style>
     .zone{fill:var(--zone-fill,#d5d5d5);stroke:var(--zone-stroke,#a5a8ab);stroke-width:1}
     .plug path{fill:var(--plug-fill,#2b59ff)}
+    rect.seat-newer{fill:var(--seat-newer,#d9f2e3);stroke:var(--seat-newer-stroke,#2e9e5b);stroke-width:1}
     .wall{fill:var(--wall-fill,#46525e)}
     .slot{fill:var(--slot-fill,#00babc2e);stroke:var(--slot-stroke,#c3ccd5);stroke-width:1}
     .door{fill:var(--door-fill,#c98a2b)}
@@ -321,13 +322,13 @@
 
   <g class="r1">
    <g class="r1 posts">
-    <rect id="shi-r1-p1" height="40" width="40" y="819" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
-    <rect id="shi-r1-p2" height="40" width="40" y="819" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
-    <rect id="shi-r1-p3" height="40" width="40" y="819" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
-    <rect id="shi-r1-p4" height="40" width="40" y="819" x="308" stroke="#7f7f7f" fill="#e5e5e5"/>
-    <rect id="shi-r1-p5" height="40" width="40" y="819" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
-    <rect id="shi-r1-p6" height="40" width="40" y="819" x="392" stroke="#7f7f7f" fill="#e5e5e5"/>
-    <rect id="shi-r1-p7" height="40" width="40" y="819" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect class="seat-newer" id="shi-r1-p1" height="40" width="40" y="819" x="182" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect class="seat-newer" id="shi-r1-p2" height="40" width="40" y="819" x="224" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect class="seat-newer" id="shi-r1-p3" height="40" width="40" y="819" x="266" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect class="seat-newer" id="shi-r1-p4" height="40" width="40" y="819" x="308" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect class="seat-newer" id="shi-r1-p5" height="40" width="40" y="819" x="350" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect class="seat-newer" id="shi-r1-p6" height="40" width="40" y="819" x="392" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect class="seat-newer" id="shi-r1-p7" height="40" width="40" y="819" x="434" stroke="#7f7f7f" fill="#e5e5e5"/>
     <image preserveAspectRatio="xMidYMid slice" id="shi-r1-p1" height="40" width="40" y="819" x="182" xlink:href=""/>
     <image preserveAspectRatio="xMidYMid slice" id="shi-r1-p2" height="40" width="40" y="819" x="224" xlink:href=""/>
     <image preserveAspectRatio="xMidYMid slice" id="shi-r1-p3" height="40" width="40" y="819" x="266" xlink:href=""/>

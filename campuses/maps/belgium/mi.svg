@@ -3,6 +3,7 @@
   <style>
     .zone{fill:var(--zone-fill,#d5d5d5);stroke:var(--zone-stroke,#a5a8ab);stroke-width:1}
     .plug path{fill:var(--plug-fill,#2b59ff)}
+    rect.seat-newer{fill:var(--seat-newer,#d9f2e3);stroke:var(--seat-newer-stroke,#2e9e5b);stroke-width:1}
     .wall{fill:var(--wall-fill,#46525e)}
     .slot{fill:var(--slot-fill,#00babc2e);stroke:var(--slot-stroke,#c3ccd5);stroke-width:1}
     .door{fill:var(--door-fill,#c98a2b)}
@@ -115,9 +116,9 @@
 
   <g class="r7">
    <g class="r7 posts">
-    <rect id="mi-r7-p1" height="40" width="40" y="84" x="336" stroke="#7f7f7f" fill="#e5e5e5"/>
-    <rect id="mi-r7-p2" height="40" width="40" y="84" x="378" stroke="#7f7f7f" fill="#e5e5e5"/>
-    <rect id="mi-r7-p3" height="40" width="40" y="84" x="420" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect class="seat-newer" id="mi-r7-p1" height="40" width="40" y="84" x="336" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect class="seat-newer" id="mi-r7-p2" height="40" width="40" y="84" x="378" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect class="seat-newer" id="mi-r7-p3" height="40" width="40" y="84" x="420" stroke="#7f7f7f" fill="#e5e5e5"/>
     <image preserveAspectRatio="xMidYMid slice" id="mi-r7-p1" height="40" width="40" y="84" x="336" xlink:href=""/>
     <image preserveAspectRatio="xMidYMid slice" id="mi-r7-p2" height="40" width="40" y="84" x="378" xlink:href=""/>
     <image preserveAspectRatio="xMidYMid slice" id="mi-r7-p3" height="40" width="40" y="84" x="420" xlink:href=""/>

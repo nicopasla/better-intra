@@ -114,7 +114,7 @@ npm test          # vitest
 npx wrangler d1 execute better-intra-d1 --file=schema.sql   # apply schema (first time)
 ```
 
-Secrets include `CLIENT_SECRET`, `TOKEN_ENCRYPTION_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `CRON_SECRET`, `PROXY_SECRET`, `ANNOUNCEMENT_SECRET`, `PROJECT_REFRESH_SECRET`.
+Secrets include `CLIENT_SECRET`, `TOKEN_ENCRYPTION_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `CRON_SECRET`, `PROXY_SECRET`, `ANNOUNCEMENT_SECRET`, `PROJECT_REFRESH_SECRET`, `AVATAR_URL_SECRET`.
 
 ### Cron architecture
 

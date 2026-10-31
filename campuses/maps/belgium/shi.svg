@@ -373,7 +373,12 @@
   </g>
 
   <g class="crosses">
+    <path class="cross" d="M 231.2 126.2 L 256.8 151.8 M 256.8 126.2 L 231.2 151.8" stroke-width="2.2"/>
     <path class="cross" d="M 441.2 43.2 L 466.8 68.8 M 466.8 43.2 L 441.2 68.8" stroke-width="2.2"/>
+    <path class="cross" d="M 273.2 196.2 L 298.8 221.8 M 298.8 196.2 L 273.2 221.8" stroke-width="2.2"/>
+    <path class="cross" d="M 315.2 336.2 L 340.8 361.8 M 340.8 336.2 L 315.2 361.8" stroke-width="2.2"/>
+    <path class="cross" d="M 273.2 406.2 L 298.8 431.8 M 298.8 406.2 L 273.2 431.8" stroke-width="2.2"/>
+    <path class="cross" d="M 441.2 406.2 L 466.8 431.8 M 466.8 406.2 L 441.2 431.8" stroke-width="2.2"/>
   </g>
 
   <g class="text">

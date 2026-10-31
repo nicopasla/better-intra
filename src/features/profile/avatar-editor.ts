@@ -39,7 +39,8 @@ export function renderAvatarEditor(
     >
       <div
         id="ft-avatar-preview"
-        style="width:100%;height:100%;border-radius:${state.shape === "square"
+        style="box-sizing:border-box;width:100%;height:100%;border:2px solid rgba(128,128,128,.6);border-radius:${state.shape ===
+        "square"
           ? "0"
           : "9999px"};background-image:${state.url
           ? `url("${state.url}")`
@@ -61,7 +62,7 @@ export function renderAvatarEditor(
               aria-label="${showingOriginal
                 ? "View custom avatar"
                 : "View original avatar"}"
-              title="${showingOriginal
+              data-tip="${showingOriginal
                 ? "View custom avatar"
                 : "View original avatar"}"
               @mousedown="${(e: MouseEvent) => {

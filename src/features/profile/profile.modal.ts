@@ -21,9 +21,10 @@ import {
   applyBadgeLayout,
   refreshBadgeLayout,
 } from "./badges.ts";
-import { getEffectiveTheme } from "./theme/theme-manager.ts";
+import { getEffectiveTheme, getIsLight } from "./theme/theme-manager.ts";
 import { contrastRatio, ensureContrast } from "../../utils/color.ts";
 import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
+import { bindTooltips } from "../../utils/tooltip.ts";
 import { createSortable, moveItem } from "../../utils/sortable.ts";
 import LINK_SVG from "../../assets/svg/link.svg?raw";
 import GRIP_VERTICAL_SVG from "../../assets/svg/grip-vertical.svg?raw";
@@ -402,7 +403,7 @@ function renderPanelContent(
             </div>
           </div>
 
-          <div class="w-64 shrink-0 flex flex-col items-start">
+          <div class="w-64 shrink-0 flex flex-col items-center">
             ${state.avatar
               ? renderAvatarEditor(
                   showingOriginal
@@ -1273,6 +1274,7 @@ export const createSettingsModal = async (
   document.body.appendChild(dialog);
 
   const shadow = content.attachShadow({ mode: "open" });
+  bindTooltips(shadow, getIsLight);
 
   const skeleton = html`
     <style>

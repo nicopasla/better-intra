@@ -360,22 +360,24 @@ function renderPanelContent(
             <div class="pt-2">
               <span class="text-sm opacity-70">Shape</span>
               <div class="join w-full mt-1">
-                <button
-                  class="btn join-item flex-1 ${state.avatarShape === "round"
-                    ? "btn-active"
-                    : ""}"
-                  @click="${() => onFormUpdate({ avatarShape: "round" })}"
-                >
-                  Round
-                </button>
-                <button
-                  class="btn join-item flex-1 ${state.avatarShape === "square"
-                    ? "btn-active"
-                    : ""}"
-                  @click="${() => onFormUpdate({ avatarShape: "square" })}"
-                >
-                  Square
-                </button>
+                <input
+                  type="radio"
+                  name="PROFILE_AVATAR_SHAPE"
+                  class="btn join-item flex-1"
+                  aria-label="Round"
+                  value="round"
+                  ?checked="${state.avatarShape === "round"}"
+                  @change="${() => onFormUpdate({ avatarShape: "round" })}"
+                />
+                <input
+                  type="radio"
+                  name="PROFILE_AVATAR_SHAPE"
+                  class="btn join-item flex-1"
+                  aria-label="Square"
+                  value="square"
+                  ?checked="${state.avatarShape === "square"}"
+                  @change="${() => onFormUpdate({ avatarShape: "square" })}"
+                />
               </div>
             </div>
             <div class="pt-2">

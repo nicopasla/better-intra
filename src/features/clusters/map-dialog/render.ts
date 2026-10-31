@@ -160,12 +160,20 @@ function ensureSeatOverlay(state: DialogState): SeatOverlay | null {
     "position:absolute;top:0;left:0;transform-origin:0 0;pointer-events:none;";
   mapArea.appendChild(container);
 
+  // Seats the map builder marked as having a newer computer.
+  const newerSeats = new Set<string>();
+  for (const rect of svg.querySelectorAll("rect.seat-newer[id]")) {
+    const id = (rect.getAttribute("id") || "").trim();
+    if (id) newerSeats.add(normalizeSeatId(id));
+  }
+
   const overlay: SeatOverlay = {
     mapArea,
     svg,
     container,
     links: new Map(),
     geoms,
+    newerSeats,
     viewBox,
     baseScale,
   };
@@ -280,6 +288,7 @@ export function renderSeatOverlays(
       overlay.links.set(hostKey, link);
       overlay.container.appendChild(link);
     }
+    link.classList.toggle("seat-newer", overlay.newerSeats.has(hostKey));
     if (link.dataset.login === seat.login) continue;
     updateSeatLink(link, seat);
   }

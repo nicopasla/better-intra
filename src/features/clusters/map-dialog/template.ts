@@ -138,6 +138,21 @@ export function renderTemplate(state: DialogState): TemplateResult {
       rect[id]:not(.custom-screen) {
         fill: var(--color-base-200) !important;
       }
+      /* Seats the map builder marked as having a newer computer. */
+      #map-area svg rect.seat-newer {
+        fill: color-mix(
+          in oklab,
+          var(--color-success) 30%,
+          var(--color-base-200)
+        ) !important;
+        stroke: var(--color-success) !important;
+      }
+      /* Avatars are an HTML layer above the SVG, so the occupied-seat ring has
+         to live on the link, not on the map's rect. */
+      .seat-link.seat-newer {
+        outline: 2px solid var(--color-success);
+        outline-offset: -2px;
+      }
       #map-area svg text,
       #map-area svg tspan {
         fill: var(--color-base-content) !important;

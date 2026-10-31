@@ -64,6 +64,8 @@ export interface SeatOverlay {
   /** `<a>` per normalised host name. */
   links: Map<string, HTMLAnchorElement>;
   geoms: Map<string, SeatGeom>;
+  /** Normalised ids of seats the map exports with the `seat-newer` class. */
+  newerSeats: Set<string>;
   viewBox: { x: number; y: number; w: number; h: number };
   /** Pixels per SVG user unit when the children were laid out. */
   baseScale: number;

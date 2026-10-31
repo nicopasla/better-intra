@@ -712,15 +712,25 @@ function renderPanelContent(
               const adjusted = ensureContrast(text, bg);
               const tone =
                 ratio >= 4.5
-                  ? "text-success"
+                  ? "bg-success"
                   : ratio >= 3
-                    ? "text-warning"
-                    : "text-error";
-              return html`<p class="text-xs ${tone} pt-1">
-                Text contrast:
-                ${ratio.toFixed(1)}:1${adjusted === text
+                    ? "bg-warning"
+                    : "bg-error";
+              return html`<p
+                class="text-sm pt-2 flex items-center gap-2 flex-wrap"
+              >
+                <span
+                  class="inline-block w-2.5 h-2.5 rounded-full shrink-0 ${tone}"
+                ></span>
+                <span
+                  >Text contrast
+                  <span class="font-semibold">${ratio.toFixed(1)}:1</span></span
+                >
+                ${adjusted === text
                   ? ""
-                  : ` — renders as ${adjusted}`}
+                  : html`<span class="text-xs opacity-70"
+                      >— renders as ${adjusted}</span
+                    >`}
               </p>`;
             })()}
           </div>

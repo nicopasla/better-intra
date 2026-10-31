@@ -23,6 +23,4 @@ dist-ssr
 *.sln
 *.sw?
 images-store/
-tools/cluster-editor/index.html
-Cluster map builder.html
-cluster_map_builder.html
+tools/cluster-map-builder/

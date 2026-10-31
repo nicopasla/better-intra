@@ -123,6 +123,9 @@ let lastUser: string | null = null;
 let showingOriginalAvatar = false;
 let originalAvatarUrl: string | null = null;
 
+/** The Intra (42 CDN) avatar, captured before any custom picture is applied. */
+export const getOriginalAvatarUrl = (): string | null => originalAvatarUrl;
+
 let lastAppliedUser: string | null = null;
 let lastAppliedKey: string | null = null;
 
@@ -1148,7 +1151,7 @@ export const applyImgs = (rawUrls: VisualUrls | null) => {
     if (
       inlineStyle &&
       inlineStyle !== "none" &&
-      !inlineStyle.includes(urls.avatar)
+      !(urls.avatar && inlineStyle.includes(urls.avatar))
     ) {
       const match = inlineStyle.match(/url\((['"]?)(.*?)\1\)/);
       if (match) originalAvatarUrl = match[2];
@@ -1158,7 +1161,7 @@ export const applyImgs = (rawUrls: VisualUrls | null) => {
       if (
         computedBg &&
         computedBg !== "none" &&
-        !computedBg.includes(urls.avatar)
+        !(urls.avatar && computedBg.includes(urls.avatar))
       ) {
         const match = computedBg.match(/url\((['"]?)(.*?)\1\)/);
         if (match) originalAvatarUrl = match[2];

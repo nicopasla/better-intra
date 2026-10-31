@@ -1,4 +1,7 @@
 import { html, TemplateResult } from "lit-html";
+import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
+import EYE_SVG from "../../assets/svg/eye.svg?raw";
+import EYE_SLASH_SVG from "../../assets/svg/eye-slash.svg?raw";
 
 export interface AvatarEditorState {
   url: string;
@@ -15,55 +18,112 @@ const SCALE_MAX = 200;
 const SCALE_STEP = 5;
 const PREVIEW_SIZE = 208;
 
+export interface AvatarEditorOptions {
+  showingOriginal?: boolean;
+  onToggleOriginal?: () => void;
+}
+
 export function renderAvatarEditor(
   state: AvatarEditorState,
   onUpdate: (changes: Partial<AvatarEditorState>) => void,
+  options: AvatarEditorOptions = {},
 ): TemplateResult {
+  const { showingOriginal = false, onToggleOriginal } = options;
   const decoBoxShadow =
     state.decoration === "solid" ? "box-shadow: 0 0 0 4px #00babc;" : "";
 
   return html`
     <div
-      id="ft-avatar-preview"
-      style="width:${PREVIEW_SIZE}px;height:${PREVIEW_SIZE}px;border-radius:${state.shape ===
-      "square"
-        ? "0"
-        : "9999px"};background-image:${state.url
-        ? `url("${state.url}")`
-        : "none"};background-size:${state.scale}%;background-position:${state.posX}% ${state.posY}%;background-color:${state.bgColor};background-repeat:no-repeat;${decoBoxShadow}cursor:grab;flex-shrink:0;user-select:none;"
-      @mousedown="${onPreviewMouseDown(onUpdate)}"
-      @wheel="${onPreviewWheel(onUpdate, state)}"
-    ></div>
-    <div class="w-full flex flex-col gap-2">
-      <div class="flex items-center justify-between gap-1">
-        <span class="text-xs opacity-60">Zoom</span>
-        <div class="flex items-center gap-1">
-          <button
-            class="btn btn-xs btn-ghost"
-            ?disabled="${state.scale <= SCALE_MIN}"
-            @click="${() => {
-              const s = Math.max(SCALE_MIN, state.scale - SCALE_STEP);
-              if (s !== state.scale) onUpdate({ scale: s });
-            }}"
-          >
-            −
-          </button>
-          <span class="text-xs font-mono w-10 text-center"
-            >${state.scale}%</span
-          >
-          <button
-            class="btn btn-xs btn-ghost"
-            ?disabled="${state.scale >= SCALE_MAX}"
-            @click="${() => {
-              const s = Math.min(SCALE_MAX, state.scale + SCALE_STEP);
-              if (s !== state.scale) onUpdate({ scale: s });
-            }}"
-          >
-            +
-          </button>
-        </div>
-      </div>
+      class="relative"
+      style="width:${PREVIEW_SIZE}px;height:${PREVIEW_SIZE}px;flex-shrink:0;"
+    >
+      <div
+        id="ft-avatar-preview"
+        style="width:100%;height:100%;border-radius:${state.shape === "square"
+          ? "0"
+          : "9999px"};background-image:${state.url
+          ? `url("${state.url}")`
+          : "none"};background-size:${state.scale}%;background-position:${state.posX}% ${state.posY}%;background-color:${state.bgColor};background-repeat:no-repeat;${decoBoxShadow}cursor:${showingOriginal
+          ? "default"
+          : "grab"};flex-shrink:0;user-select:none;"
+        @mousedown="${showingOriginal
+          ? undefined
+          : onPreviewMouseDown(onUpdate)}"
+        @wheel="${showingOriginal
+          ? undefined
+          : onPreviewWheel(onUpdate, state)}"
+      ></div>
+      ${onToggleOriginal
+        ? html`
+            <button
+              type="button"
+              class="btn btn-xs btn-circle btn-ghost absolute top-1 right-1 bg-base-100/80 backdrop-blur border border-base-300"
+              aria-label="${showingOriginal
+                ? "View custom avatar"
+                : "View original avatar"}"
+              title="${showingOriginal
+                ? "View custom avatar"
+                : "View original avatar"}"
+              @mousedown="${(e: MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}"
+              @click="${(e: MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleOriginal();
+              }}"
+            >
+              <span class="[&_svg]:w-4 [&_svg]:h-4"
+                >${unsafeHTML(showingOriginal ? EYE_SLASH_SVG : EYE_SVG)}</span
+              >
+            </button>
+          `
+        : ""}
     </div>
+    ${showingOriginal
+      ? html`
+          <div class="w-full text-xs opacity-60 text-center pt-1">
+            Showing original 42 avatar
+          </div>
+        `
+      : html`
+          <div class="w-full flex flex-col gap-1 pt-2">
+            <span class="text-sm opacity-70">Zoom</span>
+            <div class="join w-full">
+              <button
+                type="button"
+                class="btn join-item flex-1"
+                aria-label="Zoom out"
+                ?disabled="${state.scale <= SCALE_MIN}"
+                @click="${() => {
+                  const s = Math.max(SCALE_MIN, state.scale - SCALE_STEP);
+                  if (s !== state.scale) onUpdate({ scale: s });
+                }}"
+              >
+                −
+              </button>
+              <div
+                class="btn join-item flex-1 font-mono pointer-events-none"
+                aria-live="polite"
+              >
+                ${state.scale}%
+              </div>
+              <button
+                type="button"
+                class="btn join-item flex-1"
+                aria-label="Zoom in"
+                ?disabled="${state.scale >= SCALE_MAX}"
+                @click="${() => {
+                  const s = Math.min(SCALE_MAX, state.scale + SCALE_STEP);
+                  if (s !== state.scale) onUpdate({ scale: s });
+                }}"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        `}
   `;
 }
 

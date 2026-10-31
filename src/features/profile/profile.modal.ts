@@ -11,6 +11,7 @@ import {
 import {
   applyImgs,
   injectCustomStyles,
+  getOriginalAvatarUrl,
   VisualUrls,
   BADGE_KEYFRAMES,
   usernameBadgeStylesheet,
@@ -95,6 +96,7 @@ interface FormState {
 type ProfileTab = "avatar" | "banner" | "background" | "badges" | "username";
 
 let activeTab: ProfileTab = "avatar";
+let previewingOriginalAvatar = false;
 let badgeSortable: { destroy: () => void } | null = null;
 
 const clampBadgeNumber = (value: string | number): number => {
@@ -288,6 +290,7 @@ function renderPanelContent(
   needsReconnect: boolean,
   onConnect: () => void,
   onTabChange: (tab: ProfileTab) => void,
+  onToggleOriginalPreview: () => void,
 ) {
   const isTransparent = state.avatarBg === "transparent";
 
@@ -299,138 +302,158 @@ function renderPanelContent(
     { id: "username", label: "Username" },
   ];
 
-  const avatarPanel = () => html`
-    <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
-      <div class="flex gap-5 items-start">
-        <div class="flex-1 min-w-0">
-          ${renderUrlField(
-            "PROFILE_IMAGE_URL",
-            "Image URL",
-            state.avatar,
-            (val) => onFormUpdate({ avatar: val }),
-            history.avatar,
-            "avatar",
-            state.uploading,
-            () => onClearHistory("avatar"),
-          )}
-          <div class="flex gap-2 items-center mt-2">
-            <div class="join w-full">
-              <input
-                type="radio"
-                name="PROFILE_AVATAR_BG_MODE"
-                class="btn join-item flex-1"
-                aria-label="Transparent"
-                value="transparent"
-                ?checked="${isTransparent}"
-                @change="${() => onFormUpdate({ avatarBg: "transparent" })}"
-              />
-              <input
-                type="radio"
-                name="PROFILE_AVATAR_BG_MODE"
-                class="btn join-item flex-1"
-                aria-label="Color"
-                value="custom"
-                ?checked="${!isTransparent}"
-                @change="${() => onFormUpdate({ avatarBg: "#00bcba" })}"
-              />
-            </div>
-            <div
-              id="ft-avatar-bg-color-wrap"
-              class="${isTransparent ? "hidden" : ""}"
-            >
-              <input
-                type="color"
-                id="PROFILE_AVATAR_BG_COLOR"
-                class="input p-1 h-10 w-16"
-                .value="${isTransparent ? "#00bcba" : state.avatarBg}"
-                @input="${(e: Event) =>
-                  onFormUpdate({
-                    avatarBg: (e.target as HTMLInputElement).value,
-                  })}"
-              />
-            </div>
-          </div>
-          <div class="pt-2">
-            <span class="text-sm opacity-70">Shape</span>
-            <div class="join w-full mt-1">
-              <button
-                class="btn join-item flex-1 ${state.avatarShape === "round"
-                  ? "btn-active"
-                  : ""}"
-                @click="${() => onFormUpdate({ avatarShape: "round" })}"
+  const avatarPanel = () => {
+    const originalAvatarUrl = getOriginalAvatarUrl();
+    const showingOriginal = previewingOriginalAvatar && !!originalAvatarUrl;
+    return html`
+      <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
+        <div class="flex gap-5 items-start">
+          <div class="flex-1 min-w-0">
+            ${renderUrlField(
+              "PROFILE_IMAGE_URL",
+              "Image URL",
+              state.avatar,
+              (val) => onFormUpdate({ avatar: val }),
+              history.avatar,
+              "avatar",
+              state.uploading,
+              () => onClearHistory("avatar"),
+            )}
+            <div class="flex gap-2 items-center mt-2">
+              <div class="join w-full">
+                <input
+                  type="radio"
+                  name="PROFILE_AVATAR_BG_MODE"
+                  class="btn join-item flex-1"
+                  aria-label="Transparent"
+                  value="transparent"
+                  ?checked="${isTransparent}"
+                  @change="${() => onFormUpdate({ avatarBg: "transparent" })}"
+                />
+                <input
+                  type="radio"
+                  name="PROFILE_AVATAR_BG_MODE"
+                  class="btn join-item flex-1"
+                  aria-label="Color"
+                  value="custom"
+                  ?checked="${!isTransparent}"
+                  @change="${() => onFormUpdate({ avatarBg: "#00bcba" })}"
+                />
+              </div>
+              <div
+                id="ft-avatar-bg-color-wrap"
+                class="${isTransparent ? "hidden" : ""}"
               >
-                Round
-              </button>
-              <button
-                class="btn join-item flex-1 ${state.avatarShape === "square"
-                  ? "btn-active"
-                  : ""}"
-                @click="${() => onFormUpdate({ avatarShape: "square" })}"
-              >
-                Square
-              </button>
+                <input
+                  type="color"
+                  id="PROFILE_AVATAR_BG_COLOR"
+                  class="input p-1 h-10 w-16"
+                  .value="${isTransparent ? "#00bcba" : state.avatarBg}"
+                  @input="${(e: Event) =>
+                    onFormUpdate({
+                      avatarBg: (e.target as HTMLInputElement).value,
+                    })}"
+                />
+              </div>
+            </div>
+            <div class="pt-2">
+              <span class="text-sm opacity-70">Shape</span>
+              <div class="join w-full mt-1">
+                <button
+                  class="btn join-item flex-1 ${state.avatarShape === "round"
+                    ? "btn-active"
+                    : ""}"
+                  @click="${() => onFormUpdate({ avatarShape: "round" })}"
+                >
+                  Round
+                </button>
+                <button
+                  class="btn join-item flex-1 ${state.avatarShape === "square"
+                    ? "btn-active"
+                    : ""}"
+                  @click="${() => onFormUpdate({ avatarShape: "square" })}"
+                >
+                  Square
+                </button>
+              </div>
+            </div>
+            <div class="pt-2">
+              <span class="text-sm opacity-70">Border</span>
+              <div class="join w-full mt-1">
+                <input
+                  type="radio"
+                  name="PROFILE_DECORATION"
+                  class="btn join-item flex-1"
+                  aria-label="None"
+                  value="none"
+                  ?checked="${state.decoration === "none"}"
+                  @change="${() => onFormUpdate({ decoration: "none" })}"
+                />
+                <input
+                  type="radio"
+                  name="PROFILE_DECORATION"
+                  class="btn join-item flex-1"
+                  aria-label="Solid"
+                  value="solid"
+                  ?checked="${state.decoration === "solid"}"
+                  @change="${() => onFormUpdate({ decoration: "solid" })}"
+                />
+              </div>
             </div>
           </div>
-          <div class="pt-2">
-            <span class="text-sm opacity-70">Border</span>
-            <div class="join w-full mt-1">
-              <input
-                type="radio"
-                name="PROFILE_DECORATION"
-                class="btn join-item flex-1"
-                aria-label="None"
-                value="none"
-                ?checked="${state.decoration === "none"}"
-                @change="${() => onFormUpdate({ decoration: "none" })}"
-              />
-              <input
-                type="radio"
-                name="PROFILE_DECORATION"
-                class="btn join-item flex-1"
-                aria-label="Solid"
-                value="solid"
-                ?checked="${state.decoration === "solid"}"
-                @change="${() => onFormUpdate({ decoration: "solid" })}"
-              />
-            </div>
-          </div>
-        </div>
 
-        <div class="w-64 shrink-0 flex flex-col items-start">
-          ${state.avatar
-            ? renderAvatarEditor(
-                {
-                  url: state.avatar,
-                  posX: state.avatarPosX,
-                  posY: state.avatarPosY,
-                  scale: state.avatarScale,
-                  bgColor: state.avatarBg,
-                  shape: state.avatarShape,
-                  decoration: state.decoration,
-                },
-                (changes) => {
-                  const updates: Partial<FormState> = {};
-                  if (changes.scale !== undefined)
-                    updates.avatarScale = changes.scale;
-                  if (changes.posX !== undefined)
-                    updates.avatarPosX = changes.posX;
-                  if (changes.posY !== undefined)
-                    updates.avatarPosY = changes.posY;
-                  onFormUpdate(updates);
-                },
-              )
-            : html`<div
-                class="w-52 h-52 bg-base-300 flex items-center justify-center"
-                style="border-radius:${state.avatarShape === "square"
-                  ? "0"
-                  : "9999px"}"
-              >
-                <span class="text-xs opacity-50">No avatar URL set</span>
-              </div>`}
+          <div class="w-64 shrink-0 flex flex-col items-start">
+            ${state.avatar
+              ? renderAvatarEditor(
+                  showingOriginal
+                    ? {
+                        url: originalAvatarUrl || state.avatar,
+                        posX: 50,
+                        posY: 50,
+                        scale: 100,
+                        bgColor: "transparent",
+                        shape: "round",
+                        decoration: "none",
+                      }
+                    : {
+                        url: state.avatar,
+                        posX: state.avatarPosX,
+                        posY: state.avatarPosY,
+                        scale: state.avatarScale,
+                        bgColor: state.avatarBg,
+                        shape: state.avatarShape,
+                        decoration: state.decoration,
+                      },
+                  (changes) => {
+                    const updates: Partial<FormState> = {};
+                    if (changes.scale !== undefined)
+                      updates.avatarScale = changes.scale;
+                    if (changes.posX !== undefined)
+                      updates.avatarPosX = changes.posX;
+                    if (changes.posY !== undefined)
+                      updates.avatarPosY = changes.posY;
+                    onFormUpdate(updates);
+                  },
+                  {
+                    showingOriginal,
+                    onToggleOriginal: originalAvatarUrl
+                      ? onToggleOriginalPreview
+                      : undefined,
+                  },
+                )
+              : html`<div
+                  class="w-52 h-52 bg-base-300 flex items-center justify-center"
+                  style="border-radius:${state.avatarShape === "square"
+                    ? "0"
+                    : "9999px"}"
+                >
+                  <span class="text-xs opacity-50">No avatar URL set</span>
+                </div>`}
+          </div>
         </div>
       </div>
-    </div>
-  `;
+    `;
+  };
 
   const bannerPanel = () => html`
     <div class="rounded-box border border-base-300 bg-base-200/50 p-3">
@@ -693,7 +716,8 @@ function renderPanelContent(
                     ? "text-warning"
                     : "text-error";
               return html`<p class="text-xs ${tone} pt-1">
-                Text contrast: ${ratio.toFixed(1)}:1${adjusted === text
+                Text contrast:
+                ${ratio.toFixed(1)}:1${adjusted === text
                   ? ""
                   : ` — renders as ${adjusted}`}
               </p>`;
@@ -1216,6 +1240,7 @@ export const createSettingsModal = async (
   if (document.getElementById("profile-modal-host")) return;
 
   activeTab = "avatar";
+  previewingOriginalAvatar = false;
 
   const token = await getConfig("CLOUD_TOKEN");
   const authFailed = !!(await getConfig("CLOUD_AUTH_FAILED"));
@@ -1530,6 +1555,10 @@ export const createSettingsModal = async (
         handleConnect42,
         (tab) => {
           activeTab = tab;
+          rerender();
+        },
+        () => {
+          previewingOriginalAvatar = !previewingOriginalAvatar;
           rerender();
         },
       ),

@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+## [1.11.11] - 2026-11-02
+
+### Features 🎉
+
+- feat(clusters): highlight newer seats in the map dialog ([375a823](https://github.com/nicopasla/better-intra/commit/375a823))
+- feat(profile): toggle settings preview between original and custom avatar ([0673314](https://github.com/nicopasla/better-intra/commit/0673314))
+
+### Bug fixes 🐛
+
+- fix(profile): show the selected avatar shape in the modal ([0807e5b](https://github.com/nicopasla/better-intra/commit/0807e5b))
+- fix(docs): update compatibility table formatting for better readability ([8b2c350](https://github.com/nicopasla/better-intra/commit/8b2c350))
+- fix(gitignore): remove specific HTML files from ignore list for cluster map builder ([b22e4bb](https://github.com/nicopasla/better-intra/commit/b22e4bb))
+- fix(profile): make badge contrast readout more legible ([299fadb](https://github.com/nicopasla/better-intra/commit/299fadb))
+- fix(profile): center avatar preview, add outline and enable modal tooltips ([c49033f](https://github.com/nicopasla/better-intra/commit/c49033f))
+- fix(calendar): re-sync the ICS when subscriber counts change ([0a66839](https://github.com/nicopasla/better-intra/commit/0a66839))
+
+### Maintenance 🧹
+
+- chore: update SHI cluster ([170f463](https://github.com/nicopasla/better-intra/commit/170f463))
+- chore: update SHI, FU, MI clusters ([02ea196](https://github.com/nicopasla/better-intra/commit/02ea196))
+- chore: update SHI cluster ([d94385e](https://github.com/nicopasla/better-intra/commit/d94385e))
+- chore: update MI cluster ([ed7ace4](https://github.com/nicopasla/better-intra/commit/ed7ace4))
+
+### Other Changes 🔄
+
+- docs: document the avatar relay secrets ([f3b2e4e](https://github.com/nicopasla/better-intra/commit/f3b2e4e))
+- docs: document the avatar proxy secret ([e713004](https://github.com/nicopasla/better-intra/commit/e713004))
+
+
 ## [1.11.10] - 2026-10-29
 
 ### Bug fixes 🐛
@@ -1540,7 +1569,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.10...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.11...HEAD
+[1.11.11]: https://github.com/nicopasla/better-intra/compare/v1.11.10...v1.11.11
 [1.11.10]: https://github.com/nicopasla/better-intra/compare/v1.11.9...v1.11.10
 [1.11.9]: https://github.com/nicopasla/better-intra/compare/v1.11.8...v1.11.9
 [1.11.8]: https://github.com/nicopasla/better-intra/compare/v1.11.7...v1.11.8

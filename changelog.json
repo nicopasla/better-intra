@@ -1,6 +1,19 @@
 {
   "entries": [
     {
+      "version": "1.11.11",
+      "date": "2026-11-02",
+      "highlights": [
+        "Newer seats are highlighted on cluster maps.",
+        "The avatar settings preview switches between your original and custom avatar."
+      ]
+    },
+    {
+      "version": "1.11.10",
+      "date": "2026-10-29",
+      "highlights": ["Fixed profile header cards clipping their content."]
+    },
+    {
       "version": "1.11.9",
       "date": "2026-10-28",
       "highlights": [

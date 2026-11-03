@@ -394,11 +394,6 @@
    </g>
   </g>
 
-  <g class="crosses">
-    <path class="cross" d="M 105.2 -12.8 L 130.8 12.8 M 130.8 -12.8 L 105.2 12.8" stroke-width="2.2"/>
-    <path class="cross" d="M 147.2 -12.8 L 172.8 12.8 M 172.8 -12.8 L 147.2 12.8" stroke-width="2.2"/>
-  </g>
-
   <g class="zone-texts">
     <text class="zone-text" x="335" y="801.4" font-size="20" text-anchor="middle">R1</text><text class="zone-text" x="335" y="725.8" font-size="20" text-anchor="middle">R2</text><text class="zone-text" x="335" y="650.2" font-size="20" text-anchor="middle">R3</text><text class="zone-text" x="335" y="574.6" font-size="20" text-anchor="middle">R4</text>
     <text class="zone-text" x="335" y="465.75" font-size="20" text-anchor="middle">R5</text><text class="zone-text" x="335" y="385" font-size="20" text-anchor="middle">R6</text><text class="zone-text" x="335" y="308.5" font-size="20" text-anchor="middle">R7</text><text class="zone-text" x="335" y="232" font-size="20" text-anchor="middle">R8</text><text class="zone-text" x="335" y="155.5" font-size="20" text-anchor="middle">R9</text><text class="zone-text" x="335" y="83.25" font-size="20" text-anchor="middle">R10</text>

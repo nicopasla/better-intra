@@ -64,6 +64,12 @@ export interface SeatOverlay {
   /** `<a>` per normalised host name. */
   links: Map<string, HTMLAnchorElement>;
   geoms: Map<string, SeatGeom>;
+  /** Raw seat ids (with hyphens) per normalised id, needed by seat reports. */
+  rawIds: Map<string, string>;
+  /** Cross / USB-C badges per normalised seat id. */
+  decorations: Map<string, HTMLElement>;
+  /** Transparent report targets per normalised seat id. */
+  hotspots: Map<string, HTMLButtonElement>;
   /** Normalised ids of seats the map exports with the `seat-newer` class. */
   newerSeats: Set<string>;
   viewBox: { x: number; y: number; w: number; h: number };
@@ -121,6 +127,19 @@ export interface DialogState {
   activeNameDir: "asc" | "desc";
   activeSinceDir: "asc" | "desc";
   activeWifiOnly: boolean;
+
+  /** True when the extension has a Better Intra cloud session. */
+  hasCloudAuth: boolean;
+  /** Report UI is available for this campus + session. */
+  canReport: boolean;
+  /** Bug button armed: the next seat tap opens the report sheet. */
+  reportMode: boolean;
+  /** Lower-case friend logins, used for the blue seat ring. */
+  friends: Set<string>;
+  /** Lower-case login of the current user, when known. */
+  me: string | null;
+  /** Redraws the map/counters after a report was saved. */
+  onSeatReportSaved?: () => void;
 
   settingsInline: boolean;
 }

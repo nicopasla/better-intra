@@ -4,6 +4,8 @@ import { adoptShadowStyles } from "../../../utils/shadow-styles.ts";
 import { clusterLabel, type DialogState } from "./context";
 import { renderTemplate } from "./template";
 import { normalizeSeatId } from "./seats";
+import { blockingSeatCount } from "./reports";
+import { syncReportControls } from "./report-ui";
 import CHEVRON_DOWN_SVG from "../../../assets/svg/chevron-down.svg?raw";
 
 const OVERFLOW_TOLERANCE = 1;
@@ -27,7 +29,9 @@ function clusterCountLabel(
       if (seats.has(normalizeSeatId(host))) taken++;
     }
   }
-  return `${taken}/${seats.size}`;
+  const blocking = state.canReport ? blockingSeatCount(seats.keys()) : 0;
+  const total = Math.max(0, seats.size - blocking);
+  return `${taken}/${total}`;
 }
 
 /** Skip the (forced-layout) probe unless the tabs or their counts changed. */
@@ -167,9 +171,7 @@ export function updateTabsOverflow(state: DialogState, force = false) {
     tabsState.signature = signature;
   }
   requestAnimationFrame(() => {
-    const host = state.shadow.querySelector<HTMLElement>(
-      ".clusters-tabs-host",
-    );
+    const host = state.shadow.querySelector<HTMLElement>(".clusters-tabs-host");
     if (!host) return;
     tabsState.measuredAt = performance.now();
     tabsState.measuredWidth = host.clientWidth;
@@ -187,4 +189,5 @@ export function rerender(state: DialogState) {
   wireTabs(state);
   renderTabsRegion(state);
   updateTabsOverflow(state);
+  syncReportControls(state);
 }

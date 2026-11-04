@@ -9,6 +9,7 @@ import MINIMIZE_SVG from "../../../assets/svg/minimize.svg?raw";
 import SETTINGS_SVG from "../../../assets/svg/settings_gear.svg?raw";
 import X_SVG from "../../../assets/svg/x.svg?raw";
 import RESET_SVG from "../../../assets/svg/reset.svg?raw";
+import BUG_SVG from "../../../assets/svg/bug.svg?raw";
 
 function renderDefaultOptions(state: DialogState) {
   const { clusters, defaultId } = state;
@@ -105,14 +106,46 @@ export function renderTemplate(state: DialogState): TemplateResult {
         margin: 0 auto;
         /* The maps ship light defaults; theme their furniture so it stays
            visible in dark mode (pillars, zones, chairs, walls…). */
-        --zone-fill: color-mix(in oklab, var(--color-base-content) 10%, var(--color-base-100));
-        --zone-stroke: color-mix(in oklab, var(--color-base-content) 25%, var(--color-base-100));
-        --chair-fill: color-mix(in oklab, var(--color-base-content) 22%, var(--color-base-100));
-        --seat-stroke: color-mix(in oklab, var(--color-base-content) 45%, var(--color-base-100));
-        --pillar-fill: color-mix(in oklab, var(--color-base-content) 55%, var(--color-base-100));
-        --wall-fill: color-mix(in oklab, var(--color-base-content) 75%, var(--color-base-100));
-        --slot-fill: color-mix(in oklab, var(--color-accent) 16%, var(--color-base-100));
-        --slot-stroke: color-mix(in oklab, var(--color-base-content) 25%, var(--color-base-100));
+        --zone-fill: color-mix(
+          in oklab,
+          var(--color-base-content) 10%,
+          var(--color-base-100)
+        );
+        --zone-stroke: color-mix(
+          in oklab,
+          var(--color-base-content) 25%,
+          var(--color-base-100)
+        );
+        --chair-fill: color-mix(
+          in oklab,
+          var(--color-base-content) 22%,
+          var(--color-base-100)
+        );
+        --seat-stroke: color-mix(
+          in oklab,
+          var(--color-base-content) 45%,
+          var(--color-base-100)
+        );
+        --pillar-fill: color-mix(
+          in oklab,
+          var(--color-base-content) 55%,
+          var(--color-base-100)
+        );
+        --wall-fill: color-mix(
+          in oklab,
+          var(--color-base-content) 75%,
+          var(--color-base-100)
+        );
+        --slot-fill: color-mix(
+          in oklab,
+          var(--color-accent) 16%,
+          var(--color-base-100)
+        );
+        --slot-stroke: color-mix(
+          in oklab,
+          var(--color-base-content) 25%,
+          var(--color-base-100)
+        );
         --seat-dead: var(--color-error);
       }
       .seat-link {
@@ -138,6 +171,12 @@ export function renderTemplate(state: DialogState): TemplateResult {
       rect[id]:not(.custom-screen) {
         fill: var(--color-base-200) !important;
       }
+      /* Never render the map builder's baked-in "dead seat" crosses. Report
+         crosses live in the HTML overlay and are not affected by this. */
+      #map-area svg .cross,
+      #map-area svg g.crosses {
+        display: none !important;
+      }
       /* Seats the map builder marked as having a newer computer. */
       #map-area svg rect.seat-newer {
         fill: color-mix(
@@ -152,6 +191,81 @@ export function renderTemplate(state: DialogState): TemplateResult {
       .seat-link.seat-newer {
         outline: 2px solid var(--color-success);
         outline-offset: -2px;
+      }
+      /* Friend seated on the map: quiet blue ring above the avatar. */
+      .seat-friend-ring {
+        display: none;
+        position: absolute;
+        inset: 0;
+        box-sizing: border-box;
+        border: 2.5px solid var(--color-info);
+        border-radius: inherit;
+        pointer-events: none;
+        z-index: 2;
+      }
+      .seat-link.seat-friend .seat-friend-ring {
+        display: block;
+      }
+      .seat-hotspot {
+        position: absolute;
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: transparent;
+        pointer-events: none;
+        z-index: 4;
+        -webkit-touch-callout: none;
+      }
+      .seat-hotspot-empty {
+        pointer-events: auto;
+      }
+      .seat-hotspot.report-mode {
+        pointer-events: auto;
+        cursor: crosshair;
+        outline: 2px dashed
+          color-mix(in oklab, var(--color-primary) 65%, transparent);
+        outline-offset: -2px;
+        border-radius: 4px;
+      }
+      .seat-link {
+        -webkit-touch-callout: none;
+      }
+      .seat-decoration {
+        position: absolute;
+        pointer-events: none;
+        z-index: 3;
+      }
+      .seat-cross {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        color: var(--color-error);
+        display: block;
+      }
+      .seat-usbc {
+        position: absolute;
+        right: 6%;
+        bottom: 8%;
+        display: block;
+        width: 38%;
+        min-width: 12px;
+        max-width: 20px;
+        color: var(--color-info);
+      }
+      .seat-usbc svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .active-friend-icon {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-info);
       }
       #map-area svg text,
       #map-area svg tspan {
@@ -387,7 +501,9 @@ export function renderTemplate(state: DialogState): TemplateResult {
                   class="btn btn-sm gap-2 ${showMarkers
                     ? "btn-accent"
                     : "btn-ghost"}"
-                  style="display:${state.markersAvailable ? "" : "none"};${showMarkers
+                  style="display:${state.markersAvailable
+                    ? ""
+                    : "none"};${showMarkers
                     ? "border-color: var(--color-accent)"
                     : ""}"
                   id="markers-btn"
@@ -509,6 +625,25 @@ export function renderTemplate(state: DialogState): TemplateResult {
       <div class="relative flex-1 min-h-0 mx-3 mb-3 mt-2">
         <div id="map-area-clip" class="rounded-lg overflow-hidden h-full">
           <div id="map-area" class="h-full"></div>
+        </div>
+        <button
+          id="report-btn"
+          type="button"
+          class="btn btn-square btn-sm btn-neutral absolute bottom-3 left-3 z-20 border border-base-300 bg-base-100/80 backdrop-blur"
+          style="display:none"
+          aria-label="Report a computer issue"
+          aria-pressed="false"
+          data-tip="Report a computer issue"
+          data-tip-size="14px"
+        >
+          ${unsafeHTML(BUG_SVG.replace("<svg", '<svg width="18" height="18"'))}
+        </button>
+        <div
+          id="report-hint"
+          class="absolute bottom-14 left-3 z-20 rounded-lg bg-base-100/90 px-2 py-1 text-[11px] font-medium shadow backdrop-blur"
+          style="display:none"
+        >
+          Tap a seat to report
         </div>
         <button
           id="updated-badge"

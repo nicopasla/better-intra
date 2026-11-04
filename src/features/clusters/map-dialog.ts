@@ -32,6 +32,9 @@ import {
   maybeStartClusterDialogTour,
   startClusterDialogTour,
 } from "./map-dialog/tour.ts";
+import { hasCloudSession, SEAT_REPORT_CAMPUS } from "./map-dialog/reports.ts";
+import { loadClusterFriends } from "./map-dialog/friends.ts";
+import { setReportMode } from "./map-dialog/report-ui.ts";
 
 export {
   applyPseudoCluster,
@@ -69,11 +72,14 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
 
   const detectedCampus = (await getConfig("CLUSTERS_CAMPUS")) || "";
 
-  const [presetKeyRaw, defaultId, showMarkersVal] = await Promise.all([
-    getConfig("PROFILE_THEME_PRESET"),
-    getConfig("CLUSTERS_DEFAULT_ID"),
-    getConfig("CLUSTERS_SHOW_MARKERS"),
-  ]);
+  const [presetKeyRaw, defaultId, showMarkersVal, cloudAuth, clusterFriends] =
+    await Promise.all([
+      getConfig("PROFILE_THEME_PRESET"),
+      getConfig("CLUSTERS_DEFAULT_ID"),
+      getConfig("CLUSTERS_SHOW_MARKERS"),
+      hasCloudSession(),
+      loadClusterFriends().catch(() => ({ list: new Set<string>(), me: null })),
+    ]);
   const presetKey = (presetKeyRaw as string) || "dark";
 
   let activeSortMode: ActiveSortMode = ACTIVE_SORT_DEFAULT.mode;
@@ -133,6 +139,7 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
   if (!activeCampusId && campusOptions.length > 0) {
     activeCampusId = campusOptions[0].id;
   }
+  const canReport = cloudAuth && activeCampusId === SEAT_REPORT_CAMPUS;
 
   const { clusters, hasMarkers } = await buildClusters(activeCampusId);
   const campusExits = (await getCampusExits(activeCampusId)) ?? null;
@@ -217,8 +224,14 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
     activeNameDir,
     activeSinceDir,
     activeWifiOnly,
+    hasCloudAuth: cloudAuth,
+    canReport,
+    reportMode: false,
+    friends: clusterFriends.list,
+    me: clusterFriends.me,
     settingsInline: false,
   };
+  state.onSeatReportSaved = () => reapplyOccupancy(state);
 
   let isMaximized = false;
 
@@ -359,6 +372,13 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
     if (tourBtn && path.includes(tourBtn)) {
       if (settingsMenu) settingsMenu.style.display = "none";
       void startClusterDialogTour(state);
+      return;
+    }
+    const reportBtn = path.find(
+      (el) => el instanceof HTMLElement && el.id === "report-btn",
+    );
+    if (reportBtn) {
+      setReportMode(state, !state.reportMode);
       return;
     }
     if (

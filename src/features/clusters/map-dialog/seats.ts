@@ -34,7 +34,21 @@ function isLocalHref(href: string): boolean {
   return v === "" || v.startsWith("#") || /^data:image\//i.test(v);
 }
 
+/**
+ * The map builder ships hand-maintained crossed seats ("no computer" / "out of
+ * order"). Those are stale and disagree with the shared reports, so the report
+ * layer owns breakage now. Matches the PWA's `stripStaticCrosses`.
+ */
+export function removeStaticCrosses(root: Document | Element): void {
+  // The builder uses `path.cross` today, but a map may ship the same mark as a
+  // line/polygon. Remove every element that carries the `cross` class token.
+  root
+    .querySelectorAll('g.crosses, [class~="cross"]')
+    .forEach((el) => el.remove());
+}
+
 export function sanitizeAndParseSeats(svgDoc: Document): Map<string, SeatPos> {
+  removeStaticCrosses(svgDoc);
   for (const el of svgDoc.querySelectorAll("*")) {
     const tagName = el.tagName.toLowerCase();
     if (FORBIDDEN_TAGS.has(tagName)) {

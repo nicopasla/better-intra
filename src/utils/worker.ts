@@ -6,6 +6,7 @@ export interface WorkerFetchOptions {
   body?: unknown;
   headers?: Record<string, string>;
   signal?: AbortSignal;
+  cache?: RequestCache;
 }
 
 /**
@@ -17,7 +18,7 @@ export function workerFetch(
   path: string,
   options: WorkerFetchOptions = {},
 ): Promise<Response> {
-  const { token, method, body, headers, signal } = options;
+  const { token, method, body, headers, signal, cache } = options;
   const finalHeaders: Record<string, string> = { ...headers };
   if (token) finalHeaders.Authorization = `Bearer ${token}`;
   if (body !== undefined) finalHeaders["Content-Type"] = "application/json";
@@ -27,5 +28,6 @@ export function workerFetch(
     headers: finalHeaders,
     body: body !== undefined ? JSON.stringify(body) : undefined,
     signal,
+    cache,
   });
 }

@@ -8,7 +8,12 @@ import {
   setCachedCluster,
   scrapeCampusSVGUrls,
 } from "./cache";
-import { sanitizeAndParseSeats, getSvgTitle, applyMarkers } from "./seats";
+import {
+  sanitizeAndParseSeats,
+  getSvgTitle,
+  applyMarkers,
+  removeStaticCrosses,
+} from "./seats";
 import { applyExitSigns } from "./exit-markers";
 import { renderActiveList } from "./render";
 import { loadOccupancy, reapplyOccupancy } from "./occupancy";
@@ -16,6 +21,8 @@ import { whenIdle } from "./helpers";
 import { updateActiveSortControls } from "./active-sort";
 import { clearSeatGlow } from "./glow";
 import { rebuildHeader, updateCampusTime, updateDefaultSelect } from "./header";
+import { syncReportControls } from "./report-ui";
+import { SEAT_REPORT_CAMPUS } from "./reports";
 import { getCampusFlag } from "../../profile/campus-flags.ts";
 
 function syncMarkersButton(state: DialogState) {
@@ -236,6 +243,8 @@ export async function loadCluster(
 ) {
   state.activeCluster = cluster;
   state.zoomLevel = 1.0;
+  state.reportMode = false;
+  syncReportControls(state);
   clearSeatGlow(state);
   const isOverview = cluster.id === "active";
   const badge = state.shadow.getElementById("seat-count-badge");
@@ -281,7 +290,7 @@ export async function loadCluster(
 
   if (cluster.id === "active") {
     updateActiveSortControls(state);
-    renderActiveList(state.shadow, state.activeUsers);
+    renderActiveList(state, state.activeUsers);
     return;
   }
 
@@ -305,11 +314,15 @@ export async function loadCluster(
 
     mapArea.style.position = "relative";
     const imported = document.importNode(svgDoc.documentElement, true);
+    removeStaticCrosses(imported);
     const centeringWrap = document.createElement("div");
     centeringWrap.style.cssText =
       "display:flex;align-items:flex-start;min-height:100%;padding-top:2rem;";
     centeringWrap.appendChild(imported);
     mapArea.replaceChildren(centeringWrap);
+    // Belt and braces: also clean the live tree in case a cached document or a
+    // builder version slipped a cross through the parse-time cleanup.
+    removeStaticCrosses(mapArea);
     const svgEl = mapArea.querySelector("svg") as SVGSVGElement | null;
     const zp = state.shadow.querySelector(".zoom-pct") as HTMLElement | null;
     if (zp) zp.textContent = "100%";
@@ -384,6 +397,9 @@ export async function loadCampus(
   const { shadow } = state;
   state.activeCampusId = campusId;
   state.zoomLevel = 1.0;
+  state.canReport = state.hasCloudAuth && campusId === SEAT_REPORT_CAMPUS;
+  state.reportMode = false;
+  syncReportControls(state);
   state.loadId++;
   // If another campus is selected (or the dialog closed) while this one is
   // loading, the stale result must not overwrite state nor be cached under the

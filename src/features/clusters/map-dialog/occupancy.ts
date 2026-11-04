@@ -17,6 +17,9 @@ import { applySeatGlow } from "./glow";
 import { rebuildHeader } from "./header";
 import { updateTabsOverflow } from "./tabs";
 import { loadCluster } from "./map-load";
+import { blockingSeatCount, loadSeatReports } from "./reports";
+import { syncReportControls } from "./report-ui";
+import { loadClusterFriends } from "./friends";
 
 async function fetchOccupancy(
   campusId: string,
@@ -87,14 +90,16 @@ export function applyOccupancy(
     renderSeatOverlays(state, workCopy);
   }
   if (activeCluster.id === "active") {
-    renderActiveList(shadow, state.activeUsers);
+    renderActiveList(state, state.activeUsers);
   }
   if (state.flashingSeat) {
     applySeatGlow(state, state.flashingSeat);
   }
   const badge = shadow.getElementById("seat-count-badge");
   if (badge) {
-    const total = positions?.size ?? 0;
+    const blocking =
+      state.canReport && positions ? blockingSeatCount(positions.keys()) : 0;
+    const total = Math.max(0, (positions?.size ?? 0) - blocking);
     let taken = 0;
     for (const host of workCopy.keys()) {
       if (positions?.has(normalizeSeatId(host))) taken++;
@@ -102,7 +107,7 @@ export function applyOccupancy(
     if (total > 0) {
       const free = total - taken;
       badge.textContent = `${taken} / ${total}`;
-      badge.title = `${taken} taken, ${free} free · ${total} total`;
+      badge.title = `${taken} taken, ${free} free · ${total} usable`;
     } else {
       badge.textContent = `- / -`;
     }
@@ -118,7 +123,9 @@ export function applyOccupancy(
     for (const host of occupiedSeats) {
       if (seats.has(host)) taken++;
     }
-    clusterCounts.set(clusterId, { taken, total: seats.size });
+    const blocking = state.canReport ? blockingSeatCount(seats.keys()) : 0;
+    const total = Math.max(0, seats.size - blocking);
+    clusterCounts.set(clusterId, { taken, total });
   }
   for (const tab of shadow.querySelectorAll<HTMLElement>("[data-cluster-id]")) {
     const id = tab.dataset.clusterId;
@@ -177,7 +184,7 @@ export function applyOccupancy(
     } else {
       const text = `${sumTaken} / ${sumTotal}`;
       if (totalsBadge.textContent !== text) totalsBadge.textContent = text;
-      totalsBadge.title = "Total taken / Total seats";
+      totalsBadge.title = "Total taken / Total usable seats";
       if (sumTotal > 0 || sumTaken > 0) {
         totalsBadge.style.display = "";
       } else {
@@ -193,10 +200,21 @@ export async function loadOccupancy(state: DialogState, signal?: AbortSignal) {
   const reloadIcon = state.shadow.getElementById("reload-icon");
   if (reloadIcon) reloadIcon.classList.add("spinning");
   try {
-    const occupancy = await fetchOccupancy(state.activeCampusId, signal);
+    const [occupancy, reportsOk, friends] = await Promise.all([
+      fetchOccupancy(state.activeCampusId, signal),
+      state.canReport ? loadSeatReports() : Promise.resolve(false),
+      loadClusterFriends().catch(() => null),
+    ]);
+    if (friends) {
+      state.friends = friends.list;
+      state.me = friends.me;
+    }
+    // A rejected session (or a failed first read) hides the report layer.
+    if (state.canReport && !reportsOk) state.canReport = false;
     state.occupancyCache = occupancy;
     state.lastUpdated = Date.now();
     applyOccupancy(state, occupancy);
+    syncReportControls(state);
   } finally {
     if (reloadIcon) reloadIcon.classList.remove("spinning");
   }

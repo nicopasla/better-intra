@@ -1,10 +1,12 @@
-import type {
-  DialogState,
-  SeatGeom,
-  SeatOverlay,
-} from "./context";
+import { html, render } from "lit-html";
+import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
+import USBC_SVG from "../../../assets/svg/usbc.svg?raw";
+import FRIENDS_SVG from "../../../assets/svg/friends.svg?raw";
+import type { DialogState, SeatGeom, SeatOverlay } from "./context";
 import { keyOf } from "./context";
 import { normalizeSeatId } from "./seats";
+import { blockingSeatReasons, getComponentStatus } from "./reports";
+import { attachSeatActions } from "./seat-actions";
 
 const PROFILE_BASE = "https://profile.intra.42.fr/users";
 
@@ -167,17 +169,31 @@ function ensureSeatOverlay(state: DialogState): SeatOverlay | null {
     if (id) newerSeats.add(normalizeSeatId(id));
   }
 
+  // Geometry keys are normalized (hyphens stripped); reports and links use the
+  // raw id (e.g. `fu-r1-p1`), so keep a mapping.
+  const rawIds = new Map<string, string>();
+  for (const el of svg.querySelectorAll("[id]")) {
+    const raw = (el.getAttribute("id") || "").trim().toLowerCase();
+    if (!raw) continue;
+    const key = normalizeSeatId(raw);
+    if (!rawIds.has(key)) rawIds.set(key, raw);
+  }
+
   const overlay: SeatOverlay = {
     mapArea,
     svg,
     container,
     links: new Map(),
     geoms,
+    rawIds,
+    decorations: new Map(),
+    hotspots: new Map(),
     newerSeats,
     viewBox,
     baseScale,
   };
   state.overlay = overlay;
+  attachSeatActions(state, overlay);
   return overlay;
 }
 
@@ -207,6 +223,14 @@ function createSeatLink(
   avatar.loading = "lazy";
   avatar.decoding = "async";
   link.appendChild(avatar);
+
+  // Friend ring as its own layer above the avatar. An inset box-shadow would be
+  // painted under the <img>, which is why it looked invisible.
+  const ring = document.createElement("span");
+  ring.className = "seat-friend-ring";
+  ring.setAttribute("aria-hidden", "true");
+  link.appendChild(ring);
+
   return link;
 }
 
@@ -276,31 +300,171 @@ export function renderSeatOverlays(
   const originY = svgRect.top - mapRect.top + overlay.mapArea.scrollTop;
   overlay.container.style.transform = `translate(${originX}px, ${originY}px) scale(${zoom})`;
 
-  const seen = new Set<string>();
+  const occupied = new Set<string>();
+  const reportHosts = new Map<string, string>();
   for (const [host, seat] of occupancy) {
     const hostKey = normalizeSeatId(host);
+    occupied.add(hostKey);
+    reportHosts.set(hostKey, host.trim().toLowerCase());
     const geom = overlay.geoms.get(hostKey);
     if (!geom) continue;
-    seen.add(hostKey);
     let link = overlay.links.get(hostKey);
     if (!link) {
       link = createSeatLink(geom, overlay.baseScale, hostKey);
       overlay.links.set(hostKey, link);
       overlay.container.appendChild(link);
     }
+    // Reports and friend matching need the real host id, not the normalized
+    // geometry key.
+    const rawHost = host.trim().toLowerCase();
+    link.dataset.reportHost = rawHost;
     link.classList.toggle("seat-newer", overlay.newerSeats.has(hostKey));
+
+    const login = seat.login.trim().toLowerCase();
+    const isFriend =
+      Boolean(login) && login !== state.me && state.friends.has(login);
+    link.classList.toggle("seat-friend", isFriend);
+
     if (link.dataset.login === seat.login) continue;
     updateSeatLink(link, seat);
   }
 
   for (const [hostKey, link] of [...overlay.links]) {
-    if (seen.has(hostKey)) continue;
+    if (occupied.has(hostKey)) continue;
     link.remove();
     overlay.links.delete(hostKey);
   }
+
+  renderSeatDecorations(state, overlay, occupied, reportHosts);
+  syncSeatHotspots(state, overlay, occupied);
 }
 
-export function renderActiveList(shadow: ShadowRoot, users: OccupancyEntry[]) {
+/** Draws the report cross and the USB-C glyph for the current map. */
+function renderSeatDecorations(
+  state: DialogState,
+  overlay: SeatOverlay,
+  occupied: Set<string>,
+  reportHosts: Map<string, string>,
+): void {
+  if (!state.canReport) {
+    for (const decoration of overlay.decorations.values()) decoration.remove();
+    overlay.decorations.clear();
+    return;
+  }
+  const scale = overlay.baseScale;
+  for (const [key, geom] of overlay.geoms) {
+    // Match reports on the exact host id (not the normalized geometry key), so
+    // two seats can never share a report through separator normalization. For
+    // occupied seats prefer the API's host, which is what the report sheet
+    // reads and writes; it can differ in formatting from the SVG id.
+    const host = reportHosts.get(key) ?? overlay.rawIds.get(key) ?? key;
+    // A cross is strictly a Power/Network report. Using the explicit reasons
+    // also makes the rule independent of the severity catalog.
+    const reasons = blockingSeatReasons(host);
+    const blocking = reasons.length > 0;
+    const usbc =
+      !occupied.has(key) &&
+      getComponentStatus(host, "usbc")?.status === "works";
+    const existing = overlay.decorations.get(key);
+
+    if (!blocking && !usbc) {
+      if (existing) {
+        existing.remove();
+        overlay.decorations.delete(key);
+      }
+      continue;
+    }
+
+    let decoration = existing;
+    if (!decoration) {
+      decoration = document.createElement("div");
+      decoration.className = "seat-decoration";
+      decoration.dataset.seat = key;
+      overlay.container.appendChild(decoration);
+      overlay.decorations.set(key, decoration);
+    }
+
+    // The cross node only exists while there is a Power/Network reason. This is
+    // structural, so a USB-C-only seat can never render a cross.
+    const content = `${blocking ? "cross" : ""}${usbc ? "usbc" : ""}`;
+    if (decoration.dataset.content !== content) {
+      decoration.dataset.content = content;
+      render(
+        html`${blocking
+          ? html`<svg
+              class="seat-cross"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M18 18 L82 82 M82 18 L18 82"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                vector-effect="non-scaling-stroke"
+              />
+            </svg>`
+          : ""}
+        ${usbc
+          ? html`<span class="seat-usbc">${unsafeHTML(USBC_SVG)}</span>`
+          : ""}`,
+        decoration,
+      );
+    }
+
+    decoration.dataset.host = host;
+    placeSeatBox(decoration, geom, scale);
+  }
+}
+
+/** Transparent buttons over every seat, used by report mode and long-press. */
+function syncSeatHotspots(
+  state: DialogState,
+  overlay: SeatOverlay,
+  occupied: Set<string>,
+): void {
+  const scale = overlay.baseScale;
+  for (const [key, geom] of overlay.geoms) {
+    const host = overlay.rawIds.get(key) ?? key;
+    let hotspot = overlay.hotspots.get(key);
+    if (!hotspot) {
+      hotspot = document.createElement("button");
+      hotspot.type = "button";
+      hotspot.className = "seat-hotspot";
+      hotspot.dataset.reportHost = host;
+      hotspot.setAttribute("aria-label", `Report an issue for ${host}`);
+      overlay.container.appendChild(hotspot);
+      overlay.hotspots.set(key, hotspot);
+    } else if (hotspot.dataset.reportHost !== host) {
+      hotspot.dataset.reportHost = host;
+      hotspot.setAttribute("aria-label", `Report an issue for ${host}`);
+    }
+    hotspot.classList.toggle("seat-hotspot-empty", !occupied.has(key));
+    hotspot.classList.toggle("report-mode", state.reportMode);
+    // Without a cloud session the report targets must not swallow clicks.
+    hotspot.style.pointerEvents = state.canReport ? "" : "none";
+    placeSeatBox(hotspot, geom, scale);
+  }
+}
+
+function placeSeatBox(el: HTMLElement, geom: SeatGeom, scale: number): void {
+  const width = geom.w * scale;
+  const height = geom.h * scale;
+  el.style.left = `${geom.cx * scale - width / 2}px`;
+  el.style.top = `${geom.cy * scale - height / 2}px`;
+  el.style.width = `${width}px`;
+  el.style.height = `${height}px`;
+  el.style.transform = geom.rotationDeg ? `rotate(${geom.rotationDeg}deg)` : "";
+  if (geom.round) el.style.borderRadius = "50%";
+}
+
+export function renderActiveList(
+  state: DialogState,
+  users: OccupancyEntry[],
+): void {
+  const { shadow } = state;
   const mapArea = shadow.getElementById("map-area");
   if (!mapArea) return;
   mapArea.style.position = "";
@@ -340,6 +504,7 @@ export function renderActiveList(shadow: ShadowRoot, users: OccupancyEntry[]) {
       "text-align:center;",
       "text-decoration:none;",
       "min-width:0;",
+      "position:relative;",
     ].join("");
     card.addEventListener("mouseenter", () => {
       card.style.background = "var(--color-base-300)";
@@ -378,6 +543,31 @@ export function renderActiveList(shadow: ShadowRoot, users: OccupancyEntry[]) {
     card.appendChild(avatar);
     card.appendChild(login);
     card.appendChild(since);
+
+    const isFriend = (() => {
+      const loginKey = user.login.trim().toLowerCase();
+      return Boolean(
+        loginKey && loginKey !== state.me && state.friends.has(loginKey),
+      );
+    })();
+    if (isFriend) {
+      avatar.style.boxShadow = "0 0 0 2.5px var(--color-info)";
+      const friend = document.createElement("span");
+      friend.className = "active-friend-icon";
+      friend.title = "Friend";
+      friend.setAttribute("aria-label", "Friend");
+      render(
+        unsafeHTML(
+          FRIENDS_SVG.replace(
+            "<svg",
+            '<svg fill="currentColor" width="13" height="13"',
+          ),
+        ),
+        friend,
+      );
+      card.appendChild(friend);
+    }
+
     grid.appendChild(card);
   }
   mapArea.replaceChildren(grid);

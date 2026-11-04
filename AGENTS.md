@@ -86,7 +86,7 @@ The version is injected at build time as `__APP_VERSION__` (see `better-intra-pw
 Fetch-only Worker (no Durable Objects). Storage:
 
 - **KV `BETTER_INTRA_KV`** — user blobs (session tokens, settings, encrypted 42 token), app token cache, project map, friend IDs cache, cluster SVG cache, calendar tokens, announcement, stats cache.
-- **D1 `better_intra_d1`** — eval tracking (`users.evals_enabled`, `eval_users`, `eval_states`, `eval_corrected`) plus caches (`online_cache`, `profile_stats_cache`, `logtime_history`, `calendar_ics`, `themes`, `campus_locations`, `cluster_occupancy_cache`, `projects`, `subjects`, …) and the hand-curated `custom_badges`. See `schema.sql`.
+- **D1 `better_intra_d1`** — eval tracking (`users.evals_enabled`, `eval_users`, `eval_states`, `eval_corrected`), subject notifications (`subject_versions`, `user_ongoing_projects`) plus caches (`online_cache`, `profile_stats_cache`, `logtime_history`, `calendar_ics`, `themes`, `campus_locations`, `cluster_occupancy_cache`, `projects`, …) and the hand-curated `custom_badges`. See `schema.sql`.
 - **R2 `better_intra_images`** — uploaded images.
 
 ### Custom profile badges
@@ -123,9 +123,11 @@ Secrets include `CLIENT_SECRET`, `TOKEN_ENCRYPTION_KEY`, `VAPID_PUBLIC_KEY`, `VA
 - `main` → `handleMainCron` fetches 42 API `/v2/me/scale_teams`, detects transitions (`null → booked → revealed`), sends Web Push notifications, and persists state in D1 `eval_states` / `eval_corrected`.
 - `tick` → `handleRevealCatchup` + `handleTokenRefreshSweep`.
 
-Event reminders are the exception: `triggers.crons` is `["* * * * *"]` and `scheduled()` runs `handleEventReminders`, because that job only reads D1 (`calendar_ics`) and sends Web Push — no 42 API calls.
+Event reminders and subject updates are the exception: `triggers.crons` is `["* * * * *"]` and `scheduled()` runs `handleEventReminders` + `handleSubjectNotifications`, because both only read D1/KV and send Web Push — no 42 API calls.
 
 `handleEventReminders` pushes "Event in 15 min" for events in the user's `calendar_ics` row (the ICS the extension syncs). Dedupe lives in KV (`EVENT_NOTIFIED_<hash>`, 7-day TTL) so no D1 migration is needed; `EVENT_NOTIFY_SOON` in the settings blob opts out (missing = on).
+
+Subject updates are detected by the extension, which reads the subject PDF's real `Last-Modified`/`/ModDate` on project pages and reports it to `POST /api/v1/private/subjects/report`. The worker stores the version in `subject_versions` (first report = baseline, only a newer date queues a push) and `handleSubjectNotifications` sends it to users whose `user_ongoing_projects` contains the slug (written by `/me`). `SUBJECT_NOTIFY_UPDATED` in the settings blob opts out (missing = on).
 
 The extension makes no 42 API calls for evals.
 

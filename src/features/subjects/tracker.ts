@@ -1,6 +1,7 @@
 import { getConfig } from "../../config.ts";
 import { renderSubjectBadge } from "./ui.ts";
 import { subjectBadgeInfo, type LocalSubjectState } from "./badge.ts";
+import { reportSubjectVersion } from "./report.ts";
 
 const CHECK_COOLDOWN_MS = 15 * 60 * 1000;
 const STATE_VERSION = 3;
@@ -96,6 +97,14 @@ export async function initSubjectTracker(): Promise<void> {
   const local = state[slug] ?? {};
   if (local.checkedAt && Date.now() - local.checkedAt < CHECK_COOLDOWN_MS) {
     maybeRenderBadge(local, anchor);
+    // Retry a report that failed on the previous visit; the worker dedupes.
+    if (local.versionDate) {
+      void reportSubjectVersion({
+        slug,
+        url: anchor.href,
+        modifiedAt: local.versionDate,
+      });
+    }
     return;
   }
 
@@ -109,6 +118,14 @@ export async function initSubjectTracker(): Promise<void> {
   await chrome.storage.local.set({
     SUBJECT_TRACKER_STATE: { ...state, [slug]: nextLocal },
   });
+
+  if (modifiedAt) {
+    void reportSubjectVersion({
+      slug,
+      url: anchor.href,
+      modifiedAt,
+    });
+  }
 
   maybeRenderBadge(nextLocal, anchor);
 }

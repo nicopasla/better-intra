@@ -6,11 +6,6 @@
       "timezone": "Europe/Paris"
     },
     {
-      "id": "7",
-      "name": "Fremont",
-      "timezone": "America/Los_Angeles"
-    },
-    {
       "id": "9",
       "name": "Lyon",
       "timezone": "Europe/Paris"
@@ -21,11 +16,6 @@
       "timezone": "Europe/Brussels"
     },
     {
-      "id": "13",
-      "name": "Helsinki",
-      "timezone": "Europe/Helsinki"
-    },
-    {
       "id": "14",
       "name": "Amsterdam",
       "timezone": "Europe/Amsterdam"
@@ -34,11 +24,6 @@
       "id": "16",
       "name": "Khouribga",
       "timezone": "Africa/Casablanca"
-    },
-    {
-      "id": "17",
-      "name": "Moscow",
-      "timezone": "Europe/Moscow"
     },
     {
       "id": "20",
@@ -56,29 +41,9 @@
       "timezone": "Europe/Madrid"
     },
     {
-      "id": "23",
-      "name": "Kazan",
-      "timezone": "Europe/Moscow"
-    },
-    {
-      "id": "25",
-      "name": "Quebec",
-      "timezone": "America/Toronto"
-    },
-    {
       "id": "26",
       "name": "Tokyo",
       "timezone": "Asia/Tokyo"
-    },
-    {
-      "id": "28",
-      "name": "Rio de Janeiro",
-      "timezone": "America/Sao_Paulo"
-    },
-    {
-      "id": "29",
-      "name": "Seoul",
-      "timezone": "Asia/Seoul"
     },
     {
       "id": "30",
@@ -104,11 +69,6 @@
       "id": "35",
       "name": "Amman",
       "timezone": "Asia/Amman"
-    },
-    {
-      "id": "36",
-      "name": "Adelaide",
-      "timezone": "Australia/Adelaide"
     },
     {
       "id": "37",

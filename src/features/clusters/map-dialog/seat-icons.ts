@@ -1,4 +1,5 @@
-import type { SeatComponentKey } from "./components";
+import { escapeHtml } from "../../../utils/tooltip.ts";
+import { SEAT_COMPONENT_MAP, type SeatComponentKey } from "./components";
 
 export interface SeatComponentIcons {
   /** Normal icon: the component is working. */
@@ -64,3 +65,29 @@ export const SEAT_COMPONENT_ICONS: Record<
     ),
   },
 };
+
+/**
+ * Rich tooltip for the non-blocking issue triangle: one row per broken part,
+ * with the same crossed icon the report sheet uses.
+ */
+export function seatIssueTooltipHtml(
+  components: SeatComponentKey[],
+): string {
+  if (components.length === 0) return "";
+  const rows = components.map((key) => {
+    const label = SEAT_COMPONENT_MAP.get(key)?.label ?? key;
+    const icon = SEAT_COMPONENT_ICONS[key]?.off ?? "";
+    const sized = icon.replace("<svg", '<svg width="14" height="14"');
+    return (
+      `<span style="display:flex;align-items:center;gap:6px;white-space:nowrap">` +
+      `<span style="display:flex;width:14px;height:14px;flex:0 0 auto;color:#f59e0b">${sized}</span>` +
+      `<span>${escapeHtml(label)}</span></span>`
+    );
+  });
+  return (
+    `<span style="display:flex;flex-direction:column;gap:4px">` +
+    `<span style="font-weight:700;text-align:center">Broken</span>` +
+    rows.join("") +
+    `</span>`
+  );
+}

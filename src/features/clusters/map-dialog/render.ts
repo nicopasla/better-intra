@@ -5,7 +5,7 @@ import FRIENDS_SVG from "../../../assets/svg/friends.svg?raw";
 import type { DialogState, SeatGeom, SeatOverlay } from "./context";
 import { keyOf } from "./context";
 import { normalizeSeatId } from "./seats";
-import { SEAT_COMPONENT_MAP } from "./components";
+import { seatIssueTooltipHtml } from "./seat-icons";
 import {
   blockingSeatReasons,
   getComponentStatus,
@@ -381,9 +381,6 @@ function renderSeatDecorations(
     // whose only issues are non-blocking (keyboard, mouse scroll, audio).
     const issues = blocking ? [] : getMinorSeatIssues(host);
     const issueKey = issues.join("+");
-    const issueTip = issues
-      .map((component) => SEAT_COMPONENT_MAP.get(component)?.label ?? component)
-      .join(" / ");
     const existing = overlay.decorations.get(key);
 
     if (!blocking && !usbc && !issueKey) {
@@ -440,7 +437,7 @@ function renderSeatDecorations(
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
-              data-tip="Broken: ${issueTip}"
+              data-tip-html="${seatIssueTooltipHtml(issues)}"
               data-tip-size="12px"
               aria-hidden="true"
             >

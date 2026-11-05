@@ -182,3 +182,17 @@
   --depth: 0;
   --noise: 0;
 }
+
+/* Lemonade's stock status tokens are oklch(86% .047) — extremely pale and
+   low-chroma, so info/success/warning/error read as translucent on the light
+   base. Give them solid, readable equivalents for the extension's panels. */
+[data-theme="lemonade"] {
+  --color-info: #2563eb;
+  --color-info-content: #ffffff;
+  --color-success: #2e9e5b;
+  --color-success-content: #052e16;
+  --color-warning: #b45309;
+  --color-warning-content: #ffffff;
+  --color-error: #d9453f;
+  --color-error-content: #ffffff;
+}

@@ -130,6 +130,7 @@ describe("sanitizeVisualUrls", () => {
       avatarPosX: 40,
       avatarPosY: 60,
       avatarScale: 120,
+      avatarShape: "round",
       badgeBg: "#abcdef",
       nameAlign: "right",
       usernameBadge: {

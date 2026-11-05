@@ -33,6 +33,59 @@ interface EvalStatsData {
   global: { total: number; failed: number; successPercentage: number | null };
 }
 
+interface ProfileStatsData {
+  roulette: RouletteEntry[];
+  evalStats: EvalStatsData | null;
+}
+
+interface ProfileStatsCacheEntry extends ProfileStatsData {
+  /** When the entry was stored (ms). */
+  at: number;
+}
+
+type ProfileStatsCache = Record<string, ProfileStatsCacheEntry>;
+
+const STATS_CACHE_KEY = "PROFILE_STATS_CACHE";
+/** Revalidate the stored copy at most this often; the worker caches for 6 h. */
+const STATS_REVALIDATE_MS = 60 * 60_000;
+/** Keep the cache small: profiles are visited, not enumerated. */
+const STATS_CACHE_MAX = 10;
+
+/** In-flight requests per target so repeated init passes share one call. */
+const inflightStats = new Map<string, Promise<ProfileStatsData | null>>();
+
+async function readStatsCache(
+  login: string,
+): Promise<ProfileStatsCacheEntry | null> {
+  try {
+    const stored = await chrome.storage.local.get(STATS_CACHE_KEY);
+    const cache = stored[STATS_CACHE_KEY] as ProfileStatsCache | undefined;
+    return cache?.[login.toLowerCase()] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function writeStatsCache(
+  login: string,
+  stats: ProfileStatsData,
+): Promise<void> {
+  try {
+    const stored = await chrome.storage.local.get(STATS_CACHE_KEY);
+    const cache = (stored[STATS_CACHE_KEY] as ProfileStatsCache) ?? {};
+    cache[login.toLowerCase()] = { at: Date.now(), ...stats };
+    const pruned: ProfileStatsCache = {};
+    for (const [key, entry] of Object.entries(cache)
+      .sort(([, a], [, b]) => b.at - a.at)
+      .slice(0, STATS_CACHE_MAX)) {
+      pruned[key] = entry;
+    }
+    await chrome.storage.local.set({ [STATS_CACHE_KEY]: pruned });
+  } catch {
+    /* quota / private mode */
+  }
+}
+
 function formatRouletteDate(dateStr: string): string {
   const d = new Date(dateStr);
   const day = String(d.getDate()).padStart(2, "0");
@@ -96,39 +149,50 @@ function getTargetLogin(): string | null {
   return null;
 }
 
-async function fetchProfileStats(targetLogin: string): Promise<{
-  roulette: RouletteEntry[];
-  evalStats: EvalStatsData | null;
-}> {
-  const cloudLogin = await getCloudLogin();
-  const sessionToken = await getConfig("CLOUD_TOKEN");
-  if (!cloudLogin || !sessionToken) return { roulette: [], evalStats: null };
+async function fetchProfileStats(
+  targetLogin: string,
+): Promise<ProfileStatsData | null> {
+  const key = targetLogin.toLowerCase();
+  const running = inflightStats.get(key);
+  if (running) return running;
 
-  const hashedLogin = await hashLogin(cloudLogin);
+  const load = (async (): Promise<ProfileStatsData | null> => {
+    try {
+      const cloudLogin = await getCloudLogin();
+      const sessionToken = await getConfig("CLOUD_TOKEN");
+      if (!cloudLogin || !sessionToken) return null;
 
-  try {
-    const params = new URLSearchParams({
-      login: hashedLogin,
-      target: targetLogin,
-      force: "1",
-    });
-    const res = await workerFetch(`/api/v1/private/profile-stats?${params}`, {
-      token: sessionToken,
-    });
-    if (!res.ok) return { roulette: [], evalStats: null };
+      const hashedLogin = await hashLogin(cloudLogin);
 
-    const data = (await res.json()) as {
-      roulette: { entries: RouletteEntry[] };
-      evalStats: EvalStatsData;
-    };
+      const params = new URLSearchParams({
+        login: hashedLogin,
+        target: targetLogin,
+      });
+      const res = await workerFetch(`/api/v1/private/profile-stats?${params}`, {
+        token: sessionToken,
+      });
+      if (!res.ok) return null;
 
-    return {
-      roulette: data.roulette?.entries || [],
-      evalStats: data.evalStats || null,
-    };
-  } catch {
-    return { roulette: [], evalStats: null };
-  }
+      const data = (await res.json()) as {
+        roulette?: { entries?: RouletteEntry[] };
+        evalStats?: EvalStatsData | null;
+      };
+
+      const stats: ProfileStatsData = {
+        roulette: data.roulette?.entries || [],
+        evalStats: data.evalStats || null,
+      };
+      await writeStatsCache(targetLogin, stats);
+      return stats;
+    } catch {
+      return null;
+    } finally {
+      inflightStats.delete(key);
+    }
+  })();
+
+  inflightStats.set(key, load);
+  return load;
 }
 
 function buildRouletteSection(
@@ -575,12 +639,12 @@ export async function initRouletteStats() {
 
   rouletteStatsPolling = true;
 
-  // Fire the worker request right away: it must not wait for the intra grid to
-  // be in the DOM, otherwise the card can only be filled after both are done.
-  const statsPromise = fetchProfileStats(targetLogin).catch(() => ({
-    roulette: [] as RouletteEntry[],
-    evalStats: null as EvalStatsData | null,
-  }));
+  // Serve the stored copy first (instant card, no request on every reload),
+  // then refresh in the background only when it has gone stale.
+  const cached = await readStatsCache(targetLogin);
+  const statsPromise = cached
+    ? Promise.resolve<ProfileStatsData | null>(cached)
+    : fetchProfileStats(targetLogin);
 
   let attempts = 0;
   const cardReady = () => {
@@ -597,11 +661,30 @@ export async function initRouletteStats() {
       rouletteStatsPolling = false;
       return;
     }
-    renderCard(card, [], null, showHistory, true);
-    statsPromise.then(({ roulette, evalStats }) => {
+    renderCard(
+      card,
+      cached?.roulette ?? [],
+      cached?.evalStats ?? null,
+      showHistory,
+      !cached,
+    );
+    statsPromise.then((stats) => {
       rouletteStatsInitialized = true;
       rouletteStatsPolling = false;
-      renderCard(card, roulette, evalStats, showHistory, false);
+      renderCard(
+        card,
+        stats?.roulette ?? [],
+        stats?.evalStats ?? null,
+        showHistory,
+        false,
+      );
+
+      if (cached && Date.now() - cached.at >= STATS_REVALIDATE_MS) {
+        void fetchProfileStats(targetLogin).then((fresh) => {
+          if (!fresh) return;
+          renderCard(card, fresh.roulette, fresh.evalStats, showHistory, false);
+        });
+      }
     });
   });
 }

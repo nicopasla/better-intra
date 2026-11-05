@@ -9,12 +9,16 @@ export function syncReportControls(state: DialogState): void {
   if (btn) {
     btn.style.display = show ? "" : "none";
     btn.classList.toggle("btn-primary", state.reportMode);
-    btn.classList.toggle("btn-neutral", !state.reportMode);
+    btn.classList.toggle("btn-warning", !state.reportMode);
     btn.setAttribute("aria-pressed", state.reportMode ? "true" : "false");
     btn.dataset.tip = state.reportMode
       ? "Tap a seat to report"
       : "Report a computer issue";
   }
+  const label = state.shadow.getElementById(
+    "report-btn-label",
+  ) as HTMLElement | null;
+  if (label) label.textContent = state.reportMode ? "Cancel" : "Report";
   const hint = state.shadow.getElementById("report-hint") as HTMLElement | null;
   if (hint) hint.style.display = show && state.reportMode ? "" : "none";
   applyReportModeToHotspots(state);

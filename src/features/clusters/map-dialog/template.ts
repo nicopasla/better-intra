@@ -651,14 +651,17 @@ export function renderTemplate(state: DialogState): TemplateResult {
         <button
           id="report-btn"
           type="button"
-          class="btn btn-square btn-sm btn-neutral absolute bottom-3 left-3 z-20 border border-base-300 bg-base-100/80 backdrop-blur"
+          class="btn btn-sm btn-warning gap-2 px-3 absolute bottom-3 left-3 z-20"
           style="display:none"
           aria-label="Report a computer issue"
           aria-pressed="false"
           data-tip="Report a computer issue"
           data-tip-size="14px"
         >
-          ${unsafeHTML(BUG_SVG.replace("<svg", '<svg width="18" height="18"'))}
+          ${unsafeHTML(BUG_SVG.replace("<svg", '<svg width="16" height="16"'))}
+          <span id="report-btn-label" class="text-xs font-semibold leading-none"
+            >Report</span
+          >
         </button>
         <div
           id="report-hint"

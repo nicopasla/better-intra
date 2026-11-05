@@ -77,6 +77,13 @@ function netRotation(el: Element, svg: SVGSVGElement): number {
 
 function seatElementIndex(svg: SVGSVGElement): Map<string, Element> {
   const byId = new Map<string, Element>();
+  // Avatars are painted into the `image[id]` placeholder (the PWA fills it),
+  // so measure the placeholder first: its transform can differ from the desk
+  // rect, e.g. the angled seats in the Belgium `mi` map.
+  for (const el of svg.querySelectorAll("image[id]")) {
+    const key = normalizeSeatId(el.getAttribute("id")!);
+    if (!byId.has(key)) byId.set(key, el);
+  }
   for (const el of svg.querySelectorAll("[id]")) {
     const key = normalizeSeatId(el.getAttribute("id")!);
     if (!byId.has(key)) byId.set(key, el);

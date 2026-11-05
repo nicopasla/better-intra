@@ -248,9 +248,9 @@
     <rect id="mi-c3-p3" height="40" width="40" y="28" x="219" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 239 48)"/>
     <rect id="mi-c3-p2" height="40" width="40" y="65.68" x="200.45" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 220.45 85.68)"/>
     <rect id="mi-c3-p1" height="40" width="40" y="103.36" x="181.9" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 201.9 123.36)"/>
-    <image preserveAspectRatio="xMidYMid slice" id="mi-c3-p3" height="40" width="40" y="28" x="219" xlink:href="" transform="rotate(295 239 48)"/>
-    <image preserveAspectRatio="xMidYMid slice" id="mi-c3-p2" height="40" width="40" y="65.68" x="200.45" xlink:href="" transform="rotate(295 220.45 85.68)"/>
-    <image preserveAspectRatio="xMidYMid slice" id="mi-c3-p1" height="40" width="40" y="103.36" x="181.9" xlink:href="" transform="rotate(295 201.9 123.36)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c3-p3" height="40" width="40" y="28" x="219" xlink:href="" transform="rotate(25 239 48)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c3-p2" height="40" width="40" y="65.68" x="200.45" xlink:href="" transform="rotate(25 220.45 85.68)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c3-p1" height="40" width="40" y="103.36" x="181.9" xlink:href="" transform="rotate(25 201.9 123.36)"/>
    </g>
   </g>
 
@@ -264,14 +264,14 @@
     <rect id="mi-c2-p3" height="40" width="40" y="366.2" x="58.76" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 78.76 386.2)"/>
     <rect id="mi-c2-p2" height="40" width="40" y="404.26" x="41.01" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 61.01 424.26)"/>
     <rect id="mi-c2-p1" height="40" width="40" y="442.33" x="23.26" stroke="#7f7f7f" fill="#e5e5e5" transform="rotate(295 43.26 462.33)"/>
-    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p4" height="40" width="40" y="328.13" x="76.51" xlink:href="" transform="rotate(295 96.51 348.13)"/>
-    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p5" height="40" width="40" y="290.07" x="94.25" xlink:href="" transform="rotate(295 114.25 310.07)"/>
-    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p6" height="40" width="40" y="252" x="112" xlink:href="" transform="rotate(295 132 272)"/>
-    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p7" height="40" width="40" y="213.94" x="129.75" xlink:href="" transform="rotate(295 149.75 233.94)"/>
-    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p8" height="40" width="40" y="175.87" x="147.5" xlink:href="" transform="rotate(295 167.5 195.87)"/>
-    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p3" height="40" width="40" y="366.2" x="58.76" xlink:href="" transform="rotate(295 78.76 386.2)"/>
-    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p2" height="40" width="40" y="404.26" x="41.01" xlink:href="" transform="rotate(295 61.01 424.26)"/>
-    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p1" height="40" width="40" y="442.33" x="23.26" xlink:href="" transform="rotate(295 43.26 462.33)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p4" height="40" width="40" y="328.13" x="76.51" xlink:href="" transform="rotate(25 96.51 348.13)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p5" height="40" width="40" y="290.07" x="94.25" xlink:href="" transform="rotate(25 114.25 310.07)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p6" height="40" width="40" y="252" x="112" xlink:href="" transform="rotate(25 132 272)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p7" height="40" width="40" y="213.94" x="129.75" xlink:href="" transform="rotate(25 149.75 233.94)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p8" height="40" width="40" y="175.87" x="147.5" xlink:href="" transform="rotate(25 167.5 195.87)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p3" height="40" width="40" y="366.2" x="58.76" xlink:href="" transform="rotate(25 78.76 386.2)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p2" height="40" width="40" y="404.26" x="41.01" xlink:href="" transform="rotate(25 61.01 424.26)"/>
+    <image preserveAspectRatio="xMidYMid slice" id="mi-c2-p1" height="40" width="40" y="442.33" x="23.26" xlink:href="" transform="rotate(25 43.26 462.33)"/>
    </g>
   </g>
 

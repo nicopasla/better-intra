@@ -16,6 +16,7 @@ import {
   blockingSeatCount,
   getComponentStatus,
   getComponentStatusByKey,
+  getMinorSeatIssues,
   getSeatSeverity,
   getSeatSeverityByKey,
   loadSeatReports,
@@ -98,6 +99,47 @@ describe("seat report state", () => {
       blocking: 1,
       minor: 1,
     });
+    expect(getMinorSeatIssues("fu-r1-p1")).toEqual([]);
+    expect(getMinorSeatIssues("fu-r1-p2")).toEqual(["keyboard"]);
+  });
+
+  it("lists every non-blocking defect for the warning glyph", async () => {
+    vi.mocked(workerFetch).mockResolvedValue(
+      jsonResponse({
+        seats: [
+          {
+            host: "fu-r3-p1",
+            cluster: "fu",
+            components: [
+              {
+                component: "mouse_scroll",
+                status: "broken",
+                updatedAt: 1,
+                confirmations: 1,
+                reporter: "alice",
+              },
+              {
+                component: "audio",
+                status: "broken",
+                updatedAt: 1,
+                confirmations: 1,
+                reporter: "bob",
+              },
+              {
+                component: "usbc",
+                status: "broken",
+                updatedAt: 1,
+                confirmations: 1,
+                reporter: "alice",
+              },
+            ],
+          },
+        ],
+        updatedAt: Date.now(),
+      }),
+    );
+    await loadSeatReports();
+    expect(getMinorSeatIssues("fu-r3-p1")).toEqual(["mouse_scroll", "audio"]);
   });
 
   it("treats a missing USB-C port as a presence answer, not a defect", async () => {

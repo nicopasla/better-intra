@@ -5,7 +5,12 @@ import FRIENDS_SVG from "../../../assets/svg/friends.svg?raw";
 import type { DialogState, SeatGeom, SeatOverlay } from "./context";
 import { keyOf } from "./context";
 import { normalizeSeatId } from "./seats";
-import { blockingSeatReasons, getComponentStatus } from "./reports";
+import { SEAT_COMPONENT_MAP } from "./components";
+import {
+  blockingSeatReasons,
+  getComponentStatus,
+  getMinorSeatIssues,
+} from "./reports";
 import { attachSeatActions } from "./seat-actions";
 
 const PROFILE_BASE = "https://profile.intra.42.fr/users";
@@ -372,9 +377,16 @@ function renderSeatDecorations(
     const usbc =
       !occupied.has(key) &&
       getComponentStatus(host, "usbc")?.status === "works";
+    // A crossed seat only shows the cross; the triangle is reserved for seats
+    // whose only issues are non-blocking (keyboard, mouse scroll, audio).
+    const issues = blocking ? [] : getMinorSeatIssues(host);
+    const issueKey = issues.join("+");
+    const issueTip = issues
+      .map((component) => SEAT_COMPONENT_MAP.get(component)?.label ?? component)
+      .join(" / ");
     const existing = overlay.decorations.get(key);
 
-    if (!blocking && !usbc) {
+    if (!blocking && !usbc && !issueKey) {
       if (existing) {
         existing.remove();
         overlay.decorations.delete(key);
@@ -393,7 +405,9 @@ function renderSeatDecorations(
 
     // The cross node only exists while there is a Power/Network reason. This is
     // structural, so a USB-C-only seat can never render a cross.
-    const content = `${blocking ? "cross" : ""}${usbc ? "usbc" : ""}`;
+    const content = `${blocking ? "cross" : ""}${usbc ? "usbc" : ""}${
+      issueKey ? `warn:${issueKey}` : ""
+    }`;
     if (decoration.dataset.content !== content) {
       decoration.dataset.content = content;
       render(
@@ -416,6 +430,26 @@ function renderSeatDecorations(
           : ""}
         ${usbc
           ? html`<span class="seat-usbc">${unsafeHTML(USBC_SVG)}</span>`
+          : ""}
+        ${issueKey
+          ? html`<svg
+              class="seat-warning"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              data-tip="Broken: ${issueTip}"
+              data-tip-size="12px"
+              aria-hidden="true"
+            >
+              <path
+                d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+              />
+              <path d="M12 9v4" />
+              <path d="M12 17h.01" />
+            </svg>`
           : ""}`,
         decoration,
       );
@@ -432,6 +466,7 @@ function syncSeatHotspots(
   overlay: SeatOverlay,
   occupied: Set<string>,
 ): void {
+  overlay.container.classList.toggle("report-mode", state.reportMode);
   const scale = overlay.baseScale;
   for (const [key, geom] of overlay.geoms) {
     const host = overlay.rawIds.get(key) ?? key;

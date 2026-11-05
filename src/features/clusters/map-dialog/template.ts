@@ -233,7 +233,7 @@ export function renderTemplate(state: DialogState): TemplateResult {
       .seat-decoration {
         position: absolute;
         pointer-events: none;
-        z-index: 3;
+        z-index: 5;
       }
       .seat-cross {
         position: absolute;
@@ -257,6 +257,28 @@ export function renderTemplate(state: DialogState): TemplateResult {
         display: block;
         width: 100%;
         height: auto;
+      }
+      /* Non-blocking defect (keyboard, mouse scroll, audio): mirror the USB-C
+         presence glyph on the opposite side of the seat. */
+      .seat-warning {
+        position: absolute;
+        left: 6%;
+        bottom: 8%;
+        display: block;
+        width: 38%;
+        min-width: 12px;
+        max-width: 20px;
+        height: auto;
+        color: var(--color-warning);
+        pointer-events: auto;
+        cursor: help;
+        /* The Lucide glyph has ~2/24 of empty space below the triangle; drop it
+           so its visible bottom matches the USB-C glyph's bottom. */
+        transform: translateY(8.33%);
+      }
+      /* Report taps must reach the hotspot underneath, not the glyph stroke. */
+      #seat-overlay.report-mode .seat-warning {
+        pointer-events: none;
       }
       .active-friend-icon {
         position: absolute;

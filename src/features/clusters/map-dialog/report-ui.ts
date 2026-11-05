@@ -29,6 +29,7 @@ export function setReportMode(state: DialogState, on: boolean): void {
 export function applyReportModeToHotspots(state: DialogState): void {
   const container = state.overlay?.container;
   if (!container) return;
+  container.classList.toggle("report-mode", state.reportMode);
   for (const el of container.querySelectorAll<HTMLElement>(".seat-hotspot")) {
     el.classList.toggle("report-mode", state.reportMode);
   }

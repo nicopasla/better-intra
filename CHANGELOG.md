@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## [1.11.12] - 2026-11-05
+
+### Features 🎉
+
+- feat(clusters): flag minor seat issues on the map ([2af026b](https://github.com/nicopasla/better-intra/commit/2af026b))
+- feat(clusters): add seat reports and friend rings ([2f8b89d](https://github.com/nicopasla/better-intra/commit/2f8b89d))
+- feat(subjects): report subject versions to the worker ([c96ccf2](https://github.com/nicopasla/better-intra/commit/c96ccf2))
+
+### Bug fixes 🐛
+
+- fix(theme): use solid status colors in lemonade ([b009157](https://github.com/nicopasla/better-intra/commit/b009157))
+- fix(clusters): rotate avatars on the left side of the mi map ([69783d7](https://github.com/nicopasla/better-intra/commit/69783d7))
+
+### Maintenance 🧹
+
+- chore: remove closed campuses ([405115d](https://github.com/nicopasla/better-intra/commit/405115d))
+- chore(clusters): remove static crossed seats from Belgium maps ([cc450d7](https://github.com/nicopasla/better-intra/commit/cc450d7))
+
 ## [1.11.11] - 2026-11-02
 
 ### Features 🎉
@@ -1569,7 +1587,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.11...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.12...HEAD
+[1.11.12]: https://github.com/nicopasla/better-intra/compare/v1.11.11...v1.11.12
 [1.11.11]: https://github.com/nicopasla/better-intra/compare/v1.11.10...v1.11.11
 [1.11.10]: https://github.com/nicopasla/better-intra/compare/v1.11.9...v1.11.10
 [1.11.9]: https://github.com/nicopasla/better-intra/compare/v1.11.8...v1.11.9

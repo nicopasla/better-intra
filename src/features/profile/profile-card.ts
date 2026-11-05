@@ -455,8 +455,15 @@ export function seedBadgeHostColor(
   profileCard: HTMLElement,
 ): void {
   const style = getComputedStyle(profileCard);
-  const userColor = style.getPropertyValue("--user-color").trim();
-  const translucent = style.getPropertyValue("--user-color-translucent").trim();
+  // `applyThemeToProfileCard` writes these inline. Fall back to the inline
+  // value so the helper also works before the card is attached/laid out,
+  // where getComputedStyle does not resolve custom properties.
+  const read = (name: string): string =>
+    (
+      style.getPropertyValue(name) || profileCard.style.getPropertyValue(name)
+    ).trim();
+  const userColor = read("--user-color");
+  const translucent = read("--user-color-translucent");
   if (userColor) shadowHost.style.setProperty("--user-color", userColor);
   if (translucent)
     shadowHost.style.setProperty("--user-color-translucent", translucent);

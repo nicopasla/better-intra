@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { findLinksBanners } from "../src/features/shortcuts/shortcuts";
+import {
+  findLinksBanners,
+  injectShortcutsDisplay,
+} from "../src/features/shortcuts/shortcuts";
 
-const BANNER =
-  "w-full flex flex-row gap-8 py-4 px-8 items-center";
+const BANNER = "w-full flex flex-row gap-8 py-4 px-8 items-center";
 
 const icon = `<svg class="text-legacy-main hidden lg:block"><path d="m3 11 18-5v12L3 14v-3z"></path></svg>`;
 
@@ -84,5 +86,66 @@ describe("findLinksBanners", () => {
     </div>`;
 
     expect(findLinksBanners()).toEqual([]);
+  });
+});
+
+const BANNER_SELECTOR = "." + BANNER.split(" ").join(".");
+const bannerEl = () => document.querySelector<HTMLElement>(BANNER_SELECTOR)!;
+const infoBlockEl = () =>
+  bannerEl().querySelector<HTMLElement>(".flex.flex-col.text-sm.w-full.gap-1")!;
+const wrapperEl = () =>
+  bannerEl().querySelector<HTMLElement>("[data-shortcuts-wrapper]");
+
+async function seedConfig(values: Record<string, unknown>) {
+  await chrome.storage.local.clear();
+  await chrome.storage.local.set({
+    ACTIVE_SCRIPTS: JSON.stringify(["shortcuts"]),
+    SHORTCUTS_HIDE_IMPORTANT_LINKS: false,
+    ...values,
+  });
+}
+
+describe("injectShortcutsDisplay", () => {
+  beforeEach(async () => {
+    document.body.innerHTML = "";
+    await chrome.storage.local.clear();
+  });
+
+  it("hides the important links when no shortcuts are configured", async () => {
+    document.body.innerHTML = `<div class="slider-list">${slide("links")}</div>`;
+    await seedConfig({ SHORTCUTS_HIDE_IMPORTANT_LINKS: true });
+
+    await injectShortcutsDisplay();
+
+    expect(bannerEl().style.display).toBe("none");
+    expect(wrapperEl()).toBeNull();
+  });
+
+  it("restores the important links when hiding is off and there are no shortcuts", async () => {
+    document.body.innerHTML = `<div class="slider-list">${slide("links")}</div>`;
+    await seedConfig({ SHORTCUTS_HIDE_IMPORTANT_LINKS: false });
+
+    await injectShortcutsDisplay();
+
+    expect(bannerEl().style.display).toBe("");
+    expect(infoBlockEl().style.display).toBe("");
+    expect(infoBlockEl().classList.contains("w-full")).toBe(true);
+    expect(wrapperEl()).toBeNull();
+  });
+
+  it("adds shortcuts next to hidden links when links are configured", async () => {
+    document.body.innerHTML = `<div class="slider-list">${slide("links")}</div>`;
+    await seedConfig({
+      SHORTCUTS_HIDE_IMPORTANT_LINKS: true,
+      SHORTCUTS_LINKS: JSON.stringify([
+        { name: "Toolbox", url: "https://example.test", color: "#7dd3fc" },
+      ]),
+    });
+
+    await injectShortcutsDisplay();
+
+    expect(bannerEl().style.display).toBe("");
+    expect(infoBlockEl().style.display).toBe("none");
+    expect(wrapperEl()).not.toBeNull();
   });
 });

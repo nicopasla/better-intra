@@ -7,8 +7,7 @@ const CONTAINER_ID = "shortcuts-shadow-wrapper";
 const WRAPPER_ATTR = "data-shortcuts-wrapper";
 
 /** Intra renders every dashboard notice/link block with this container. */
-const BANNER_SELECTOR =
-  ".w-full.flex.flex-row.gap-8.py-4.px-8.items-center";
+const BANNER_SELECTOR = ".w-full.flex.flex-row.gap-8.py-4.px-8.items-center";
 const TITLE_SELECTOR = ".text-legacy-main.font-bold.uppercase";
 const NOTICE_RE = /maintenance/i;
 const LINKS_RE = /important|links|liens/i;
@@ -21,9 +20,7 @@ const LINKS_RE = /important|links|liens/i;
  * notice. The slide title tells them apart; `a[href]` is the fallback when the
  * instance is localised.
  */
-export function findLinksBanners(
-  root: ParentNode = document,
-): HTMLElement[] {
+export function findLinksBanners(root: ParentNode = document): HTMLElement[] {
   const banners: HTMLElement[] = [];
   for (const el of root.querySelectorAll<HTMLElement>(BANNER_SELECTOR)) {
     const title =
@@ -71,7 +68,22 @@ function applyWrapperLayout(
   `;
 }
 
-export async function injectShortcutsDisplay() {
+/** Last applied state, so the observer only reacts to real drift. */
+let appliedHasLinks: boolean | null = null;
+let appliedHide = false;
+let injecting = false;
+let injectAgain = false;
+
+const infoBlockIn = (banner: HTMLElement): HTMLElement | null =>
+  banner.querySelector<HTMLElement>(".flex.flex-col.text-sm.w-full.gap-1");
+
+const isBannerHidden = (banner: HTMLElement): boolean => {
+  if (banner.style.display === "none") return true;
+  const infoBlock = infoBlockIn(banner);
+  return !!infoBlock && infoBlock.style.display === "none";
+};
+
+async function applyShortcuts(): Promise<void> {
   const activeFeatures = await getConfig("ACTIVE_SCRIPTS");
   const active = Array.isArray(activeFeatures) ? activeFeatures : [];
 
@@ -79,6 +91,8 @@ export async function injectShortcutsDisplay() {
     document
       .querySelectorAll<HTMLElement>(`[${WRAPPER_ATTR}]`)
       .forEach((wrapper) => wrapper.remove());
+    appliedHasLinks = false;
+    appliedHide = false;
     return;
   }
 
@@ -94,41 +108,30 @@ export async function injectShortcutsDisplay() {
   ]);
 
   const displayLinks = links.filter((l) => l.url && l.name);
-
-  if (displayLinks.length === 0) {
-    // Nothing to show: restore Intra's own block and drop any old shortcuts.
-    for (const banner of banners) {
-      wrapperIn(banner)?.remove();
-      const infoBlock = banner.querySelector<HTMLElement>(
-        ".flex.flex-col.text-sm.w-full.gap-1",
-      );
-      if (infoBlock) {
-        infoBlock.style.display = "";
-        infoBlock.style.width = "";
-        infoBlock.classList.add("w-full");
-      }
-      const icon = banner.querySelector<HTMLElement>("svg.hidden.lg\\:block");
-      if (icon) icon.style.display = "";
-    }
-    return;
-  }
+  const hasLinks = displayLinks.length > 0;
 
   for (const banner of banners) {
-    const infoBlock = banner.querySelector<HTMLElement>(
-      ".flex.flex-col.text-sm.w-full.gap-1",
-    );
+    const infoBlock = infoBlockIn(banner);
     const icon = banner.querySelector<HTMLElement>("svg.hidden.lg\\:block");
 
     if (hideImportantLinks) {
       if (icon) icon.style.display = "none";
       if (infoBlock) infoBlock.style.display = "none";
+      // Without shortcuts nothing replaces the links, so drop the empty block.
+      if (!hasLinks) banner.style.display = "none";
     } else {
+      banner.style.display = "";
       if (icon) icon.style.display = "";
       if (infoBlock) {
         infoBlock.style.display = "";
-        infoBlock.style.width = "50%";
-        infoBlock.classList.remove("w-full");
+        infoBlock.style.width = hasLinks ? "50%" : "";
+        infoBlock.classList.toggle("w-full", !hasLinks);
       }
+    }
+
+    if (!hasLinks) {
+      wrapperIn(banner)?.remove();
+      continue;
     }
 
     let wrapper = wrapperIn(banner);
@@ -160,9 +163,47 @@ export async function injectShortcutsDisplay() {
     }
     applyWrapperLayout(wrapper, hideImportantLinks, alignment);
   }
+
+  appliedHasLinks = hasLinks;
+  appliedHide = hideImportantLinks;
+}
+
+export async function injectShortcutsDisplay(): Promise<void> {
+  if (injecting) {
+    injectAgain = true;
+    return;
+  }
+
+  injecting = true;
+  try {
+    do {
+      injectAgain = false;
+      await applyShortcuts();
+    } while (injectAgain);
+  } finally {
+    injecting = false;
+  }
 }
 
 let shortcutsObserver: MutationObserver | null = null;
+
+/**
+ * Re-inject only when the page drifted from what we applied: a link slide lost
+ * its shortcuts, or Intra re-rendered the block and dropped our hiding styles.
+ * Without shortcuts the wrapper never exists, so a plain "wrapper missing"
+ * check would re-run on every mutation.
+ */
+function needsInjection(): boolean {
+  const banners = findLinksBanners();
+  if (banners.length === 0) return false;
+  if (appliedHasLinks === null) return true;
+
+  return banners.some(
+    (banner) =>
+      (appliedHasLinks && !wrapperIn(banner)) ||
+      (appliedHide && !isBannerHidden(banner)),
+  );
+}
 
 export function setupShortcutsObserver() {
   if (!document.body) {
@@ -179,9 +220,7 @@ export function setupShortcutsObserver() {
       timer = undefined;
       // The carousel clones its slides during init, so keep injecting while a
       // link slide is still missing its shortcuts.
-      if (findLinksBanners().some((banner) => !wrapperIn(banner))) {
-        injectShortcutsDisplay();
-      }
+      if (needsInjection()) void injectShortcutsDisplay();
     }, 300);
   });
 

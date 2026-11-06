@@ -603,7 +603,7 @@ export const HUB_SETTING_DEFS: Record<FeatureId, readonly HubSettingDef[]> = {
       feature: "shortcuts",
       key: "SHORTCUTS_HIDE_IMPORTANT_LINKS",
       label: "Hide important links",
-      desc: "Hides Intra's default important links so shortcuts get the full width.",
+      desc: "Hides Intra's default important links, whether or not you have shortcuts.",
       kind: "toggle",
       defaultValue: CONFIG_DEFAULT.SHORTCUTS_HIDE_IMPORTANT_LINKS,
       grid: true,

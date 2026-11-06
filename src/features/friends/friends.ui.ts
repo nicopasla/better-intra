@@ -547,9 +547,15 @@ function renderSortControl(
 }
 
 function renderCacheChip(state: WidgetState): unknown {
+  // Match the neighbouring toolbar buttons (`btn btn-sm`, 1.875rem tall) so the
+  // chip doesn't look like a stray pill next to them.
+  const base =
+    "btn btn-sm no-animation cursor-default shrink-0 px-2.5 gap-1.5 normal-case";
+
   if (state.loading) {
     return html`<span
-      class="text-xs font-semibold px-2 py-0.5 rounded-full bg-base-300/60 opacity-70"
+      class="${base} btn-ghost border-base-content/20"
+      style="height:1.875rem;"
       aria-live="polite"
       >Refreshing…</span
     >`;
@@ -558,7 +564,8 @@ function renderCacheChip(state: WidgetState): unknown {
   const age = Date.now() - state.lastFetch;
   if (age < 60_000) {
     return html`<span
-      class="text-xs font-semibold px-2 py-0.5 rounded-full bg-success/15 text-success"
+      class="${base} btn-success"
+      style="height:1.875rem;"
       aria-live="polite"
       data-tip="Live data"
       >Live</span
@@ -567,9 +574,8 @@ function renderCacheChip(state: WidgetState): unknown {
   const stale = age >= STALE_ONLINE_MS;
   const ago = formatTimeAgo(state.lastFetch);
   return html`<span
-    class="text-xs font-semibold px-2 py-0.5 rounded-full ${stale
-      ? "bg-warning/15 text-warning"
-      : "bg-base-300/60 opacity-60"}"
+    class="${base} ${stale ? "btn-warning" : "btn-ghost border-base-content/20"}"
+    style="height:1.875rem;"
     aria-live="polite"
     data-tip="${stale
       ? "Showing cached friends — press refresh for live status"

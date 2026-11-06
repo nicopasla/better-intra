@@ -914,42 +914,39 @@ function renderWidget(state: WidgetState) {
         >
           <div class="flex items-center gap-2.5 min-w-0 flex-none flex-wrap">
             <span class="font-bold text-lg text-base-content">Friends</span>
-            ${state.friends.length > 0
-              ? html`<span
-                  class="badge badge-primary badge-md font-bold font-mono"
-                  style="border:3px solid color-mix(in oklab, var(--color-primary) 55%, transparent);border-radius:0.75rem;height:auto;padding-block:0.15rem;font-weight:600;"
-                  >${state.friends.length}</span
-                >`
-              : ""}
           </div>
           ${state.friends.length > 0
             ? html`<div class="flex items-center gap-2 min-w-0 ml-auto">
                 <button
                   type="button"
-                  class="btn btn-sm px-2 shrink-0 gap-1.5 ${state.onlineOnly
-                    ? ""
-                    : "btn-success"}"
-                  style="height:1.875rem;${state.onlineOnly
-                    ? `background-color:${primaryColor};border-color:${primaryColor};color:${primaryContent};`
-                    : ""}"
-                  data-tip="${state.onlineOnly
-                    ? "Showing online users only (click to show all)"
-                    : "Show only online users"}"
-                  @click="${state.onToggleOnline}"
+                  class="btn btn-sm px-2 shrink-0 gap-1.5 border ${state.onlineOnly
+                    ? "btn-success"
+                    : "btn-ghost border-base-content/20"}"
+                  style="height:1.875rem;"
+                  data-tip="${onlineCount} of ${state.friends.length} friend${
+                    state.friends.length === 1 ? "" : "s"
+                  } online — ${state.onlineOnly
+                    ? "showing online users only (click to show all)"
+                    : "show only online users"}"
                   aria-pressed="${state.onlineOnly}"
+                  aria-label="Show only online friends"
+                  @click="${state.onToggleOnline}"
                 >
-                  ${onlineCount > 0
-                    ? html`<span class="text-sm font-bold font-mono"
-                        >${onlineCount}</span
-                      >`
-                    : ""}
+                  <span class="inline-flex items-center gap-1 tabular-nums">
+                    <span class="text-sm font-bold">${onlineCount}</span>
+                    <span class="text-xs font-semibold opacity-60">/</span>
+                    <span class="text-xs font-semibold opacity-60"
+                      >${state.friends.length}</span
+                    >
+                  </span>
+                  <span class="text-xs font-semibold">online</span>
                   <span
                     class="w-4 h-4 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
                     >${unsafeHTML(svgIcon(GLOBE_SVG))}</span
                   >
                 </button>
                 <div class="mx-0.5 h-5 w-px bg-base-content/20 shrink-0"></div>
-                <div class="overflow-x-auto no-scrollbar shrink-0">
+                <div class="no-scrollbar flex min-w-0 overflow-x-auto">
                   ${renderSortControl(
                     state.sortBy,
                     state.sortDir,

@@ -1,6 +1,16 @@
 {
   "entries": [
     {
+      "version": "1.11.13",
+      "date": "2026-11-06",
+      "highlights": [
+        "Roulette and eval stats are cached per profile, so profiles load faster and stop re-fetching on every visit.",
+        "Cluster maps: the report button is labelled and restyled, and broken-seat tooltips now show icons for each issue type.",
+        "The friends list gets the same online filter control as the mobile app.",
+        "Small fixes: missing achievement icons show a trophy and important links hide correctly when no shortcuts are set."
+      ]
+    },
+    {
       "version": "1.11.12",
       "date": "2026-11-05",
       "highlights": [

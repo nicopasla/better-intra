@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## [1.11.13] - 2026-11-06
+
+### Features 🎉
+
+- feat(clusters): label and restyle the report button ([44ebf89](https://github.com/nicopasla/better-intra/commit/44ebf89))
+- feat(clusters): show icons in the broken-seat tooltip ([644725e](https://github.com/nicopasla/better-intra/commit/644725e))
+
+### Bug fixes 🐛
+
+- fix(achievements): show a trophy when the icon is missing ([2732e2e](https://github.com/nicopasla/better-intra/commit/2732e2e))
+- fix(shortcuts): hide important links when no shortcuts are set ([b1ad435](https://github.com/nicopasla/better-intra/commit/b1ad435))
+- fix(profile): read badge accent from inline styles too ([c9764f8](https://github.com/nicopasla/better-intra/commit/c9764f8))
+
+### Maintenance 🧹
+
+- chore: update worker submodule references ([45e25c9](https://github.com/nicopasla/better-intra/commit/45e25c9), [1aed1d2](https://github.com/nicopasla/better-intra/commit/1aed1d2), [0a2645c](https://github.com/nicopasla/better-intra/commit/0a2645c), [b249c92](https://github.com/nicopasla/better-intra/commit/b249c92))
+
+### Other Changes 🔄
+
+- perf(profile): cache roulette and eval stats per profile ([f4cd231](https://github.com/nicopasla/better-intra/commit/f4cd231))
+- style(friends): port the pwa online filter control ([6a95689](https://github.com/nicopasla/better-intra/commit/6a95689))
+- test(visuals): add avatar shape to the sanitize fixture ([3932971](https://github.com/nicopasla/better-intra/commit/3932971))
+
 ## [1.11.12] - 2026-11-05
 
 ### Features 🎉
@@ -1587,7 +1610,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.12...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.13...HEAD
+[1.11.13]: https://github.com/nicopasla/better-intra/compare/v1.11.12...v1.11.13
 [1.11.12]: https://github.com/nicopasla/better-intra/compare/v1.11.11...v1.11.12
 [1.11.11]: https://github.com/nicopasla/better-intra/compare/v1.11.10...v1.11.11
 [1.11.10]: https://github.com/nicopasla/better-intra/compare/v1.11.9...v1.11.10

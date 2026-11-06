@@ -50,26 +50,37 @@ export async function isFriend(login: string): Promise<boolean> {
 }
 
 const CACHE_KEY = "FRIENDS_DATA_CACHE";
-const CACHE_TTL = 5 * 60_000;
+/**
+ * Cached friends are rendered immediately; this is how long they are trusted
+ * before an automatic revalidation. A manual refresh always bypasses it.
+ */
+export const AUTO_REFRESH_MS = 15 * 60_000;
+/** Snapshot age after which online dots are presented as stale. */
+export const STALE_ONLINE_MS = 5 * 60_000;
 
-async function getCachedData(): Promise<{
+export interface FriendsCacheEntry {
   data: FriendData[];
   timestamp: number;
-} | null> {
+}
+
+async function getCachedData(): Promise<FriendsCacheEntry | null> {
   try {
     const raw = (await chrome.storage.local.get(CACHE_KEY)) as Record<
       string,
       unknown
     >;
-    const val = raw[CACHE_KEY] as
-      | { data: FriendData[]; timestamp: number }
-      | undefined;
+    const val = raw[CACHE_KEY] as FriendsCacheEntry | undefined;
     if (val && Array.isArray(val.data) && typeof val.timestamp === "number")
       return val;
     return null;
   } catch {
     return null;
   }
+}
+
+/** Reads the stored list at any age, without touching the network. */
+export function readFriendsCache(): Promise<FriendsCacheEntry | null> {
+  return getCachedData();
 }
 
 async function setCachedData(data: FriendData[]): Promise<void> {
@@ -84,6 +95,7 @@ export async function clearFriendsCache(): Promise<void> {
 
 export async function fetchFriendsData(
   logins: string[],
+  opts: { force?: boolean } = {},
 ): Promise<FriendData[]> {
   if (logins.length === 0) return [];
 
@@ -91,14 +103,19 @@ export async function fetchFriendsData(
   const cloudLogin = await getConfig("CLOUD_LOGIN");
   if (!token || !cloudLogin) return [];
 
+  const hashedLogin = await hashLogin(cloudLogin);
+  // The list travels in the body so it never lands in URLs/logs; the hashed
+  // login stays in the query because the worker routes on it.
+  const request = (list: string[]): Promise<Response> =>
+    workerFetch(
+      `/api/v1/private/friends/data?login=${encodeURIComponent(hashedLogin)}`,
+      { token, method: "POST", body: { logins: list } },
+    );
+
   // Single-login fetches (add friend validation) always go to API
   if (logins.length === 1) {
     try {
-      const hashedLogin = await hashLogin(cloudLogin);
-      const res = await workerFetch(
-        `/api/v1/private/friends/data?login=${encodeURIComponent(hashedLogin)}&logins=${encodeURIComponent(logins[0])}`,
-        { token },
-      );
+      const res = await request(logins);
       if (res.status === 401) {
         await chrome.storage.local.set({ CLOUD_AUTH_FAILED: true });
       }
@@ -110,22 +127,19 @@ export async function fetchFriendsData(
     }
   }
 
-  // Check cache for full list fetches
+  // Show what we already have unless the caller asked to refresh.
   const cached = await getCachedData();
   if (
+    !opts.force &&
     cached &&
     cached.data.length > 0 &&
-    Date.now() - cached.timestamp < CACHE_TTL
+    Date.now() - cached.timestamp < AUTO_REFRESH_MS
   ) {
     return cached.data;
   }
 
   try {
-    const hashedLogin = await hashLogin(cloudLogin);
-    const res = await workerFetch(
-      `/api/v1/private/friends/data?login=${encodeURIComponent(hashedLogin)}&logins=${encodeURIComponent(logins.join(","))}`,
-      { token },
-    );
+    const res = await request(logins);
     if (res.ok) {
       const data = (await res.json()) as { friends?: FriendData[] };
       const friends = data.friends ?? [];

@@ -2,12 +2,15 @@ import { html, render } from "lit-html";
 import { unsafeHTML } from "lit-html/directives/unsafe-html.js";
 import { adoptShadowStyles } from "../../utils/shadow-styles.ts";
 import {
+  AUTO_REFRESH_MS,
+  STALE_ONLINE_MS,
   FriendData,
   addFriend,
   clearFriendsCache,
   fetchFriendsData,
   getFriendsList,
   isFriend,
+  readFriendsCache,
   removeFriend,
 } from "./friends.ts";
 import {
@@ -75,6 +78,7 @@ function renderFriendRow(
   deleteMode = false,
   selected = false,
   onToggleSelect?: (login: string) => void,
+  staleOnline = false,
 ) {
   const medalClass = rank >= 0 && rank < MEDALS.length ? MEDALS[rank] : "";
   const hasCustom = !!(
@@ -241,9 +245,13 @@ function renderFriendRow(
                     href="${clusterUrl(friend.lastSeen)}"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="badge badge-success badge-md gap-1 px-2 hover:brightness-110 transition-all cursor-pointer no-underline"
+                    class="badge badge-success badge-md gap-1 px-2 hover:brightness-110 transition-all cursor-pointer no-underline ${staleOnline
+                      ? "opacity-50"
+                      : ""}"
                     style="border:3px solid color-mix(in oklab, var(--color-success) 55%, transparent);border-radius:0.75rem;height:auto;padding-block:0.15rem;font-weight:600;"
-                    data-tip="View ${friend.lastSeen} on cluster map"
+                    data-tip="${staleOnline
+                      ? `Last known seat ${friend.lastSeen} — online status may be stale`
+                      : `View ${friend.lastSeen} on cluster map`}"
                   >
                     <span class="text-sm font-semibold"
                       >${friend.lastSeen}</span
@@ -538,8 +546,42 @@ function renderSortControl(
   `;
 }
 
+function renderCacheChip(state: WidgetState): unknown {
+  if (state.loading) {
+    return html`<span
+      class="text-xs font-semibold px-2 py-0.5 rounded-full bg-base-300/60 opacity-70"
+      aria-live="polite"
+      >Refreshing…</span
+    >`;
+  }
+  if (!state.lastFetch) return "";
+  const age = Date.now() - state.lastFetch;
+  if (age < 60_000) {
+    return html`<span
+      class="text-xs font-semibold px-2 py-0.5 rounded-full bg-success/15 text-success"
+      aria-live="polite"
+      data-tip="Live data"
+      >Live</span
+    >`;
+  }
+  const stale = age >= STALE_ONLINE_MS;
+  const ago = formatTimeAgo(state.lastFetch);
+  return html`<span
+    class="text-xs font-semibold px-2 py-0.5 rounded-full ${stale
+      ? "bg-warning/15 text-warning"
+      : "bg-base-300/60 opacity-60"}"
+    aria-live="polite"
+    data-tip="${stale
+      ? "Showing cached friends — press refresh for live status"
+      : `Updated ${ago}`}"
+    >${stale ? "Cached · " : "Updated "}${ago}</span
+  >`;
+}
+
 function renderWidget(state: WidgetState) {
   const onlineCount = state.friends.filter((f) => f.isOnline).length;
+  const staleSnapshot =
+    !!state.lastFetch && Date.now() - state.lastFetch >= STALE_ONLINE_MS;
   const visible = state.onlineOnly
     ? state.friends.filter((f) => f.isOnline)
     : state.friends;
@@ -914,6 +956,7 @@ function renderWidget(state: WidgetState) {
         >
           <div class="flex items-center gap-2.5 min-w-0 flex-none flex-wrap">
             <span class="font-bold text-lg text-base-content">Friends</span>
+            ${renderCacheChip(state)}
           </div>
           ${state.friends.length > 0
             ? html`<div class="flex items-center gap-2 min-w-0 ml-auto">
@@ -956,27 +999,38 @@ function renderWidget(state: WidgetState) {
                   )}
                 </div>
                 <div class="mx-0.5 h-5 w-px bg-base-content/20 shrink-0"></div>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-square shrink-0 hover:opacity-100 ${state.loading
-                    ? "loading"
-                    : ""} ${state.lastFetch &&
-                  Date.now() - state.lastFetch < 60000
-                    ? "btn-outline btn-success"
-                    : "btn-ghost"}"
-                  style="height:1.875rem;"
-                  data-tip="${state.lastFetch
-                    ? `Updated ${formatTimeAgo(state.lastFetch)}`
-                    : "Not yet updated"}"
-                  @click="${state.onRefresh}"
-                >
-                  <div class="swap ${state.loading ? "swap-active" : ""}">
-                    <span
-                      class="swap-on loading loading-spinner loading-xs"
-                    ></span>
-                    <span class="swap-off text-lg">↻</span>
-                  </div>
-                </button>
+                <span class="indicator shrink-0">
+                  ${staleSnapshot
+                    ? html`<span
+                        class="indicator-item badge badge-warning badge-xs border-0"
+                        data-tip="Showing cached data"
+                      ></span>`
+                    : ""}
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-square shrink-0 hover:opacity-100 ${state.loading
+                      ? "loading"
+                      : ""} ${state.lastFetch &&
+                    Date.now() - state.lastFetch < 60000
+                      ? "btn-outline btn-success"
+                      : "btn-ghost"}"
+                    style="height:1.875rem;"
+                    data-tip="${state.lastFetch
+                      ? `${staleSnapshot ? "Showing cached data" : "Updated"} ${formatTimeAgo(state.lastFetch)}${staleSnapshot ? " — click to refresh" : ""}`
+                      : "Not yet updated"}"
+                    aria-label="${staleSnapshot
+                      ? "Showing cached friends — refresh"
+                      : "Refresh friends"}"
+                    @click="${state.onRefresh}"
+                  >
+                    <div class="swap ${state.loading ? "swap-active" : ""}">
+                      <span
+                        class="swap-on loading loading-spinner loading-xs"
+                      ></span>
+                      <span class="swap-off text-lg">↻</span>
+                    </div>
+                  </button>
+                </span>
               </div>`
             : ""}
         </div>
@@ -1067,6 +1121,9 @@ function renderWidget(state: WidgetState) {
                                     state.deleteMode,
                                     state.selected.includes(f.login),
                                     state.onToggleSelect,
+                                    !!state.lastFetch &&
+                                      Date.now() - state.lastFetch >=
+                                        STALE_ONLINE_MS,
                                   )}
                                 </li>`,
                             )}
@@ -1266,11 +1323,16 @@ export async function injectFriendsWidget() {
       _state.loading = true;
       _state.loadError = false;
       renderWidgetUI();
-      clearFriendsCache();
       const list = await getFriendsList();
-      _state.friends = await fetchFriendsData(list);
-      _state.loadError = list.length > 0 && _state.friends.length === 0;
-      _state.lastFetch = Date.now();
+      const friends = await fetchFriendsData(list, { force: true });
+      if (!_state) return;
+      // The cache timestamp only advances on a successful fetch, so a failed
+      // refresh keeps the "cached" label instead of pretending to be live.
+      const cache = await readFriendsCache();
+      _state.friends = friends;
+      _state.loadError = list.length > 0 && friends.length === 0;
+      _state.lastFetch =
+        cache && friends.length > 0 ? cache.timestamp : Date.now();
       _state.loading = false;
       if (_state.needsReconnect) {
         _state.needsReconnect = !!(await getConfig("CLOUD_AUTH_FAILED"));
@@ -1405,16 +1467,18 @@ export async function injectFriendsWidget() {
   renderWidgetUI();
 
   if (!_state.notConnected && !_state.needsReconnect) {
-    _state.loading = true;
-    _state.loadError = false;
-    renderWidgetUI();
-    const list = await getFriendsList();
-    _state.friends = await fetchFriendsData(list);
-    _state.loadError = list.length > 0 && _state.friends.length === 0;
-    _state.lastFetch = Date.now();
-    _state.loading = false;
-    if (_state.needsReconnect) {
-      _state.needsReconnect = !!(await getConfig("CLOUD_AUTH_FAILED"));
+    // Show whatever is cached first (any age), then revalidate only when the
+    // snapshot is older than the auto-refresh window.
+    const cached = await readFriendsCache();
+    if (cached && cached.data.length > 0) {
+      _state.friends = cached.data;
+      _state.lastFetch = cached.timestamp;
+      renderWidgetUI();
+    }
+    const staleSnapshot =
+      !cached || Date.now() - cached.timestamp >= AUTO_REFRESH_MS;
+    if (staleSnapshot) {
+      await _state.onRefresh();
     }
   }
 

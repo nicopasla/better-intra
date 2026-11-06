@@ -86,7 +86,7 @@ The version is injected at build time as `__APP_VERSION__` (see `better-intra-pw
 Fetch-only Worker (no Durable Objects). Storage:
 
 - **KV `BETTER_INTRA_KV`** — user blobs (session tokens, settings, encrypted 42 token), app token cache, project map, friend IDs cache, cluster SVG cache, calendar tokens, announcement, stats cache.
-- **D1 `better_intra_d1`** — eval tracking (`users.evals_enabled`, `eval_users`, `eval_states`, `eval_corrected`), subject notifications (`subject_versions`, `user_ongoing_projects`) plus caches (`online_cache`, `profile_stats_cache`, `logtime_history`, `calendar_ics`, `themes`, `campus_locations`, `cluster_occupancy_cache`, `projects`, …) and the hand-curated `custom_badges`. See `schema.sql`.
+- **D1 `better_intra_d1`** — eval tracking (`users.evals_enabled`, `eval_users`, `eval_states`, `eval_corrected`), subject notifications (`subject_versions`, `user_ongoing_projects`) plus caches (`online_cache`, `profile_stats_cache`, `friend_profiles`, `logtime_history`, `calendar_ics`, `themes`, `campus_locations`, `cluster_occupancy_cache`, `projects`, …) and the hand-curated `custom_badges`. See `schema.sql`.
 - **R2 `better_intra_images`** — uploaded images.
 - **Analytics Engine `better_intra_42_api`** (binding `API_METRICS`) — 42 API budget telemetry: one point per labeled call site (`cron.scale_teams`, `token_refresh`, …) plus one per served request (with `x-bi-cache: hit|miss|stale`). Schema documented in `src/metrics.ts`; unlabeled call sites are not recorded so `cdn.intra.42.fr` photo fetches don't skew the numbers.
 

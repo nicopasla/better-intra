@@ -12,6 +12,7 @@ import {
 } from "../../utils/intrapy.ts";
 import { INTRA_FONT } from "../logtime/constants.ts";
 import CHECK_CIRCLE_SVG from "../../assets/svg/check-circle.svg?raw";
+import TROPHY_SVG from "../../assets/svg/trophy.svg?raw";
 
 interface Achievement {
   name: string;
@@ -139,7 +140,19 @@ function findCard(): HTMLElement | null {
   return null;
 }
 
-function renderIcon(icon: AchievementIcon | undefined) {
+function renderIcon(
+  icon: AchievementIcon | undefined,
+  failed: boolean,
+  onError: () => void,
+) {
+  if (failed) {
+    return html`<div
+      class="w-10 h-10 flex items-center justify-center text-neutral-400"
+      aria-hidden="true"
+    >
+      ${unsafeHTML(TROPHY_SVG.replace("<svg", '<svg width="32" height="32"'))}
+    </div>`;
+  }
   if (!icon) {
     return html`<div
       class="w-8 h-8 bg-zinc-200 rounded-sm animate-pulse"
@@ -156,12 +169,15 @@ function renderIcon(icon: AchievementIcon | undefined) {
     width="45"
     height="45"
     style="width:45px;height:45px;object-fit:contain"
+    @error=${onError}
   />`;
 }
 
 function renderList(
   achievements: Achievement[],
   icons: Map<string, AchievementIcon>,
+  failed: Set<string>,
+  onIconError: (svg: string) => void,
 ) {
   return html`<div
     class="grid gap-4 mt-4"
@@ -197,7 +213,11 @@ function renderList(
             </div>
           </div>
           <div class="bg-zinc-100 w-20 grid place-items-center shrink-0">
-            ${renderIcon(icons.get(a.svg))}
+            ${renderIcon(
+              icons.get(a.svg),
+              failed.has(a.svg),
+              () => onIconError(a.svg),
+            )}
           </div>
         </div>`,
     )}
@@ -229,21 +249,29 @@ function inject(achievements: Achievement[], token: string) {
   container.style.cssText = `font-family: ${INTRA_FONT};`;
 
   const icons = new Map<string, AchievementIcon>();
+  const failed = new Set<string>();
+  const paint = () =>
+    render(renderList(achievements, icons, failed, markFailed), container);
+  const markFailed = (value: string) => {
+    if (failed.has(value)) return;
+    failed.add(value);
+    paint();
+  };
   const load = (a: Achievement) => {
-    const curried = () => render(renderList(achievements, icons), container);
-    if (icons.has(a.svg)) {
-      curried();
-      return;
-    }
+    if (icons.has(a.svg) || failed.has(a.svg)) return;
     loadIcon(a.svg, token)
       .then((icon) => {
         if (icon) icons.set(a.svg, icon);
-        curried();
+        else failed.add(a.svg);
+        paint();
       })
-      .catch(() => curried());
+      .catch(() => {
+        failed.add(a.svg);
+        paint();
+      });
   };
   for (const a of achievements) load(a);
-  render(renderList(achievements, icons), container);
+  paint();
   area.appendChild(container);
 }
 

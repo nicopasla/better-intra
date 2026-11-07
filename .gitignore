@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 images-store/
 tools/cluster-map-builder/
+
+# Floor plans are served from R2 (better-intra-worker campus-map route); the
+# local copy is kept for the PWA dev server only.
+/campuses/maps/belgium/plan.svg

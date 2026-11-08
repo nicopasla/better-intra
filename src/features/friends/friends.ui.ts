@@ -41,6 +41,7 @@ import EVAL_SVG from "../../assets/svg/eval.svg?raw";
 import TRASH_SVG from "../../assets/svg/trash.svg?raw";
 import PLUS_SVG from "../../assets/svg/plus.svg?raw";
 import ARROW_SHARE_SVG from "../../assets/svg/arrow_share.svg?raw";
+import RELOAD_SVG from "../../assets/svg/reload.svg?raw";
 
 const HOST_ID = "friends-widget-host";
 
@@ -580,7 +581,7 @@ function renderCacheChip(state: WidgetState): unknown {
     data-tip="${stale
       ? "Showing cached friends — press refresh for live status"
       : `Updated ${ago}`}"
-    >${stale ? "Cached · " : "Updated "}${ago}</span
+    >${stale ? "Cached" : `Updated ${ago}`}</span
   >`;
 }
 
@@ -750,6 +751,13 @@ function renderWidget(state: WidgetState) {
         scrollbar-width: thin;
         scrollbar-gutter: stable;
         padding-bottom: 4rem;
+      }
+
+      .friends-cache-chip {
+        position: absolute;
+        left: 0.75rem;
+        bottom: 0.75rem;
+        z-index: 30;
       }
 
       .friends-actions {
@@ -962,7 +970,6 @@ function renderWidget(state: WidgetState) {
         >
           <div class="flex items-center gap-2.5 min-w-0 flex-none flex-wrap">
             <span class="font-bold text-lg text-base-content">Friends</span>
-            ${renderCacheChip(state)}
           </div>
           ${state.friends.length > 0
             ? html`<div class="flex items-center gap-2 min-w-0 ml-auto">
@@ -1005,38 +1012,33 @@ function renderWidget(state: WidgetState) {
                   )}
                 </div>
                 <div class="mx-0.5 h-5 w-px bg-base-content/20 shrink-0"></div>
-                <span class="indicator shrink-0">
-                  ${staleSnapshot
-                    ? html`<span
-                        class="indicator-item badge badge-warning badge-xs border-0"
-                        data-tip="Showing cached data"
-                      ></span>`
-                    : ""}
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-square shrink-0 hover:opacity-100 ${state.loading
-                      ? "loading"
-                      : ""} ${state.lastFetch &&
-                    Date.now() - state.lastFetch < 60000
-                      ? "btn-outline btn-success"
-                      : "btn-ghost"}"
-                    style="height:1.875rem;"
-                    data-tip="${state.lastFetch
-                      ? `${staleSnapshot ? "Showing cached data" : "Updated"} ${formatTimeAgo(state.lastFetch)}${staleSnapshot ? " — click to refresh" : ""}`
-                      : "Not yet updated"}"
-                    aria-label="${staleSnapshot
-                      ? "Showing cached friends — refresh"
-                      : "Refresh friends"}"
-                    @click="${state.onRefresh}"
-                  >
-                    <div class="swap ${state.loading ? "swap-active" : ""}">
-                      <span
-                        class="swap-on loading loading-spinner loading-xs"
-                      ></span>
-                      <span class="swap-off text-lg">↻</span>
-                    </div>
-                  </button>
-                </span>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-square shrink-0 hover:opacity-100 ${state.loading
+                    ? "loading"
+                    : ""} ${state.lastFetch &&
+                  Date.now() - state.lastFetch < 60000
+                    ? "btn-outline btn-success"
+                    : "btn-ghost"}"
+                  style="height:1.875rem;"
+                  data-tip="${state.lastFetch
+                    ? `${staleSnapshot ? "Showing cached data" : "Updated"} ${formatTimeAgo(state.lastFetch)}${staleSnapshot ? " — click to refresh" : ""}`
+                    : "Not yet updated"}"
+                  aria-label="${staleSnapshot
+                    ? "Showing cached friends — refresh"
+                    : "Refresh friends"}"
+                  @click="${state.onRefresh}"
+                >
+                  <div class="swap ${state.loading ? "swap-active" : ""}">
+                    <span
+                      class="swap-on loading loading-spinner loading-xs"
+                    ></span>
+                    <span
+                      class="swap-off w-4 h-4 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current"
+                      >${unsafeHTML(svgIcon(RELOAD_SVG))}</span
+                    >
+                  </div>
+                </button>
               </div>`
             : ""}
         </div>
@@ -1135,6 +1137,15 @@ function renderWidget(state: WidgetState) {
                             )}
                           </ul>`}
           </div>
+
+          <!-- Snapshot freshness, bottom-left -->
+          ${(state.lastFetch || state.loading) &&
+          !state.deleteMode &&
+          !state.addOpen
+            ? html`<div class="friends-cache-chip">
+                ${renderCacheChip(state)}
+              </div>`
+            : ""}
 
           <!-- Floating actions (add / delete, only when connected) -->
           ${!state.notConnected && !state.needsReconnect

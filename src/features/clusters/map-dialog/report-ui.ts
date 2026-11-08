@@ -1,8 +1,12 @@
 import type { DialogState } from "./context";
+import { PLAN_CLUSTER_ID } from "./plan";
 
 /** Shows/hides the report controls for the current tab and session. */
 export function syncReportControls(state: DialogState): void {
-  const show = state.canReport && state.activeCluster.id !== "active";
+  const show =
+    state.canReport &&
+    state.activeCluster.id !== "active" &&
+    state.activeCluster.id !== PLAN_CLUSTER_ID;
   const btn = state.shadow.getElementById(
     "report-btn",
   ) as HTMLButtonElement | null;

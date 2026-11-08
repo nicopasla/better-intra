@@ -35,6 +35,7 @@ import {
 import { hasCloudSession, SEAT_REPORT_CAMPUS } from "./map-dialog/reports.ts";
 import { loadClusterFriends } from "./map-dialog/friends.ts";
 import { setReportMode } from "./map-dialog/report-ui.ts";
+import { findClusterForPlanZone } from "./map-dialog/plan.ts";
 
 export {
   applyPseudoCluster,
@@ -141,7 +142,10 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
   }
   const canReport = cloudAuth && activeCampusId === SEAT_REPORT_CAMPUS;
 
-  const { clusters, hasMarkers } = await buildClusters(activeCampusId);
+  const { clusters, hasMarkers } = await buildClusters(
+    activeCampusId,
+    detectedCampus,
+  );
   const campusExits = (await getCampusExits(activeCampusId)) ?? null;
 
   const currentTheme =
@@ -407,6 +411,17 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
       if (dd) dd.open = false;
       return;
     }
+    const planZone = path
+      .map((el) => (el instanceof Element ? el.closest("[data-cluster]") : null))
+      .find((el): el is Element => el !== null);
+    if (planZone) {
+      const cluster = findClusterForPlanZone(
+        state,
+        planZone.getAttribute("data-cluster") ?? "",
+      );
+      if (cluster) loadCluster(state, cluster, abortController.signal);
+      return;
+    }
     const reloadBtn = path.find(
       (el) => el instanceof HTMLElement && el.id === "updated-badge",
     );
@@ -516,6 +531,21 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
       "details.dropdown[open]",
     );
     if (openDetails && !inDropdown) openDetails.open = false;
+  });
+
+  shadow.addEventListener("keydown", (e) => {
+    const key = (e as KeyboardEvent).key;
+    if (key !== "Enter" && key !== " ") return;
+    if (!(e.target instanceof Element)) return;
+    const zone = e.target.closest("[data-cluster]");
+    if (!zone) return;
+    const cluster = findClusterForPlanZone(
+      state,
+      zone.getAttribute("data-cluster") ?? "",
+    );
+    if (!cluster) return;
+    e.preventDefault();
+    loadCluster(state, cluster, abortController.signal);
   });
 
   shadow.addEventListener("change", (e) => {

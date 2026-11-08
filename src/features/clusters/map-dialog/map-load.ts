@@ -24,6 +24,11 @@ import { rebuildHeader, updateCampusTime, updateDefaultSelect } from "./header";
 import { syncReportControls } from "./report-ui";
 import { SEAT_REPORT_CAMPUS } from "./reports";
 import { getCampusFlag } from "../../profile/campus-flags.ts";
+import {
+  PLAN_CAMPUS_ID,
+  PLAN_CLUSTER_ID,
+  PLAN_MAP_URL,
+} from "./plan";
 
 function syncMarkersButton(state: DialogState) {
   state.shadow
@@ -35,6 +40,7 @@ function syncMarkersButton(state: DialogState) {
 
 export async function buildClusters(
   campusId: string,
+  ownCampusId = "",
 ): Promise<{ clusters: ClusterInfo[]; hasMarkers: boolean }> {
   let repoClusters: { id: string; name: string; svg?: string }[] = [];
   let hasMarkers = false;
@@ -58,6 +64,13 @@ export async function buildClusters(
   }
   for (const [id, svg] of Object.entries(svgs)) {
     if (!list.some((c) => c.id === id)) list.push({ id, name: "", svg });
+  }
+  // The campus floor plan is a Belgium-only view for Belgium students: it is
+  // hidden for other campuses and for students whose own campus isn't Belgium,
+  // even if they switch the campus picker. It always sits last so the first
+  // cluster stays the default when none is configured.
+  if (campusId === PLAN_CAMPUS_ID && ownCampusId === PLAN_CAMPUS_ID) {
+    list.push({ id: PLAN_CLUSTER_ID, name: "Plan", svg: PLAN_MAP_URL });
   }
   return { clusters: list, hasMarkers };
 }
@@ -247,8 +260,9 @@ export async function loadCluster(
   syncReportControls(state);
   clearSeatGlow(state);
   const isOverview = cluster.id === "active";
+  const isPlan = cluster.id === PLAN_CLUSTER_ID;
   const badge = state.shadow.getElementById("seat-count-badge");
-  if (badge) badge.style.display = isOverview ? "none" : "";
+  if (badge) badge.style.display = isOverview || isPlan ? "none" : "";
   const zoomCtrls = state.shadow.getElementById("zoom-controls");
   if (zoomCtrls) zoomCtrls.style.display = isOverview ? "none" : "";
   const sortCtrls = state.shadow.getElementById("active-sort");
@@ -334,9 +348,10 @@ export async function loadCluster(
     const ownSigns = Boolean(
       svgDoc.querySelector('[class~="sign"], [class~="exit"]'),
     );
-    state.markersAvailable = state.hasMarkers && !ownChairs;
+    state.markersAvailable =
+      state.hasMarkers && !ownChairs && cluster.id !== PLAN_CLUSTER_ID;
     if (state.markersAvailable) applyMarkers(mapArea, state.showMarkers);
-    if (!ownSigns) applyExitSigns(state);
+    if (!ownSigns && cluster.id !== PLAN_CLUSTER_ID) applyExitSigns(state);
     syncMarkersButton(state);
 
     await new Promise<void>((resolve) => {
@@ -410,7 +425,10 @@ export async function loadCampus(
   const exits = await getCampusExits(campusId);
   if (stale()) return;
   state.campusExits = exits ?? null;
-  const { clusters, hasMarkers } = await buildClusters(campusId);
+  const { clusters, hasMarkers } = await buildClusters(
+    campusId,
+    state.detectedCampus,
+  );
   if (stale()) return;
   state.clusters = clusters;
   state.hasMarkers = hasMarkers;

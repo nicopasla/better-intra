@@ -20,6 +20,7 @@ import { loadCluster } from "./map-load";
 import { blockingSeatCount, loadSeatReports } from "./reports";
 import { syncReportControls } from "./report-ui";
 import { loadClusterFriends } from "./friends";
+import { applyPlanCounts, PLAN_CLUSTER_ID } from "./plan";
 
 async function fetchOccupancy(
   campusId: string,
@@ -126,6 +127,9 @@ export function applyOccupancy(
     const blocking = state.canReport ? blockingSeatCount(seats.keys()) : 0;
     const total = Math.max(0, seats.size - blocking);
     clusterCounts.set(clusterId, { taken, total });
+  }
+  if (activeCluster.id === PLAN_CLUSTER_ID) {
+    applyPlanCounts(state, clusterCounts);
   }
   for (const tab of shadow.querySelectorAll<HTMLElement>("[data-cluster-id]")) {
     const id = tab.dataset.clusterId;

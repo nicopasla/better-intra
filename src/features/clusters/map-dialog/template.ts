@@ -148,6 +148,80 @@ export function renderTemplate(state: DialogState): TemplateResult {
         );
         --seat-dead: var(--color-error);
       }
+      /* Campus floor plan: theme the walls, labels and zone tints, and make the
+         rooms read as the clickable zones they are. The SVG bakes light-mode
+         fallbacks for standalone use. */
+      #map-area svg .plan-wall {
+        stroke: var(--wall-fill, #46525e);
+      }
+      #map-area svg .plan-walls {
+        pointer-events: none;
+      }
+      #map-area svg .plan-room-group {
+        cursor: pointer;
+        outline: none;
+      }
+      #map-area svg .plan-room-group[data-cluster="shi"] {
+        --plan-zone: var(--color-info);
+      }
+      #map-area svg .plan-room-group[data-cluster="fu"] {
+        --plan-zone: var(--color-success);
+      }
+      #map-area svg .plan-room-group[data-cluster="mi"] {
+        --plan-zone: var(--color-warning);
+      }
+      #map-area svg .plan-room {
+        fill: color-mix(
+          in oklab,
+          var(--plan-zone, transparent) 16%,
+          transparent
+        );
+        stroke: color-mix(
+          in oklab,
+          var(--plan-zone, transparent) 50%,
+          transparent
+        );
+        stroke-width: 2;
+        vector-effect: non-scaling-stroke;
+        pointer-events: all;
+        transition: fill 120ms ease;
+      }
+      #map-area svg .plan-room-group:hover .plan-room,
+      #map-area svg .plan-room-group:focus-visible .plan-room {
+        fill: color-mix(
+          in oklab,
+          var(--plan-zone, transparent) 32%,
+          transparent
+        );
+      }
+      #map-area svg .plan-room-group:active .plan-room {
+        fill: color-mix(
+          in oklab,
+          var(--plan-zone, transparent) 42%,
+          transparent
+        );
+      }
+      #map-area svg .plan-label {
+        fill: var(--color-base-content);
+        font-family: var(--font-sans);
+        letter-spacing: 0.08em;
+        transition: fill 120ms ease;
+      }
+      #map-area svg .plan-count {
+        fill: var(--color-base-content);
+        font-family: var(--font-sans);
+        font-size: 22px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        opacity: 0.8;
+        pointer-events: none;
+      }
+      #map-area svg .plan-room-group:hover .plan-label,
+      #map-area svg .plan-room-group:focus-visible .plan-label {
+        fill: var(--color-primary);
+      }
       .seat-link {
         position: absolute;
         display: flex;

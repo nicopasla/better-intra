@@ -118,7 +118,7 @@
    <g class="r7 posts">
     <rect class="seat-newer" id="mi-r7-p1" height="40" width="40" y="84" x="336" stroke="#7f7f7f" fill="#e5e5e5"/>
     <rect class="seat-newer" id="mi-r7-p2" height="40" width="40" y="84" x="378" stroke="#7f7f7f" fill="#e5e5e5"/>
-    <rect class="seat-newer" id="mi-r7-p3" height="40" width="40" y="84" x="420" stroke="#7f7f7f" fill="#e5e5e5"/>
+    <rect id="mi-r7-p3" height="40" width="40" y="84" x="420" stroke="#7f7f7f" fill="#e5e5e5"/>
     <image preserveAspectRatio="xMidYMid slice" id="mi-r7-p1" height="40" width="40" y="84" x="336" xlink:href=""/>
     <image preserveAspectRatio="xMidYMid slice" id="mi-r7-p2" height="40" width="40" y="84" x="378" xlink:href=""/>
     <image preserveAspectRatio="xMidYMid slice" id="mi-r7-p3" height="40" width="40" y="84" x="420" xlink:href=""/>

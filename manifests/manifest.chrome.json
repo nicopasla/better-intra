@@ -31,7 +31,7 @@
   "content_scripts": [
     {
       "matches": ["https://*.intra.42.fr/*"],
-      "js": ["content.js"],
+      "js": ["theme-boot.js", "content.js"],
       "run_at": "document_start"
     }
   ]

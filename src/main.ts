@@ -21,6 +21,12 @@ import {
 import { initFontManager } from "./utils/font-manager.ts";
 import { html, render } from "lit-html";
 
+// Apply the theme before any async work: initThemeManager() colors the page
+// synchronously from its cached mode and lifts the pre-paint gate injected by
+// public/theme-boot.js. The cloud merge below can hit the network, so it must
+// never sit between the first paint and the theme.
+void initThemeManager();
+
 void (async () => {
   try {
     const { maybeMergeCloud } = await import("./features/account/account.ts");
@@ -29,7 +35,6 @@ void (async () => {
     // merging is best-effort
   }
 
-  initThemeManager();
   void initAnnouncementBanner();
   initGlobalTooltips(getIsLight);
   void initFontManager();

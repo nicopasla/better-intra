@@ -45,6 +45,52 @@ type ThemePreset = {
 
 export const THEMES: Record<string, ThemePreset> = { ...themesJson };
 
+/** Shared with public/theme-boot.js, which reads the cache at document_start. */
+const BOOT_CACHE_KEY = "ft_intra_theme_boot";
+const BOOT_GATE_CLASS = "ft-theme-pending";
+const BOOT_STYLE_ID = "ft-theme-boot";
+
+/**
+ * Mirrors the resolved theme to localStorage for public/theme-boot.js. The
+ * pre-paint script cannot read chrome.storage synchronously, and an Intra page
+ * is a full navigation, so without this the light HTML paints first.
+ */
+function writeThemeBootCache(theme: "dark" | "light"): void {
+  try {
+    const styles = document.body
+      ? getComputedStyle(document.body)
+      : getComputedStyle(document.documentElement);
+    const cache: {
+      theme: "dark" | "light";
+      background?: string;
+      foreground?: string;
+    } = { theme };
+    const background = styles.backgroundColor;
+    const foreground = styles.color;
+    if (background && background !== "rgba(0, 0, 0, 0)") {
+      cache.background = background;
+    }
+    if (foreground && foreground !== "rgba(0, 0, 0, 0)") {
+      cache.foreground = foreground;
+    }
+    localStorage.setItem(BOOT_CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    /* storage disabled or full */
+  }
+}
+
+/**
+ * Lifts the pre-paint gate from public/theme-boot.js. Called in the same task
+ * as the stylesheet swap, so no intermediate (light) frame is painted.
+ */
+function clearThemeBoot(theme: "dark" | "light"): void {
+  const root = document.documentElement;
+  root.classList.remove(BOOT_GATE_CLASS);
+  document.getElementById(BOOT_STYLE_ID)?.remove();
+  root.style.colorScheme = theme;
+  writeThemeBootCache(theme);
+}
+
 function toKebab(str: string): string {
   return str.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
 }
@@ -131,6 +177,9 @@ export async function applyThemePreset() {
 
   styleEl.textContent = content;
   (document.head || document.documentElement).appendChild(styleEl);
+  // Colors can differ per preset (custom/community themes included), so
+  // refresh the pre-paint cache once the final document palette is in place.
+  writeThemeBootCache(theme.isDark ? "dark" : "light");
 }
 
 function applyTheme(theme: "dark" | "light") {
@@ -156,6 +205,7 @@ function applyTheme(theme: "dark" | "light") {
     document.documentElement.removeAttribute("data-theme");
     if (document.body) document.body.classList.toggle("dark", isDark);
     sessionStorage.setItem("intra-theme", theme);
+    clearThemeBoot(theme);
     return;
   }
 
@@ -190,6 +240,8 @@ function applyTheme(theme: "dark" | "light") {
   } else if (styleEl) {
     styleEl.remove();
   }
+
+  clearThemeBoot(theme);
 
   void applyThemePreset();
 
@@ -313,6 +365,11 @@ export async function initThemeManager() {
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local" && changes.BETTER_INTRA_THEME) {
       sessionStorage.removeItem("intra-theme");
+      try {
+        localStorage.removeItem(BOOT_CACHE_KEY);
+      } catch {
+        /* storage disabled */
+      }
       initThemeManager();
     }
     if (area === "local" && changes.PROFILE_THEME_PRESET) {

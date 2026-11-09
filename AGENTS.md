@@ -29,6 +29,7 @@ cross-env TARGET=firefox BUILD_OUT_DIR=dist-firefox tsc && cross-env TARGET=fire
 - `tsc` type-checks only (`noEmit: true` in tsconfig.json).
 - Output is `dist-firefox/` or `dist-chrome/` (gitignored).
 - `content.js` is a tiny IIFE boot (`public/content.js`) injected at `document_start`: it injects `hook.js` synchronously, then dynamically imports the real app `content-app.js`.
+- `theme-boot.js` (`public/theme-boot.js`) runs at `document_start` before `content.js`: it reads the cached resolved theme (mirrored to `localStorage` by `theme-manager.ts`, since `chrome.storage` is async) and paints the dark surface + hides the body until the real stylesheet lands, so Intra's full-page navigations never flash white.
 - `content-app.js` is built as **ESM with code-splitting** (`chunks/*.js`). `content-app.js` + `chunks/*.js` are exposed via `web_accessible_resources`. Feature modules (profile/logtime/clusters/…) are lazy-loaded per host in `src/main.ts`.
 - `popup.js` is bundled separately. `background.js` is bundled as IIFE.
 - Add any new content-script ESM chunk directories to `web_accessible_resources` in both manifests.

@@ -93,7 +93,7 @@ Fetch-only Worker (no Durable Objects). Storage:
 
 ### Public cluster maps
 
-`GET /api/v1/public/cluster-map/belgium/{shi|fu|mi}.svg` serves a room map with the current `seat_components` reports baked in (red cross for broken Power/Network, amber triangle for keyboard/mouse/audio — the triangle is skipped on an already-crossed seat), so the map embeds as a plain `<img>` without the extension. Reporter logins are never written into the SVG. 60 s cache; falls back to the repo copies under `campuses/maps/belgium/` when R2 has no object.
+`GET /api/v1/public/cluster-map/belgium/{shi|fu|mi}.svg` serves a room map with the current `seat_components` reports baked in, so it embeds as a plain `<img>` without the extension. `?layers=` picks the overlays: `issues` (default; red cross for broken Power/Network, amber triangle for keyboard/mouse/audio — skipped on an already-crossed seat), `broken` (crosses only), `usbc` (blue USB-C glyph on every seat reported to have a port, regardless of occupancy), or `seats`/`none` for the plain map. Default is `issues,usbc`. Reporter logins are never written into the SVG. 60 s cache; falls back to the repo copies under `campuses/maps/belgium/` when R2 has no object.
 
 ### Custom profile badges
 

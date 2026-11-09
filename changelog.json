@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "version": "1.11.14",
+      "date": "2026-11-09",
+      "highlights": [
+        "The friends widget now shows your cached list instantly and refreshes on demand, with a redesigned cache chip and refresh button."
+      ]
+    },
+    {
       "version": "1.11.13",
       "date": "2026-11-06",
       "highlights": [

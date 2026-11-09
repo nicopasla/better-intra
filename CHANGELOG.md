@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## [1.11.14] - 2026-11-09
+
+### Features 🎉
+
+- feat(clusters): add the belgium floor plan to the map dialog ([cdd3831](https://github.com/nicopasla/better-intra/commit/cdd3831))
+- feat(friends): render cached friends and refresh on demand ([ea8dc2e](https://github.com/nicopasla/better-intra/commit/ea8dc2e))
+- feat(friends): rework the cache chip and refresh button ([dff79c5](https://github.com/nicopasla/better-intra/commit/dff79c5))
+
+### Bug fixes 🐛
+
+- fix(friends): improve tooltip messages in cache chip and widget rendering ([367c78f](https://github.com/nicopasla/better-intra/commit/367c78f))
+
+### Maintenance 🧹
+
+- chore: update worker submodule references ([3b7cd6b](https://github.com/nicopasla/better-intra/commit/3b7cd6b), [b39b7d3](https://github.com/nicopasla/better-intra/commit/b39b7d3), [9abe4fc](https://github.com/nicopasla/better-intra/commit/9abe4fc), [32011b2](https://github.com/nicopasla/better-intra/commit/32011b2))
+- chore: ignore the r2 floor plan ([7bc8bee](https://github.com/nicopasla/better-intra/commit/7bc8bee))
+
+### Other Changes 🔄
+
+- style(friends): size the cache chip like the toolbar buttons ([6f0a943](https://github.com/nicopasla/better-intra/commit/6f0a943))
+
 ## [1.11.13] - 2026-11-06
 
 ### Features 🎉
@@ -1610,7 +1631,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.13...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.14...HEAD
+[1.11.14]: https://github.com/nicopasla/better-intra/compare/v1.11.13...v1.11.14
 [1.11.13]: https://github.com/nicopasla/better-intra/compare/v1.11.12...v1.11.13
 [1.11.12]: https://github.com/nicopasla/better-intra/compare/v1.11.11...v1.11.12
 [1.11.11]: https://github.com/nicopasla/better-intra/compare/v1.11.10...v1.11.11

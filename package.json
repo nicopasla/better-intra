@@ -1,7 +1,7 @@
 {
   "name": "better-intra",
   "private": true,
-  "version": "1.11.13",
+  "version": "1.11.14",
   "type": "module",
   "scripts": {
     "dev:firefox": "concurrently \"npm run watch:firefox\" \"npm run web-ext:firefox\"",
@@ -24,7 +24,7 @@
     "@types/sortablejs": "^1.15.9",
     "@types/suncalc": "^1.9.2",
     "@vitest/ui": "^5.1.0",
-    "concurrently": "^10.0.6",
+    "concurrently": "^10.0.7",
     "cross-env": "^10.1.0",
     "daisyui": "^5.7.50",
     "jsdom": "^31.0.0",
@@ -36,14 +36,14 @@
   },
   "dependencies": {
     "@floating-ui/dom": "^1.8.0",
-    "@tailwindcss/vite": "^4.3.4",
+    "@tailwindcss/vite": "^4.3.5",
     "chart.js": "^4.6.1",
-    "colord": "^2.10.0",
+    "colord": "^2.11.0",
     "generate-random-username": "^2.2.0",
     "lit-html": "^3.3.3",
     "qrcode-generator": "^2.0.4",
     "sortablejs": "^1.15.7",
-    "suncalc": "^2.1.2"
+    "suncalc": "^2.1.3"
   },
   "allowScripts": {
     "fsevents": true

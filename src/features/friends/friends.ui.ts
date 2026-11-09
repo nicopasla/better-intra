@@ -575,11 +575,13 @@ function renderCacheChip(state: WidgetState): unknown {
   const stale = age >= STALE_ONLINE_MS;
   const ago = formatTimeAgo(state.lastFetch);
   return html`<span
-    class="${base} ${stale ? "btn-warning" : "btn-ghost border-base-content/20"}"
+    class="${base} ${stale
+      ? "btn-warning"
+      : "btn-ghost border-base-content/20"}"
     style="height:1.875rem;"
     aria-live="polite"
     data-tip="${stale
-      ? "Showing cached friends — press refresh for live status"
+      ? "Showing cached friends, press refresh for live status"
       : `Updated ${ago}`}"
     >${stale ? "Cached" : `Updated ${ago}`}</span
   >`;
@@ -979,9 +981,10 @@ function renderWidget(state: WidgetState) {
                     ? "btn-success"
                     : "btn-ghost border-base-content/20"}"
                   style="height:1.875rem;"
-                  data-tip="${onlineCount} of ${state.friends.length} friend${
-                    state.friends.length === 1 ? "" : "s"
-                  } online — ${state.onlineOnly
+                  data-tip="${onlineCount} of ${state.friends
+                    .length} friend${state.friends.length === 1
+                    ? ""
+                    : "s"} online — ${state.onlineOnly
                     ? "showing online users only (click to show all)"
                     : "show only online users"}"
                   aria-pressed="${state.onlineOnly}"

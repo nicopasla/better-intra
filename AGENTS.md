@@ -93,7 +93,7 @@ Fetch-only Worker (no Durable Objects). Storage:
 
 ### Public cluster maps
 
-`GET /api/v1/public/clusters/belgium` (JSON: maps, per-seat issue summaries, counts and per-view URLs) and `GET /api/v1/public/clusters/belgium/{shi|fu|mi}.svg?view=` (rendered room map, embeddable as a plain `<img>`) serve the current `seat_components` reports without the extension. `view` is one of `default` (issues + USB-C), `issues`, `broken` (crosses only), `usbc`, or `plain`. Reporter logins are never written into either response. 60 s cache; falls back to the repo copies under `campuses/maps/belgium/` when R2 has no object.
+`GET /api/v1/public/clusters/belgium` (JSON discovery: maps, per-seat issue summaries, counts, per-view URLs), `GET /api/v1/public/clusters/belgium/{issues|broken|usbc}` (JSON feeds of the matching seats across maps) and `GET /api/v1/public/clusters/belgium/{shi|fu|mi}.svg?view=` (rendered room map, embeddable as a plain `<img>`) serve the current `seat_components` reports without the extension. `view` is one of `default` (issues + USB-C), `issues`, `broken` (crosses only), `usbc`, or `plain`. Reporter logins are never written into any response. 60 s cache; falls back to the repo copies under `campuses/maps/belgium/` when R2 has no object.
 
 ### Custom profile badges
 

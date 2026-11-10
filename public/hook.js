@@ -52,6 +52,19 @@
     if (lastGroups) dispatchGroups(lastGroups);
   });
 
+  // Keep the last event list payload (id + name) so the extension can resolve
+  // the event opened in the calendar dialog, whose markup carries no id.
+  var lastEvents = null;
+  var dispatchEvents = function (events) {
+    lastEvents = events;
+    document.dispatchEvent(
+      new CustomEvent("42_EVENTS_DATA", { detail: events }),
+    );
+  };
+  document.addEventListener("42_EVENTS_REQUEST", function () {
+    if (lastEvents) dispatchEvents(lastEvents);
+  });
+
   var dispatchToken = function (token) {
     document.dispatchEvent(
       new CustomEvent("42_INTRAPY_TOKEN", { detail: token }),
@@ -125,7 +138,7 @@
         .catch(function () {});
     }
 
-    if (url.indexOf(".intra.42.fr") !== -1) {
+    if (url.indexOf("intra.42.fr") !== -1) {
       var auth = getAuthHeader(args);
       if (auth && auth !== intrapyToken) {
         intrapyToken = auth;
@@ -139,7 +152,7 @@
     // intrapy/profile-v3's API carries the user's groups with their 42 colours
     // (the public API v2 does not), so capture them for the PWA.
     if (
-      url.indexOf(".intra.42.fr") !== -1 &&
+      url.indexOf("intra.42.fr") !== -1 &&
       url.indexOf("/api/") !== -1 &&
       response.ok
     ) {
@@ -147,6 +160,42 @@
         .clone()
         .json()
         .then(function (data) {
+          // Events: anything shaped like { id, name, begin_at } (Intra uses
+          // begin_at, v3 camelCase endpoints use beginAt).
+          var collectEvents = function (node, depth, out) {
+            if (
+              !node ||
+              typeof node !== "object" ||
+              depth > 5 ||
+              out.length >= 500
+            )
+              return;
+            if (Array.isArray(node)) {
+              for (var i = 0; i < node.length; i++) {
+                collectEvents(node[i], depth + 1, out);
+              }
+              return;
+            }
+            var hasStart =
+              node.begin_at ||
+              node.beginAt ||
+              node.start_at ||
+              node.startAt ||
+              node.start;
+            if (node.id != null && typeof node.name === "string" && hasStart) {
+              out.push({
+                id: Number(node.id),
+                name: node.name,
+                kind: typeof node.kind === "string" ? node.kind : "",
+              });
+              return;
+            }
+            for (var key in node) collectEvents(node[key], depth + 1, out);
+          };
+          var events = [];
+          collectEvents(data, 0, events);
+          if (events.length) dispatchEvents(events);
+
           var findGroups = function (node, depth) {
             if (!node || typeof node !== "object" || depth > 4) return null;
             if (Array.isArray(node.groups)) return node.groups;

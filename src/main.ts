@@ -203,6 +203,16 @@ const featureInitializers: { [key: string]: () => Promise<void> } = {
           m.initBackToV2Confirm(),
         );
 
+        // Event dialogs (calendar, events site) get a Subscribers button.
+        if (
+          HOSTNAME === "events.intra.42.fr" ||
+          HOSTNAME.startsWith("profile")
+        ) {
+          void import("./features/events/event-subscribers.ui.ts").then((m) =>
+            m.initEventSubscribers(),
+          );
+        }
+
         // Hub settings are always initialized for the settings page.
         // initHubSettings returns the active feature list.
         const activeScripts = await initHubSettings();

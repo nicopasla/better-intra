@@ -25,6 +25,7 @@ import {
   getIsLight,
 } from "../profile/theme/theme-manager.ts";
 import { bindTooltips } from "../../utils/tooltip.ts";
+import { formatTimeAgo } from "../../utils/dates.ts";
 import { CLUSTERS, getClusterData } from "../clusters/clusters.data.ts";
 import FRIENDS_SVG from "../../assets/svg/friends.svg?raw";
 import GHOST_SVG from "../../assets/svg/ghost.svg?raw";
@@ -335,17 +336,6 @@ function renderFriendRow(
   `;
 }
 
-function formatTimeAgo(ts: number): string {
-  const sec = Math.floor((Date.now() - ts) / 1000);
-  if (sec < 60) return `${sec}s ago`;
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m ago`;
-  const h = Math.floor(min / 60);
-  if (h < 24) return `${h}h ${min % 60}m ago`;
-  const d = Math.floor(h / 24);
-  return `${d}d ${h % 24}h ago`;
-}
-
 function clusterUrl(location: string): string {
   const cluster = CLUSTERS.find((c) => location.startsWith(c.name));
   const hash = cluster ? `#cluster-${cluster.id}` : "";
@@ -565,8 +555,9 @@ function renderCacheChip(state: WidgetState): unknown {
       aria-live="polite"
       aria-label="Refreshing friends"
       disabled
-      >Refreshing…</button
-    >`;
+    >
+      Refreshing…
+    </button>`;
   }
   if (!state.lastFetch) return "";
   const age = Date.now() - state.lastFetch;
@@ -580,8 +571,9 @@ function renderCacheChip(state: WidgetState): unknown {
       aria-label="Refresh friends"
       ?disabled="${disabled}"
       @click="${refresh}"
-      >Live</button
-    >`;
+    >
+      Live
+    </button>`;
   }
   const stale = age >= STALE_ONLINE_MS;
   const ago = formatTimeAgo(state.lastFetch);
@@ -598,8 +590,9 @@ function renderCacheChip(state: WidgetState): unknown {
     aria-label="Refresh friends"
     ?disabled="${disabled}"
     @click="${refresh}"
-    >${stale ? "Cached" : `Updated ${ago}`}</button
-  >`;
+  >
+    ${stale ? "Cached" : `Updated ${ago}`}
+  </button>`;
 }
 
 function renderWidget(state: WidgetState) {

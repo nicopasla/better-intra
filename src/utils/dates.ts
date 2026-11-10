@@ -25,6 +25,18 @@ export function formatRelative(ts: number | null | undefined): string {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
+/** Compact age for live data ("42s ago", "3m ago", "2h 10m ago", "1d 4h ago"). */
+export function formatTimeAgo(ts: number): string {
+  const sec = Math.floor((Date.now() - ts) / 1000);
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h}h ${min % 60}m ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ${h % 24}h ago`;
+}
+
 export function formatAbsoluteDateTime(ts: number): string {
   return new Date(ts).toLocaleString("en-US", {
     month: "short",

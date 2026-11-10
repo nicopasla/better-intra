@@ -196,14 +196,17 @@ html.dark [class*="tab-active"] {
    CONTAINERS: Cards, Panels, Sections
    ============================================================================ */
 
-html.dark [class*="calendar"],
-html.dark [class*="logtime"],
-html.dark [class*="event"],
-html.dark [class*="agenda"],
-html.dark [class*="projects"],
-html.dark [class*="project-item"],
-html.dark [class*="pending"],
-html.dark [class*="evaluation"] {
+/* `[class*=…]` also matches Intra's lucide icons (`lucide-calendar`, …), so
+   replaced elements are excluded or the SVG would get a card background and a
+   forced stroke colour. */
+html.dark [class*="calendar"]:not(svg):not(img),
+html.dark [class*="logtime"]:not(svg):not(img),
+html.dark [class*="event"]:not(svg):not(img),
+html.dark [class*="agenda"]:not(svg):not(img),
+html.dark [class*="projects"]:not(svg):not(img),
+html.dark [class*="project-item"]:not(svg):not(img),
+html.dark [class*="pending"]:not(svg):not(img),
+html.dark [class*="evaluation"]:not(svg):not(img) {
   background-color: hsl(var(--bi-card, var(--card))) !important;
   color: hsl(var(--foreground)) !important;
 }

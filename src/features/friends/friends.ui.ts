@@ -549,41 +549,56 @@ function renderSortControl(
 
 function renderCacheChip(state: WidgetState): unknown {
   // Match the neighbouring toolbar buttons (`btn btn-sm`, 1.875rem tall) so the
-  // chip doesn't look like a stray pill next to them.
-  const base =
-    "btn btn-sm no-animation cursor-default shrink-0 px-2.5 gap-1.5 normal-case";
+  // chip doesn't look like a stray pill next to them. It doubles as a refresh
+  // button: the freshness label is the natural place to ask for live data.
+  const base = "btn btn-sm shrink-0 px-2.5 gap-1.5 normal-case";
+  const disabled = state.notConnected || state.needsReconnect;
+  const refresh = () => {
+    if (!state.loading) state.onRefresh();
+  };
 
   if (state.loading) {
-    return html`<span
-      class="${base} btn-ghost border-base-content/20"
+    return html`<button
+      type="button"
+      class="${base} btn-ghost border-base-content/20 cursor-default"
       style="height:1.875rem;"
       aria-live="polite"
-      >Refreshing…</span
+      aria-label="Refreshing friends"
+      disabled
+      >Refreshing…</button
     >`;
   }
   if (!state.lastFetch) return "";
   const age = Date.now() - state.lastFetch;
   if (age < 60_000) {
-    return html`<span
+    return html`<button
+      type="button"
       class="${base} btn-success"
       style="height:1.875rem;"
       aria-live="polite"
-      data-tip="Live data"
-      >Live</span
+      data-tip="Live data — click to refresh"
+      aria-label="Refresh friends"
+      ?disabled="${disabled}"
+      @click="${refresh}"
+      >Live</button
     >`;
   }
   const stale = age >= STALE_ONLINE_MS;
   const ago = formatTimeAgo(state.lastFetch);
-  return html`<span
+  return html`<button
+    type="button"
     class="${base} ${stale
       ? "btn-warning"
       : "btn-ghost border-base-content/20"}"
     style="height:1.875rem;"
     aria-live="polite"
     data-tip="${stale
-      ? "Showing cached friends, press refresh for live status"
-      : `Updated ${ago}`}"
-    >${stale ? "Cached" : `Updated ${ago}`}</span
+      ? "Showing cached friends — click for live status"
+      : `Updated ${ago} — click to refresh`}"
+    aria-label="Refresh friends"
+    ?disabled="${disabled}"
+    @click="${refresh}"
+    >${stale ? "Cached" : `Updated ${ago}`}</button
   >`;
 }
 

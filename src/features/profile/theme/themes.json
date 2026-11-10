@@ -204,13 +204,13 @@
     "dark": {
       "background": "306 16% 13%",
       "card": "306 18% 10%",
-      "foreground": "37 46% 58%",
+      "foreground": "37 50% 82%",
       "muted": "300 19% 6%",
       "mutedForeground": "301 2% 79%",
       "popover": "306 18% 10%",
-      "popoverForeground": "37 46% 58%",
+      "popoverForeground": "37 50% 82%",
       "accent": "300 19% 6%",
-      "accentForeground": "37 46% 58%",
+      "accentForeground": "37 50% 82%",
       "border": "306 27% 6%",
       "input": "306 18% 10%"
     }

@@ -263,6 +263,17 @@ html.dark .text-cyan-500 {
   color: hsl(var(--foreground)) !important;
 }
 
+/* Intra paints its calendar chips with inline light backgrounds and white
+   text — 42 teal for today, periwinkle for the selected day, salmon for
+   events. The foreground override above repaints that text cream, which is
+   unreadable on all of them. This is the pre-JS fallback; once the page is
+   running, chip-contrast.ts measures each chip's background and picks a
+   contrast-safe shade of the theme's text colour instead. */
+html.dark div[style*="background"][class~="text-white"],
+html.dark span[style*="background"][class~="text-white"] {
+  color: hsl(var(--primary-foreground)) !important;
+}
+
 html.dark div.bg-white {
   background-color: hsl(var(--card)) !important;
 }

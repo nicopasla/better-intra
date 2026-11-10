@@ -20,6 +20,7 @@ import themev2 from "./theme-dark-v2.css?inline";
 import themeLightV3 from "./theme-light-default-v3.css?inline";
 import themeLightV3Overrides from "./theme-light-v3.css?inline";
 import themesJson from "./themes.json";
+import { refreshChipContrasts, startChipContrasts } from "./chip-contrast.ts";
 
 type ThemeModeVars = {
   background: string;
@@ -166,6 +167,7 @@ export async function applyThemePreset() {
   const theme = await syncShadowTheme();
   if (!theme.valid) {
     styleEl.textContent = "";
+    refreshChipContrasts();
     return;
   }
 
@@ -180,6 +182,7 @@ export async function applyThemePreset() {
   // Colors can differ per preset (custom/community themes included), so
   // refresh the pre-paint cache once the final document palette is in place.
   writeThemeBootCache(theme.isDark ? "dark" : "light");
+  refreshChipContrasts();
 }
 
 function applyTheme(theme: "dark" | "light") {
@@ -352,6 +355,11 @@ export async function initThemeManager() {
   // On non-v3 hosts (e.g. the redesigned project page) applyTheme never runs
   // applyThemePreset, so make sure shadow roots still get the preset CSS.
   void syncShadowTheme();
+
+  // Intra's inline-coloured chips need their text measured against the theme.
+  if (window.location.hostname === "profile-v3.intra.42.fr") {
+    startChipContrasts();
+  }
 
   if ((await getConfig("BETTER_INTRA_THEME")) === "schedule") {
     startScheduleTimer();

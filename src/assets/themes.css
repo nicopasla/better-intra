@@ -196,3 +196,10 @@
   --color-error: #d9453f;
   --color-error-content: #ffffff;
 }
+
+/* Coffee (Aubergine)'s stock base-content is a mid-tone salmon that reads dull
+   at small sizes on the plum surfaces. Match the brighter text the Intra page
+   gets from themes.json so panels, logtime and the page agree. */
+[data-theme="coffee"] {
+  --color-base-content: #e8d6ba;
+}

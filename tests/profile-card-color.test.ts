@@ -83,4 +83,21 @@ describe("initProfileCardStyling accent", () => {
     expect(host).not.toBeNull();
     expect(host!.style.getPropertyValue("--user-color")).toBe("#010203");
   });
+
+  it("paints the info card badges and their labels white", async () => {
+    mountProfileCard();
+    await initProfileCardStyling();
+
+    const host = document.getElementById(SHADOW_HOST_ID) as HTMLElement | null;
+    const badges = host!.shadowRoot!.querySelectorAll<HTMLElement>(
+      "[data-ft-badge]",
+    );
+    expect(badges.length).toBeGreaterThan(0);
+    for (const badge of badges) {
+      expect(badge.style.getPropertyPriority("color")).toBe("important");
+      expect(badge.style.color).toBe("rgb(255, 255, 255)");
+      const label = badge.querySelector<HTMLElement>(".label");
+      if (label) expect(label.style.color).toBe("rgb(255, 255, 255)");
+    }
+  });
 });

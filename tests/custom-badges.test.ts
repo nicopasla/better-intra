@@ -74,8 +74,8 @@ describe("buildCustomBadge", () => {
     expect(el.title).toBe("");
   });
 
-  it("uses dark text on light badge colours", () => {
+  it("keeps white text on light badge colours", () => {
     const el = buildCustomBadge({ ...sample, color: "#ffee00" });
-    expect(el.style.color).toBe("rgb(0, 0, 0)");
+    expect(el.style.color).toBe("rgb(255, 255, 255)");
   });
 });

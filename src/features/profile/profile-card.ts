@@ -261,7 +261,7 @@ function populateMainBadges(
     badge.className =
       "badge badge-lg h-auto flex w-full justify-between gap-4 px-5 py-1.5 text-lg";
     badge.style.backgroundColor = "var(--ft-card-bg)";
-    badge.style.color = "var(--ft-card-text)";
+    badge.style.setProperty("color", "#ffffff", "important");
     badge.style.borderRadius = "0.75rem";
 
     badge.style.setProperty("border", "3px solid", "important");
@@ -273,7 +273,7 @@ function populateMainBadges(
 
     const label = document.createElement("span");
     label.className = "label text-lg font-medium";
-    label.style.color = "color-mix(in oklab, currentcolor 80%, transparent)";
+    label.style.color = "#ffffff";
     label.textContent = item.label;
 
     const value = document.createElement("span");
@@ -330,7 +330,7 @@ async function injectSeatBadge(profileCard: HTMLElement) {
     badge.className =
       "badge badge-lg h-auto flex w-full justify-center px-5 py-1.5 text-lg";
     badge.style.backgroundColor = "var(--ft-card-bg)";
-    badge.style.color = "var(--ft-card-text)";
+    badge.style.setProperty("color", "#ffffff", "important");
     badge.style.border = "3px solid transparent";
     badge.style.borderRadius = "0.75rem";
     badge.style.cursor = "default";
@@ -346,10 +346,9 @@ async function injectSeatBadge(profileCard: HTMLElement) {
   badge.className =
     "badge badge-lg h-auto flex items-center justify-between w-full px-5 py-1.5 text-lg whitespace-nowrap";
   badge.style.backgroundColor = "var(--ft-card-bg)";
-  badge.style.color = "var(--ft-card-text)";
+  badge.style.setProperty("color", "#ffffff", "important");
   badge.style.border = "3px solid transparent";
   badge.style.borderRadius = "0.75rem";
-  badge.style.color = "inherit";
   badge.style.fontWeight = "600";
   badge.style.cursor = "pointer";
   badge.setAttribute("data-tip", "View on cluster map");
@@ -474,12 +473,10 @@ function createInfoCard(
   profileCard: HTMLElement,
 ) {
   const cardBg = getComputedStyle(profileCard).backgroundColor;
-  const cardText = getComputedStyle(profileCard).color;
   const shadowHost = document.createElement("div");
   shadowHost.id = SHADOW_HOST_ID;
   if (cardBg && cardBg !== "transparent" && cardBg !== "rgba(0, 0, 0, 0)")
     shadowHost.style.setProperty("--ft-card-bg", cardBg);
-  if (cardText) shadowHost.style.setProperty("--ft-card-text", cardText);
   seedBadgeHostColor(shadowHost, profileCard);
 
   const shadowRoot = shadowHost.attachShadow({ mode: "open" });

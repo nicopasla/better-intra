@@ -184,7 +184,7 @@ describe("badgeColorCss", () => {
     expect(badgeColorCss(undefined)).toBe("");
   });
 
-  it("sets a readable text colour with the background and border", () => {
+  it("keeps white text, like the native role badges", () => {
     const dark = badgeColorCss("#613583");
     expect(dark).toContain("background-color: #613583 !important");
     expect(dark).toContain("border-color: #613583 !important");
@@ -192,7 +192,7 @@ describe("badgeColorCss", () => {
 
     const light = badgeColorCss("#ffffff");
     expect(light).toContain("background-color: #ffffff !important");
-    expect(light).toContain("color: #000000 !important");
+    expect(light).toContain("color: #ffffff !important");
   });
 });
 

@@ -2,7 +2,6 @@ import { getConfig } from "../../config.ts";
 import { hashLogin } from "../../utils/crypto.ts";
 import { workerFetch } from "../../utils/worker.ts";
 import { getLoginFromPage } from "../../utils/profile-login.ts";
-import { contrastText } from "../../utils/color.ts";
 
 /**
  * Admin-granted profile badges, read from the worker (D1 `custom_badges`).
@@ -66,7 +65,8 @@ export function buildCustomBadge(badge: CustomBadge): HTMLSpanElement {
   if (badge.color) {
     el.style.backgroundColor = badge.color;
     el.style.borderColor = badge.color;
-    el.style.color = contrastText(badge.color);
+    // White like the native role badges, whatever the badge colour is.
+    el.style.color = "#ffffff";
   }
   if (badge.tooltip) el.title = badge.tooltip;
   el.textContent = badge.label;

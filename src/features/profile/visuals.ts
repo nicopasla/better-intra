@@ -1,5 +1,5 @@
 import { getConfig, getConfigMany } from "../../config.ts";
-import { contrastText, ensureContrast } from "../../utils/color.ts";
+import { ensureContrast } from "../../utils/color.ts";
 import { ensureDocumentStyle } from "../../utils/style.ts";
 import { getLoginFromPage } from "../../utils/profile-login.ts";
 import { applyProfileLook, clearProfileLook } from "./theme/theme-manager.ts";
@@ -266,9 +266,10 @@ const hasBackground = (el: HTMLElement | null, url?: string) => {
   return inlineMatch?.[2] === url || computedMatch?.[2] === url;
 };
 
+/** User badges keep white text regardless of the picked background. */
 export const badgeColorCss = (badgeBg?: string): string => {
   if (!badgeBg) return "";
-  return `background-color: ${badgeBg} !important; border-color: ${badgeBg} !important; color: ${contrastText(badgeBg)} !important;`;
+  return `background-color: ${badgeBg} !important; border-color: ${badgeBg} !important; color: #ffffff !important;`;
 };
 
 const BADGE_RADIUS: Record<string, string> = {

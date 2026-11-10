@@ -19,6 +19,7 @@ import {
   peekAuthFlow,
 } from "./features/account/auth-callback.ts";
 import { initFontManager } from "./utils/font-manager.ts";
+import { initSelectionGuard } from "./utils/selection-guard.ts";
 import { html, render } from "lit-html";
 
 // Apply the theme before any async work: initThemeManager() colors the page
@@ -26,6 +27,10 @@ import { html, render } from "lit-html";
 // public/theme-boot.js. The cloud merge below can hit the network, so it must
 // never sit between the first paint and the theme.
 void initThemeManager();
+
+// Intra closes dialogs on press; this stops the stray text selection that the
+// release behind the dialog would otherwise create.
+initSelectionGuard();
 
 void (async () => {
   try {

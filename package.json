@@ -17,7 +17,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "generate:store-images": "node scripts/generate-store-images.js",
-    "generate:description": "node scripts/convert-description.js"
+    "generate:description": "node scripts/convert-description.js",
+    "preview:clusters": "node better-intra-worker/scripts/preview-maps.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.3.7",

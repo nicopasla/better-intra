@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "version": "1.11.15",
+      "date": "2026-11-11",
+      "highlights": [
+        "Events now show who subscribed: see everyone interested in each event, with their profile at a glance.",
+        "Cluster maps can now flag seats without a computer, and a legend explains every marker on the plan.",
+        "Readability fixes: coloured chip text and badge labels stay readable in every theme.",
+        "Intra no longer flashes white between full-page loads, and closing a dialog stops leaving text selected.",
+        "Small fixes: lucide icons keep their own colour, and the friends cache chip refreshes when clicked."
+      ]
+    },
+    {
       "version": "1.11.14",
       "date": "2026-11-09",
       "highlights": [

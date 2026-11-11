@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## [1.11.15] - 2026-11-11
+
+### Features 🎉
+
+- feat(events): show event subscribers ([75698b8](https://github.com/nicopasla/better-intra/commit/75698b8))
+- feat(clusters): report seats without a computer ([5927764](https://github.com/nicopasla/better-intra/commit/5927764))
+
+### Bug fixes 🐛
+
+- fix(friends): refresh from the cache chip ([396aca3](https://github.com/nicopasla/better-intra/commit/396aca3))
+- fix(profile): keep badge text white ([e728098](https://github.com/nicopasla/better-intra/commit/e728098))
+- fix(theme): keep coloured chip text readable ([10e81bd](https://github.com/nicopasla/better-intra/commit/10e81bd))
+- fix(theme): stop container rule painting lucide icons ([86cc830](https://github.com/nicopasla/better-intra/commit/86cc830))
+- fix(intra): stop stray selection when a dialog closes ([fc29ea5](https://github.com/nicopasla/better-intra/commit/fc29ea5))
+- fix(theme): avoid white flash on intra page loads ([7e36ba5](https://github.com/nicopasla/better-intra/commit/7e36ba5))
+
+### Maintenance 🧹
+
+- chore: update worker submodule references ([af9a0a6](https://github.com/nicopasla/better-intra/commit/af9a0a6), [e0853a2](https://github.com/nicopasla/better-intra/commit/e0853a2), [25dc4a4](https://github.com/nicopasla/better-intra/commit/25dc4a4), [e9b5422](https://github.com/nicopasla/better-intra/commit/e9b5422), [ac0e2e1](https://github.com/nicopasla/better-intra/commit/ac0e2e1))
+- chore: update MI cluster ([d48a84c](https://github.com/nicopasla/better-intra/commit/d48a84c))
+- chore: add a cluster map preview script ([5bea4ca](https://github.com/nicopasla/better-intra/commit/5bea4ca))
+
 ## [1.11.14] - 2026-11-09
 
 ### Features 🎉
@@ -1631,7 +1653,8 @@
 - chore(profile): Refactor profile visuals ([8aa3ff8](https://github.com/nicopasla/better-intra/commit/8aa3ff8))
 - chore: Update README ([773a0f2](https://github.com/nicopasla/better-intra/commit/773a0f2))
 
-[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.14...HEAD
+[unreleased]: https://github.com/nicopasla/better-intra/compare/v1.11.15...HEAD
+[1.11.15]: https://github.com/nicopasla/better-intra/compare/v1.11.14...v1.11.15
 [1.11.14]: https://github.com/nicopasla/better-intra/compare/v1.11.13...v1.11.14
 [1.11.13]: https://github.com/nicopasla/better-intra/compare/v1.11.12...v1.11.13
 [1.11.12]: https://github.com/nicopasla/better-intra/compare/v1.11.11...v1.11.12

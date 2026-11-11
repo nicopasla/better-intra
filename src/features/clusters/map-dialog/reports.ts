@@ -219,19 +219,22 @@ function severityOf(
   for (const component of report.components) {
     if (!isCrossingBroken(host, component)) continue;
     const def = SEAT_COMPONENT_MAP.get(component.component);
+    // Unknown keys are components removed from the catalog (e.g. the retired
+    // "audio"); ignore their stale rows instead of counting them as issues.
+    if (!def) continue;
     // A missing USB-C port is not a defect: presence answers never mark the
     // seat as broken.
-    if (component.component === "usbc" || def?.kind === "presence") continue;
-    if (def?.severity === "blocking") return "blocking";
+    if (component.component === "usbc" || def.kind === "presence") continue;
+    if (def.severity === "blocking") return "blocking";
     severity = "minor";
   }
   return severity;
 }
 
 /**
- * Broken components that do not cross the seat out: keyboard, mouse scroll and
- * audio. Used for the map's warning glyph, so a crossed seat keeps its cross
- * and only the non-blocking issues get the triangle.
+ * Broken components that do not cross the seat out: keyboard and mouse scroll.
+ * Used for the map's warning glyph, so a crossed seat keeps its cross and only
+ * the non-blocking issues get the triangle.
  */
 export function getMinorSeatIssues(host: string): SeatComponentKey[] {
   const report = getSeatReport(host);
@@ -240,8 +243,8 @@ export function getMinorSeatIssues(host: string): SeatComponentKey[] {
   for (const component of report.components) {
     if (!isCrossingBroken(report.host, component)) continue;
     const def = SEAT_COMPONENT_MAP.get(component.component);
-    if (component.component === "usbc" || def?.kind === "presence") continue;
-    if (def?.severity !== "minor") continue;
+    if (!def || def.kind === "presence") continue;
+    if (def.severity !== "minor") continue;
     issues.push(component.component);
   }
   return issues;
@@ -376,6 +379,20 @@ export function blockingSeatCount(seatKeys: Iterable<string>): number {
     if (getSeatSeverityByKey(key) === "blocking") blocking++;
   }
   return blocking;
+}
+
+/** Seats reported as having no computer at all (crossed on the map). */
+export function noComputerSeatCount(seatKeys: Iterable<string>): number {
+  let count = 0;
+  for (const key of seatKeys) {
+    const report = getSeatReportByKey(key);
+    const missing = report?.components.some(
+      (component) =>
+        component.component === "computer" && component.status === "broken",
+    );
+    if (missing) count++;
+  }
+  return count;
 }
 
 /** Why a seat is crossed, for the hover tooltip / debugging. */

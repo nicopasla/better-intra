@@ -10,6 +10,47 @@ import SETTINGS_SVG from "../../../assets/svg/settings_gear.svg?raw";
 import X_SVG from "../../../assets/svg/x.svg?raw";
 import RESET_SVG from "../../../assets/svg/reset.svg?raw";
 import BUG_SVG from "../../../assets/svg/bug.svg?raw";
+import CIRCLE_QUESTION_SVG from "../../../assets/svg/circle-question-mark.svg?raw";
+
+const LEGEND_SWATCHES = [
+  {
+    swatch:
+      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 5 19 19 M19 5 5 19" fill="none" stroke="#d9453f" stroke-width="2.4" stroke-linecap="round"/></svg>',
+    label: "No computer",
+  },
+  {
+    swatch:
+      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="3" fill="#d9453f" fill-opacity="0.22" stroke="#d9453f" stroke-width="1.5"/></svg>',
+    label: "Broken computer (Power / Network)",
+  },
+  {
+    swatch:
+      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#df9539" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
+    label: "Keyboard or mouse scroll issue",
+  },
+  {
+    swatch:
+      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="10" rx="5" fill="none" stroke="#38bdf8" stroke-width="1.6"/><rect x="7" y="11" width="10" height="2" rx="1" fill="#38bdf8"/></svg>',
+    label: "USB-C port reported",
+  },
+  {
+    swatch:
+      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="3" fill="var(--color-success)" fill-opacity="0.3" stroke="var(--color-success)" stroke-width="1.5"/></svg>',
+    label: "Newer computer",
+  },
+] as const;
+
+function renderLegendItems(): TemplateResult {
+  return html`${LEGEND_SWATCHES.map(
+    (row) => html`<div class="flex items-center gap-2 py-0.5">
+      <span
+        class="size-3.5 shrink-0 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
+        >${unsafeHTML(row.swatch)}</span
+      >
+      <span class="text-[11px] leading-tight">${row.label}</span>
+    </div>`,
+  )}`;
+}
 
 function renderDefaultOptions(state: DialogState) {
   const { clusters, defaultId } = state;
@@ -266,6 +307,19 @@ export function renderTemplate(state: DialogState): TemplateResult {
         outline: 2px solid var(--color-success);
         outline-offset: -2px;
       }
+      /* Seats whose computer is broken (Power/Network): a quiet red tint. */
+      #map-area svg rect.seat-broken {
+        fill: color-mix(
+          in oklab,
+          var(--color-error) 22%,
+          var(--color-base-200)
+        ) !important;
+        stroke: var(--color-error) !important;
+      }
+      .seat-link.seat-broken {
+        outline: 2px solid var(--color-error);
+        outline-offset: -2px;
+      }
       /* Friend seated on the map: quiet blue ring above the avatar. */
       .seat-friend-ring {
         display: none;
@@ -332,7 +386,7 @@ export function renderTemplate(state: DialogState): TemplateResult {
         width: 100%;
         height: auto;
       }
-      /* Non-blocking defect (keyboard, mouse scroll, audio): mirror the USB-C
+      /* Non-blocking defect (keyboard, mouse scroll): mirror the USB-C
          presence glyph on the opposite side of the seat. */
       .seat-warning {
         position: absolute;
@@ -722,21 +776,52 @@ export function renderTemplate(state: DialogState): TemplateResult {
         <div id="map-area-clip" class="rounded-lg overflow-hidden h-full">
           <div id="map-area" class="h-full"></div>
         </div>
-        <button
-          id="report-btn"
-          type="button"
-          class="btn btn-sm btn-warning gap-2 px-3 absolute bottom-3 left-3 z-20"
-          style="display:none"
-          aria-label="Report a computer issue"
-          aria-pressed="false"
-          data-tip="Report a computer issue"
-          data-tip-size="14px"
+        <div
+          class="absolute bottom-3 left-3 z-20 flex items-center gap-2"
         >
-          ${unsafeHTML(BUG_SVG.replace("<svg", '<svg width="16" height="16"'))}
-          <span id="report-btn-label" class="text-xs font-semibold leading-none"
-            >Report</span
+          <button
+            id="report-btn"
+            type="button"
+            class="btn btn-sm btn-warning gap-2 px-3"
+            style="display:none"
+            aria-label="Report a computer issue"
+            aria-pressed="false"
+            data-tip="Report a computer issue"
+            data-tip-size="14px"
           >
-        </button>
+            ${unsafeHTML(
+              BUG_SVG.replace("<svg", '<svg width="16" height="16"'),
+            )}
+            <span
+              id="report-btn-label"
+              class="text-xs font-semibold leading-none"
+              >Report</span
+            >
+          </button>
+          <div style="position:relative;">
+            <button
+              id="legend-btn"
+              type="button"
+              class="btn btn-sm btn-ghost gap-1 px-2 bg-base-100/90 backdrop-blur shadow"
+              aria-controls="legend-menu"
+              aria-expanded="false"
+              data-tip="What the markers mean"
+              data-tip-size="14px"
+            >
+              <span
+                class="size-4 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
+                >${unsafeHTML(CIRCLE_QUESTION_SVG)}</span
+              >
+              <span class="text-xs font-semibold leading-none">Legend</span>
+            </button>
+            <div
+              id="legend-menu"
+              style="display:none;position:absolute;bottom:calc(100% + 6px);left:0;z-index:50;width:15rem;border-radius:8px;background:var(--color-base-100);border:1px solid var(--color-base-300);box-shadow:0 6px 16px rgba(0,0,0,.28);padding:8px;"
+            >
+              ${renderLegendItems()}
+            </div>
+          </div>
+        </div>
         <div
           id="report-hint"
           class="absolute bottom-14 left-3 z-20 rounded-lg bg-base-100/90 px-2 py-1 text-[11px] font-medium shadow backdrop-blur"

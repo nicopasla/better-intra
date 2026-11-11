@@ -170,6 +170,14 @@ export function openSeatReportSheet(options: SeatReportSheetOptions): void {
     } else {
       draft.set(component, status);
     }
+    // No computer means none of the other parts can be assessed: drop their
+    // pending answers so a batch never mixes "no computer" with "keyboard
+    // broken".
+    if (component === "computer" && effectiveStatus("computer") === "broken") {
+      for (const key of [...draft.keys()]) {
+        if (key !== "computer") draft.delete(key);
+      }
+    }
     error = "";
     draw();
   };
@@ -292,48 +300,63 @@ export function openSeatReportSheet(options: SeatReportSheetOptions): void {
     </div>`;
   };
 
-  const body = () => html`
-    ${occupant
-      ? html`<div
-          class="alert alert-info flex justify-center rounded-[var(--badge-radius)] py-2 text-center text-xs"
+  const body = () => {
+    // A seat with no computer has nothing else to report: grey out the rest.
+    const noComputer = effectiveStatus("computer") === "broken";
+    return html`
+      ${occupant
+        ? html`<div
+            class="alert alert-info flex justify-center rounded-[var(--badge-radius)] py-2 text-center text-xs"
+          >
+            <span>In use by <strong>${occupant}</strong> right now.</span>
+          </div>`
+        : ""}
+      <div class="grid grid-cols-3 gap-1.5">
+        ${SEAT_COMPONENTS.map((def) =>
+          componentCell(
+            def,
+            effectiveStatus(def.key),
+            saving || (noComputer && def.key !== "computer"),
+            select,
+          ),
+        )}
+      </div>
+      ${noComputer
+        ? html`<p class="text-center text-xs opacity-60">
+            No computer at this seat — only the computer presence can be
+            changed.
+          </p>`
+        : ""}
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          class="badge badge-lg badge-success gap-1 px-3 font-semibold disabled:pointer-events-none disabled:opacity-50"
+          ?disabled=${saving || noComputer}
+          @click=${onEverythingWorks}
         >
-          <span>In use by <strong>${occupant}</strong> right now.</span>
-        </div>`
-      : ""}
-    <div class="grid grid-cols-3 gap-1.5">
-      ${SEAT_COMPONENTS.map((def) =>
-        componentCell(def, effectiveStatus(def.key), saving, select),
-      )}
-    </div>
-    <div class="flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        class="badge badge-lg badge-success gap-1 px-3 font-semibold disabled:pointer-events-none disabled:opacity-50"
-        ?disabled=${saving}
-        @click=${onEverythingWorks}
-      >
-        ${icon(CHECK_SVG, 12)} Everything works
-      </button>
-      <button
-        type="button"
-        class="btn btn-sm btn-primary flex-1"
-        ?disabled=${saving || draft.size === 0}
-        @click=${save}
-      >
-        ${saving
-          ? html`<span class="loading loading-spinner loading-xs"></span>`
-          : `Save changes${draft.size ? ` (${draft.size})` : ""}`}
-      </button>
-    </div>
-    ${error ? html`<p class="text-xs text-error">${error}</p>` : ""}
-    <details class="collapse collapse-arrow rounded-box bg-base-200/60">
-      <summary class="collapse-title text-sm font-medium">History</summary>
-      <div class="collapse-content">${historyList()}</div>
-    </details>
-    <p class="text-center text-xs opacity-60">
-      Your login is attached to every report.
-    </p>
-  `;
+          ${icon(CHECK_SVG, 12)} Everything works
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-primary flex-1"
+          ?disabled=${saving || draft.size === 0}
+          @click=${save}
+        >
+          ${saving
+            ? html`<span class="loading loading-spinner loading-xs"></span>`
+            : `Save changes${draft.size ? ` (${draft.size})` : ""}`}
+        </button>
+      </div>
+      ${error ? html`<p class="text-xs text-error">${error}</p>` : ""}
+      <details class="collapse collapse-arrow rounded-box bg-base-200/60">
+        <summary class="collapse-title text-sm font-medium">History</summary>
+        <div class="collapse-content">${historyList()}</div>
+      </details>
+      <p class="text-center text-xs opacity-60">
+        Your login is attached to every report.
+      </p>
+    `;
+  };
 
   const draw = () => {
     render(

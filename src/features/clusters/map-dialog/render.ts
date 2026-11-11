@@ -351,6 +351,21 @@ export function renderSeatOverlays(
   syncSeatHotspots(state, overlay, occupied);
 }
 
+/** Red tint for a seat whose computer is broken (Power/Network). */
+function setBrokenTint(
+  overlay: SeatOverlay,
+  key: string,
+  on: boolean,
+): void {
+  const raw = overlay.rawIds.get(key) ?? key;
+  const escaped = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(raw) : raw;
+  const rect = overlay.svg.querySelector<Element>(
+    `rect[id="${escaped}"]`,
+  );
+  rect?.classList.toggle("seat-broken", on);
+  overlay.links.get(key)?.classList.toggle("seat-broken", on);
+}
+
 /** Draws the report cross and the USB-C glyph for the current map. */
 function renderSeatDecorations(
   state: DialogState,
@@ -361,6 +376,7 @@ function renderSeatDecorations(
   if (!state.canReport) {
     for (const decoration of overlay.decorations.values()) decoration.remove();
     overlay.decorations.clear();
+    for (const key of overlay.geoms.keys()) setBrokenTint(overlay, key, false);
     return;
   }
   const scale = overlay.baseScale;
@@ -370,20 +386,23 @@ function renderSeatDecorations(
     // occupied seats prefer the API's host, which is what the report sheet
     // reads and writes; it can differ in formatting from the SVG id.
     const host = reportHosts.get(key) ?? overlay.rawIds.get(key) ?? key;
-    // A cross is strictly a Power/Network report. Using the explicit reasons
-    // also makes the rule independent of the severity catalog.
+    // A cross means the seat has no computer at all (presence answer). A broken
+    // computer (Power/Network) is a red tint instead.
+    const noComputer =
+      getComponentStatus(host, "computer")?.status === "broken";
     const reasons = blockingSeatReasons(host);
     const blocking = reasons.length > 0;
+    setBrokenTint(overlay, key, blocking && !noComputer);
     const usbc =
       !occupied.has(key) &&
       getComponentStatus(host, "usbc")?.status === "works";
-    // A crossed seat only shows the cross; the triangle is reserved for seats
-    // whose only issues are non-blocking (keyboard, mouse scroll, audio).
-    const issues = blocking ? [] : getMinorSeatIssues(host);
+    // Crossed or broken seats only show that: the triangle is reserved for
+    // seats whose only issues are non-blocking (keyboard, mouse scroll).
+    const issues = noComputer || blocking ? [] : getMinorSeatIssues(host);
     const issueKey = issues.join("+");
     const existing = overlay.decorations.get(key);
 
-    if (!blocking && !usbc && !issueKey) {
+    if (!noComputer && !usbc && !issueKey) {
       if (existing) {
         existing.remove();
         overlay.decorations.delete(key);
@@ -400,15 +419,15 @@ function renderSeatDecorations(
       overlay.decorations.set(key, decoration);
     }
 
-    // The cross node only exists while there is a Power/Network reason. This is
+    // The cross node only exists for a seat with no computer. This is
     // structural, so a USB-C-only seat can never render a cross.
-    const content = `${blocking ? "cross" : ""}${usbc ? "usbc" : ""}${
+    const content = `${noComputer ? "cross" : ""}${usbc ? "usbc" : ""}${
       issueKey ? `warn:${issueKey}` : ""
     }`;
     if (decoration.dataset.content !== content) {
       decoration.dataset.content = content;
       render(
-        html`${blocking
+        html`${noComputer
           ? html`<svg
               class="seat-cross"
               viewBox="0 0 100 100"

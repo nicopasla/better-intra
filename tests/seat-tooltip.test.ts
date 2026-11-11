@@ -7,10 +7,10 @@ describe("seatIssueTooltipHtml", () => {
   });
 
   it("renders one icon+label row per broken component", () => {
-    const html = seatIssueTooltipHtml(["keyboard", "audio"]);
+    const html = seatIssueTooltipHtml(["keyboard", "mouse_scroll"]);
     expect(html).toContain("Broken");
     expect(html).toContain("Keyboard");
-    expect(html).toContain("Audio");
+    expect(html).toContain("Mouse scroll");
     expect(html.match(/<svg/g)).toHaveLength(2);
     expect(html.match(/width="14" height="14"/g)).toHaveLength(2);
   });
@@ -21,13 +21,13 @@ describe("seatIssueTooltipHtml", () => {
       "network",
       "keyboard",
       "mouse_scroll",
-      "audio",
+      "computer",
     ]);
     expect(html).toContain("Power");
     expect(html).toContain("Network");
     expect(html).toContain("Keyboard");
     expect(html).toContain("Mouse scroll");
-    expect(html).toContain("Audio");
+    expect(html).toContain("Computer");
     expect(html.match(/<svg/g)).toHaveLength(5);
   });
 

@@ -344,6 +344,31 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
     const settingsBtn = shadow.getElementById(
       "settings-btn",
     ) as HTMLElement | null;
+    const legendMenu = shadow.getElementById(
+      "legend-menu",
+    ) as HTMLElement | null;
+    const legendBtn = shadow.getElementById(
+      "legend-btn",
+    ) as HTMLElement | null;
+    const closeLegend = () => {
+      if (legendMenu) legendMenu.style.display = "none";
+      legendBtn?.setAttribute("aria-expanded", "false");
+      legendBtn?.setAttribute("data-tip", "What the markers mean");
+    };
+
+    if (legendBtn && path.includes(legendBtn)) {
+      if (legendMenu) {
+        const willOpen = legendMenu.style.display === "none";
+        legendMenu.style.display = willOpen ? "block" : "none";
+        legendBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+        // No tooltip while the panel is open: it would sit on top of it.
+        if (willOpen) legendBtn.removeAttribute("data-tip");
+        else legendBtn.setAttribute("data-tip", "What the markers mean");
+      }
+      if (settingsMenu) settingsMenu.style.display = "none";
+      if (campusMenu) campusMenu.style.display = "none";
+      return;
+    }
 
     const campusOption = path.find(
       (el) => el instanceof HTMLElement && el.hasAttribute("data-campus-id"),
@@ -351,6 +376,7 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
     if (campusOption && campusOption.dataset.campusId) {
       if (campusMenu) campusMenu.style.display = "none";
       if (settingsMenu) settingsMenu.style.display = "none";
+      closeLegend();
       loadCampus(state, campusOption.dataset.campusId, abortController.signal);
       return;
     }
@@ -360,6 +386,7 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
           campusMenu.style.display === "none" ? "block" : "none";
       }
       if (settingsMenu) settingsMenu.style.display = "none";
+      closeLegend();
       return;
     }
     if (settingsBtn && path.includes(settingsBtn)) {
@@ -369,12 +396,14 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
         if (willOpen) positionMenu(settingsMenu, settingsBtn);
       }
       if (campusMenu) campusMenu.style.display = "none";
+      closeLegend();
       return;
     }
 
     const tourBtn = shadow.getElementById("map-tour-btn");
     if (tourBtn && path.includes(tourBtn)) {
       if (settingsMenu) settingsMenu.style.display = "none";
+      closeLegend();
       void startClusterDialogTour(state);
       return;
     }
@@ -382,8 +411,16 @@ async function openClusterDialogImpl(opts?: { seatId?: string }) {
       (el) => el instanceof HTMLElement && el.id === "report-btn",
     );
     if (reportBtn) {
+      closeLegend();
       setReportMode(state, !state.reportMode);
       return;
+    }
+    if (
+      legendMenu &&
+      legendMenu.style.display !== "none" &&
+      !path.includes(legendMenu)
+    ) {
+      closeLegend();
     }
     if (
       campusMenu &&

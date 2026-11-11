@@ -4,7 +4,7 @@ import { adoptShadowStyles } from "../../../utils/shadow-styles.ts";
 import { clusterLabel, type DialogState } from "./context";
 import { renderTemplate } from "./template";
 import { normalizeSeatId } from "./seats";
-import { blockingSeatCount } from "./reports";
+import { noComputerSeatCount } from "./reports";
 import { syncReportControls } from "./report-ui";
 import CHEVRON_DOWN_SVG from "../../../assets/svg/chevron-down.svg?raw";
 
@@ -29,8 +29,8 @@ function clusterCountLabel(
       if (seats.has(normalizeSeatId(host))) taken++;
     }
   }
-  const blocking = state.canReport ? blockingSeatCount(seats.keys()) : 0;
-  const total = Math.max(0, seats.size - blocking);
+  const unusable = state.canReport ? noComputerSeatCount(seats.keys()) : 0;
+  const total = Math.max(0, seats.size - unusable);
   return `${taken}/${total}`;
 }
 

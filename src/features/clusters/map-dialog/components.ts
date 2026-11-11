@@ -3,11 +3,11 @@
  * Keep the keys in sync with the worker's `SEAT_COMPONENTS` allowlist.
  */
 export type SeatComponentKey =
+  | "computer"
   | "boot"
   | "network"
   | "keyboard"
   | "mouse_scroll"
-  | "audio"
   | "usbc";
 
 export type SeatSeverity = "blocking" | "minor";
@@ -32,6 +32,17 @@ export interface SeatComponentDef {
 }
 
 export const SEAT_COMPONENTS: SeatComponentDef[] = [
+  {
+    // Does this seat have a computer at all? "No" only tints the seat, it never
+    // marks it broken (presence answers don't count towards severity).
+    key: "computer",
+    label: "Computer",
+    severity: "minor",
+    group: "usability",
+    kind: "presence",
+    assumeWorking: true,
+    labels: { on: "Yes", off: "No" },
+  },
   { key: "boot", label: "Power", severity: "blocking", group: "usability" },
   {
     key: "network",
@@ -51,7 +62,6 @@ export const SEAT_COMPONENTS: SeatComponentDef[] = [
     severity: "minor",
     group: "peripherals",
   },
-  { key: "audio", label: "Audio", severity: "minor", group: "peripherals" },
   {
     key: "usbc",
     label: "USB-C",

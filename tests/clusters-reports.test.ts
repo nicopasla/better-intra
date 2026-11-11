@@ -20,6 +20,7 @@ import {
   getSeatSeverity,
   getSeatSeverityByKey,
   loadSeatReports,
+  noComputerSeatCount,
   reportedSeatCounts,
   submitSeatReports,
 } from "../src/features/clusters/map-dialog/reports";
@@ -119,6 +120,7 @@ describe("seat report state", () => {
                 reporter: "alice",
               },
               {
+                // Retired component: stale rows must be ignored.
                 component: "audio",
                 status: "broken",
                 updatedAt: 1,
@@ -139,7 +141,36 @@ describe("seat report state", () => {
       }),
     );
     await loadSeatReports();
-    expect(getMinorSeatIssues("fu-r3-p1")).toEqual(["mouse_scroll", "audio"]);
+    expect(getMinorSeatIssues("fu-r3-p1")).toEqual(["mouse_scroll"]);
+  });
+
+  it("does not cross or flag a seat reported as having no computer", async () => {
+    vi.mocked(workerFetch).mockResolvedValue(
+      jsonResponse({
+        seats: [
+          {
+            host: "fu-r4-p1",
+            cluster: "fu",
+            components: [
+              {
+                component: "computer",
+                status: "broken",
+                updatedAt: 1,
+                confirmations: 1,
+                reporter: "alice",
+              },
+            ],
+          },
+        ],
+        updatedAt: Date.now(),
+      }),
+    );
+    await loadSeatReports();
+    expect(getComponentStatus("fu-r4-p1", "computer")?.status).toBe("broken");
+    expect(getSeatSeverity("fu-r4-p1")).toBeNull();
+    expect(getMinorSeatIssues("fu-r4-p1")).toEqual([]);
+    expect(blockingSeatCount(["fur4p1"])).toBe(0);
+    expect(noComputerSeatCount(["fur4p1"])).toBe(1);
   });
 
   it("treats a missing USB-C port as a presence answer, not a defect", async () => {

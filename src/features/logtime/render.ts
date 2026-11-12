@@ -57,7 +57,7 @@ function buildDayTooltipHtml(
         hour12: false,
       });
       parts.push(
-        `<a href="${escapeHtml(url)}" target="_blank" rel="noreferrer" style="color:${color};font-weight:600;text-decoration:none">${e.kind === "exam" ? "📚 " : "📅 "}${escapeHtml(e.name)} - ${escapeHtml(time)}</a>`,
+        `<a href="${escapeHtml(url)}" target="_blank" rel="noreferrer" style="color:${color};font-weight:600;text-decoration:none">${e.kind === "exam" ? "📚 " : "🗓️ "}${escapeHtml(e.name)} - ${escapeHtml(time)}</a>`,
       );
     }
   }

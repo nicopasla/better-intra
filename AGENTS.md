@@ -86,7 +86,7 @@ The version is injected at build time as `__APP_VERSION__` (see `better-intra-pw
 
 Fetch-only Worker (no Durable Objects). Storage:
 
-- **KV `BETTER_INTRA_KV`** — user blobs (session tokens, settings, encrypted 42 token), app token cache, project map, friend IDs cache, cluster SVG cache, calendar tokens, announcement, stats cache.
+- **KV `BETTER_INTRA_KV`** — user blobs (session tokens, settings, encrypted 42 token), app token cache, project map, friend IDs cache, cluster SVG cache, calendar tokens, announcement, stats cache, STIB GTFS line catalogue (`STIB_GTFS_LINES`) and Gare Centrale departure board (`TRANSIT_STOPS`, `TRANSIT_GARE_CENTRALE`).
 - **D1 `better_intra_d1`** — eval tracking (`users.evals_enabled`, `eval_users`, `eval_states`, `eval_corrected`), subject notifications (`subject_versions`, `user_ongoing_projects`), cluster reports (`seat_components`, `seat_component_events`) plus caches (`online_cache`, `profile_stats_cache`, `friend_profiles`, `logtime_history`, `calendar_ics`, `themes`, `campus_locations`, `cluster_occupancy_cache`, `projects`, …) and the hand-curated `custom_badges`. See `schema.sql`.
 - **R2 `better_intra_images`** — uploaded images.
 - **Analytics Engine `better_intra_42_api`** (binding `API_METRICS`) — 42 API budget telemetry: one point per labeled call site (`cron.scale_teams`, `token_refresh`, …) plus one per served request (with `x-bi-cache: hit|miss|stale`). Schema documented in `src/metrics.ts`; unlabeled call sites are not recorded so `cdn.intra.42.fr` photo fetches don't skew the numbers.
@@ -94,6 +94,14 @@ Fetch-only Worker (no Durable Objects). Storage:
 ### Public cluster maps
 
 `GET /api/v1/public/clusters/belgium` (JSON discovery: maps, per-seat issue summaries, counts, per-view URLs), `GET /api/v1/public/clusters/belgium/{issues|broken|usbc}` (JSON feeds of the matching seats across maps) and `GET /api/v1/public/clusters/belgium/{shi|fu|mi}.svg?view=` (rendered room map, embeddable as a plain `<img>`) serve the current `seat_components` reports without the extension. `view` is one of `default` (issues + USB-C), `issues`, `broken` (crosses only), `usbc`, or `plain`. Reporter logins are never written into any response. 60 s cache; falls back to the repo copies under `campuses/maps/belgium/` when R2 has no object.
+
+### Public transit board
+
+`GET /api/v1/public/transit/gare-centrale` returns the STIB/MIVB departure board for the platforms named *Gare Centrale* / *Centraal Station* within 300 m of Bruxelles-Central, merged by stop name and capped at two times per line and destination. The worker proxies MobilityTwin.Brussels with the secret `MOBILITYTWIN_TOKEN`, keeps the daily `/stib/stops` catalog in KV for 7 days, filters the whole-network `/stib/waiting-times` snapshot down to those platforms and caches the result (`TRANSIT_STOPS`, `TRANSIT_GARE_CENTRALE`). A board younger than 45 s is served from KV, otherwise it is rebuilt (falling back to the last board if MobilityTwin is down), so the token never reaches the browser and the response stays a few KB.
+
+`GET /api/v1/public/transit/lines` returns the line catalogue parsed from `/stib/gtfs` (`routes.txt` + `feed_info.txt`): line id, mode, official colour and text colour, keyed by the id the waiting-times feed publishes. The ZIP is read in the worker (no library) and the table is stored in KV for 7 days (`STIB_GTFS_LINES`), so line modes and colours follow the real network instead of a hard-coded list. Without it the board falls back to mode-less defaults rather than failing.
+
+The PWA home card ("Transit", hidden by default) polls the board every 60 s while the Home tab is visible, and is only offered to Belgium campus users (campus 12) like the Clusters and Students tabs. It shows only the lines and directions the user picked in the card's picker; the selection is per device in `ft_transit_favorites`, keyed by stop name + line id + destination.
 
 ### Custom profile badges
 
@@ -120,7 +128,7 @@ npm test          # vitest
 npx wrangler d1 execute better-intra-d1 --file=schema.sql   # apply schema (first time)
 ```
 
-Secrets include `CLIENT_SECRET`, `TOKEN_ENCRYPTION_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `CRON_SECRET`, `PROXY_SECRET`, `ANNOUNCEMENT_SECRET`, `PROJECT_REFRESH_SECRET`, `AVATAR_URL_SECRET`, `RELAY_URL`, `RELAY_KEY`.
+Secrets include `CLIENT_SECRET`, `TOKEN_ENCRYPTION_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `CRON_SECRET`, `PROXY_SECRET`, `ANNOUNCEMENT_SECRET`, `PROJECT_REFRESH_SECRET`, `AVATAR_URL_SECRET`, `RELAY_URL`, `RELAY_KEY`, `MOBILITYTWIN_TOKEN`.
 
 ### Cron architecture
 

@@ -101,7 +101,7 @@ Fetch-only Worker (no Durable Objects). Storage:
 
 `GET /api/v1/public/transit/lines` returns the line catalogue parsed from `/stib/gtfs` (`routes.txt` + `feed_info.txt`): line id, mode, official colour and text colour, keyed by the id the waiting-times feed publishes. The ZIP is read in the worker (no library) and the table is stored in KV for 7 days (`STIB_GTFS_LINES`), so line modes and colours follow the real network instead of a hard-coded list. Without it the board falls back to mode-less defaults rather than failing.
 
-The PWA home card ("Transit", hidden by default) polls the board every 60 s while the Home tab is visible, and is only offered to Belgium campus users (campus 12) like the Clusters and Students tabs. It shows only the lines and directions the user picked in the card's picker; the selection is per device in `ft_transit_favorites`, keyed by stop name + line id + destination.
+The PWA home card ("Transit", hidden by default) polls the board every 60 s while the Home tab is visible. It is only offered to Belgium campus users (campus 12) like the Clusters and Students tabs, and only rendered while the account is online at 42 (an active cluster session), online and not on the stale dashboard. It shows only the lines and directions the user picked in the card's picker; the selection is per device in `ft_transit_favorites`, keyed by stop name + line id + destination.
 
 ### Custom profile badges
 
